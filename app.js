@@ -6,8 +6,8 @@ const storage = new Appwrite.Storage(client);
 
 // --- MASUKKAN DATA DARI CONSOLE DI SINI ---
 const CONFIG = {
-    ENDPOINT: 'https://cloud.appwrite.io/v1', // Jangan diubah
-    PROJECT_ID: 'GANTI_DENGAN_PROJECT_ID_ANDA', 
+    ENDPOINT: 'https://sgp.cloud.appwrite.io/v1', // Jangan diubah
+    PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',       // Sesuai yg kita buat di fase 1
     COLLECTION_ID: 'files',   // Sesuai yg kita buat di fase 1
     BUCKET_ID: 'taskfiles'    // Sesuai yg kita buat di fase 1
@@ -293,4 +293,5 @@ function updateStorageUI(bytes) {
     const percent = Math.min((bytes / (2 * 1024 * 1024 * 1024)) * 100, 100); 
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
+
 }
