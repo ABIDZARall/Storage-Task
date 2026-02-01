@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Tasks Appwrite</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+</head>
+<body>
+
+    <div class="bg-gradient"></div>
+
+    <section id="loginPage" class="glass-page active">
+        <div class="glass-card">
+            <div class="logo-area">
+                <img src="logo.png" alt="Logo">
+                <h2>STORAGE TASKS</h2>
+            </div>
+            <h3>Login</h3>
+            <form id="loginForm">
+                <div class="input-grp">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                </div>
+                <div class="input-grp">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="loginPass" placeholder="Password" required>
+                    <i class="fa-solid fa-eye toggle-eye" onclick="togglePass('loginPass', this)"></i>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+                <button type="button" class="btn-secondary" onclick="nav('signupPage')">Sign Up</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="signupPage" class="glass-page hidden">
+        <div class="glass-card">
+            <div class="logo-area">
+                <img src="logo.png" alt="Logo" style="width:50px">
+                <h3>Sign Up</h3>
+            </div>
+            <form id="signupForm">
+                <div class="input-grp">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="regName" placeholder="Nama Lengkap" required>
+                </div>
+                <div class="input-grp">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="Email" required>
+                </div>
+                <div class="input-grp">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="regPhone" placeholder="Phone">
+                </div>
+                <div class="input-grp">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="regPass" placeholder="Password (Min 8 Karakter)" required minlength="8">
+                    <i class="fa-solid fa-eye toggle-eye" onclick="togglePass('regPass', this)"></i>
+                </div>
+                <div class="input-grp highlight">
+                    <i class="fa-solid fa-check-double"></i>
+                    <input type="password" id="regVerify" placeholder="Verifikasi Password" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign Up</button>
+                <p class="link" onclick="nav('loginPage')">Sudah punya akun? Login</p>
+            </form>
+        </div>
+    </section>
+
+    <section id="dashboardPage" class="dashboard-container hidden">
+        <header>
+            <div class="brand">
+                <img src="logo.png" alt="Logo">
+                <span>STORAGE TASKS</span>
+            </div>
+            <div class="profile">
+                <img src="user.jpg" alt="User">
+                <button onclick="logout()" class="btn-logout">LogOut</button>
+            </div>
+        </header>
+
+        <div class="main-glass">
+            <div class="toolbar">
+                <div class="actions">
+                    <div class="dropdown">
+                        <button class="btn-new"><i class="fa-solid fa-plus"></i> New</button>
+                        <div class="dropdown-content">
+                            <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
+                            <label for="fileUpload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</label>
+                            <input type="file" id="fileUpload" hidden>
+                        </div>
+                    </div>
+                    
+                    <div class="storage-info">
+                        <small><i class="fa-solid fa-database"></i> Storage</small>
+                        <div class="progress-bg"><div id="storageBar" class="progress-fill" style="width:0%"></div></div>
+                        <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
+                    </div>
+                </div>
+
+                <div class="search-wrap">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Cari file atau folder...">
+                </div>
+            </div>
+
+            <div id="breadcrumb" class="breadcrumb">Home</div>
+
+            <div id="fileGrid" class="grid-view">
+                </div>
+        </div>
+    </section>
+
+    <div id="loading" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Memproses...</p>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    </script>
+</body>
+</html>
