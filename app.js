@@ -9,8 +9,8 @@ const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1', // Jangan diubah
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',       // Sesuai yg kita buat di fase 1
-    COLLECTION_ID: 'files',   // Sesuai yg kita buat di fase 1
-    COLLECTION_ID: 'users',   // Sesuai yg kita buat di fase 1
+    COLLECTION_FILES: 'files',   // Sesuai yg kita buat di fase 1
+    COLLECTION_USERS: 'users',   // Sesuai yg kita buat di fase 1
     BUCKET_ID: 'taskfiles'    // Sesuai yg kita buat di fase 1
 };
 
@@ -96,12 +96,15 @@ el('loginForm').addEventListener('submit', async (e) => {
     showLoading();
     try {
         // Logika Pintar: Cek apakah input adalah Nama
+        // Bagian di dalam fungsi login
         if (!identifier.includes('@')) {
+            // Gunakan variabel COLLECTION_USERS yang baru
             const response = await databases.listDocuments(
                 CONFIG.DB_ID,
-                CONFIG.COLLECTION_USERS,
+                CONFIG.COLLECTION_USERS, 
                 [Appwrite.Query.equal('name', identifier)]
             );
+    
 
             if (response.total === 0) {
                 throw new Error("Nama tidak ditemukan. Silakan mendaftar ulang.");
@@ -318,6 +321,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
