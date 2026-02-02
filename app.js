@@ -62,19 +62,40 @@ el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = el('regName').value;
     const email = el('regEmail').value;
+    const phone = el('regPhone').value; // Ambil nilai dari input telepon
     const pass = el('regPass').value;
+    const verify = el('regVerify').value;
+
+    if (pass !== verify) return alert("Password tidak cocok!");
 
     showLoading();
     try {
-        // 1. Daftar ke Auth
+        // 1. DAFTAR KE AUTH (Sistem Inti)
+        // Data password hanya dikirim ke sini dan akan dienkripsi oleh Appwrite.
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN KE DATABASE (Agar login pakai Nama bisa jalan)
+        // 2. SIMPAN NOMOR TELEPON KE AUTH (Opsional)
+        // Appwrite mewajibkan format internasional (contoh: +628123...)
+        if (phone) {
+            try {
+                // Perlu diingat: Ini hanya menyimpan, tidak langsung memverifikasi
+                await account.updatePhone(phone, pass); 
+            } catch (phoneErr) {
+                console.warn("Gagal simpan telp ke Auth (cek format +62):", phoneErr.message);
+            }
+        }
+
+        // 3. SIMPAN SEMUA DATA KE DATABASE (Tabel Users)
+        // Di sini kita simpan agar Anda bisa melihatnya secara visual di dashboard database.
         await databases.createDocument(
             CONFIG.DB_ID, 
             CONFIG.COLLECTION_USERS, 
-            Appwrite.ID.unique(),
-            { name: name, email: email }
+            userAuth.$id, // Gunakan ID yang sama dengan Auth agar sinkron
+            {
+                name: name,
+                email: email,
+                phone: phone // Data ini sekarang akan muncul di tab 'Rows'
+            }
         );
 
         alert("Akun Berhasil Dibuat! Silakan Login.");
@@ -321,6 +342,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
