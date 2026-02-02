@@ -149,7 +149,7 @@ async function loadFiles(folderId) {
         // Query: Cari item punya user INI dan di folder SAAT INI
         const response = await databases.listDocuments(
             CONFIG.DB_ID,
-            CONFIG.COLLECTION_ID,
+            CONFIG.COLLECTION_FILES, // Pastikan ini menunjuk ke tabel 'files'
             [
                 Appwrite.Query.equal('owner', currentUser.$id),
                 Appwrite.Query.equal('parentId', folderId)
@@ -321,6 +321,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
