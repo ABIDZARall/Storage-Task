@@ -42,7 +42,7 @@ window.togglePass = (id, icon) => {
 
 // --- SYSTEM AUTHENTICATION ---
 
-// Cek Apakah User Sudah Login
+// Cek Sesi Saat Load
 async function checkSession() {
     try {
         currentUser = await account.get();
@@ -54,7 +54,36 @@ async function checkSession() {
 }
 checkSession();
 
-// Login - Ganti bagian ini di app.js
+// Fungsi Sign Up (Pendaftaran)
+el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = el('regEmail').value;
+    const pass = el('regPass').value;
+    const verify = el('regVerify').value;
+    const name = el('regName').value;
+
+    if (pass !== verify) return alert("Password verifikasi tidak cocok!");
+
+    showLoading();
+    try {
+        // Gunakan ID.unique() agar Appwrite membuatkan ID otomatis
+        await account.create('unique()', email, pass, name);
+        
+        // Langsung buat session baru setelah daftar
+        await account.createEmailPasswordSession(email, pass);
+        
+        currentUser = await account.get();
+        alert("Pendaftaran Berhasil! Selamat datang, " + name);
+        window.location.reload(); // Refresh untuk masuk dashboard
+    } catch (error) {
+        console.error("Error Detail:", error);
+        alert("Gagal Daftar: " + error.message);
+    } finally {
+        hideLoading();
+    }
+});
+
+// Fungsi Login
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = el('loginEmail').value;
@@ -62,20 +91,15 @@ el('loginForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // Membersihkan sesi lama jika ada (mencegah error session active)
+        // Hapus session lama jika ada untuk menghindari konflik
         try { await account.deleteSession('current'); } catch (e) {}
-
-        // Membuat Session Baru
-        await account.createEmailPasswordSession(email, pass);
         
-        // Memastikan data user berhasil diambil setelah login
+        await account.createEmailPasswordSession(email, pass);
         currentUser = await account.get();
         
         alert("Login Berhasil!");
-        nav('dashboardPage');
-        loadFiles('root');
+        window.location.reload();
     } catch (error) {
-        // Jika error, pastikan AdBlocker dimatikan karena bisa memblokir request
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
@@ -296,5 +320,6 @@ function updateStorageUI(bytes) {
     el('storageBar').style.width = percent + '%';
 
 }
+
 
 
