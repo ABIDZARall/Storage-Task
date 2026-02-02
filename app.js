@@ -54,34 +54,41 @@ async function checkSession() {
 }
 checkSession();
 
-// Sign Up
+// --- SISTEM AUTENTIKASI (REVISI TOTAL) ---
+
+// 1. Fungsi Sign Up
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const name = el('regName').value;
     const email = el('regEmail').value;
     const pass = el('regPass').value;
     const verify = el('regVerify').value;
-    const name = el('regName').value;
 
-    if (pass !== verify) return alert("Password verifikasi tidak cocok!");
+    if (pass !== verify) return alert("Password tidak cocok!");
 
     showLoading();
     try {
-        // 1. Buat Akun
+        // MEMBUAT AKUN KE AUTH (Agar muncul di menu Users)
         await account.create(Appwrite.ID.unique(), email, pass, name);
-        // 2. Langsung Login setelah buat akun
+
+        // LOGIN OTOMATIS SETELAH DAFTAR
         await account.createEmailPasswordSession(email, pass);
+        
         currentUser = await account.get();
-        alert("Pendaftaran Berhasil!");
+        alert("Pendaftaran Berhasil! Akun Anda sudah terdaftar di sistem.");
+        
+        // Pindah ke Dashboard
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
+        // Jika error, cek apakah hostname *.vercel.app sudah ada di platform
         alert("Gagal Daftar: " + error.message);
     } finally {
         hideLoading();
     }
 });
 
-// Login
+// 2. Fungsi Login
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = el('loginEmail').value;
@@ -89,11 +96,18 @@ el('loginForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
+        // Bersihkan sesi lama jika ada
+        try { await account.deleteSession('current'); } catch (err) {}
+
+        // Buat Sesi Baru
         await account.createEmailPasswordSession(email, pass);
         currentUser = await account.get();
+        
+        alert("Login Berhasil!");
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
+        // Error "Invalid credentials" berarti Email/Password salah atau Akun belum dibuat
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
@@ -183,8 +197,9 @@ window.createFolder = async () => {
             CONFIG.DB_ID,
             CONFIG.COLLECTION_ID,
             Appwrite.ID.unique(),
+            // Bagian simpan ke database (createDocument)
             {
-                name: name,
+                name: name, // Pastikan ini 'name', bukan 'nama'!
                 type: 'folder',
                 parentId: currentFolderId,
                 owner: currentUser.$id,
@@ -294,3 +309,4 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
