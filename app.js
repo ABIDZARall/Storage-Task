@@ -10,6 +10,7 @@ const CONFIG = {
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',       // Sesuai yg kita buat di fase 1
     COLLECTION_ID: 'files',   // Sesuai yg kita buat di fase 1
+    COLLECTION_ID: 'users',   // Sesuai yg kita buat di fase 1
     BUCKET_ID: 'taskfiles'    // Sesuai yg kita buat di fase 1
 };
 
@@ -65,14 +66,15 @@ el('signupForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // A. Simpan ke sistem AUTH (Login Utama)
+        // 1. Daftar ke Sistem Auth (Login Utama)
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // B. Simpan ke sistem DATABASE (Untuk pencarian Login Nama)
+        // 2. SIMPAN KE DATABASE (Penting untuk Fitur Login Nama)
+        // Pastikan ID Collection adalah 'users'
         await databases.createDocument(
             CONFIG.DB_ID, 
-            'users', // ID Collection User Anda
-            userAuth.$id, // Gunakan ID yang sama dengan Auth
+            'users', 
+            Appwrite.ID.unique(),
             {
                 name: name,
                 email: email
@@ -80,7 +82,7 @@ el('signupForm').addEventListener('submit', async (e) => {
         );
 
         alert("Akun Berhasil Dibuat! Silakan Login menggunakan Nama atau Email.");
-        nav('loginPage');
+        nav('loginPage'); // Pindah ke halaman login
     } catch (error) {
         alert("Gagal Daftar: " + error.message);
     } finally {
@@ -90,51 +92,38 @@ el('signupForm').addEventListener('submit', async (e) => {
 
 // 2. Fungsi Login
 // --- LOGIKA LOGIN PINTAR (EMAIL ATAU NAMA) ---
-
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     let identifier = el('loginEmail').value.trim();
     const password = el('loginPass').value;
 
     showLoading();
-
     try {
-        // 1. CEK: Apakah input adalah Email atau Nama?
+        // Jika input tidak mengandung '@', anggap itu adalah Nama
         if (!identifier.includes('@')) {
-            console.log("Mendeteksi input sebagai Nama, mencari Email di database...");
-
-            // 2. CARI EMAIL BERDASARKAN NAMA DI DATABASE
-            // Kita mencari di tabel 'users' (pastikan ID Database dan Collection benar)
-            const userDoc = await databases.listDocuments(
-                CONFIG.DB_ID, 
-                'users', // Ganti dengan ID Collection User Anda
+            // Cari Email berdasarkan Nama di tabel 'users'
+            const response = await databases.listDocuments(
+                CONFIG.DB_ID,
+                'users',
                 [Appwrite.Query.equal('name', identifier)]
             );
 
-            if (userDoc.total === 0) {
-                throw new Error("Nama tidak ditemukan. Silakan gunakan Email.");
+            if (response.total === 0) {
+                throw new Error("Nama tidak ditemukan. Gunakan Email jika belum pernah login.");
             }
-
-            // Ambil email dari dokumen yang ditemukan
-            identifier = userDoc.documents[0].email;
-            console.log("Email ditemukan: " + identifier);
+            // Ganti identifier Nama menjadi Email yang ditemukan
+            identifier = response.documents[0].email;
         }
 
-        // 3. PROSES LOGIN (Selalu menggunakan Email di balik layar)
-        // Hapus sesi lama untuk menghindari konflik
-        try { await account.deleteSession('current'); } catch (err) {}
-
+        // Jalankan proses login resmi Appwrite
+        try { await account.deleteSession('current'); } catch (e) {}
         await account.createEmailPasswordSession(identifier, password);
         
-        // Simpan data user ke state aplikasi
         currentUser = await account.get();
-        
         alert("Login Berhasil! Selamat datang, " + currentUser.name);
         nav('dashboardPage');
         loadFiles('root');
-
     } catch (error) {
-        console.error("Login Error:", error);
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
@@ -336,6 +325,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
