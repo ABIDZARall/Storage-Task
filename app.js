@@ -42,7 +42,7 @@ window.togglePass = (id, icon) => {
 
 // --- SYSTEM AUTHENTICATION ---
 
-// Cek Sesi Saat Load
+// Cek Apakah User Sudah Login
 async function checkSession() {
     try {
         currentUser = await account.get();
@@ -54,41 +54,34 @@ async function checkSession() {
 }
 checkSession();
 
-// --- PERBAIKAN SYSTEM AUTHENTICATION ---
-
-// Fungsi Sign Up (Pendaftaran)
+// Sign Up
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = el('regName').value;
     const email = el('regEmail').value;
     const pass = el('regPass').value;
     const verify = el('regVerify').value;
+    const name = el('regName').value;
 
     if (pass !== verify) return alert("Password verifikasi tidak cocok!");
 
     showLoading();
     try {
-        // 1. Membuat akun di Auth Appwrite
-        // Gunakan 'unique()' agar Appwrite memberikan ID otomatis
-        await account.create('unique()', email, pass, name);
-
-        // 2. Langsung buat session agar bisa langsung login
+        // 1. Buat Akun
+        await account.create(Appwrite.ID.unique(), email, pass, name);
+        // 2. Langsung Login setelah buat akun
         await account.createEmailPasswordSession(email, pass);
-        
         currentUser = await account.get();
-        alert("Pendaftaran Berhasil! Akun Anda kini terdaftar.");
-        
-        // Refresh otomatis untuk masuk ke Dashboard
-        window.location.reload(); 
+        alert("Pendaftaran Berhasil!");
+        nav('dashboardPage');
+        loadFiles('root');
     } catch (error) {
-        // Jika error "Failed to fetch", cek platform hostname
         alert("Gagal Daftar: " + error.message);
     } finally {
         hideLoading();
     }
 });
 
-// Fungsi Login
+// Login
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = el('loginEmail').value;
@@ -96,18 +89,11 @@ el('loginForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // Hapus sesi lama jika ada untuk menghindari bentrokan
-        try { await account.deleteSession('current'); } catch (err) {}
-
-        // Buat sesi login baru
         await account.createEmailPasswordSession(email, pass);
         currentUser = await account.get();
-        
-        alert("Login Berhasil!");
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
-        // Jika "Invalid credentials", artinya email/pass salah atau akun belum terdaftar
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
@@ -307,10 +293,4 @@ function updateStorageUI(bytes) {
     const percent = Math.min((bytes / (2 * 1024 * 1024 * 1024)) * 100, 100); 
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
-
 }
-
-
-
-
-
