@@ -54,63 +54,61 @@ async function checkSession() {
 }
 checkSession();
 
+// --- PERBAIKAN SYSTEM AUTHENTICATION ---
+
 // Fungsi Sign Up (Pendaftaran)
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const name = el('regName').value;
     const email = el('regEmail').value;
     const pass = el('regPass').value;
     const verify = el('regVerify').value;
-    const name = el('regName').value;
 
     if (pass !== verify) return alert("Password verifikasi tidak cocok!");
 
     showLoading();
     try {
-        // Gunakan ID.unique() agar Appwrite membuatkan ID otomatis
+        // 1. Membuat akun di Auth Appwrite
+        // Gunakan 'unique()' agar Appwrite memberikan ID otomatis
         await account.create('unique()', email, pass, name);
-        
-        // Langsung buat session baru setelah daftar
+
+        // 2. Langsung buat session agar bisa langsung login
         await account.createEmailPasswordSession(email, pass);
         
         currentUser = await account.get();
-        alert("Pendaftaran Berhasil! Selamat datang, " + name);
-        window.location.reload(); // Refresh untuk masuk dashboard
+        alert("Pendaftaran Berhasil! Akun Anda kini terdaftar.");
+        
+        // Refresh otomatis untuk masuk ke Dashboard
+        window.location.reload(); 
     } catch (error) {
-        console.error("Error Detail:", error);
+        // Jika error "Failed to fetch", cek platform hostname
         alert("Gagal Daftar: " + error.message);
     } finally {
         hideLoading();
     }
 });
 
-// Login - Perbaikan untuk mengatasi Invalid Credentials
+// Fungsi Login
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = el('loginEmail').value.trim(); // Menghapus spasi yang tidak sengaja terketik
+    const email = el('loginEmail').value;
     const pass = el('loginPass').value;
 
     showLoading();
     try {
-        // Langkah Tambahan: Hapus sesi aktif sebelumnya jika ada untuk menghindari konflik
-        try { 
-            await account.deleteSession('current'); 
-        } catch (sessionErr) {
-            // Abaikan jika memang tidak ada sesi aktif
-        }
+        // Hapus sesi lama jika ada untuk menghindari bentrokan
+        try { await account.deleteSession('current'); } catch (err) {}
 
-        // Membuat Sesi Baru
+        // Buat sesi login baru
         await account.createEmailPasswordSession(email, pass);
-        
-        // Ambil data user untuk memastikan login benar-benar sukses
         currentUser = await account.get();
         
-        alert("Login Berhasil! Selamat datang kembali.");
+        alert("Login Berhasil!");
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
-        // Jika muncul "Invalid credentials", pastikan email & password sesuai dengan di Console
-        console.error("Login Error Detail:", error);
-        alert("Login Gagal: " + error.message + ". Pastikan Email dan Password Anda benar.");
+        // Jika "Invalid credentials", artinya email/pass salah atau akun belum terdaftar
+        alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
     }
@@ -311,6 +309,7 @@ function updateStorageUI(bytes) {
     el('storageBar').style.width = percent + '%';
 
 }
+
 
 
 
