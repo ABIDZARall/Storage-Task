@@ -54,28 +54,29 @@ async function checkSession() {
 }
 checkSession();
 
-// Sign Up
-el('signupForm').addEventListener('submit', async (e) => {
+// Login - Ganti bagian ini di app.js
+el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = el('regEmail').value;
-    const pass = el('regPass').value;
-    const verify = el('regVerify').value;
-    const name = el('regName').value;
-
-    if (pass !== verify) return alert("Password verifikasi tidak cocok!");
+    const email = el('loginEmail').value;
+    const pass = el('loginPass').value;
 
     showLoading();
     try {
-        // 1. Buat Akun
-        await account.create(Appwrite.ID.unique(), email, pass, name);
-        // 2. Langsung Login setelah buat akun
+        // Membersihkan sesi lama jika ada (mencegah error session active)
+        try { await account.deleteSession('current'); } catch (e) {}
+
+        // Membuat Session Baru
         await account.createEmailPasswordSession(email, pass);
+        
+        // Memastikan data user berhasil diambil setelah login
         currentUser = await account.get();
-        alert("Pendaftaran Berhasil!");
+        
+        alert("Login Berhasil!");
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
-        alert("Gagal Daftar: " + error.message);
+        // Jika error, pastikan AdBlocker dimatikan karena bisa memblokir request
+        alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
     }
@@ -295,3 +296,4 @@ function updateStorageUI(bytes) {
     el('storageBar').style.width = percent + '%';
 
 }
+
