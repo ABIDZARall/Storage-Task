@@ -9,8 +9,7 @@ const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1', // Jangan diubah
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',       // Sesuai yg kita buat di fase 1
-    COLLECTION_ID: 'files',   // Sesuai yg kita buat di fase 1
-    COLLECTION_ID: 'users',   // Sesuai yg kita buat di fase 1
+    COLLECTION_ID: 'files', 'users',   // Sesuai yg kita buat di fase 1
     BUCKET_ID: 'taskfiles'    // Sesuai yg kita buat di fase 1
 };
 
@@ -66,14 +65,13 @@ el('signupForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // 1. Daftar ke Sistem Auth (Login Utama)
+        // 1. Daftar ke sistem Auth (Ini yang muncul di menu Users Appwrite)
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN KE DATABASE (Penting untuk Fitur Login Nama)
-        // Pastikan ID Collection adalah 'users'
+        // 2. SIMPAN DATA KE DATABASE (Penting untuk login pakai Nama)
         await databases.createDocument(
             CONFIG.DB_ID, 
-            'users', 
+            'users', // ID Tabel yang kita buat di Langkah 1
             Appwrite.ID.unique(),
             {
                 name: name,
@@ -82,7 +80,7 @@ el('signupForm').addEventListener('submit', async (e) => {
         );
 
         alert("Akun Berhasil Dibuat! Silakan Login menggunakan Nama atau Email.");
-        nav('loginPage'); // Pindah ke halaman login
+        nav('loginPage'); // Kembali ke login
     } catch (error) {
         alert("Gagal Daftar: " + error.message);
     } finally {
@@ -99,23 +97,22 @@ el('loginForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // Jika input tidak mengandung '@', anggap itu adalah Nama
+        // Jika input tidak mengandung '@', cari Email berdasarkan Nama di database
         if (!identifier.includes('@')) {
-            // Cari Email berdasarkan Nama di tabel 'users'
             const response = await databases.listDocuments(
                 CONFIG.DB_ID,
-                'users',
+                'users', // Harus sama dengan ID Tabel di Appwrite
                 [Appwrite.Query.equal('name', identifier)]
             );
 
             if (response.total === 0) {
-                throw new Error("Nama tidak ditemukan. Gunakan Email jika belum pernah login.");
+                throw new Error("Nama tidak ditemukan. Silakan login pakai Email.");
             }
-            // Ganti identifier Nama menjadi Email yang ditemukan
+            // Ubah identifier Nama menjadi Email yang ditemukan di database
             identifier = response.documents[0].email;
         }
 
-        // Jalankan proses login resmi Appwrite
+        // Proses Login resmi Appwrite (Selalu pakai Email di balik layar)
         try { await account.deleteSession('current'); } catch (e) {}
         await account.createEmailPasswordSession(identifier, password);
         
@@ -325,6 +322,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
