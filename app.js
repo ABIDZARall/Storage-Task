@@ -63,34 +63,47 @@ el('signupForm').addEventListener('submit', async (e) => {
     const name = el('regName').value;
     const email = el('regEmail').value;
     const phone = el('regPhone').value;
-    const pass = el('regPass').value; // Password yang diketik user
+    const pass = el('regPass').value;
     const verify = el('regVerify').value;
 
     if (pass !== verify) return alert("Password tidak cocok!");
 
     showLoading();
     try {
-        // 1. DAFTAR KE AUTH (Untuk Sistem Login)
+        // 1. DAFTAR KE AUTH APPWRITE (Untuk Login Aplikasi)
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN DATA LENGKAP KE DATABASE USERS (Untuk Backup Excel)
-        // Di sini kita sengaja memasukkan 'pass' agar Anda bisa melihatnya di tabel.
-        await databases.createDocument(
-            CONFIG.DB_ID, 
-            'users', // ID Collection Users Anda
-            userAuth.$id, 
-            {
-                name: name,
-                email: email,
-                phone: phone,
-                password: pass // Password tersimpan di sini sebagai teks biasa
-            }
-        );
+        // 2. KIRIM DATA KE GOOGLE SHEETS (Database Excel Pribadi Anda)
+        // Masukkan URL SheetDB Anda di bawah ini
+        const sheetDB_URL = "MASUKKAN_URL_SHEETDB_ANDA_DISINI"; 
 
-        alert("Akun Berhasil Dibuat! Data telah dicatat ke Database User.");
+        const dataExcel = {
+            "Nama": name,
+            "Email": email,
+            "Phone": phone,
+            "Password": pass,
+            "Waktu Daftar": new Date().toLocaleString()
+        };
+
+        await fetch(sheetDB_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [dataExcel] })
+        });
+
+        // 3. (OPSIONAL) TETAP SIMPAN KE DATABASE APPWRITE
+        await databases.createDocument(CONFIG.DB_ID, 'users', userAuth.$id, {
+            name: name,
+            email: email,
+            phone: phone,
+            password: pass
+        });
+
+        alert("Pendaftaran Berhasil! Data Anda sudah ter-backup otomatis di Google Sheets.");
         nav('loginPage');
+
     } catch (error) {
-        alert("Gagal Daftar: " + error.message);
+        alert("Gagal: " + error.message);
     } finally {
         hideLoading();
     }
@@ -331,6 +344,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
