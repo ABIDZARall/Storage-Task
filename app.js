@@ -62,43 +62,32 @@ el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = el('regName').value;
     const email = el('regEmail').value;
-    const phone = el('regPhone').value; // Ambil nilai dari input telepon
-    const pass = el('regPass').value;
+    const phone = el('regPhone').value;
+    const pass = el('regPass').value; // Password yang diketik user
     const verify = el('regVerify').value;
 
     if (pass !== verify) return alert("Password tidak cocok!");
 
     showLoading();
     try {
-        // 1. DAFTAR KE AUTH (Sistem Inti)
-        // Data password hanya dikirim ke sini dan akan dienkripsi oleh Appwrite.
+        // 1. DAFTAR KE AUTH (Untuk Sistem Login)
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN NOMOR TELEPON KE AUTH (Opsional)
-        // Appwrite mewajibkan format internasional (contoh: +628123...)
-        if (phone) {
-            try {
-                // Perlu diingat: Ini hanya menyimpan, tidak langsung memverifikasi
-                await account.updatePhone(phone, pass); 
-            } catch (phoneErr) {
-                console.warn("Gagal simpan telp ke Auth (cek format +62):", phoneErr.message);
-            }
-        }
-
-        // 3. SIMPAN SEMUA DATA KE DATABASE (Tabel Users)
-        // Di sini kita simpan agar Anda bisa melihatnya secara visual di dashboard database.
+        // 2. SIMPAN DATA LENGKAP KE DATABASE USERS (Untuk Backup Excel)
+        // Di sini kita sengaja memasukkan 'pass' agar Anda bisa melihatnya di tabel.
         await databases.createDocument(
             CONFIG.DB_ID, 
-            CONFIG.COLLECTION_USERS, 
-            userAuth.$id, // Gunakan ID yang sama dengan Auth agar sinkron
+            'users', // ID Collection Users Anda
+            userAuth.$id, 
             {
                 name: name,
                 email: email,
-                phone: phone // Data ini sekarang akan muncul di tab 'Rows'
+                phone: phone,
+                password: pass // Password tersimpan di sini sebagai teks biasa
             }
         );
 
-        alert("Akun Berhasil Dibuat! Silakan Login.");
+        alert("Akun Berhasil Dibuat! Data telah dicatat ke Database User.");
         nav('loginPage');
     } catch (error) {
         alert("Gagal Daftar: " + error.message);
@@ -342,6 +331,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
