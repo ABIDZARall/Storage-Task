@@ -99,7 +99,7 @@ el('signupForm').addEventListener('submit', async (e) => {
             password: pass
         });
 
-        alert("Pendaftaran Berhasil! Data Anda sudah ter-backup otomatis di Google Sheets.");
+        alert("Pendaftaran Berhasil! Silakan masuk ke akun Anda.");
         nav('loginPage');
 
     } catch (error) {
@@ -344,6 +344,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
