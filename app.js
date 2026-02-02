@@ -83,43 +83,34 @@ el('signupForm').addEventListener('submit', async (e) => {
     }
 });
 
-// Fungsi Login
+// Login - Perbaikan untuk mengatasi Invalid Credentials
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = el('loginEmail').value;
+    const email = el('loginEmail').value.trim(); // Menghapus spasi yang tidak sengaja terketik
     const pass = el('loginPass').value;
 
     showLoading();
     try {
-        // Hapus session lama jika ada untuk menghindari konflik
-        try { await account.deleteSession('current'); } catch (e) {}
-        
+        // Langkah Tambahan: Hapus sesi aktif sebelumnya jika ada untuk menghindari konflik
+        try { 
+            await account.deleteSession('current'); 
+        } catch (sessionErr) {
+            // Abaikan jika memang tidak ada sesi aktif
+        }
+
+        // Membuat Sesi Baru
         await account.createEmailPasswordSession(email, pass);
+        
+        // Ambil data user untuk memastikan login benar-benar sukses
         currentUser = await account.get();
         
-        alert("Login Berhasil!");
-        window.location.reload();
-    } catch (error) {
-        alert("Login Gagal: " + error.message);
-    } finally {
-        hideLoading();
-    }
-});
-
-// Login
-el('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = el('loginEmail').value;
-    const pass = el('loginPass').value;
-
-    showLoading();
-    try {
-        await account.createEmailPasswordSession(email, pass);
-        currentUser = await account.get();
+        alert("Login Berhasil! Selamat datang kembali.");
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
-        alert("Login Gagal: " + error.message);
+        // Jika muncul "Invalid credentials", pastikan email & password sesuai dengan di Console
+        console.error("Login Error Detail:", error);
+        alert("Login Gagal: " + error.message + ". Pastikan Email dan Password Anda benar.");
     } finally {
         hideLoading();
     }
@@ -320,6 +311,7 @@ function updateStorageUI(bytes) {
     el('storageBar').style.width = percent + '%';
 
 }
+
 
 
 
