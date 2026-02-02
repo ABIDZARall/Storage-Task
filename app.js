@@ -97,19 +97,19 @@ el('loginForm').addEventListener('submit', async (e) => {
     try {
         // Logika Pintar: Cek apakah input adalah Nama
         // Bagian di dalam fungsi login
+        // Bagian di dalam listener loginForm
         if (!identifier.includes('@')) {
-            // Gunakan variabel COLLECTION_USERS yang baru
+            // Gunakan variabel COLLECTION_USERS yang baru saja kita buat
             const response = await databases.listDocuments(
                 CONFIG.DB_ID,
                 CONFIG.COLLECTION_USERS, 
                 [Appwrite.Query.equal('name', identifier)]
             );
-    
-
+            
             if (response.total === 0) {
-                throw new Error("Nama tidak ditemukan. Silakan mendaftar ulang.");
+                throw new Error("Nama tidak ditemukan di database. Silakan daftar ulang.");
             }
-            identifier = response.documents[0].email; // Ganti nama jadi email
+            identifier = response.documents[0].email;
         }
 
         try { await account.deleteSession('current'); } catch (e) {}
@@ -321,6 +321,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
