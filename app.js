@@ -68,20 +68,17 @@ el('signupForm').addEventListener('submit', async (e) => {
 
     showLoading();
     try {
-        // MEMBUAT AKUN KE AUTH (Agar muncul di menu Users)
+        // 1. Buat Akun di Auth
         await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // LOGIN OTOMATIS SETELAH DAFTAR
-        await account.createEmailPasswordSession(email, pass);
+        alert("Akun Berhasil Dibuat! Silakan Login.");
         
-        currentUser = await account.get();
-        alert("Pendaftaran Berhasil! Akun Anda sudah terdaftar di sistem.");
+        // 2. LOGIKA BARU: Pindah ke halaman Login, bukan Dashboard
+        nav('loginPage'); 
         
-        // Pindah ke Dashboard
-        nav('dashboardPage');
-        loadFiles('root');
+        // Bersihkan form pendaftaran
+        el('signupForm').reset(); 
     } catch (error) {
-        // Jika error, cek apakah hostname *.vercel.app sudah ada di platform
         alert("Gagal Daftar: " + error.message);
     } finally {
         hideLoading();
@@ -91,24 +88,28 @@ el('signupForm').addEventListener('submit', async (e) => {
 // 2. Fungsi Login
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = el('loginEmail').value;
+    const identifier = el('loginEmail').value; // Bisa berisi email atau nama (tergantung input)
     const pass = el('loginPass').value;
+
+    // Validasi dasar: Appwrite WAJIB pakai format email
+    if (!identifier.includes('@')) {
+        return alert("Maaf, sistem saat ini mewajibkan Login menggunakan EMAIL yang Anda daftarkan.");
+    }
 
     showLoading();
     try {
-        // Bersihkan sesi lama jika ada
+        // Hapus sesi lama jika ada
         try { await account.deleteSession('current'); } catch (err) {}
 
-        // Buat Sesi Baru
-        await account.createEmailPasswordSession(email, pass);
+        // Login menggunakan Email dan Password
+        await account.createEmailPasswordSession(identifier, pass);
         currentUser = await account.get();
         
-        alert("Login Berhasil!");
+        alert("Selamat Datang, " + currentUser.name);
         nav('dashboardPage');
         loadFiles('root');
     } catch (error) {
-        // Error "Invalid credentials" berarti Email/Password salah atau Akun belum dibuat
-        alert("Login Gagal: " + error.message);
+        alert("Login Gagal: Periksa kembali Email dan Password Anda.");
     } finally {
         hideLoading();
     }
@@ -309,4 +310,5 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
