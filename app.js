@@ -77,21 +77,24 @@ el('signupForm').addEventListener('submit', async (e) => {
         // Masukkan URL SheetDB Anda di bawah ini
         const sheetDB_URL = "https://sheetdb.io/api/v1/6d6rou2c8l0s8"; 
 
-        const dataExcel = {
-            "ID": id,
-            "Nama": name,
-            "Email": email,
-            "Phone": phone,
-            "Password": pass,
-            "Waktu": new Date().toLocaleString()
-        };
+        // --- PERBAIKAN FORMAT DATA EXCEL (app.js) ---
 
-        await fetch(sheetDB_URL, {
+        const dataExcel = {
+            "Nama": name,      // Harus sama dengan Header Kolom B
+            "Email": email,    // Harus sama dengan Header Kolom C
+            "Phone": phone,    // Harus sama dengan Header Kolom D
+            "Password": pass,  // Harus sama dengan Header Kolom E
+        
+            // PERHATIKAN INI: Ganti jadi "Waktu" agar sesuai dengan gambar Anda
+            "Waktu": new Date().toLocaleString('id-ID') 
+        };
+        
+        // Kirim ke SheetDB
+        fetch(sheetDB_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [dataExcel] })
         });
-
         // 3. (OPSIONAL) TETAP SIMPAN KE DATABASE APPWRITE
         await databases.createDocument(CONFIG.DB_ID, 'users', userAuth.$id, {
             name: name,
@@ -345,6 +348,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
