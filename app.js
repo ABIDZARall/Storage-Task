@@ -58,6 +58,8 @@ checkSession();
 // --- SISTEM AUTENTIKASI (REVISI TOTAL) ---
 
 // 1. Fungsi Sign Up
+// --- PERBAIKAN LOGIKA CEPAT (ANTI-LEMOT) ---
+
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = el('regName').value;
@@ -68,34 +70,13 @@ el('signupForm').addEventListener('submit', async (e) => {
 
     if (pass !== verify) return alert("Password tidak cocok!");
 
-    showLoading();
+    showLoading(); // Munculkan loading
+    
     try {
-        // 1. DAFTAR KE AUTH APPWRITE (Untuk Login Aplikasi)
+        // 1. DAFTAR KE APPWRITE (Proses Wajib & Cepat)
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. KIRIM DATA KE GOOGLE SHEETS (Database Excel Pribadi Anda)
-        // Masukkan URL SheetDB Anda di bawah ini
-        const sheetDB_URL = "https://sheetdb.io/api/v1/6d6rou2c8l0s8"; 
-
-        // --- PERBAIKAN FORMAT DATA EXCEL (app.js) ---
-
-        const dataExcel = {
-            "Nama": name,      // Harus sama dengan Header Kolom B
-            "Email": email,    // Harus sama dengan Header Kolom C
-            "Phone": phone,    // Harus sama dengan Header Kolom D
-            "Password": pass,  // Harus sama dengan Header Kolom E
-        
-            // PERHATIKAN INI: Ganti jadi "Waktu" agar sesuai dengan gambar Anda
-            "Waktu": new Date().toLocaleString('id-ID') 
-        };
-        
-        // Kirim ke SheetDB
-        fetch(sheetDB_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: [dataExcel] })
-        });
-        // 3. (OPSIONAL) TETAP SIMPAN KE DATABASE APPWRITE
+        // 2. SIMPAN KE DATABASE APPWRITE (Proses Wajib & Cepat)
         await databases.createDocument(CONFIG.DB_ID, 'users', userAuth.$id, {
             name: name,
             email: email,
@@ -103,8 +84,33 @@ el('signupForm').addEventListener('submit', async (e) => {
             password: pass
         });
 
-        alert("Pendaftaran Berhasil! Silakan masuk ke akun Anda.");
-        nav('loginPage');
+        // --- BAGIAN PENTING: OPTIMASI KECEPATAN ---
+        
+        // 3. TAMPILKAN SUKSES & PINDAH HALAMAN DULUAN
+        // Kita tidak menunggu Google Sheets selesai. User langsung masuk.
+        alert("Pendaftaran Berhasil!"); 
+        el('signupForm').reset();
+        nav('loginPage'); 
+
+        // 4. KIRIM KE GOOGLE SHEETS DI BELAKANG LAYAR (BACKGROUND)
+        // Kode ini berjalan diam-diam meskipun user sudah pindah halaman
+        const sheetDB_URL = "MASUKKAN_URL_SHEETDB_ANDA_DISINI"; 
+        
+        const dataExcel = {
+            "ID": "", // Biarkan kosong, rumus Excel yang akan isi otomatis
+            "Nama": name,
+            "Email": email,
+            "Phone": phone,
+            "Password": pass,
+            "Waktu": new Date().toLocaleString('id-ID')
+        };
+
+        // Tidak pakai 'await' agar browser tidak macet menunggu koneksi
+        fetch(sheetDB_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [dataExcel] })
+        }).catch(err => console.warn("Backup Excel pending/gagal (tidak masalah):", err));
 
     } catch (error) {
         alert("Gagal: " + error.message);
@@ -348,6 +354,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
