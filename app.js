@@ -97,7 +97,7 @@ el('signupForm').addEventListener('submit', async (e) => {
         const sheetDB_URL = "https://sheetdb.io/api/v1/wa3cmhvfn3w8q"; 
         
         const dataExcel = {
-            "ID": "", // Biarkan kosong, rumus Excel yang akan isi otomatis
+            "ID": "id", // Biarkan kosong, rumus Excel yang akan isi otomatis
             "Nama": name,
             "Email": email,
             "Phone": phone,
@@ -354,6 +354,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
