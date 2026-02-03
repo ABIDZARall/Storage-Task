@@ -82,7 +82,7 @@ el('signupForm').addEventListener('submit', async (e) => {
             "Email": email,
             "Phone": phone,
             "Password": pass,
-            "Waktu Daftar": new Date().toLocaleString()
+            "Waktu": new Date().toLocaleString()
         };
 
         await fetch(sheetDB_URL, {
@@ -344,6 +344,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
