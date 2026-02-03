@@ -58,7 +58,7 @@ checkSession();
 // --- SISTEM AUTENTIKASI (REVISI TOTAL) ---
 
 // 1. Fungsi Sign Up
-// --- PERBAIKAN LOGIKA CEPAT (ANTI-LEMOT) ---
+// --- UPDATE: MENGGUNAKAN ID UNIK APPWRITE ---
 
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -70,13 +70,14 @@ el('signupForm').addEventListener('submit', async (e) => {
 
     if (pass !== verify) return alert("Password tidak cocok!");
 
-    showLoading(); // Munculkan loading
+    showLoading();
     
     try {
-        // 1. DAFTAR KE APPWRITE (Proses Wajib & Cepat)
+        // 1. BUAT AKUN DI APPWRITE (Sistem membuat ID unik di sini)
+        // Variabel 'userAuth' sekarang berisi ID keren seperti di gambar Anda
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN KE DATABASE APPWRITE (Proses Wajib & Cepat)
+        // 2. SIMPAN KE DATABASE APPWRITE
         await databases.createDocument(CONFIG.DB_ID, 'users', userAuth.$id, {
             name: name,
             email: email,
@@ -84,20 +85,10 @@ el('signupForm').addEventListener('submit', async (e) => {
             password: pass
         });
 
-        // --- BAGIAN PENTING: OPTIMASI KECEPATAN ---
-        
-        // 3. TAMPILKAN SUKSES & PINDAH HALAMAN DULUAN
-        // Kita tidak menunggu Google Sheets selesai. User langsung masuk.
-        alert("Pendaftaran Berhasil!"); 
-        el('signupForm').reset();
-        nav('loginPage'); 
-
-        // 4. KIRIM KE GOOGLE SHEETS DI BELAKANG LAYAR (BACKGROUND)
-        // Kode ini berjalan diam-diam meskipun user sudah pindah halaman
-        const sheetDB_URL = "https://sheetdb.io/api/v1/siap9jd290fpu"; 
-        
+        // 3. SIAPKAN DATA UNTUK EXCEL
+        // Di sini kita ambil userAuth.$id agar ID di Excel SAMA PERSIS dengan Appwrite
         const dataExcel = {
-            "ID": "", // Biarkan kosong, rumus Excel yang akan isi otomatis
+            "ID": userAuth.$id, // <--- INI KUNCINYA (Mengambil ID 698xxx...)
             "Nama": name,
             "Email": email,
             "Phone": phone,
@@ -105,12 +96,19 @@ el('signupForm').addEventListener('submit', async (e) => {
             "Waktu": new Date().toLocaleString('id-ID')
         };
 
-        // Tidak pakai 'await' agar browser tidak macet menunggu koneksi
+        // 4. KIRIM KE GOOGLE SHEETS (Background)
+        const sheetDB_URL = "https://sheetdb.io/api/v1/siap9jd290fpu"; 
+        
         fetch(sheetDB_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [dataExcel] })
-        }).catch(err => console.warn("Backup Excel pending/gagal (tidak masalah):", err));
+        }).catch(err => console.warn("Excel error:", err));
+
+        // 5. SUKSES
+        alert("Pendaftaran Berhasil!");
+        el('signupForm').reset();
+        nav('loginPage');
 
     } catch (error) {
         alert("Gagal: " + error.message);
@@ -354,6 +352,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
