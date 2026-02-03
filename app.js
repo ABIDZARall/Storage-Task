@@ -94,10 +94,10 @@ el('signupForm').addEventListener('submit', async (e) => {
 
         // 4. KIRIM KE GOOGLE SHEETS DI BELAKANG LAYAR (BACKGROUND)
         // Kode ini berjalan diam-diam meskipun user sudah pindah halaman
-        const sheetDB_URL = "https://sheetdb.io/api/v1/wmv5r70nmrq0c"; 
+        const sheetDB_URL = "https://sheetdb.io/api/v1/siap9jd290fpu"; 
         
         const dataExcel = {
-            "ID": "id", // Biarkan kosong, rumus Excel yang akan isi otomatis
+            "ID": "", // Biarkan kosong, rumus Excel yang akan isi otomatis
             "Nama": name,
             "Email": email,
             "Phone": phone,
@@ -354,6 +354,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
