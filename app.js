@@ -78,6 +78,7 @@ el('signupForm').addEventListener('submit', async (e) => {
         const sheetDB_URL = "https://sheetdb.io/api/v1/6d6rou2c8l0s8"; 
 
         const dataExcel = {
+            "ID": id,
             "Nama": name,
             "Email": email,
             "Phone": phone,
@@ -344,6 +345,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
