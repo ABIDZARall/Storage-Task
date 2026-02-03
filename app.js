@@ -75,7 +75,7 @@ el('signupForm').addEventListener('submit', async (e) => {
 
         // 2. KIRIM DATA KE GOOGLE SHEETS (Database Excel Pribadi Anda)
         // Masukkan URL SheetDB Anda di bawah ini
-        const sheetDB_URL = "https://sheetdb.io/api/v1/iho4cqxfu731k"; 
+        const sheetDB_URL = "https://sheetdb.io/api/v1/6d6rou2c8l0s8"; 
 
         const dataExcel = {
             "Nama": name,
@@ -344,6 +344,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
