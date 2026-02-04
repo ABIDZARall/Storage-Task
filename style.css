@@ -7,13 +7,13 @@
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --pill-bg: rgba(255, 255, 255, 0.2);
     --text-main: #ffffff;
-    --accent: #4ade80;
+    --accent: #4ade80; /* Masih dipakai untuk progress bar dashboard */
 }
 
 body {
     margin: 0; font-family: 'Segoe UI', sans-serif;
     background-color: var(--bg-color); color: var(--text-main);
-    overflow: hidden; /* Mencegah scroll halaman login */
+    overflow: hidden; 
 }
 
 .liquid-bg {
@@ -29,7 +29,7 @@ body {
 .full-screen-center {
     height: 100vh;
     display: flex; justify-content: center; align-items: center;
-    padding: 0;
+    padding: 20px; /* Tambahan padding di layar HP */
 }
 
 .glass-card {
@@ -41,27 +41,29 @@ body {
 }
 
 .auth-card {
-    width: 350px;
-    padding: 30px;
+    /* PERBAIKAN 1: Ukuran Card Diperbesar */
+    width: 100%;
+    max-width: 450px; /* Lebih lebar dari sebelumnya (350px) */
+    padding: 40px;    /* Ruang dalam lebih lega */
     display: flex; flex-direction: column; align-items: center; text-align: center;
     max-height: 90vh; overflow-y: auto; 
 }
 
-.auth-header { margin-bottom: 20px; }
-.auth-logo { width: 180px; margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
-.auth-header h3 { font-size: 1.1rem; font-weight: 500; opacity: 0.9; margin: 0; }
+.auth-header { margin-bottom: 25px; }
+.auth-logo { width: 200px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+.auth-header h3 { font-size: 1.3rem; font-weight: 600; opacity: 1; margin: 0; letter-spacing: 0.5px; }
 
-/* --- PERBAIKAN TAMPILAN INPUT --- */
+/* --- INPUT --- */
 .pill-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.15); /* Latar sedikit lebih terang */
+    background: rgba(255, 255, 255, 0.15); 
     border-radius: 50px;
-    padding: 12px 20px; /* Padding lega */
-    margin-bottom: 15px;
+    padding: 14px 25px; /* Padding input diperbesar sedikit */
+    margin-bottom: 18px;
     display: flex; align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
-    gap: 15px; /* Jarak antara ikon dan teks agar tidak nempel */
+    gap: 15px; 
 }
 
 .pill-input:focus-within {
@@ -70,55 +72,63 @@ body {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
+/* PERBAIKAN 2: Warna Icon Input Jadi Abu-abu */
 .pill-input i {
     width: 25px; text-align: center;
-    color: var(--accent); /* Warna Hijau Neon */
-    font-size: 1.1rem;
+    color: #b0b0b0; /* Warna Abu-abu */
+    font-size: 1.2rem;
 }
 
 .pill-input input {
     background: transparent; border: none; outline: none;
-    color: #ffffff !important; /* Teks ketikan user PUTIH JELAS */
+    color: #ffffff !important; 
     width: 100%; font-size: 1rem; font-weight: 500;
 }
 
-/* Warna Placeholder (Username/Password) Putih Terang */
 .pill-input input::placeholder {
-    color: rgba(255, 255, 255, 0.85); 
+    color: rgba(255, 255, 255, 0.7); 
     font-weight: 400;
 }
 
-.toggle-eye { cursor: pointer; margin-left: auto; color: rgba(255,255,255,0.6); }
-.toggle-eye:hover { color: white; }
+/* PERBAIKAN 3: Icon Mata Jadi Putih */
+.toggle-eye { 
+    cursor: pointer; margin-left: auto; 
+    color: #ffffff !important; /* Warna Putih Mutlak */
+    opacity: 1;
+}
+.toggle-eye:hover { transform: scale(1.1); }
 
 
 /* --- TOMBOL & LINK --- */
-.auth-actions { width: 100%; margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+.auth-actions { width: 100%; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
 
 .btn-pill {
-    width: 100%; padding: 10px 0; border-radius: 50px; border: none;
-    font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+    width: 100%; padding: 12px 0; border-radius: 50px; border: none;
+    font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
 }
-.primary { background: rgba(255, 255, 255, 0.9); color: #002835; }
-.primary:hover { transform: scale(1.02); background: #fff; }
-.secondary { background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.2); }
+.primary { background: #ffffff; color: #002835; }
+.primary:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
-/* Footer Link yang Benar */
 .auth-footer {
-    width: 100%; margin-top: 20px;
-    font-size: 0.9rem; color: rgba(255, 255, 255, 0.7);
+    width: 100%; margin-top: 25px;
+    font-size: 0.95rem; color: rgba(255, 255, 255, 0.6);
     text-align: center;
 }
 
+/* PERBAIKAN 4: Link Menjadi Putih */
 .link-text {
-    color: var(--accent); /* Hijau */
-    font-weight: 700; cursor: pointer; text-decoration: none;
+    color: #ffffff; /* Warna Putih */
+    font-weight: 700; cursor: pointer; text-decoration: underline;
     margin-left: 5px; transition: 0.3s;
 }
-.link-text:hover { color: #ffffff; text-decoration: underline; text-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+.link-text:hover { 
+    color: #ffffff; 
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); 
+    text-decoration: none;
+}
 
 
-/* === LAYOUT DASHBOARD === */
+/* === LAYOUT DASHBOARD (TIDAK BERUBAH BANYAK) === */
 .dashboard-layout {
     height: 100vh; padding: 15px 20px;
     display: flex; flex-direction: column; box-sizing: border-box;
@@ -140,7 +150,6 @@ body {
 
 .toolbar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
 
-/* Dropdown */
 .new-btn-wrapper { position: relative; }
 .new-btn { 
     padding: 8px 25px; font-size: 1rem; display: flex; align-items: center; gap: 8px; 
