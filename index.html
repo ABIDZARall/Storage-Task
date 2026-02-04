@@ -25,6 +25,7 @@
                     <i class="fa-solid fa-user"></i>
                     <input type="text" id="loginEmail" placeholder="Username / email" required>
                 </div>
+                
                 <div class="pill-input">
                     <i class="fa-solid fa-key"></i>
                     <input type="password" id="loginPass" placeholder="Password" required>
@@ -33,7 +34,6 @@
 
                 <div class="auth-actions">
                     <button type="submit" class="btn-pill primary">Login</button>
-                    </div>
                     <div class="auth-footer">
                         Belum punya akun? 
                         <span class="link-text" onclick="nav('signupPage')">Sign Up</span>
@@ -104,7 +104,6 @@
                         <a onclick="createFolder()">
                             <i class="fa-solid fa-folder-plus"></i> Folder Baru
                         </a>
-
                         <a onclick="triggerUploadModal()">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
                         </a>
@@ -146,7 +145,6 @@
                 <h3><i class="fa-solid fa-folder-plus"></i> Folder Baru</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
             </div>
-            
             <div class="modal-body">
                 <p>Masukkan nama untuk folder baru Anda:</p>
                 <div class="pill-input">
@@ -154,7 +152,6 @@
                     <input type="text" id="newFolderName" placeholder="Nama Folder (Contoh: Proyek A)" autocomplete="off">
                 </div>
             </div>
-
             <div class="modal-actions">
                 <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitCreateFolder()">Buat Folder</button>
@@ -168,7 +165,6 @@
                 <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
             </div>
-
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area">
                     <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
@@ -179,7 +175,6 @@
                 </div>
                 <p class="file-info" id="fileInfoText">Belum ada file dipilih</p>
             </div>
-
             <div class="modal-actions">
                 <button class="btn-pill secondary" onclick="closeModal('uploadModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button>
@@ -190,5 +185,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
-
