@@ -1,5 +1,5 @@
-// GANTI 'v1' MENJADI 'v2' (Agar browser tahu ada update)
-const CACHE_NAME = "appwrite-tasks-v2"; 
+// KITA UBAH KE v3 AGAR BROWSER MERESET TAMPILAN LAMA
+const CACHE_NAME = "appwrite-tasks-v3";
 
 const ASSETS = [
   "./",
@@ -12,19 +12,17 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
-  // Paksa service worker baru untuk segera aktif
-  self.skipWaiting();
+  self.skipWaiting(); // Paksa update segera
   e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
 self.addEventListener("activate", (e) => {
-  // Hapus cache lama (v1) agar tidak bentrok
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            return caches.delete(key);
+            return caches.delete(key); // Hapus cache versi lama (v1/v2)
           }
         })
       );
