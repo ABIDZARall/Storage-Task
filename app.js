@@ -210,56 +210,62 @@ window.logout = async () => {
 };
 
 // --- SISTEM LOGOUT DENGAN PENCATATAN EXCEL ---
+// --- SISTEM LOGOUT PENUH (Menunggu Excel Selesai Baru Keluar) ---
 
-// Pastikan tombol dengan id 'logoutBtn' ada di halaman dashboard
 const logoutBtn = document.getElementById('logoutBtn');
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-        // Konfirmasi dulu agar tidak terpencet tidak sengaja
+        
+        // 1. Konfirmasi User
         if (!confirm("Apakah Anda yakin ingin keluar?")) return;
 
+        // Tampilkan loading agar user tahu sistem sedang bekerja
         showLoading();
 
         try {
-            // 1. AMBIL DATA USER TERLEBIH DAHULU (Sebelum sesi dihapus)
-            // Kita butuh data ini untuk dicatat di Excel
+            // 2. AMBIL DATA USER (Wajib dilakukan saat masih login)
             const currentUser = await account.get();
 
-            // 2. KIRIM DATA KE GOOGLE SHEETS (History_Logout)
-            const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; // <--- Ganti URL ini
-            
-            // Arahkan ke tab khusus 'History_Logout'
+            // 3. SIAPKAN DATA
+            const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
+            // Pastikan ?sheet=Logout sesuai dengan Nama Tab di Excel Anda
             const logoutURL = `${sheetDB_URL}?sheet=Logout`;
 
             const logoutData = {
                 "ID": currentUser.$id,
                 "Nama": currentUser.name,
                 "Email": currentUser.email,
-                // Pastikan nama ini SAMA PERSIS dengan Header Kolom D di Excel
-                "Waktu Logout": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+                // Nama ini harus 100% sama dengan Header Kolom E di Excel
+                "Riwayat Waktu": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
             };
 
-            // Kirim data tanpa menunggu (Non-blocking)
-            fetch(logoutURL, {
+            // 4. KIRIM KE EXCEL DENGAN 'AWAIT' (BAGIAN PENTING)
+            // Kita tambah kata 'await' disini.
+            // Artinya: "Tunggu sampai Excel bilang 'Oke', baru lanjut ke bawah."
+            await fetch(logoutURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: [logoutData] })
-            }).catch(err => console.warn("Gagal catat logout:", err));
+            });
 
-            // 3. HAPUS SESI DARI APPWRITE (Proses Logout Asli)
+            // 5. HAPUS SESI APPWRITE
+            // Kode ini baru akan jalan SETELAH data Excel sukses terkirim
             await account.deleteSession('current');
 
-            // 4. BERSIHKAN TAMPILAN & KEMBALI KE LOGIN
-            alert("Anda berhasil logout. Sampai jumpa!");
-            nav('loginPage'); // Kembali ke halaman login
+            // 6. BERSIHKAN & PINDAH
+            alert("Logout Berhasil. Data waktu telah tercatat.");
+            nav('loginPage'); 
 
         } catch (error) {
-            console.error("Error saat logout:", error);
-            // Jika gagal ambil data user (mungkin sesi sudah habis duluan),
-            // tetap paksa logout agar user tidak terjebak.
+            console.error("Error Logout:", error);
+            
+            // EMERGENCY EXIT:
+            // Jika internet lemot atau Excel error, jangan kurung user di dalam.
+            // Tetap paksa logout jika terjadi error.
             await account.deleteSession('current').catch(() => {});
             nav('loginPage');
+            
         } finally {
             hideLoading();
         }
@@ -450,6 +456,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
