@@ -1,9 +1,8 @@
 /* =========================================
-   STYLE.CSS - PERBAIKAN SCROLL SIGNUP
+   STYLE.CSS - COMPACT & CLEAN DESIGN
    ========================================= */
 
 /* 1. RESET GLOBAL */
-/* Penting agar ukuran elemen konsisten */
 * {
     margin: 0;
     padding: 0;
@@ -25,10 +24,7 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background-color: var(--bg-color); 
     color: var(--text-main);
-    /* === PERBAIKAN PENTING 1 === */
-    /* Sebelumnya: overflow: hidden; (Ini yang bikin gak bisa scroll halaman) */
-    /* Sekarang: overflow-x: hidden; (Hanya cegah scroll samping, tapi BOLEH scroll bawah) */
-    overflow-x: hidden; 
+    overflow-x: hidden; /* Tetap izinkan scroll ke bawah */
 }
 
 .liquid-bg {
@@ -40,80 +36,91 @@ body {
 .hidden { display: none !important; }
 .active { display: flex !important; }
 
-/* === LAYOUT LOGIN & SIGNUP === */
+/* === LAYOUT LOGIN & SIGNUP (DIPADATKAN) === */
 .full-screen-center {
-    /* === PERBAIKAN PENTING 2 === */
-    /* Sebelumnya: height: 100vh; (Tinggi dipaksa pas layar) */
-    /* Sekarang: min-height: 100vh; (Tinggi MINIMAL selayar, tapi bisa memanjang) */
     min-height: 100vh;
     width: 100%;
     display: flex; justify-content: center; align-items: center;
-    /* Tambah padding atas bawah agar kartu tidak mepet layar saat discroll */
-    padding: 40px 20px; 
+    padding: 20px; 
 }
 
 .glass-card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 24px;
+    border-radius: 20px; /* Radius sedikit dikurangi agar pas */
     box-shadow: var(--glass-shadow);
 }
 
 .auth-card {
-    /* === PERBAIKAN PENTING 3 (SOLUSI UTAMA) === */
-    /* Kita MENGHAPUS 'max-height' dan 'overflow-y: auto' dari sini. */
-    /* Akibatnya, kartu akan memanjang otomatis mengikuti banyaknya input */
-    /* dan tidak akan memunculkan scrollbar di dalam dirinya sendiri. */
     width: 100%;
-    max-width: 450px; 
-    padding: 40px;    
+    /* PERBAIKAN: Lebar Maksimal Diperkecil (380px) agar tidak kegedean */
+    max-width: 380px; 
+    /* PERBAIKAN: Padding dikurangi jadi 30px */
+    padding: 30px 25px;    
     display: flex; flex-direction: column; align-items: center; text-align: center;
 }
 
-.auth-header { width: 100%; margin-bottom: 25px; }
-.auth-logo { width: 200px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
-.auth-header h3 { font-size: 1.3rem; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
+.auth-header { width: 100%; margin-bottom: 20px; }
+/* PERBAIKAN: Logo Diperkecil */
+.auth-logo { width: 150px; margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+.auth-header h3 { font-size: 1.2rem; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
 
-/* === FORM AREA (INPUT SEJAJAR) === */
+/* === FORM AREA === */
 form { width: 100%; display: flex; flex-direction: column; align-items: center; }
 
+/* PERBAIKAN: Input Lebih Pendek & Rapat */
 .pill-input {
-    width: 100%; height: 50px; /* Tinggi sama dengan tombol */
+    width: 100%; 
+    height: 45px; /* Tinggi dikurangi dari 50 ke 45 */
     background: rgba(255, 255, 255, 0.15); 
-    border-radius: 50px; padding: 0 20px; margin-bottom: 15px; 
+    border-radius: 50px; 
+    padding: 0 15px; 
+    margin-bottom: 10px; /* Jarak antar input dirapatkan */
     display: flex; align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease; gap: 15px; 
+    transition: all 0.3s ease;
+    gap: 12px; 
 }
+
 .pill-input:focus-within {
-    background: rgba(255, 255, 255, 0.25); border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: #ffffff;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
+
 .pill-input i {
-    width: 25px; text-align: center; color: #b0b0b0; font-size: 1.2rem; flex-shrink: 0;
+    width: 20px; text-align: center;
+    color: #b0b0b0; /* Abu-abu */
+    font-size: 1rem; /* Ukuran icon disesuaikan */
+    flex-shrink: 0;
 }
+
 .pill-input input {
     background: transparent; border: none; outline: none;
-    color: #ffffff !important; width: 100%; height: 100%; 
-    font-size: 1rem; font-weight: 500;
+    color: #ffffff !important; 
+    width: 100%; height: 100%; 
+    font-size: 0.9rem; /* Font sedikit diperkecil */
+    font-weight: 500;
 }
+
 .pill-input input::placeholder { color: rgba(255, 255, 255, 0.7); font-weight: 400; }
-.toggle-eye { cursor: pointer; margin-left: auto; color: #ffffff !important; flex-shrink: 0; }
+.toggle-eye { cursor: pointer; margin-left: auto; color: #ffffff !important; flex-shrink: 0; font-size: 0.9rem;}
 
 /* TOMBOL & LINK */
-.auth-actions { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 15px; }
+.auth-actions { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 
 .btn-pill {
-    width: 100%; height: 50px; /* Tinggi sama dengan input */
+    width: 100%; 
+    height: 45px; /* Tinggi disamakan dengan input (45px) */
     border-radius: 50px; border: none;
-    font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s;
     display: flex; justify-content: center; align-items: center;
 }
 .primary { background: #ffffff; color: #002835; }
 .primary:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
-.auth-footer { width: 100%; margin-top: 20px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.6); text-align: center; }
+.auth-footer { width: 100%; margin-top: 15px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); text-align: center; }
 .link-text { color: #ffffff; font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 5px; transition: 0.3s; }
 .link-text:hover { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); text-decoration: none;}
 
