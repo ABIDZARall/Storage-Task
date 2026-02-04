@@ -342,3 +342,154 @@ function updateStorageUI(bytes) {
     if(el('storageUsed')) el('storageUsed').innerText = mb + ' MB';
     if(el('storageBar')) el('storageBar').style.width = percent + '%';
 }
+
+// ======================================================
+// FITUR BARU: MANAJEMEN MODAL & DRAG DROP
+// ======================================================
+
+// 1. Fungsi Buka & Tutup Modal
+window.openModal = (modalId) => {
+    const modal = document.getElementById(modalId);
+    if(modal) modal.classList.remove('hidden');
+    
+    // Reset input jika membuka modal folder
+    if(modalId === 'folderModal') {
+        document.getElementById('newFolderName').value = '';
+        document.getElementById('newFolderName').focus();
+    }
+    // Reset file info jika membuka upload
+    if(modalId === 'uploadModal') {
+        document.getElementById('fileInfoText').innerText = 'Belum ada file dipilih';
+        window.selectedFile = null; // Reset variabel file
+    }
+    
+    // Tutup dropdown menu agar rapi
+    const dropdown = document.querySelector('.dropdown-content');
+    if(dropdown) dropdown.classList.remove('show');
+};
+
+window.closeModal = (modalId) => {
+    const modal = document.getElementById(modalId);
+    if(modal) modal.classList.add('hidden');
+};
+
+
+// 2. GANTI FUNGSI LAMA: Create Folder dengan Modal
+// Hapus atau timpa fungsi createFolder yang lama dengan ini:
+window.createFolder = () => {
+    // Bukannya prompt, kita buka modal
+    openModal('folderModal');
+};
+
+// Fungsi Eksekusi (Dipanggil tombol "Buat Folder" di Modal)
+window.submitCreateFolder = async () => {
+    const nameInput = document.getElementById('newFolderName');
+    const name = nameInput.value.trim();
+    
+    if (!name) return alert("Nama folder tidak boleh kosong!");
+
+    closeModal('folderModal');
+    showLoading();
+
+    try {
+        await databases.createDocument(
+            CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(),
+            { 
+                name: name, type: 'folder', parentId: currentFolderId, 
+                owner: currentUser.$id, size: 0, url: null, fileId: null 
+            }
+        );
+        loadFiles(currentFolderId);
+    } catch (error) {
+        alert("Gagal membuat folder: " + error.message);
+    } finally {
+        hideLoading();
+    }
+};
+
+
+// 3. GANTI FUNGSI LAMA: Upload File dengan Drag & Drop
+// Fungsi untuk memicu modal upload
+window.triggerUploadModal = () => {
+    openModal('uploadModal');
+};
+
+// Variabel penampung file sementara
+window.selectedFile = null;
+
+// --- LOGIKA DRAG & DROP ---
+const dropZone = document.getElementById('dropZone');
+const fileInputHidden = document.getElementById('fileInputHidden');
+
+if (dropZone) {
+    // Saat file diseret masuk area
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    // Saat file keluar area
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    // Saat file dilepas (Drop)
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+
+    // Klik area drop zone untuk buka file explorer
+    dropZone.addEventListener('click', () => fileInputHidden.click());
+}
+
+// Saat user memilih lewat tombol Browse/Input
+if (fileInputHidden) {
+    fileInputHidden.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+}
+
+// Fungsi menangani file terpilih
+function handleFileSelect(file) {
+    window.selectedFile = file;
+    document.getElementById('fileInfoText').innerText = `File Siap: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+}
+
+// Fungsi Eksekusi (Dipanggil tombol "Upload Sekarang" di Modal)
+window.submitUploadFile = async () => {
+    if (!window.selectedFile) return alert("Pilih file terlebih dahulu!");
+
+    closeModal('uploadModal');
+    showLoading();
+
+    try {
+        const file = window.selectedFile;
+        
+        // A. Upload Storage
+        const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+        const fileUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id);
+
+        // B. Simpan Database
+        await databases.createDocument(
+            CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(),
+            { 
+                name: file.name, type: 'file', parentId: currentFolderId, 
+                owner: currentUser.$id, url: fileUrl.href, fileId: uploaded.$id, size: file.size 
+            }
+        );
+
+        loadFiles(currentFolderId);
+    } catch (error) {
+        alert("Upload Gagal: " + error.message);
+    } finally {
+        hideLoading();
+    }
+};
