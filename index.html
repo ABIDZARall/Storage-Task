@@ -13,7 +13,7 @@
 
     <div class="liquid-bg"></div>
 
-    <section id="loginPage" class="full-screen-center active">
+    <section id="loginPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Storage Tasks" class="auth-logo">
@@ -34,7 +34,10 @@
 
                 <div class="auth-actions">
                     <button type="submit" class="btn-pill primary">Login</button>
-                    <button type="button" class="btn-pill secondary" onclick="nav('signupPage')">Sign Up</button>
+                    <div class="auth-footer">
+                        Belum punya akun? 
+                        <span class="link-text" onclick="nav('signupPage')">Sign Up</span>
+                    </div>
                 </div>
             </form>
         </div>
@@ -73,7 +76,10 @@
 
                 <div class="auth-actions">
                     <button type="submit" class="btn-pill primary">Sign Up</button>
-                    <p class="switch-link" onclick="nav('loginPage')">Sudah punya akun? Login</p>
+                    <div class="auth-footer">
+                        Sudah punya akun? 
+                        <span class="link-text" onclick="nav('loginPage')">Login</span>
+                    </div>
                 </div>
             </form>
         </div>
@@ -125,7 +131,7 @@
         </div>
     </section>
 
-    <div id="loading" class="loading-overlay hidden">
+    <div id="loading" class="loading-overlay">
         <div class="spinner"></div>
         <p>Processing...</p>
     </div>
