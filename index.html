@@ -101,9 +101,13 @@
                 <div class="new-btn-wrapper" id="dropdownContainer">
                     <button class="btn-pill new-btn" onclick="toggleDropdown()"><i class="fa-solid fa-plus"></i> New</button>
                     <div id="dropdownMenu" class="dropdown-content">
-                        <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
-                        <label for="fileUpload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</label>
-                        <input type="file" id="fileUpload" hidden>
+                        <a onclick="createFolder()">
+                            <i class="fa-solid fa-folder-plus"></i> Folder Baru
+                        </a>
+
+                        <a onclick="triggerUploadModal()">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
+                        </a>
                     </div>
                 </div>
 
@@ -186,6 +190,5 @@
     <script src="app.js"></script>
 </body>
 </html>
-
 
 
