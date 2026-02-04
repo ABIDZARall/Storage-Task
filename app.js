@@ -209,6 +209,63 @@ window.logout = async () => {
     }
 };
 
+// --- SISTEM LOGOUT DENGAN PENCATATAN EXCEL ---
+
+// Pastikan tombol dengan id 'logoutBtn' ada di halaman dashboard
+const logoutBtn = document.getElementById('logoutBtn');
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        // Konfirmasi dulu agar tidak terpencet tidak sengaja
+        if (!confirm("Apakah Anda yakin ingin keluar?")) return;
+
+        showLoading();
+
+        try {
+            // 1. AMBIL DATA USER TERLEBIH DAHULU (Sebelum sesi dihapus)
+            // Kita butuh data ini untuk dicatat di Excel
+            const currentUser = await account.get();
+
+            // 2. KIRIM DATA KE GOOGLE SHEETS (History_Logout)
+            const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; // <--- Ganti URL ini
+            
+            // Arahkan ke tab khusus 'History_Logout'
+            const logoutURL = `${sheetDB_URL}?sheet=Logout`;
+
+            const logoutData = {
+                "ID": currentUser.$id,
+                "Nama": currentUser.name,
+                "Email": currentUser.email,
+                // Pastikan nama ini SAMA PERSIS dengan Header Kolom D di Excel
+                "Waktu Logout": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+            };
+
+            // Kirim data tanpa menunggu (Non-blocking)
+            fetch(logoutURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [logoutData] })
+            }).catch(err => console.warn("Gagal catat logout:", err));
+
+            // 3. HAPUS SESI DARI APPWRITE (Proses Logout Asli)
+            await account.deleteSession('current');
+
+            // 4. BERSIHKAN TAMPILAN & KEMBALI KE LOGIN
+            alert("Anda berhasil logout. Sampai jumpa!");
+            nav('loginPage'); // Kembali ke halaman login
+
+        } catch (error) {
+            console.error("Error saat logout:", error);
+            // Jika gagal ambil data user (mungkin sesi sudah habis duluan),
+            // tetap paksa logout agar user tidak terjebak.
+            await account.deleteSession('current').catch(() => {});
+            nav('loginPage');
+        } finally {
+            hideLoading();
+        }
+    });
+}
+
 // --- FILE SYSTEM LOGIC ---
 
 // 1. Load File/Folder
@@ -393,6 +450,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
