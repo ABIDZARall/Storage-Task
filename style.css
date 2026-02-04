@@ -1,157 +1,317 @@
+/* ================= KONFIGURASI WARNA & FONT ================= */
 :root {
-    --primary: #002835;
-    --secondary: #004e64;
-    --accent: #00a8cc;
-    --glass: rgba(255, 255, 255, 0.1);
-    --border: rgba(255, 255, 255, 0.2);
-    --text: #ffffff;
+    /* Warna Dasar sesuai gambar referensi (Teal/Blue Dark) */
+    --bg-color: #004e64;
+    --bg-gradient-start: #002835;
+    --bg-gradient-end: #00607a;
+    
+    /* Warna Kaca (Glass Effect) */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    /* Warna Elemen */
+    --pill-bg: rgba(255, 255, 255, 0.2);
+    --pill-focus: rgba(255, 255, 255, 0.9);
+    --text-main: #ffffff;
+    --text-muted: #cccccc;
+    --accent: #4ade80; /* Warna hijau untuk progress bar */
 }
 
 body {
-    margin: 0; font-family: 'Segoe UI', sans-serif;
-    color: var(--text);
-    background: radial-gradient(circle at 50% 50%, var(--secondary), var(--primary));
-    min-height: 100vh; overflow-x: hidden;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow-x: hidden;
 }
 
-.bg-gradient { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+/* Background Liquid Gradient */
+.liquid-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top left, var(--bg-gradient-end), var(--bg-gradient-start));
+    z-index: -1;
+}
 
 .hidden { display: none !important; }
 .active { display: flex !important; }
 
-/* --- Login & Signup Pages --- */
-.glass-page {
-    height: 100vh; display: flex; justify-content: center; align-items: center;
-}
-
+/* ================= UTILITY: GLASS CARD ================= */
 .glass-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
-    border-radius: 20px; padding: 40px; width: 90%; max-width: 380px;
-    text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px); /* KUNCI EFEK KACA BURAM */
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--glass-shadow);
 }
 
-.logo-area img { width: 60px; margin-bottom: 10px; }
-.logo-area h2 { margin: 0; font-size: 1.5rem; letter-spacing: 2px; }
-
-.input-grp {
-    background: rgba(255,255,255,0.15); border-radius: 30px;
-    padding: 10px 15px; margin-bottom: 15px; display: flex; align-items: center;
-    border: 1px solid transparent; transition: 0.3s;
+/* ================= LAYOUT LOGIN & SIGNUP ================= */
+.full-screen-center {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
-.input-grp:focus-within { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
-.input-grp.highlight { border: 1px solid var(--accent); }
 
-.input-grp i { width: 20px; color: #ddd; }
-.input-grp input {
+.auth-card {
+    width: 100%;
+    max-width: 400px; /* Lebar kartu login */
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.auth-header { margin-bottom: 30px; }
+.auth-logo { width: 150px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
+.auth-header h3 { font-size: 1.5rem; font-weight: 600; margin: 0; color: var(--text-main); }
+
+/* Input Pill Shape (Bulat Lonjong) */
+.pill-input {
+    width: 100%;
+    background: var(--pill-bg);
+    border-radius: 50px; /* Membuat bentuk kapsul */
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+    transition: 0.3s ease;
+    box-sizing: border-box;
+}
+
+.pill-input:focus-within {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.pill-input i { color: var(--text-main); opacity: 0.7; margin-right: 10px; width: 20px; text-align: center;}
+.pill-input input {
     background: transparent; border: none; outline: none;
-    color: white; width: 100%; margin-left: 10px;
+    color: var(--text-main); width: 100%; font-size: 1rem;
 }
+.pill-input input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
 .toggle-eye { cursor: pointer; }
 
-.btn-primary {
-    width: 100%; padding: 12px; border-radius: 30px; border: none;
-    background: rgba(255,255,255,0.9); color: #333; font-weight: bold;
-    cursor: pointer; margin-top: 10px; transition: 0.2s;
-}
-.btn-primary:hover { transform: scale(1.02); background: white; }
+/* Tombol Pill Shape */
+.auth-actions { width: 100%; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
 
-.btn-secondary {
-    width: 100%; padding: 12px; border-radius: 30px; border: 1px solid white;
-    background: transparent; color: white; cursor: pointer; margin-top: 10px;
-}
-
-.link { font-size: 0.8rem; margin-top: 15px; cursor: pointer; text-decoration: underline; }
-
-/* --- Dashboard --- */
-.dashboard-container {
-    height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box;
+.btn-pill {
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 50px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.2rem; }
-.brand img { width: 40px; }
-.profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; margin-right: 10px; vertical-align: middle;}
-.btn-logout { background: transparent; border: 1px solid white; color: white; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
+.btn-pill.primary {
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+}
+.btn-pill.primary:hover { background: #fff; transform: scale(1.02); }
 
-.main-glass {
-    flex: 1; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px);
-    border: 1px solid var(--border); border-radius: 20px; padding: 20px;
-    display: flex; flex-direction: column; overflow: hidden;
+.btn-pill.secondary {
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-pill.secondary:hover { background: rgba(0, 0, 0, 0.5); }
+
+.switch-link { margin-top: 15px; font-size: 0.9rem; cursor: pointer; opacity: 0.8; }
+.switch-link:hover { text-decoration: underline; opacity: 1; }
+
+
+/* ================= LAYOUT DASHBOARD ================= */
+.dashboard-layout {
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
-.toolbar { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;}
-.actions { display: flex; gap: 20px; align-items: center; }
-
-.btn-new {
-    background: rgba(255,255,255,0.2); border: 1px solid white; color: white;
-    padding: 10px 20px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+/* Header Dashboard */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    margin-bottom: 20px;
 }
-.btn-new:hover { background: rgba(255,255,255,0.3); }
+.brand-area img { height: 40px; }
+.profile-area { display: flex; align-items: center; gap: 15px; }
+.avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;}
+.btn-pill.small { width: auto; padding: 8px 20px; font-size: 0.9rem; background: rgba(255,255,255,0.2); color: white; }
 
-/* Dropdown */
-.dropdown { position: relative; }
+/* Panel Kaca Utama Dashboard */
+.main-glass-panel {
+    flex: 1;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 30px; /* Sudut besar */
+    border: 1px solid var(--glass-border);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Toolbar: Tombol New & Search */
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+/* Tombol New (+ New) */
+.new-btn-wrapper { position: relative; }
+.new-btn {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    padding: 10px 30px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.new-btn:hover { background: rgba(255, 255, 255, 0.4); }
+
+/* Dropdown Menu */
 .dropdown-content {
-    display: none; position: absolute; top: 100%; left: 0;
-    background: #222; min-width: 160px; border-radius: 10px; z-index: 10;
-    margin-top: 5px; overflow: hidden;
+    display: none; position: absolute; top: 110%; left: 0;
+    background: #1e3a45; border: 1px solid var(--glass-border);
+    min-width: 180px; border-radius: 15px; z-index: 100;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden;
 }
 .dropdown:hover .dropdown-content { display: block; }
 .dropdown-content a, .dropdown-content label {
-    display: block; padding: 12px 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem;
+    display: block; padding: 12px 20px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem;
 }
-.dropdown-content a:hover, .dropdown-content label:hover { background: #444; }
+.dropdown-content a:hover, .dropdown-content label:hover { background: rgba(255,255,255,0.1); }
 
-.storage-info { font-size: 0.8rem; width: 120px; }
-.progress-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 5px 0; }
-.progress-fill { height: 100%; background: #4ade80; border-radius: 3px; }
 
-.search-wrap {
-    flex: 1; background: rgba(255,255,255,0.1); border-radius: 20px;
-    padding: 0 15px; display: flex; align-items: center; border: 1px solid var(--border);
-    min-width: 200px;
+/* Search Bar Panjang */
+.search-bar-pill {
+    flex: 1; /* Mengisi sisa ruang */
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    padding: 10px 25px;
+    display: flex;
+    align-items: center;
+    height: 45px;
 }
-.search-wrap input { color: white; width: 100%; padding: 10px; border: none; background: transparent; outline: none; }
-
-.breadcrumb { margin-bottom: 15px; color: #aaa; cursor: pointer; font-size: 0.9rem; }
-.grid-view {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 15px; overflow-y: auto; padding-bottom: 20px;
+.search-bar-pill i { margin-right: 15px; font-size: 1.2rem; opacity: 0.8; }
+.search-bar-pill input {
+    background: transparent; border: none; outline: none;
+    color: white; width: 100%; font-size: 1.1rem;
 }
 
+/* Content Header (Storage & Breadcrumb) */
+.content-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+/* Widget Storage */
+.storage-widget { min-width: 200px; }
+.storage-label { font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.progress-track {
+    width: 100%; height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s; }
+.storage-text { font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+
+/* Teks Welcome / Breadcrumb */
+.breadcrumb-area h2 {
+    font-size: 1.8rem; font-weight: 500; margin: 0;
+    letter-spacing: 0.5px;
+}
+
+/* Grid File */
+.file-grid-area {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 20px;
+    padding-right: 10px;
+}
+
+/* Scrollbar Custom */
+.file-grid-area::-webkit-scrollbar { width: 8px; }
+.file-grid-area::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+.file-grid-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+/* Kartu Item File */
 .item-card {
-    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-    border-radius: 15px; padding: 15px; text-align: center; cursor: pointer;
-    position: relative; aspect-ratio: 1/1; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; transition: 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+    aspect-ratio: 1/1; /* Kotak */
 }
-.item-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-3px); }
-.item-card i.icon { font-size: 2.5rem; margin-bottom: 10px; }
-.item-card .fa-folder { color: #facc15; }
-.item-card .fa-file { color: #60a5fa; }
-.item-name { font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.item-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.item-card i.icon { font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+.item-card .fa-folder { color: #facc15; } /* Kuning Folder */
+.item-card .fa-file { color: #60a5fa; } /* Biru File */
+.item-name { font-size: 0.9rem; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .del-btn {
-    position: absolute; top: 5px; right: 5px; color: #ff6b6b;
-    background: none; border: none; cursor: pointer; display: none;
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,0,0,0.2); color: #ffadad;
+    border: none; border-radius: 50%; width: 25px; height: 25px;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
 }
-.item-card:hover .del-btn { display: block; }
+.item-card:hover .del-btn { display: flex; }
 
+/* Loading */
 .loading-overlay {
-    position: fixed; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.7); display: flex; flex-direction: column;
-    justify-content: center; align-items: center; z-index: 100;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 40, 53, 0.8); backdrop-filter: blur(5px);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 999;
 }
 .spinner {
-    width: 40px; height: 40px; border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--accent); border-radius: 50%;
-    animation: spin 1s linear infinite;
+    width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1);
+    border-top: 5px solid var(--accent); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 15px;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-@media (max-width: 600px) {
-    .toolbar { flex-direction: column-reverse; gap: 15px; }
-    .actions { width: 100%; justify-content: space-between; }
-    .search-wrap { width: 100%; }
+/* Responsif Mobile */
+@media (max-width: 768px) {
+    .toolbar-row { flex-direction: column-reverse; align-items: stretch; gap: 15px; }
+    .search-bar-pill { width: 100%; }
+    .content-header { flex-direction: column-reverse; align-items: flex-start; gap: 20px; }
+    .breadcrumb-area h2 { font-size: 1.4rem; }
+    .main-glass-panel { padding: 20px; }
 }
