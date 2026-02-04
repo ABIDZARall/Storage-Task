@@ -136,8 +136,56 @@
         <p>Processing...</p>
     </div>
 
+    <div id="folderModal" class="modal-overlay hidden">
+        <div class="glass-card modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-folder-plus"></i> Folder Baru</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
+            </div>
+            
+            <div class="modal-body">
+                <p>Masukkan nama untuk folder baru Anda:</p>
+                <div class="pill-input">
+                    <i class="fa-solid fa-folder"></i>
+                    <input type="text" id="newFolderName" placeholder="Nama Folder (Contoh: Proyek A)" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
+                <button class="btn-pill primary" onclick="submitCreateFolder()">Buat Folder</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal-overlay hidden">
+        <div class="glass-card modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
+            </div>
+
+            <div class="modal-body">
+                <div id="dropZone" class="drag-drop-area">
+                    <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                    <h4>Drag & Drop file di sini</h4>
+                    <p>atau</p>
+                    <button class="btn-pill small" onclick="document.getElementById('fileInputHidden').click()">Pilih File</button>
+                    <input type="file" id="fileInputHidden" hidden>
+                </div>
+                <p class="file-info" id="fileInfoText">Belum ada file dipilih</p>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-pill secondary" onclick="closeModal('uploadModal')">Batal</button>
+                <button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
+
 
 
