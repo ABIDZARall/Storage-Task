@@ -1,3 +1,15 @@
+/* =========================================
+   STYLE.CSS - FIXED ALIGNMENT & SIZING
+   ========================================= */
+
+/* 1. RESET GLOBAL (SANGAT PENTING) */
+/* Ini membuat perhitungan lebar elemen konsisten di semua browser */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* KUNCI AGAR UKURAN SAMA PERSIS */
+}
+
 :root {
     --bg-color: #004e64;
     --bg-gradient-start: #002835;
@@ -5,14 +17,14 @@
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --pill-bg: rgba(255, 255, 255, 0.2);
     --text-main: #ffffff;
-    --accent: #4ade80; /* Masih dipakai untuk progress bar dashboard */
+    --accent: #4ade80; 
 }
 
 body {
-    margin: 0; font-family: 'Segoe UI', sans-serif;
-    background-color: var(--bg-color); color: var(--text-main);
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-color); 
+    color: var(--text-main);
     overflow: hidden; 
 }
 
@@ -29,7 +41,7 @@ body {
 .full-screen-center {
     height: 100vh;
     display: flex; justify-content: center; align-items: center;
-    padding: 20px; /* Tambahan padding di layar HP */
+    padding: 20px;
 }
 
 .glass-card {
@@ -41,25 +53,34 @@ body {
 }
 
 .auth-card {
-    /* PERBAIKAN 1: Ukuran Card Diperbesar */
     width: 100%;
-    max-width: 450px; /* Lebih lebar dari sebelumnya (350px) */
-    padding: 40px;    /* Ruang dalam lebih lega */
+    max-width: 450px; /* Lebar Kartu */
+    padding: 40px;    
     display: flex; flex-direction: column; align-items: center; text-align: center;
     max-height: 90vh; overflow-y: auto; 
 }
 
-.auth-header { margin-bottom: 25px; }
+.auth-header { width: 100%; margin-bottom: 25px; }
 .auth-logo { width: 200px; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
-.auth-header h3 { font-size: 1.3rem; font-weight: 600; opacity: 1; margin: 0; letter-spacing: 0.5px; }
+.auth-header h3 { font-size: 1.3rem; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
 
-/* --- INPUT --- */
-.pill-input {
+/* === FORM AREA (INPUT) === */
+/* Kita bungkus form agar lebarnya konsisten */
+form {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 2. STYLE INPUT (DISAMAKAN DENGAN TOMBOL) */
+.pill-input {
+    width: 100%; /* Lebar Penuh */
+    height: 50px; /* TINGGI TETAP AGAR SAMA DENGAN TOMBOL */
     background: rgba(255, 255, 255, 0.15); 
     border-radius: 50px;
-    padding: 14px 25px; /* Padding input diperbesar sedikit */
-    margin-bottom: 18px;
+    padding: 0 20px; /* Padding Kiri Kanan */
+    margin-bottom: 15px; /* Jarak ke bawah */
     display: flex; align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
@@ -72,17 +93,18 @@ body {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
-/* PERBAIKAN 2: Warna Icon Input Jadi Abu-abu */
 .pill-input i {
     width: 25px; text-align: center;
-    color: #b0b0b0; /* Warna Abu-abu */
+    color: #b0b0b0; /* Abu-abu */
     font-size: 1.2rem;
+    flex-shrink: 0; /* Agar icon tidak gepeng */
 }
 
 .pill-input input {
     background: transparent; border: none; outline: none;
     color: #ffffff !important; 
-    width: 100%; font-size: 1rem; font-weight: 500;
+    width: 100%; height: 100%; /* Mengisi penuh wadah */
+    font-size: 1rem; font-weight: 500;
 }
 
 .pill-input input::placeholder {
@@ -90,48 +112,58 @@ body {
     font-weight: 400;
 }
 
-/* PERBAIKAN 3: Icon Mata Jadi Putih */
 .toggle-eye { 
     cursor: pointer; margin-left: auto; 
-    color: #ffffff !important; /* Warna Putih Mutlak */
-    opacity: 1;
+    color: #ffffff !important; /* Putih */
+    flex-shrink: 0;
 }
-.toggle-eye:hover { transform: scale(1.1); }
 
+/* === TOMBOL & LINK (DISAMAKAN DENGAN INPUT) === */
+.auth-actions { 
+    width: 100%; 
+    margin-top: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; /* Jarak antar tombol */
+}
 
-/* --- TOMBOL & LINK --- */
-.auth-actions { width: 100%; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-
+/* 3. STYLE TOMBOL (DISAMAKAN DENGAN INPUT) */
 .btn-pill {
-    width: 100%; padding: 12px 0; border-radius: 50px; border: none;
-    font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+    width: 100%;     /* Lebar Penuh */
+    height: 50px;    /* TINGGI TETAP (SAMA DENGAN INPUT) */
+    border-radius: 50px; 
+    border: none;
+    font-size: 1rem; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: 0.2s;
+    display: flex;             /* Flexbox untuk centering teks */
+    justify-content: center;   /* Teks di tengah horizontal */
+    align-items: center;       /* Teks di tengah vertikal */
 }
+
 .primary { background: #ffffff; color: #002835; }
 .primary:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
+/* Footer Link */
 .auth-footer {
-    width: 100%; margin-top: 25px;
+    width: 100%; margin-top: 20px;
     font-size: 0.95rem; color: rgba(255, 255, 255, 0.6);
     text-align: center;
 }
 
-/* PERBAIKAN 4: Link Menjadi Putih */
 .link-text {
-    color: #ffffff; /* Warna Putih */
+    color: #ffffff; 
     font-weight: 700; cursor: pointer; text-decoration: underline;
     margin-left: 5px; transition: 0.3s;
 }
-.link-text:hover { 
-    color: #ffffff; 
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); 
-    text-decoration: none;
-}
+.link-text:hover { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); text-decoration: none;}
 
 
-/* === LAYOUT DASHBOARD (TIDAK BERUBAH BANYAK) === */
+/* === DASHBOARD LAYOUT (TETAP SAMA) === */
 .dashboard-layout {
     height: 100vh; padding: 15px 20px;
-    display: flex; flex-direction: column; box-sizing: border-box;
+    display: flex; flex-direction: column;
 }
 
 .top-nav {
@@ -140,7 +172,7 @@ body {
 }
 .profile-area { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;}
-.btn-pill.small { width: auto; padding: 6px 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
+.btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
 
 .main-glass-panel {
     flex: 1; background: var(--glass-bg); backdrop-filter: blur(20px);
@@ -152,8 +184,8 @@ body {
 
 .new-btn-wrapper { position: relative; }
 .new-btn { 
-    padding: 8px 25px; font-size: 1rem; display: flex; align-items: center; gap: 8px; 
-    background: rgba(255,255,255,0.25); color: white;
+    height: 40px; padding: 0 25px; font-size: 1rem; 
+    background: rgba(255,255,255,0.25); color: white; gap: 8px;
 }
 .dropdown-content {
     display: none; position: absolute; top: 110%; left: 0;
@@ -163,15 +195,12 @@ body {
 }
 .dropdown-content.show { display: block; animation: fadeIn 0.2s; }
 @keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
-
-.dropdown-content a, .dropdown-content label {
-    display: block; padding: 10px 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem;
-}
-.dropdown-content a:hover, .dropdown-content label:hover { background: rgba(255,255,255,0.1); }
+.dropdown-content a, .dropdown-content label { display: block; padding: 10px 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
+.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
 
 .search-bar-pill {
     flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 50px;
-    padding: 8px 20px; display: flex; align-items: center;
+    height: 40px; padding: 0 20px; display: flex; align-items: center;
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; margin-left: 10px;}
 
@@ -181,7 +210,6 @@ body {
 .progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 5px; }
 .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; }
 .storage-text { font-size: 0.75rem; text-align: right; opacity: 0.8; }
-
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 500; margin: 0; }
 
 .file-grid-area {
@@ -189,7 +217,6 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 15px; padding-right: 5px;
 }
-
 .item-card {
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px; padding: 15px 10px;
@@ -201,7 +228,6 @@ body {
 .item-card .fa-folder { color: #facc15; }
 .item-card .fa-file { color: #60a5fa; }
 .item-name { font-size: 0.8rem; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 .del-btn { position: absolute; top: 5px; right: 5px; color: #ffadad; background: none; border: none; display: none; }
 .item-card:hover .del-btn { display: block; cursor: pointer;}
 
