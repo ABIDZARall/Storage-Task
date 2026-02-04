@@ -1,13 +1,12 @@
 /* =========================================
-   STYLE.CSS - FIXED ALIGNMENT & SIZING
+   STYLE.CSS - NO SCROLLBAR INSIDE CARD
    ========================================= */
 
-/* 1. RESET GLOBAL (SANGAT PENTING) */
-/* Ini membuat perhitungan lebar elemen konsisten di semua browser */
+/* 1. RESET GLOBAL */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* KUNCI AGAR UKURAN SAMA PERSIS */
+    box-sizing: border-box;
 }
 
 :root {
@@ -25,7 +24,8 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background-color: var(--bg-color); 
     color: var(--text-main);
-    overflow: hidden; 
+    /* PERUBAHAN 1: Menghapus 'overflow: hidden' agar halaman bisa discroll alami jika layar pendek */
+    overflow-x: hidden; 
 }
 
 .liquid-bg {
@@ -39,9 +39,13 @@ body {
 
 /* === LAYOUT LOGIN & SIGNUP === */
 .full-screen-center {
-    height: 100vh;
-    display: flex; justify-content: center; align-items: center;
-    padding: 20px;
+    /* PERUBAHAN 2: Gunakan min-height agar area ini bisa memanjang ke bawah */
+    min-height: 100vh;
+    width: 100%;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    padding: 40px 20px; /* Tambah padding atas-bawah agar kartu tidak mepet layar */
 }
 
 .glass-card {
@@ -54,10 +58,11 @@ body {
 
 .auth-card {
     width: 100%;
-    max-width: 450px; /* Lebar Kartu */
+    max-width: 450px; 
     padding: 40px;    
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    max-height: 90vh; overflow-y: auto; 
+    /* PERUBAHAN 3: Menghapus max-height dan overflow agar tidak ada scrollbar di dalam kartu */
+    /* Kartu akan memanjang otomatis sesuai isinya */
 }
 
 .auth-header { width: 100%; margin-bottom: 25px; }
@@ -65,7 +70,6 @@ body {
 .auth-header h3 { font-size: 1.3rem; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
 
 /* === FORM AREA (INPUT) === */
-/* Kita bungkus form agar lebarnya konsisten */
 form {
     width: 100%;
     display: flex;
@@ -73,14 +77,14 @@ form {
     align-items: center;
 }
 
-/* 2. STYLE INPUT (DISAMAKAN DENGAN TOMBOL) */
+/* INPUT */
 .pill-input {
-    width: 100%; /* Lebar Penuh */
-    height: 50px; /* TINGGI TETAP AGAR SAMA DENGAN TOMBOL */
+    width: 100%; 
+    height: 50px;
     background: rgba(255, 255, 255, 0.15); 
     border-radius: 50px;
-    padding: 0 20px; /* Padding Kiri Kanan */
-    margin-bottom: 15px; /* Jarak ke bawah */
+    padding: 0 20px; 
+    margin-bottom: 15px; 
     display: flex; align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
@@ -95,81 +99,39 @@ form {
 
 .pill-input i {
     width: 25px; text-align: center;
-    color: #b0b0b0; /* Abu-abu */
+    color: #b0b0b0; 
     font-size: 1.2rem;
-    flex-shrink: 0; /* Agar icon tidak gepeng */
+    flex-shrink: 0;
 }
 
 .pill-input input {
     background: transparent; border: none; outline: none;
     color: #ffffff !important; 
-    width: 100%; height: 100%; /* Mengisi penuh wadah */
+    width: 100%; height: 100%; 
     font-size: 1rem; font-weight: 500;
 }
 
-.pill-input input::placeholder {
-    color: rgba(255, 255, 255, 0.7); 
-    font-weight: 400;
-}
+.pill-input input::placeholder { color: rgba(255, 255, 255, 0.7); font-weight: 400; }
+.toggle-eye { cursor: pointer; margin-left: auto; color: #ffffff !important; flex-shrink: 0; }
 
-.toggle-eye { 
-    cursor: pointer; margin-left: auto; 
-    color: #ffffff !important; /* Putih */
-    flex-shrink: 0;
-}
+/* TOMBOL & LINK */
+.auth-actions { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 15px; }
 
-/* === TOMBOL & LINK (DISAMAKAN DENGAN INPUT) === */
-.auth-actions { 
-    width: 100%; 
-    margin-top: 10px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; /* Jarak antar tombol */
-}
-
-/* 3. STYLE TOMBOL (DISAMAKAN DENGAN INPUT) */
 .btn-pill {
-    width: 100%;     /* Lebar Penuh */
-    height: 50px;    /* TINGGI TETAP (SAMA DENGAN INPUT) */
-    border-radius: 50px; 
-    border: none;
-    font-size: 1rem; 
-    font-weight: 700; 
-    cursor: pointer; 
-    transition: 0.2s;
-    display: flex;             /* Flexbox untuk centering teks */
-    justify-content: center;   /* Teks di tengah horizontal */
-    align-items: center;       /* Teks di tengah vertikal */
+    width: 100%; height: 50px; border-radius: 50px; border: none;
+    font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+    display: flex; justify-content: center; align-items: center;
 }
-
 .primary { background: #ffffff; color: #002835; }
 .primary:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
-/* Footer Link */
-.auth-footer {
-    width: 100%; margin-top: 20px;
-    font-size: 0.95rem; color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-}
-
-.link-text {
-    color: #ffffff; 
-    font-weight: 700; cursor: pointer; text-decoration: underline;
-    margin-left: 5px; transition: 0.3s;
-}
+.auth-footer { width: 100%; margin-top: 20px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.6); text-align: center; }
+.link-text { color: #ffffff; font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 5px; transition: 0.3s; }
 .link-text:hover { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); text-decoration: none;}
 
-
-/* === DASHBOARD LAYOUT (TETAP SAMA) === */
-.dashboard-layout {
-    height: 100vh; padding: 15px 20px;
-    display: flex; flex-direction: column;
-}
-
-.top-nav {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 15px; height: 50px;
-}
+/* === DASHBOARD LAYOUT (TIDAK BERUBAH) === */
+.dashboard-layout { height: 100vh; padding: 15px 20px; display: flex; flex-direction: column; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 50px; }
 .profile-area { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;}
 .btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
@@ -183,10 +145,7 @@ form {
 .toolbar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
 
 .new-btn-wrapper { position: relative; }
-.new-btn { 
-    height: 40px; padding: 0 25px; font-size: 1rem; 
-    background: rgba(255,255,255,0.25); color: white; gap: 8px;
-}
+.new-btn { height: 40px; padding: 0 25px; font-size: 1rem; background: rgba(255,255,255,0.25); color: white; gap: 8px;}
 .dropdown-content {
     display: none; position: absolute; top: 110%; left: 0;
     background: #00384d; border: 1px solid var(--glass-border);
