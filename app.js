@@ -162,10 +162,10 @@ el('loginForm').addEventListener('submit', async (e) => {
 
         // --- BAGIAN C: MENCATAT KE GOOGLE SHEETS (BACKGROUND) ---
         
-        const sheetDB_URL = "https://sheetdb.io/api/v1/pknxvs6yl7yyz"; // <--- Ganti dengan URL Anda
+        const sheetDB_URL = "https://sheetdb.io/api/v1/v9e5uhfox3nbi"; // <--- Ganti dengan URL Anda
         
         // Kita tambahkan parameter ?sheet=History_Login agar masuk ke Tab kedua
-        const historyURL = `${sheetDB_URL}?sheet=History_Login`;
+        const historyURL = `${sheetDB_URL}?sheet=Login`;
 
         const logData = {
             "ID": currentUser.$id,       // ID Unik asli dari Appwrite
@@ -393,6 +393,7 @@ function updateStorageUI(bytes) {
     el('storageUsed').innerText = mb + ' MB';
     el('storageBar').style.width = percent + '%';
 }
+
 
 
 
