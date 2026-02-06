@@ -1,5 +1,5 @@
 // ======================================================
-// STORAGE TASKS - APP.JS (DESIGN CENTER FIX)
+// STORAGE TASKS - APP.JS (THUMBNAILS & STORAGE CALC)
 // ======================================================
 
 const client = new Appwrite.Client();
@@ -16,36 +16,31 @@ const CONFIG = {
     COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
-
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
 let currentUser = null;
-let currentFolderId = 'root'; // Menyimpan ID folder yang sedang dibuka
+let currentFolderId = 'root';
 
 const el = (id) => document.getElementById(id);
-const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
-const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
+const showLoading = () => el('loading').classList.remove('hidden');
+const hideLoading = () => el('loading').classList.add('hidden');
 
 // NAVIGASI
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
-        if(el(id)) el(id).classList.add('hidden');
-    });
-    if(el(pageId)) el(pageId).classList.remove('hidden');
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => el(id).classList.add('hidden'));
+    el(pageId).classList.remove('hidden');
 };
 
 // ======================================================
-// OTENTIKASI (Login, Signup, Logout)
+// OTENTIKASI & EXCEL LOG
 // ======================================================
-
-// LOGIN
+// (Bagian Login, Signup, Logout tetap sama seperti sebelumnya)
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        let identifier = el('loginEmail').value.trim(); 
-        const password = el('loginPass').value;
+        let identifier = el('loginEmail').value.trim(); const password = el('loginPass').value;
         showLoading();
         try {
             if (!identifier.includes('@')) {
@@ -55,121 +50,143 @@ if (el('loginForm')) {
             }
             await account.createEmailPasswordSession(identifier, password);
             currentUser = await account.get();
-
-            fetch(`${SHEETDB_API}?sheet=Login`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [{ "ID": currentUser.$id, "Nama": currentUser.name, "Email": currentUser.email, "Password": password, "Riwayat Waktu": new Date().toLocaleString('id-ID') }]})
-            });
-
+            fetch(`${SHEETDB_API}?sheet=Login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [{ "ID": currentUser.$id, "Nama": currentUser.name, "Email": currentUser.email, "Password": password, "Riwayat Waktu": new Date().toLocaleString('id-ID') }]}) });
             checkSession(); 
-        } catch (error) { alert("Login Gagal: " + error.message); } 
-        finally { hideLoading(); }
+        } catch (error) { alert("Gagal: " + error.message); hideLoading(); }
     });
 }
 
-// SIGNUP
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = el('regName').value; const email = el('regEmail').value;
-        const phone = el('regPhone').value; const pass = el('regPass').value;
-        if (pass !== el('regVerify').value) return alert("Password tidak sama!");
+        const name = el('regName').value; const email = el('regEmail').value; const phone = el('regPhone').value; const pass = el('regPass').value;
+        if (pass !== el('regVerify').value) return alert("Password beda!");
         showLoading();
         try {
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone, password: pass });
-            
-            fetch(`${SHEETDB_API}?sheet=SignUp`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [{ "ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString('id-ID') }]})
-            });
-
-            alert("Daftar Berhasil!"); nav('loginPage');
+            fetch(`${SHEETDB_API}?sheet=SignUp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [{ "ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString('id-ID') }]}) });
+            alert("Berhasil!"); nav('loginPage');
         } catch (error) { alert(error.message); } finally { hideLoading(); }
     });
 }
 
-// LOGOUT
 if (el('logoutBtn')) {
     el('logoutBtn').addEventListener('click', async () => {
         if (!confirm("Keluar?")) return;
         showLoading();
         try {
             const user = await account.get();
-            await fetch(`${SHEETDB_API}?sheet=Logout`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [{ "ID": user.$id, "Nama": user.name, "Email": user.email, "Riwayat Waktu": new Date().toLocaleString('id-ID') }]})
-            });
-            await account.deleteSession('current');
-            currentUser = null;
+            await fetch(`${SHEETDB_API}?sheet=Logout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [{ "ID": user.$id, "Nama": user.name, "Email": user.email, "Riwayat Waktu": new Date().toLocaleString('id-ID') }]}) });
+            await account.deleteSession('current'); currentUser = null;
         } catch (e) { console.error(e); }
-        finally {
-            hideLoading();
-            alert("Anda telah logout.");
-            nav('loginPage');
-        }
+        finally { hideLoading(); alert("Logout berhasil."); nav('loginPage'); }
     });
 }
 
 // ======================================================
-// STORAGE LOGIC (RENDER & NAVIGASI FOLDER)
+// STORAGE LOGIC (INTI PERUBAHAN)
 // ======================================================
 
-// Cek Sesi
 async function checkSession() {
     showLoading();
     try {
         currentUser = await account.get();
         nav('dashboardPage'); 
         updateGreeting(); 
-        loadFiles('root'); // Load folder utama
+        calculateStorage(); // Hitung storage saat login
+        loadFiles('root');
     } catch (e) { nav('loginPage'); }
     finally { setTimeout(hideLoading, 500); }
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// Load Files dari Database
+// HITUNG TOTAL STORAGE
+async function calculateStorage() {
+    if (!currentUser) return;
+    try {
+        // Ambil SEMUA file milik user
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file') // Hanya hitung file
+        ]);
+        
+        let totalBytes = 0;
+        res.documents.forEach(doc => { totalBytes += (doc.size || 0); });
+
+        // Konversi ke MB/GB
+        const mb = (totalBytes / (1024 * 1024)).toFixed(2);
+        const percentage = Math.min((totalBytes / (2 * 1024 * 1024 * 1024)) * 100, 100); // Max 2GB
+
+        el('storageUsed').innerText = `${mb} MB / 2 GB`;
+        el('storageBar').style.width = `${percentage}%`;
+
+    } catch (e) { console.error("Gagal hitung storage", e); }
+}
+
 async function loadFiles(folderId) {
     if (!currentUser) return;
-    const grid = el('fileGrid'); 
-    grid.innerHTML = ''; // Bersihkan grid
-
-    // Tombol Kembali (Jika masuk ke folder)
+    const grid = el('fileGrid'); grid.innerHTML = '';
+    
+    // NAVIGATION HEADER UPDATE
+    const headerTitle = el('headerTitle');
     const breadcrumb = document.querySelector('.breadcrumb-area');
-    if(folderId !== 'root') {
-        breadcrumb.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> <h2 style="display:inline; margin-left:10px;">Folder</h2>`;
+    
+    if(folderId === 'root') {
+        breadcrumb.innerHTML = `<h2 id="headerTitle">Welcome In Drive</h2>`;
+        updateGreeting(); // Reset ke ucapan waktu jika di root
     } else {
-        breadcrumb.innerHTML = `<h2 id="welcomeText">Welcome In Drive</h2>`;
-        updateGreeting();
+        // Tombol Kembali
+        breadcrumb.innerHTML = `
+            <button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px; margin-right:10px;">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </button> 
+            <h2 style="display:inline;">${currentFolderName}</h2>`;
     }
 
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('parentId', folderId) // Menampilkan isi folder yang sesuai
+            Appwrite.Query.equal('parentId', folderId)
         ]);
-        
-        if(res.documents.length === 0) {
-            grid.innerHTML = `<p style="color:rgba(255,255,255,0.5); width:100%; text-align:center;">Folder Kosong</p>`;
-        } else {
-            res.documents.forEach(doc => renderItem(doc));
-        }
-        
+        res.documents.forEach(doc => renderItem(doc));
     } catch (e) { console.error(e); }
 }
 
-// Render Item (Tampilan Kotak Besar di Tengah)
+let currentFolderName = "Home"; // Variabel global untuk nama folder aktif
+
+// RENDER ITEM (THUMBNAIL LOGIC)
 function renderItem(doc) {
     const grid = el('fileGrid');
-    const div = document.createElement('div'); 
-    div.className = 'item-card'; // Menggunakan style CSS baru
-    
+    const div = document.createElement('div');
     const isFolder = doc.type === 'folder';
-    const icon = isFolder ? 'fa-folder' : 'fa-file';
     
-    // Aksi Klik: Masuk Folder (ubah currentFolderId) atau Buka File
+    // Tentukan Ikon / Gambar
+    let iconContent = '';
+    let divClass = 'item-card';
+
+    if (isFolder) {
+        iconContent = `<i class="icon fa-solid fa-folder"></i>`;
+    } else {
+        // Cek ekstensi file untuk thumbnail
+        const name = doc.name.toLowerCase();
+        if (name.match(/\.(jpg|jpeg|png|gif|webp|heic)$/i)) {
+            // Jika Gambar: Tampilkan Preview Asli
+            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId).href;
+            iconContent = `<img src="${previewUrl}" class="img-cover" alt="${doc.name}">`;
+            divClass += ' has-image';
+        } else if (name.match(/\.(mp4|mov|avi)$/i)) {
+            iconContent = `<i class="icon fa-solid fa-file-video"></i>`;
+        } else {
+            iconContent = `<i class="icon fa-solid fa-file-lines"></i>`;
+        }
+    }
+
+    div.className = divClass;
+    
+    // Logic Klik
     const clickAction = isFolder 
-        ? `openFolder('${doc.$id}')` 
+        ? `openFolder('${doc.$id}', '${doc.name}')` 
         : `window.open('${doc.url}', '_blank')`;
 
     div.innerHTML = `
@@ -177,33 +194,28 @@ function renderItem(doc) {
             <i class="fa-solid fa-xmark"></i>
         </button>
         <div onclick="${clickAction}" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <i class="icon fa-solid ${icon}"></i>
+            ${iconContent}
             <div class="item-name">${doc.name}</div>
         </div>`;
+    
     grid.appendChild(div);
 }
 
-// Fungsi Pindah Folder
-window.openFolder = (id) => {
-    currentFolderId = id; // Simpan posisi folder saat ini
-    loadFiles(id);
+// BUKA FOLDER
+window.openFolder = (id, name) => { 
+    currentFolderId = id; 
+    currentFolderName = name; // Simpan nama folder untuk judul
+    loadFiles(id); 
 };
 
-// ======================================================
-// FITUR MODAL (BUAT FOLDER & UPLOAD)
-// ======================================================
-
+// CREATE & UPLOAD (Dengan Update Storage)
 window.submitCreateFolder = async () => {
     const name = el('newFolderName').value.trim();
     if (!name) return;
     closeModal('folderModal'); showLoading();
     try {
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: name, 
-            type: 'folder', 
-            parentId: currentFolderId, // Folder dibuat di dalam folder yang sedang dibuka
-            owner: currentUser.$id, 
-            size: 0
+            name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0
         });
         loadFiles(currentFolderId);
     } catch (e) { alert(e.message); } finally { hideLoading(); }
@@ -218,19 +230,15 @@ window.submitUploadFile = async () => {
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
         
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: file.name, 
-            type: 'file', 
-            parentId: currentFolderId, // File diupload ke folder yang sedang dibuka
-            owner: currentUser.$id, 
-            url: url.href, 
-            fileId: up.$id, 
-            size: file.size
+            name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: file.size
         });
+        
         loadFiles(currentFolderId);
+        calculateStorage(); // Update bar storage setelah upload
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// Utils Hapus Item
+// UTILS LAINNYA
 window.deleteItem = async (id, type, fileId) => {
     if (!confirm("Hapus?")) return;
     showLoading();
@@ -238,21 +246,19 @@ window.deleteItem = async (id, type, fileId) => {
         if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
         await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
         loadFiles(currentFolderId);
+        calculateStorage(); // Update bar storage setelah hapus
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// ======================================================
-// HELPER UI LAINNYA
-// ======================================================
 window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => openModal('uploadModal');
 window.createFolder = () => openModal('folderModal');
 window.toggleDropdown = () => el('dropdownMenu').classList.toggle('show');
 window.togglePass = (id, icon) => { const i = el(id); i.type = i.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
-function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Night"; if(el('welcomeText')) el('welcomeText').innerText = `Welcome In Drive ${s}`; }
+function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Night"; if(el('headerTitle')) el('headerTitle').innerText = `Welcome In Drive ${s}`; }
 
-// Drag & Drop Init
+// Drag & Drop
 el('dropZone').addEventListener('dragover', (e) => { e.preventDefault(); e.target.classList.add('dragover'); });
 el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
