@@ -122,15 +122,77 @@ form { width: 100%; display: flex; flex-direction: column; align-items: center; 
 .storage-text { font-size: 0.75rem; text-align: right; opacity: 0.8; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 500; margin: 0; }
 
-.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; padding-right: 5px; }
-.item-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; aspect-ratio: 1/1; }
-.item-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-3px); }
-.item-card i.icon { font-size: 2.5rem; margin-bottom: 10px; }
-.item-card .fa-folder { color: #facc15; }
-.item-card .fa-file { color: #60a5fa; }
-.item-name { font-size: 0.8rem; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.del-btn { position: absolute; top: 5px; right: 5px; color: #ffadad; background: none; border: none; display: none; }
-.item-card:hover .del-btn { display: block; cursor: pointer;}
+/* Layout Grid Area */
+.file-grid-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Ukuran kartu responsif */
+    gap: 25px;
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Desain Kartu Folder/File (Glassmorphism) */
+.item-card {
+    background: rgba(255, 255, 255, 0.1); /* Efek transparan abu-abu */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    aspect-ratio: 1 / 1; /* Menjaga bentuk kotak sempurna */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.item-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* Ikon Besar di Tengah */
+.item-card i.icon {
+    font-size: 3.5rem; /* Ukuran ikon diperbesar */
+    margin-bottom: 12px;
+}
+
+/* Warna Ikon */
+.fa-folder { color: #facc15; } /* Kuning Folder */
+.fa-file-lines { color: #60a5fa; } /* Biru File */
+
+/* Label Teks di Bawah */
+.item-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: white;
+    text-align: center;
+    width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Memotong teks jika terlalu panjang */
+}
+
+/* Tombol Hapus Kecil */
+.del-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 82, 82, 0.2);
+    color: #ff5252;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: none; /* Muncul hanya saat hover */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.item-card:hover .del-btn { display: flex; }
 
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
@@ -152,3 +214,4 @@ form { width: 100%; display: flex; flex-direction: column; align-items: center; 
 .file-info { font-size: 0.85rem; color: #4ade80; margin-top: 10px; font-weight: 600; min-height: 20px;}
 .modal-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 5px; }
 .modal-actions .btn-pill { padding: 0 20px; font-size: 0.9rem; width: auto; height: 40px; }
+
