@@ -1,10 +1,11 @@
-/* ================= MASTER STYLE (CLEAN & MODERN) ================= */
+/* ================= STYLE.CSS (MACBOOK MOCKUP STYLE) ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
     --bg-color: #004e64;
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-hover: rgba(255, 255, 255, 0.2);
     --text-main: #ffffff;
     --accent: #4ade80;
 }
@@ -13,89 +14,163 @@ body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); c
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; } .active { display: flex !important; }
 
-/* AUTH PAGES */
-.full-screen-center { min-height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; padding: 30px 15px; }
-.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
-.auth-card { width: 100%; max-width: 380px; padding: 30px 25px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.auth-header { width: 100%; margin-bottom: 20px; }
-.auth-logo { width: 150px; margin-bottom: 5px; }
-.pill-input { width: 100%; height: 45px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 15px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid rgba(255, 255, 255, 0.2); gap: 10px; }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; height: 100%; font-size: 0.95rem; }
-.btn-pill { width: 100%; height: 45px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
-.primary { background: #ffffff; color: #002835; } .primary:hover { transform: scale(1.02); }
-.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
-.secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+/* === AUTH PAGES === */
+.full-screen-center { min-height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; }
+.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+.auth-card { width: 100%; max-width: 380px; padding: 30px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.pill-input { width: 100%; height: 45px; background: rgba(255,255,255,0.15); border-radius: 50px; padding: 0 15px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.2); gap: 10px; }
+.pill-input:focus-within { background: rgba(255,255,255,0.25); border-color: #fff; }
+.pill-input input { background: transparent; border: none; outline: none; color: #fff; width: 100%; height: 100%; }
+.pill-input input::placeholder { color: rgba(255,255,255,0.7); }
+.btn-pill { width: 100%; height: 45px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.primary { background: #fff; color: #002835; }
+.auth-actions { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.auth-footer { margin-top: 15px; font-size: 0.8rem; opacity: 0.8; }
+.link-text { text-decoration: underline; cursor: pointer; font-weight: bold; }
 
-/* DASHBOARD LAYOUT */
+/* === DASHBOARD LAYOUT === */
 .dashboard-layout { height: 100vh; padding: 15px 20px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 50px; }
-.profile-area { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;}
-.main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(20px); border-radius: 25px; border: 1px solid var(--glass-border); padding: 25px; display: flex; flex-direction: column; overflow: hidden; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; height: 50px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); }
+.btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
 
-/* TOOLBAR */
-.toolbar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-.new-btn { height: 40px; padding: 0 25px; font-size: 1rem; background: rgba(255,255,255,0.25); color: white; gap: 8px;}
-.dropdown-content { display: none; position: absolute; top: 110%; left: 0; background: #00384d; border: 1px solid var(--glass-border); min-width: 180px; border-radius: 12px; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
-.dropdown-content a { display: block; padding: 12px 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
-.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
-.search-bar-pill { flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 50px; height: 40px; padding: 0 20px; display: flex; align-items: center; }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; }
-
-/* HEADER INFO */
-.content-header { display: flex; align-items: flex-end; gap: 30px; margin-bottom: 20px; }
-.storage-widget { min-width: 180px; }
-.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 5px 0; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-.breadcrumb-area { display: flex; align-items: center; gap: 10px; }
-.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 500; margin: 0; }
-
-/* GRID AREA (DESAIN KOTAK BESAR) */
-.file-grid-area {
-    flex: 1; overflow-y: auto; display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Ukuran pas */
-    gap: 25px; padding: 10px;
+/* Panel Utama (Container Besar) */
+.main-glass-panel { 
+    flex: 1; 
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); 
+    border-radius: 30px; 
+    border: 1px solid var(--glass-border); 
+    padding: 25px; 
+    display: flex; 
+    gap: 30px; /* Jarak antara Sidebar kiri dan Grid kanan */
+    overflow: hidden; 
 }
 
+/* Sidebar Kiri (Tombol New & Storage) */
+.sidebar-action {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    flex-shrink: 0;
+}
+
+.new-btn-wrapper { position: relative; width: 100%; }
+.new-btn { 
+    width: 100%; height: 50px; border-radius: 25px; 
+    background: rgba(255,255,255,0.25); color: white; 
+    font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.new-btn:hover { background: rgba(255,255,255,0.35); }
+
+.dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #00384d; border: 1px solid var(--glass-border); border-radius: 15px; z-index: 100; overflow: hidden; }
+.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
+.dropdown-content a { display: block; padding: 12px 15px; color: white; text-decoration: none; cursor: pointer; }
+.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
+
+.storage-widget { margin-top: auto; } /* Dorong ke bawah jika layout tinggi */
+.storage-label { font-size: 0.9rem; margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+.progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 5px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+.storage-text { font-size: 0.75rem; opacity: 0.8; }
+
+/* Area Kanan (Konten) */
+.content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.search-bar-pill { 
+    width: 100%; height: 50px; background: rgba(0,0,0,0.2); 
+    border-radius: 25px; padding: 0 20px; display: flex; align-items: center; 
+    border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
+}
+.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 1rem; }
+
+.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 500; margin-bottom: 15px; }
+
+/* === GRID FOLDER DI TENGAH (THE MAIN DESIGN) === */
+.file-grid-area {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    /* Membuat grid responsif dengan ukuran minimum 160px agar kotak besar */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    gap: 25px;
+    padding-right: 10px;
+    padding-bottom: 20px;
+}
+
+/* Desain Kartu (Glass Box) */
 .item-card {
-    background: rgba(255, 255, 255, 0.1); /* Transparan Abu */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 25px; /* Sudut membulat */
-    aspect-ratio: 1/1; /* Kotak Sempurna */
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; position: relative; transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px; /* Sudut sangat membulat sesuai gambar */
+    aspect-ratio: 1 / 1; /* Memaksa bentuk persegi */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .item-card:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-5px);
+    transform: scale(1.03); /* Efek zoom sedikit */
+    border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-.item-card i.icon { font-size: 3.5rem; margin-bottom: 15px; }
-.fa-folder { color: #facc15; } /* Kuning Folder */
-.fa-file { color: #60a5fa; } /* Biru File */
+/* Ikon Besar di Tengah */
+.item-card i.icon {
+    font-size: 4rem; /* Ukuran ikon sangat besar */
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+.fa-folder { color: #dcdcdc; /* Warna folder abu-abu/putih sesuai tema gelap */ } 
+.fa-file { color: #60a5fa; }
 
 .item-name {
-    font-size: 0.9rem; font-weight: 500; color: white;
-    width: 90%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    text-align: center;
+    width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* Tombol Hapus */
 .del-btn {
-    position: absolute; top: 10px; right: 10px;
-    width: 30px; height: 30px; border-radius: 50%;
-    background: rgba(255, 82, 82, 0.2); color: #ff5252;
-    border: none; display: none; align-items: center; justify-content: center; cursor: pointer;
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 30px; height: 30px;
+    background: rgba(255, 80, 80, 0.2);
+    color: #ff6b6b;
+    border: none; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s;
 }
+.del-btn:hover { background: #ff6b6b; color: white; }
 .item-card:hover .del-btn { display: flex; }
 
 /* MODALS */
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.9); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
-.modal-box { width: 90%; max-width: 450px; padding: 30px; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; flex-direction: column; gap: 20px; animation: popUp 0.3s; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
-.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.3); border-radius: 20px; padding: 30px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+.modal-box { width: 90%; max-width: 450px; padding: 30px; background: #00384d; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; display: flex; flex-direction: column; gap: 20px; animation: popUp 0.3s; }
+.modal-header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.modal-header h3 { color: white; font-size: 1.2rem; display: flex; gap: 10px; align-items: center; }
+.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 20px; padding: 30px; text-align: center; background: rgba(255,255,255,0.05); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.secondary { background: rgba(255,255,255,0.1); color: white; }
 @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+
+/* Responsif untuk HP */
+@media (max-width: 768px) {
+    .main-glass-panel { flex-direction: column; gap: 15px; padding: 15px; }
+    .sidebar-action { width: 100%; flex-direction: row; align-items: center; gap: 15px; }
+    .new-btn-wrapper { width: auto; flex: 1; }
+    .storage-widget { margin-top: 0; width: 40%; }
+    .item-card { border-radius: 20px; }
+    .item-card i.icon { font-size: 3rem; }
+}
