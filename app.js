@@ -1,13 +1,14 @@
 // ======================================================
-// STORAGE TASKS - APP.JS (FIXED LOGIN)
+// STORAGE TASKS - APP.JS (FINAL FIX V2)
 // ======================================================
 
+// 1. Inisialisasi SDK
 const client = new Appwrite.Client();
 const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI PROYEK
+// 2. Konfigurasi (Pastikan ID ini benar sesuai Console Anda)
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -19,10 +20,11 @@ const CONFIG = {
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
+// 3. State Global
 let currentUser = null;
 let currentFolderId = 'root';
 
-// UI Helpers
+// 4. Helper UI
 const el = (id) => document.getElementById(id);
 const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
 const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
@@ -42,46 +44,47 @@ window.nav = (pageId) => {
 };
 
 // ======================================================
-// 1. LOGIKA LOGIN (USERNAME & EMAIL)
+// FITUR 1: OTENTIKASI (LOGIN & SIGNUP)
 // ======================================================
+
+// A. LOGIKA LOGIN (Username & Email)
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        let identifier = el('loginEmail').value.trim(); // Input User
+        let identifier = el('loginEmail').value.trim(); // Bisa Email atau Username
         const password = el('loginPass').value;
         
         showLoading();
         
         try {
-            // LOGIKA: Jika input TIDAK mengandung '@', anggap sebagai Username
+            // STEP 1: Cek apakah user input Username (tidak ada @)
             if (!identifier.includes('@')) {
-                console.log("Mendeteksi login via Username: " + identifier);
+                console.log("Mendeteksi Username. Mencari email...");
                 
                 // Cari Username di Database 'users'
-                // Syarat: Index 'idx_name' harus ada & Permission 'Any: Read' aktif
                 const response = await databases.listDocuments(
                     CONFIG.DB_ID, 
                     CONFIG.COLLECTION_USERS, 
                     [Appwrite.Query.equal('name', identifier)]
                 );
 
-                // Jika Username tidak ditemukan di database
+                // Jika Username tidak ditemukan
                 if (response.documents.length === 0) {
-                    throw new Error("Username tidak ditemukan. Pastikan ejaan benar atau gunakan Email.");
+                    throw new Error("Username tidak ditemukan. Cek ejaan atau gunakan Email.");
                 }
                 
-                // Jika ketemu, AMBIL EMAILNYA
+                // Ambil email dari hasil pencarian
                 identifier = response.documents[0].email;
-                console.log("Username ditemukan! Login menggunakan email: " + identifier);
+                console.log("Email ditemukan: " + identifier);
             }
 
-            // Eksekusi Login (Selalu menggunakan Email di belakang layar)
+            // STEP 2: Login menggunakan Email (Asli atau Hasil Pencarian)
             await account.createEmailPasswordSession(identifier, password);
             
+            // STEP 3: Sukses, masuk ke Dashboard
             console.log("Login Berhasil!");
-            // Masuk ke Dashboard
-            initApp(); 
+            checkSession(); 
 
         } catch (error) {
             console.error(error);
@@ -91,9 +94,7 @@ if (el('loginForm')) {
     });
 }
 
-// ======================================================
-// 2. LOGIKA SIGNUP (MENGISI DATA AGAR TIDAK NULL)
-// ======================================================
+// B. LOGIKA SIGN UP (Menyimpan Data agar Tidak NULL)
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -107,23 +108,23 @@ if (el('signupForm')) {
 
         showLoading();
         try {
-            // 1. Buat Akun Utama
+            // 1. Buat Akun di Appwrite Auth
             const userAuth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. Simpan Data ke Database Custom (SUPAYA KOLOM 'name' TERISI)
+            // 2. SIMPAN DATA KE DATABASE (PENTING AGAR BISA LOGIN PAKAI USERNAME NANTI)
             await databases.createDocument(
                 CONFIG.DB_ID, 
                 CONFIG.COLLECTION_USERS, 
                 userAuth.$id, 
                 { 
-                    name: name,    // INI PENTING: Mengisi kolom name agar tidak NULL
-                    email: email, 
+                    name: name,    // Menyimpan Username
+                    email: email,  // Menyimpan Email
                     phone: phone,
                     password: pass 
                 }
             );
 
-            alert("Pendaftaran Berhasil! Silakan Login.");
+            alert("Daftar Berhasil! Silakan Login.");
             el('signupForm').reset();
             nav('loginPage');
         } catch (error) {
@@ -134,15 +135,35 @@ if (el('signupForm')) {
     });
 }
 
+// C. Cek Sesi (Saat Aplikasi Dibuka)
+async function checkSession() {
+    showLoading();
+    try {
+        currentUser = await account.get();
+        updateGreeting();
+        nav('dashboardPage');
+        loadFiles(currentFolderId); // Load file root
+    } catch (error) {
+        nav('loginPage');
+    } finally {
+        setTimeout(() => { hideLoading(); }, 500);
+    }
+}
+// Jalankan saat pertama kali
+document.addEventListener('DOMContentLoaded', checkSession);
+
 // ======================================================
-// 3. LOGIKA LOAD FILES (Menampilkan Data)
+// FITUR 2: STORAGE (FOLDER & UPLOAD)
 // ======================================================
+
+// A. Menampilkan File (Load Files)
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
     if(grid) grid.innerHTML = ''; 
 
     try {
+        // Query ke Database Files
         const response = await databases.listDocuments(
             CONFIG.DB_ID, 
             CONFIG.COLLECTION_FILES, 
@@ -168,13 +189,16 @@ async function loadFiles(folderId) {
     }
 }
 
+// B. Render Tampilan Item
 function renderItem(doc) {
     const grid = el('fileGrid'); if(!grid) return;
     const div = document.createElement('div'); div.className = 'item-card';
     
     const isFolder = doc.type === 'folder';
     const icon = isFolder ? 'fa-folder' : 'fa-file';
-    const color = isFolder ? '#facc15' : '#60a5fa'; 
+    const color = isFolder ? '#facc15' : '#60a5fa'; // Folder Kuning, File Biru
+    
+    // Klik Folder -> Masuk, Klik File -> Download/View
     const clickAction = isFolder 
         ? `openFolder('${doc.$id}')` 
         : `window.open('${doc.url}', '_blank')`;
@@ -191,35 +215,69 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// ======================================================
-// 4. MODAL & DRAG DROP LOGIC
-// ======================================================
-window.openModal = (modalId) => {
-    const modal = el(modalId);
-    if(modal) modal.classList.remove('hidden');
-    if(modalId === 'folderModal') { el('newFolderName').value = ''; el('newFolderName').focus(); }
-    if(modalId === 'uploadModal') { el('fileInfoText').innerText = 'Belum ada file dipilih'; window.selectedFile = null; }
-    const dropdown = document.querySelector('.dropdown-content');
-    if(dropdown) dropdown.classList.remove('show');
-};
-window.closeModal = (modalId) => { el(modalId).classList.add('hidden'); };
-window.createFolder = () => openModal('folderModal');
-window.triggerUploadModal = () => openModal('uploadModal');
-
+// C. Membuat Folder Baru
 window.submitCreateFolder = async () => {
     const name = el('newFolderName').value.trim();
     if (!name) return alert("Nama folder kosong!");
     closeModal('folderModal'); showLoading();
+    
     try {
         await databases.createDocument(
-            CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(),
-            { name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, url: null, fileId: null }
+            CONFIG.DB_ID, 
+            CONFIG.COLLECTION_FILES, 
+            Appwrite.ID.unique(),
+            { 
+                name: name, // Menggunakan 'name' (sesuai database baru)
+                type: 'folder', 
+                parentId: currentFolderId, 
+                owner: currentUser.$id, 
+                size: 0, 
+                url: null, 
+                fileId: null 
+            }
         );
         loadFiles(currentFolderId);
     } catch (error) { alert("Gagal: " + error.message); } 
     finally { hideLoading(); }
 };
 
+// D. Upload File
+window.submitUploadFile = async () => {
+    if (!window.selectedFile) return alert("Pilih file dulu!");
+    closeModal('uploadModal'); showLoading();
+    
+    try {
+        const file = window.selectedFile;
+        // 1. Upload ke Storage Bucket
+        const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+        // 2. Ambil URL File
+        const fileUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id);
+        
+        // 3. Simpan Info ke Database
+        await databases.createDocument(
+            CONFIG.DB_ID, 
+            CONFIG.COLLECTION_FILES, 
+            Appwrite.ID.unique(),
+            { 
+                name: file.name, 
+                type: 'file', 
+                parentId: currentFolderId, 
+                owner: currentUser.$id, 
+                url: fileUrl.href, 
+                fileId: uploaded.$id, 
+                size: file.size 
+            }
+        );
+        loadFiles(currentFolderId);
+    } catch (error) { alert("Upload Gagal: " + error.message); } 
+    finally { hideLoading(); }
+};
+
+// ======================================================
+// UTILS & UI LISTENERS
+// ======================================================
+
+// Drag & Drop
 const dropZone = el('dropZone');
 const fileInputHidden = el('fileInputHidden');
 if (dropZone) {
@@ -237,55 +295,28 @@ if (fileInputHidden) {
 }
 function handleFileSelect(file) {
     window.selectedFile = file;
-    el('fileInfoText').innerText = `File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    el('fileInfoText').innerText = `File Siap: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
 }
 
-window.submitUploadFile = async () => {
-    if (!window.selectedFile) return alert("Pilih file dulu!");
-    closeModal('uploadModal'); showLoading();
-    try {
-        const file = window.selectedFile;
-        const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
-        const fileUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(),
-            { name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: fileUrl.href, fileId: uploaded.$id, size: file.size }
-        );
-        loadFiles(currentFolderId);
-    } catch (error) { alert("Gagal: " + error.message); } 
-    finally { hideLoading(); }
+// Modal System
+window.openModal = (modalId) => {
+    const modal = el(modalId);
+    if(modal) modal.classList.remove('hidden');
+    if(modalId === 'folderModal') { el('newFolderName').value = ''; el('newFolderName').focus(); }
+    if(modalId === 'uploadModal') { el('fileInfoText').innerText = 'Belum ada file dipilih'; window.selectedFile = null; }
+    document.querySelector('.dropdown-content').classList.remove('show');
 };
+window.closeModal = (modalId) => { el(modalId).classList.add('hidden'); };
+window.createFolder = () => openModal('folderModal');
+window.triggerUploadModal = () => openModal('uploadModal');
 
-// ======================================================
-// 5. UTILS (Init, Logout, dll)
-// ======================================================
-async function initApp() {
-    if(el('loading')) el('loading').classList.remove('hidden');
-    try {
-        currentUser = await account.get();
-        updateGreeting();
-        nav('dashboardPage');
-        loadFiles(currentFolderId);
-    } catch (error) {
-        nav('loginPage');
-    } finally {
-        setTimeout(() => { if(el('loading')) el('loading').classList.add('hidden'); }, 500);
-    }
-}
-document.addEventListener('DOMContentLoaded', initApp);
-
+// Others
+window.openFolder = (id) => { currentFolderId = id; loadFiles(id); };
+window.deleteItem = async (docId, type, fileId) => { if(confirm("Hapus?")) { showLoading(); try { if(type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, docId); loadFiles(currentFolderId); } catch(e){ alert(e.message) } finally { hideLoading(); } } };
 window.toggleDropdown = () => { document.querySelector('.dropdown-content').classList.toggle('show'); };
 window.togglePass = (id, icon) => { const input = el(id); input.type = input.type === 'password' ? 'text' : 'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
 function updateStorageUI(bytes) { if(el('storageUsed')) el('storageUsed').innerText = (bytes / (1024 * 1024)).toFixed(2) + ' MB'; if(el('storageBar')) el('storageBar').style.width = Math.min((bytes / (2 * 1024 * 1024 * 1024)) * 100, 100) + '%'; }
 function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Evening"; if(el('welcomeText')) el('welcomeText').innerText = `Welcome In Drive ${s}`; }
-window.deleteItem = async (docId, type, fileId) => { if(confirm("Hapus?")) { showLoading(); try { if(type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, docId); loadFiles(currentFolderId); } catch(e){ alert(e.message) } finally { hideLoading(); } } };
-window.openFolder = (id) => { currentFolderId = id; loadFiles(id); };
 
-if(el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => { 
-    if(confirm("Keluar?")) { 
-        showLoading(); 
-        await account.deleteSession('current'); 
-        nav('loginPage'); 
-        hideLoading(); 
-    } 
-});
+if(el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => { if(confirm("Keluar?")) { showLoading(); await account.deleteSession('current'); nav('loginPage'); hideLoading(); } });
 if(el('searchInput')) el('searchInput').addEventListener('input', ()=>loadFiles(currentFolderId));
