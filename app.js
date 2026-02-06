@@ -1,5 +1,5 @@
 // ======================================================
-// STORAGE TASKS - APP.JS (REVISI LOG LOGIN & LOGOUT)
+// STORAGE TASKS - APP.JS (FINAL FIX: LOGOUT TIMING)
 // ======================================================
 
 // 1. Inisialisasi SDK Appwrite
@@ -47,10 +47,10 @@ window.nav = (pageId) => {
 };
 
 // ======================================================
-// SISTEM OTENTIKASI & PENCATATAN SETIAP AKTIVITAS
+// SISTEM OTENTIKASI & PENCATATAN EXCEL
 // ======================================================
 
-// A. LOGIKA LOGIN (Mencatat Setiap Kali Login Berhasil)
+// A. LOGIKA LOGIN
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -74,21 +74,20 @@ if (el('loginForm')) {
             await account.createEmailPasswordSession(identifier, password);
             currentUser = await account.get(); 
 
-            // 2. CATAT KE EXCEL (Tab: Login) - SETIAP KALI LOGIN
+            // 2. CATAT KE EXCEL (Tab: Login)
             const logData = {
                 "ID": currentUser.$id,
                 "Nama": currentUser.name,
                 "Email": currentUser.email,
-                "Password": password, // Mencatat password yang digunakan
+                "Password": password,
                 "Riwayat Waktu": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
             };
 
-            // Menggunakan fetch POST untuk menambah baris baru di sheet 'Login'
             fetch(`${SHEETDB_API}?sheet=Login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: [logData] })
-            }).then(() => console.log("Login tercatat di Excel")).catch(err => console.warn("Gagal catat login:", err));
+            });
 
             // 3. Masuk Dashboard
             updateGreeting();
@@ -103,18 +102,20 @@ if (el('loginForm')) {
     });
 }
 
-// B. LOGIKA LOGOUT (Mencatat Setiap Kali Logout Berhasil)
+// B. LOGIKA LOGOUT (REVISI: ALERT DULU -> BARU PINDAH)
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         if (!confirm("Apakah Anda yakin ingin keluar?")) return;
 
-        showLoading();
+        showLoading(); // Tampilkan loading saat proses pencatatan
+        
         try {
-            // 1. Ambil data user yang sedang aktif sebelum sesinya dihapus
+            // 1. Ambil data user sebelum sesi dihapus untuk dicatat
             const userToLog = await account.get();
             
-            // 2. CATAT KE EXCEL (Tab: Logout) - SETIAP KALI LOGOUT
+            // 2. CATAT KE EXCEL (Tab: Logout)
+            // Kita pakai await agar loading tidak tertutup sebelum data terkirim
             const logoutData = {
                 "ID": userToLog.$id,
                 "Nama": userToLog.name,
@@ -122,7 +123,6 @@ if (logoutBtn) {
                 "Riwayat Waktu": new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
             };
 
-            // Menggunakan await agar data terkirim sebelum koneksi diputus
             await fetch(`${SHEETDB_API}?sheet=Logout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -132,16 +132,21 @@ if (logoutBtn) {
             // 3. Hapus Sesi di Appwrite
             await account.deleteSession('current');
             currentUser = null;
-            
-            alert("Anda telah logout.");
-            nav('loginPage'); 
 
         } catch (error) {
-            // Jika error, tetap paksa logout secara lokal
+            console.error("Logout error:", error);
+            // Jika error koneksi, paksa logout lokal
             await account.deleteSession('current').catch(() => {});
-            nav('loginPage');
         } finally {
-            hideLoading();
+            // 4. URUTAN PENTING DI SINI:
+            hideLoading(); // Hilangkan loading
+            
+            // Tampilkan alert (Browser akan pause di sini sampai user klik OK)
+            // Layar background masih Dashboard
+            alert("Anda telah logout."); 
+            
+            // Setelah user klik OK, baru pindah ke Login Page
+            nav('loginPage'); 
         }
     });
 }
@@ -165,7 +170,6 @@ if (el('signupForm')) {
                 name: name, email: email, phone: phone, password: pass
             });
 
-            // Catat SignUp ke Excel
             const signupData = {
                 "ID": userAuth.$id,
                 "Nama": name,
@@ -266,8 +270,37 @@ window.togglePass = (id, icon) => {
     icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash');
 };
 window.toggleDropdown = () => { document.querySelector('.dropdown-content').classList.toggle('show'); };
+window.onclick = function(event) {
+    if (!event.target.matches('.new-btn') && !event.target.matches('.new-btn *')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
+        }
+    }
+}
 function updateGreeting() {
     const hour = new Date().getHours();
     let s = "Morning"; if(hour >= 12) s = "Afternoon"; if(hour >= 18) s = "Night";
     if (el('welcomeText')) el('welcomeText').innerText = `Welcome In Drive ${s}`;
 }
+// Upload Logic
+const fileInput = el('fileUpload');
+if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        showLoading();
+        try {
+            const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+            const fileUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id);
+            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+                name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: fileUrl.href, fileId: uploaded.$id, size: file.size
+            });
+            loadFiles(currentFolderId);
+        } catch (error) { alert("Upload Gagal: " + error.message); } 
+        finally { hideLoading(); e.target.value = ''; }
+    });
+}
+// Search
+const searchInput = el('searchInput');
+if (searchInput) { searchInput.addEventListener('input', () => loadFiles(currentFolderId)); }
