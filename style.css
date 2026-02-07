@@ -1,5 +1,6 @@
-/* ================= CSS REVISI: CLEAN LOOK & SPACING ================= */
+/* ================= MASTER STYLE (FIXED & CLEAN) ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root {
     --bg-color: #004e64;
     --glass-bg: rgba(255, 255, 255, 0.1);
@@ -7,102 +8,130 @@
     --text-main: #ffffff;
     --accent: #4ade80;
 }
+
 body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; }
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; }
 
-/* --- AUTH AREA (TETAP SAMA) --- */
+/* === 1. PERBAIKAN LOGIN & SIGNUP === */
 .full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; }
-.auth-card { width: 380px; padding: 30px; text-align: center; }
-.pill-input { width: 100%; height: 45px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 15px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--glass-border); }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; }
-.btn-pill { border-radius: 50px; border: none; cursor: pointer; font-weight: 700; height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-.primary { background: white; color: #002835; width: 100%; }
+.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
-/* --- DASHBOARD AREA --- */
-.dashboard-layout { height: 100vh; padding: 15px 25px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
-.btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
+.auth-card { 
+    width: 100%; max-width: 400px; padding: 40px 30px; 
+    text-align: center; display: flex; flex-direction: column; align-items: center; 
+}
 
+/* FIX: Logo dibatasi ukurannya agar tidak raksasa */
+.auth-logo { width: 180px; height: auto; object-fit: contain; margin-bottom: 10px; }
+.auth-header h3 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 600; }
+
+.pill-input { width: 100%; height: 50px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 20px; display: flex; align-items: center; border: 1px solid var(--glass-border); margin-bottom: 15px; gap: 10px; }
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; }
+.btn-pill { width: 100%; height: 45px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+.primary { background: white; color: #002835; }
+.primary:hover { transform: scale(1.02); }
+.auth-footer { margin-top: 15px; font-size: 0.9rem; color: #ddd; }
+.link-text { color: white; font-weight: bold; text-decoration: underline; cursor: pointer; }
+
+/* === 2. DASHBOARD LAYOUT (KIRI & TENGAH) === */
+.dashboard-layout { height: 100vh; padding: 15px 30px; display: flex; flex-direction: column; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
+.profile-area { display: flex; align-items: center; gap: 15px; }
+.avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
+.btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
+
+/* CONTAINER UTAMA (Split Kiri-Kanan) */
 .main-glass-panel { 
-    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); border-radius: 25px; 
-    border: 1px solid var(--glass-border); padding: 25px; display: flex; gap: 30px; overflow: hidden; 
+    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
+    border-radius: 30px; border: 1px solid var(--glass-border); 
+    padding: 30px; display: flex; gap: 40px; overflow: hidden; 
 }
 
 /* SIDEBAR KIRI */
-.sidebar-left { width: 220px; display: flex; flex-direction: column; gap: 35px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 20px; flex-shrink: 0; }
-.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; gap: 10px; }
-.dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); }
-.dropdown-content.show { display: block; }
-.dropdown-content a { display: block; padding: 12px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
-.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 8px 0; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width 0.5s; }
+.sidebar-left { width: 240px; display: flex; flex-direction: column; gap: 40px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 30px; flex-shrink: 0; }
+.new-btn-wrapper { position: relative; width: 100%; }
+.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; justify-content: flex-start; padding-left: 25px; gap: 15px; font-size: 1.1rem; height: 55px; }
+.dropdown-content { display: none; position: absolute; top: 115%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
+.dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.storage-widget { margin-top: auto; }
+.progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 10px 0; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.5s; }
+.storage-text { font-size: 0.8rem; opacity: 0.8; text-align: right; }
 
-/* MAIN CONTENT */
+/* MAIN CONTENT (TENGAH) */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 45px; padding: 0 20px; display: flex; align-items: center; margin-bottom: 25px; }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; }
+.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
-/* PERBAIKAN 1: Memberikan Jarak (Margin) agar tidak berdempetan */
+/* FIX: JARAK ANTARA JUDUL DAN FOLDER */
 .header-info { 
-    margin-bottom: 45px; /* Menambah jarak antara tulisan Welcome dengan folder */
+    margin-bottom: 60px; /* Jarak dibuat lebar agar tidak berdempetan */
     padding-left: 10px; 
 }
-.header-info h2 { font-size: 1.6rem; font-weight: 500; color: white; }
+.header-info h2 { font-size: 1.8rem; font-weight: 600; color: white; }
 
-/* AREA GRID TENGAH */
+/* GRID FOLDER (POSISI TENGAH) */
 .file-grid-area { 
-    flex: 1; overflow-y: auto; display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-    gap: 30px; padding: 10px; justify-content: center; align-content: start;
+    flex: 1; overflow-y: auto; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 40px; padding: 10px;
+    justify-content: center; /* Folder otomatis ke tengah */
+    align-content: start;
 }
 
-/* PERBAIKAN 2: Menghapus Kotak Abu-abu pada Folder */
+/* === 3. PERBAIKAN TAMPILAN FOLDER (HAPUS KOTAK ABU-ABU) === */
 .item-card { 
-    background: transparent; /* Latar belakang dihapus agar bersih */
-    border: none; /* Garis tepi dihapus */
+    background: transparent; /* HAPUS BACKGROUND KOTAK */
+    border: none; /* HAPUS GARIS TEPI */
+    border-radius: 20px; 
     aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    cursor: pointer; position: relative; transition: transform 0.2s ease;
-    overflow: visible; /* Biarkan bayangan ikon terlihat jika ada */
+    cursor: pointer; position: relative; transition: 0.3s;
 }
 .item-card:hover { 
-    transform: translateY(-8px); /* Efek melayang saat disentuh */
+    transform: translateY(-10px); /* Efek naik saat hover */
 }
 
 /* Ikon Folder Besar */
 .item-card i.icon { 
-    font-size: 4.5rem; /* Ukuran Ikon diperbesar sedikit */
-    margin-bottom: 12px; 
-    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+    font-size: 5rem; /* Ikon diperbesar */
+    margin-bottom: 15px; 
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); /* Bayangan ikon */
 }
 .fa-folder { color: #facc15; }
+.fa-file-lines { color: #60a5fa; }
 
-/* Preview Gambar Asli (Thumbnail) */
-.thumb-img { 
-    width: 100px; height: 100px; /* Ukuran thumbnail gambar */
-    object-fit: cover; border-radius: 15px; 
-    border: 2px solid rgba(255,255,255,0.2);
-}
-
-/* PERBAIKAN 3: Menghapus Kotak Abu-abu pada Nama Folder */
+/* Teks Nama Folder (Bersih tanpa kotak) */
 .item-name { 
-    font-size: 0.95rem; font-weight: 500; color: white; 
-    text-align: center; width: 90%; 
+    font-size: 1rem; font-weight: 500; color: white; 
+    text-align: center; width: 100%; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    background: transparent; /* Menghapus kotak abu-abu di belakang teks */
-    padding: 0; 
-    margin-top: 5px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Menambah bayangan agar teks tetap terbaca */
+    text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Bayangan teks agar terbaca jelas */
 }
+
+/* Thumbnail Gambar */
+.thumb-box {
+    width: 120px; height: 120px; 
+    border-radius: 15px; overflow: hidden; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    margin-bottom: 10px;
+}
+.thumb-img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Tombol Hapus */
-.del-btn { 
-    position: absolute; top: -5px; right: 5px; 
-    background: #ff5252; color: white; width: 22px; height: 22px; 
-    border-radius: 50%; display: none; align-items: center; justify-content: center; 
-    border: none; z-index: 10; font-size: 0.7rem;
-}
+.del-btn { position: absolute; top: -5px; right: 5px; background: #ff5252; color: white; width: 25px; height: 25px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; font-size: 0.8rem; }
 .item-card:hover .del-btn { display: flex; }
+
+/* LAIN-LAIN */
+.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+.modal-box { width: 90%; max-width: 450px; padding: 35px; background: #002835; border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; }
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 15px; align-items: center; background: rgba(255,255,255,0.03); }
+.modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
