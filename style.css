@@ -1,6 +1,5 @@
-/* ================= MASTER STYLE (FIXED & CLEAN) ================= */
+/* ================= CSS FIX (LAYOUT & VISIBILITY) ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
     --bg-color: #004e64;
     --glass-bg: rgba(255, 255, 255, 0.1);
@@ -8,130 +7,110 @@
     --text-main: #ffffff;
     --accent: #4ade80;
 }
-
 body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; }
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; }
 
-/* === 1. PERBAIKAN LOGIN & SIGNUP === */
-.full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-
-.auth-card { 
-    width: 100%; max-width: 400px; padding: 40px 30px; 
-    text-align: center; display: flex; flex-direction: column; align-items: center; 
-}
-
-/* FIX: Logo dibatasi ukurannya agar tidak raksasa */
-.auth-logo { width: 180px; height: auto; object-fit: contain; margin-bottom: 10px; }
-.auth-header h3 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 600; }
-
-.pill-input { width: 100%; height: 50px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 20px; display: flex; align-items: center; border: 1px solid var(--glass-border); margin-bottom: 15px; gap: 10px; }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; }
+/* AUTH */
+.full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; }
+.auth-card { width: 380px; padding: 30px; text-align: center; }
+.auth-header img { width: 150px; margin-bottom: 10px; }
+.pill-input { width: 100%; height: 45px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 15px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--glass-border); }
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; }
 .btn-pill { width: 100%; height: 45px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-.primary { background: white; color: #002835; }
+.primary { background: white; color: #002835; } 
 .primary:hover { transform: scale(1.02); }
-.auth-footer { margin-top: 15px; font-size: 0.9rem; color: #ddd; }
-.link-text { color: white; font-weight: bold; text-decoration: underline; cursor: pointer; }
 
-/* === 2. DASHBOARD LAYOUT (KIRI & TENGAH) === */
-.dashboard-layout { height: 100vh; padding: 15px 30px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
-.profile-area { display: flex; align-items: center; gap: 15px; }
-.avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
-.btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
+/* DASHBOARD LAYOUT (2 KOLOM) */
+.dashboard-layout { height: 100vh; padding: 15px 25px; display: flex; flex-direction: column; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 50px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+.btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
 
-/* CONTAINER UTAMA (Split Kiri-Kanan) */
 .main-glass-panel { 
     flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
-    border-radius: 30px; border: 1px solid var(--glass-border); 
-    padding: 30px; display: flex; gap: 40px; overflow: hidden; 
+    border-radius: 25px; border: 1px solid var(--glass-border); 
+    padding: 25px; display: flex; gap: 30px; overflow: hidden; 
 }
 
 /* SIDEBAR KIRI */
-.sidebar-left { width: 240px; display: flex; flex-direction: column; gap: 40px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 30px; flex-shrink: 0; }
-.new-btn-wrapper { position: relative; width: 100%; }
-.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; justify-content: flex-start; padding-left: 25px; gap: 15px; font-size: 1.1rem; height: 55px; }
-.dropdown-content { display: none; position: absolute; top: 115%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
-.dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.sidebar-left { width: 220px; display: flex; flex-direction: column; gap: 35px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 20px; flex-shrink: 0; }
+.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; gap: 10px; }
+.dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); }
+.dropdown-content.show { display: block; }
+.dropdown-content a { display: block; padding: 12px; color: white; text-decoration: none; cursor: pointer; }
 .storage-widget { margin-top: auto; }
-.progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 10px 0; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.5s; }
-.storage-text { font-size: 0.8rem; opacity: 0.8; text-align: right; }
+.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 8px 0; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width 0.5s; }
+.storage-text { font-size: 0.75rem; text-align: right; opacity: 0.8; }
 
 /* MAIN CONTENT (TENGAH) */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
+.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 45px; padding: 0 20px; display: flex; align-items: center; }
+.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; }
 
-/* FIX: JARAK ANTARA JUDUL DAN FOLDER */
+/* JARAK ANTARA HEADER DAN FOLDER */
 .header-info { 
-    margin-bottom: 60px; /* Jarak dibuat lebar agar tidak berdempetan */
+    margin-bottom: 50px; /* JARAK DITAMBAH */
+    margin-top: 20px;
     padding-left: 10px; 
 }
-.header-info h2 { font-size: 1.8rem; font-weight: 600; color: white; }
+.header-info h2 { font-size: 1.6rem; font-weight: 500; color: white; }
 
-/* GRID FOLDER (POSISI TENGAH) */
+/* GRID AREA (DIPERBAIKI AGAR TIDAK HILANG) */
 .file-grid-area { 
-    flex: 1; overflow-y: auto; 
+    flex: 1; 
+    overflow-y: auto; 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-    gap: 40px; padding: 10px;
-    justify-content: center; /* Folder otomatis ke tengah */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+    gap: 40px; 
+    padding: 10px;
+    justify-content: center; /* POSISI TENGAH */
     align-content: start;
+    min-height: 200px; /* PENTING: Mencegah grid hilang jika kosong */
 }
 
-/* === 3. PERBAIKAN TAMPILAN FOLDER (HAPUS KOTAK ABU-ABU) === */
+/* TAMPILAN FOLDER (BERSIH TANPA KOTAK) */
 .item-card { 
-    background: transparent; /* HAPUS BACKGROUND KOTAK */
-    border: none; /* HAPUS GARIS TEPI */
-    border-radius: 20px; 
+    background: transparent; /* HAPUS BACKGROUND ABU2 */
+    border: none; 
     aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
     cursor: pointer; position: relative; transition: 0.3s;
 }
-.item-card:hover { 
-    transform: translateY(-10px); /* Efek naik saat hover */
-}
+.item-card:hover { transform: translateY(-8px); }
 
-/* Ikon Folder Besar */
 .item-card i.icon { 
-    font-size: 5rem; /* Ikon diperbesar */
-    margin-bottom: 15px; 
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); /* Bayangan ikon */
+    font-size: 5rem; /* Ikon Diperbesar */
+    margin-bottom: 12px; 
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); 
 }
 .fa-folder { color: #facc15; }
+.fa-file-video { color: #f87171; }
 .fa-file-lines { color: #60a5fa; }
 
-/* Teks Nama Folder (Bersih tanpa kotak) */
-.item-name { 
-    font-size: 1rem; font-weight: 500; color: white; 
-    text-align: center; width: 100%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Bayangan teks agar terbaca jelas */
-}
-
 /* Thumbnail Gambar */
-.thumb-box {
-    width: 120px; height: 120px; 
-    border-radius: 15px; overflow: hidden; 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    margin-bottom: 10px;
-}
+.thumb-box { width: 110px; height: 110px; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.1); }
 .thumb-img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Tombol Hapus */
-.del-btn { position: absolute; top: -5px; right: 5px; background: #ff5252; color: white; width: 25px; height: 25px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; font-size: 0.8rem; }
+/* Nama Folder */
+.item-name { 
+    font-size: 0.9rem; font-weight: 500; color: white; 
+    text-align: center; width: 100%; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-top: 5px;
+}
+
+.del-btn { position: absolute; top: -5px; right: 0; background: #ff5252; color: white; width: 22px; height: 22px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; }
 .item-card:hover .del-btn { display: flex; }
 
-/* LAIN-LAIN */
+/* LOADING */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+.spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 90%; max-width: 450px; padding: 35px; background: #002835; border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 15px; align-items: center; background: rgba(255,255,255,0.03); }
+.modal-box { width: 90%; max-width: 450px; padding: 30px; background: #002835; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; }
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
 .modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 15px; padding: 30px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 10px; align-items: center; }

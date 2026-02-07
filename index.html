@@ -15,13 +15,10 @@
 
     <section id="loginPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
-            <div class="auth-header">
-                <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Login</h3>
-            </div>
+            <div class="auth-header"><img src="logo.png" alt="Logo"><h3>Login</h3></div>
             <form id="loginForm">
                 <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="loginEmail" placeholder="Username / Email" required></div>
-                <div class="pill-input"><i class="fa-solid fa-key"></i><input type="password" id="loginPass" placeholder="Password" required><i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('loginPass', this)"></i></div>
+                <div class="pill-input"><i class="fa-solid fa-key"></i><input type="password" id="loginPass" placeholder="Password" required></div>
                 <button type="submit" class="btn-pill primary">Login</button>
                 <div class="auth-footer">Belum punya akun? <span class="link-text" onclick="nav('signupPage')">Sign Up</span></div>
             </form>
@@ -30,7 +27,7 @@
 
     <section id="signupPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
-            <div class="auth-header"><img src="logo.png" alt="Logo" class="auth-logo"><h3>Sign Up</h3></div>
+            <div class="auth-header"><h3>Sign Up</h3></div>
             <form id="signupForm">
                 <div class="pill-input"><input type="text" id="regName" placeholder="Username" required></div>
                 <div class="pill-input"><input type="email" id="regEmail" placeholder="Email" required></div>
@@ -44,7 +41,7 @@
 
     <section id="dashboardPage" class="dashboard-layout hidden">
         <header class="top-nav">
-            <div class="brand-area"><img src="logo.png" alt="Logo" style="height: 40px;"></div>
+            <div class="brand-area"><img src="logo.png" alt="Logo" style="height: 45px;"></div>
             <div class="profile-area">
                 <img src="user.jpg" alt="User" class="avatar">
                 <button id="logoutBtn" class="btn-pill small">LogOut</button>
@@ -52,9 +49,12 @@
         </header>
 
         <div class="main-glass-panel">
+            
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
-                    <button class="btn-pill new-btn" onclick="toggleDropdown()"><i class="fa-solid fa-plus"></i> New</button>
+                    <button class="btn-pill new-btn" onclick="toggleDropdown()">
+                        <i class="fa-solid fa-plus"></i> New
+                    </button>
                     <div id="dropdownMenu" class="dropdown-content">
                         <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
                         <a onclick="triggerUploadModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</a>
@@ -69,9 +69,8 @@
 
             <main class="main-content-area">
                 <div class="search-bar-pill"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Search in Storage Task"></div>
-                <div class="header-info">
-                    <h2 id="headerTitle">Welcome In Drive Morning</h2>
-                </div>
+                <div class="header-info"><h2 id="headerTitle">Welcome In Drive Morning</h2></div>
+                
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
         </div>
