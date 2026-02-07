@@ -1,4 +1,4 @@
-/* ================= MASTER STYLE (FINAL REPAIR) ================= */
+/* ================= MASTER STYLE (REPARASI TOTAL) ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -7,159 +7,117 @@
     --glass-border: rgba(255, 255, 255, 0.2);
     --text-main: #ffffff;
     --accent: #4ade80;
-    --input-bg: rgba(255, 255, 255, 0.15);
 }
 
 body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; }
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; }
 
-/* === 1. PERBAIKAN LOGIN & SIGNUP (RAPI & TIDAK TUMPUK) === */
+/* === 1. PERBAIKAN LOGIN & SIGNUP (ANTI-DEMPET) === */
 .full-screen-center { 
-    min-height: 100vh; width: 100%; 
-    display: flex; justify-content: center; align-items: center; 
-    padding: 20px;
+    min-height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; 
 }
-
-.glass-card { 
-    background: var(--glass-bg); backdrop-filter: blur(20px); 
-    border: 1px solid var(--glass-border); border-radius: 20px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
-}
-
 .auth-card { 
-    width: 100%; max-width: 400px; padding: 40px; 
-    text-align: center; display: flex; flex-direction: column; gap: 20px;
+    width: 100%; max-width: 400px; padding: 50px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; 
 }
+.auth-logo { height: 60px; width: auto; margin-bottom: 10px; object-fit: contain; }
 
-.auth-header img { width: 160px; height: auto; margin-bottom: 5px; object-fit: contain; }
-.auth-header h3 { font-size: 1.6rem; font-weight: 700; color: white; margin: 0; letter-spacing: 1px; }
-
-/* FIX INPUT: Menggunakan Flexbox Presisi */
+/* PERBAIKAN KOLOM INPUT: Menggunakan Flex agar ikon & teks punya ruang sendiri */
 .pill-input { 
-    position: relative;
-    width: 100%; height: 50px; 
-    background: var(--input-bg); 
-    border-radius: 50px; 
-    display: flex; align-items: center; 
-    border: 1px solid var(--glass-border); 
-    padding: 0 20px;
-    transition: 0.3s;
+    width: 100%; height: 55px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; 
+    padding: 0 25px; display: flex; align-items: center; border: 1px solid var(--glass-border); 
+    margin-bottom: 15px; gap: 15px; /* Jarak antara ikon dan teks */
 }
-.pill-input:focus-within { background: rgba(255, 255, 255, 0.25); border-color: white; }
-
-/* Ikon diam di kiri */
-.pill-input i { 
-    min-width: 24px; text-align: center; 
-    color: rgba(255, 255, 255, 0.7); font-size: 1rem; margin-right: 10px;
-}
-
-/* Input mengisi sisa ruang & Placeholder rapi */
+.pill-input i { min-width: 20px; color: rgba(255, 255, 255, 0.7); font-size: 1.1rem; }
 .pill-input input { 
     flex: 1; background: transparent; border: none; outline: none; 
-    color: white; font-size: 0.95rem; height: 100%;
+    color: white; font-size: 1rem; width: 100%; 
 }
-.pill-input input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.pill-input input::placeholder { color: rgba(255, 255, 255, 0.5); }
 
-/* Tombol Login/Signup */
-.btn-pill { width: 100%; height: 50px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; font-size: 1rem; }
-.primary { background: white; color: #002835; margin-top: 5px; }
-.primary:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.btn-pill { width: 100%; height: 50px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+.primary { background: white; color: #002835; margin-top: 10px; }
 
-.auth-footer { margin-top: 15px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); }
+/* TULISAN SIGN UP / LOGIN FOOTER */
+.auth-footer { margin-top: 25px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.8); }
 .link-text { color: white; font-weight: bold; text-decoration: underline; cursor: pointer; margin-left: 5px; }
 
-/* === 2. DASHBOARD LAYOUT (SIDEBAR & TENGAH) === */
+/* === 2. DASHBOARD LAYOUT (KIRI & TENGAH) === */
 .dashboard-layout { height: 100vh; padding: 20px 30px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 50px; flex-shrink: 0; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
 .profile-area { display: flex; align-items: center; gap: 15px; }
 .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
-.btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
 
 .main-glass-panel { 
-    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
-    border-radius: 30px; border: 1px solid var(--glass-border); 
-    padding: 30px; display: flex; gap: 40px; overflow: hidden; 
+    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); border-radius: 30px; 
+    border: 1px solid var(--glass-border); padding: 30px; display: flex; gap: 40px; overflow: hidden; 
 }
 
 /* SIDEBAR KIRI */
-.sidebar-left { 
-    width: 230px; display: flex; flex-direction: column; gap: 30px; 
-    border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 30px; flex-shrink: 0; 
-}
-.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; justify-content: flex-start; padding-left: 25px; gap: 12px; }
-.dropdown-content { display: none; position: absolute; top: 115%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
-.dropdown-content a { display: block; padding: 12px 15px; color: white; text-decoration: none; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.sidebar-left { width: 240px; display: flex; flex-direction: column; gap: 30px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 30px; flex-shrink: 0; }
+.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; justify-content: flex-start; padding-left: 25px; gap: 15px; font-size: 1.1rem; height: 55px; }
 .storage-widget { margin-top: auto; }
 .progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin: 10px 0; }
 .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.5s; }
-.storage-text { font-size: 0.8rem; opacity: 0.8; text-align: right; }
 
 /* MAIN CONTENT (TENGAH) */
-.main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+.main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
-/* FIX JARAK: Memberi Jarak Lebar antara Header dan Folder */
+/* PERBAIKAN JARAK HEADER (TIDAK BERDEMPETAN) */
 .header-info { 
     margin-top: 30px; 
-    margin-bottom: 70px; /* Jarak 70px agar tidak dempet */
+    margin-bottom: 80px; /* Jarak dibuat ekstra lebar sesuai instruksi */
     padding-left: 10px; 
 }
 .header-info h2 { font-size: 1.8rem; font-weight: 600; color: white; }
 
-/* FIX GRID: Memastikan Grid tidak hilang (min-height) dan di Tengah */
+/* GRID AREA (POSISI TENGAH) */
 .file-grid-area { 
-    flex: 1; overflow-y: auto; 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+    flex: 1; overflow-y: auto; display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     gap: 40px; padding: 10px;
-    justify-content: center; 
+    justify-content: center; /* MEMASTIKAN FOLDER DI TENGAH */
     align-content: start;
-    min-height: 200px; /* Mencegah area hilang */
+    min-height: 200px; 
 }
 
-/* FIX FOLDER: Menghapus Kotak Abu-abu (Background Transparan) */
+/* PERBAIKAN TAMPILAN FOLDER (HAPUS KOTAK ABU-ABU) */
 .item-card { 
-    background: transparent; /* HAPUS BACKGROUND */
-    border: none;            /* HAPUS BORDER */
-    box-shadow: none;        /* HAPUS SHADOW */
+    background: transparent !important; /* HAPUS KOTAK ABU-ABU */
+    border: none !important;            /* HAPUS GARIS TEPI */
+    box-shadow: none !important;        /* HAPUS BAYANGAN KOTAK */
     aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    cursor: pointer; position: relative; transition: 0.3s;
+    cursor: pointer; position: relative; transition: transform 0.3s ease;
 }
 .item-card:hover { transform: translateY(-10px); }
 
-/* Ikon Folder Kuning Besar */
+/* Ikon Folder */
 .item-card i.icon { 
     font-size: 5.5rem; 
-    margin-bottom: 10px; 
-    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); 
+    margin-bottom: 12px; 
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4)); /* Bayangan hanya pada ikon */
 }
-.fa-folder { color: #facc15; } 
+.fa-folder { color: #facc15; }
 .fa-file-lines { color: #60a5fa; }
 
-/* Nama Folder Putih Tanpa Kotak */
+/* Nama Folder Bersih Tanpa Latar Belakang */
 .item-name { 
     font-size: 1rem; font-weight: 500; color: white; 
     text-align: center; width: 100%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    background: transparent !important; /* HAPUS BACKGROUND TEKS */
+    text-shadow: 0 2px 5px rgba(0,0,0,0.6); 
 }
 
-.thumb-box { width: 110px; height: 110px; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); margin-bottom: 10px; }
-.thumb-img { width: 100%; height: 100%; object-fit: cover; }
-.del-btn { position: absolute; top: -5px; right: 0; background: #ff5252; color: white; width: 25px; height: 25px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; }
+/* Tombol Hapus */
+.del-btn { position: absolute; top: -5px; right: 5px; background: #ff5252; color: white; width: 24px; height: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; font-size: 0.8rem; }
 .item-card:hover .del-btn { display: flex; }
 
-/* Loading & Modal (Tetap) */
+/* MODALS */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+.spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
 .modal-box { width: 90%; max-width: 450px; padding: 35px; background: #002835; border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-.modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
-.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 15px; padding: 30px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 10px; align-items: center; background: rgba(255,255,255,0.03); }

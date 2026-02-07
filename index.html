@@ -16,21 +16,29 @@
     <section id="loginPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
-                <img src="logo.png" alt="Logo">
+                <img src="logo.png" alt="Logo" class="auth-logo">
                 <h3>Login</h3>
             </div>
             <form id="loginForm">
-                <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="loginEmail" placeholder="Username / Email" required></div>
-                <div class="pill-input"><i class="fa-solid fa-key"></i><input type="password" id="loginPass" placeholder="Password" required><i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('loginPass', this)"></i></div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="loginEmail" placeholder="Username / Email" required>
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="loginPass" placeholder="Password" required>
+                </div>
                 <button type="submit" class="btn-pill primary">Login</button>
-                <div class="auth-footer">Belum punya akun? <span class="link-text" onclick="nav('signupPage')">Sign Up</span></div>
+                <div class="auth-footer">
+                    Belum punya akun? <span class="link-text" onclick="nav('signupPage')">Sign Up</span>
+                </div>
             </form>
         </div>
     </section>
 
     <section id="signupPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
-            <div class="auth-header"><img src="logo.png" alt="Logo"><h3>Sign Up</h3></div>
+            <div class="auth-header"><img src="logo.png" alt="Logo" class="auth-logo"><h3>Sign Up</h3></div>
             <form id="signupForm">
                 <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Username" required></div>
                 <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
@@ -45,7 +53,7 @@
 
     <section id="dashboardPage" class="dashboard-layout hidden">
         <header class="top-nav">
-            <div class="brand-area"><img src="logo.png" alt="Logo" style="height: 40px;"></div>
+            <div class="brand-area"><img src="logo.png" alt="Logo" style="height: 45px;"></div>
             <div class="profile-area">
                 <img src="user.jpg" alt="User" class="avatar">
                 <button id="logoutBtn" class="btn-pill small">LogOut</button>
@@ -54,7 +62,7 @@
 
         <div class="main-glass-panel">
             <aside class="sidebar-left">
-                <div class="new-btn-wrapper">
+                <div class="new-btn-wrapper" id="dropdownContainer">
                     <button class="btn-pill new-btn" onclick="toggleDropdown()"><i class="fa-solid fa-plus"></i> New</button>
                     <div id="dropdownMenu" class="dropdown-content">
                         <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
@@ -76,20 +84,21 @@
         </div>
     </section>
 
-    <div id="loading" class="loading-overlay"><div class="spinner"></div><p>Processing...</p></div>
+    <div id="loading" class="loading-overlay hidden"><div class="spinner"></div></div>
+
     <div id="folderModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Buat Folder</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
-            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
+            <div class="modal-header"><h3>Buat Folder</h3><i class="fa-solid fa-xmark" onclick="closeModal('folderModal')"></i></div>
+            <div class="modal-body"><div class="pill-input"><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
             <div class="modal-actions"><button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button></div>
         </div>
     </div>
+
     <div id="uploadModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
+            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark" onclick="closeModal('uploadModal')"></i></div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area"><h4>Drag & Drop File</h4><button class="btn-pill small" onclick="document.getElementById('fileInputHidden').click()">Pilih</button><input type="file" id="fileInputHidden" hidden></div>
-                <p id="fileInfoText" class="file-info">Belum ada file dipilih</p>
             </div>
             <div class="modal-actions"><button class="btn-pill primary" onclick="submitUploadFile()">Upload</button></div>
         </div>
