@@ -3,7 +3,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI (PASTIKAN ID INI BENAR)
+// KONFIGURASI
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -41,13 +41,12 @@ async function checkSession() {
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// === LOAD FILES (PERBAIKAN AGAR MUNCUL) ===
+// === LOAD FILES (PERBAIKAN FOLDER HILANG) ===
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); grid.innerHTML = '';
     const header = el('headerTitle');
 
-    // Breadcrumb Navigation
     if(folderId === 'root') {
         updateGreeting(); 
     } else {
@@ -55,21 +54,18 @@ async function loadFiles(folderId) {
     }
 
     try {
-        // QUERY DATABASE
+        // Query Database (Pastikan parentId sesuai)
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id),
             Appwrite.Query.equal('parentId', folderId)
         ]);
         
         if(res.documents.length === 0) {
-            grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder ini masih kosong</p>`;
+            grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder Kosong</p>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
         }
-    } catch (e) { 
-        console.error("Error loading files:", e);
-        alert("Gagal memuat data. Cek koneksi.");
-    }
+    } catch (e) { console.error("Error Load:", e); }
 }
 
 // === RENDER ITEM (TAMPILAN BERSIH) ===
@@ -78,21 +74,20 @@ function renderItem(doc) {
     const div = document.createElement('div');
     const isFolder = doc.type === 'folder';
     
-    // Pastikan menggunakan 'name' sesuai database
+    // FIX: Gunakan 'name' sesuai database Anda
     const fileName = doc.name || "Tanpa Nama";
-    const fileNameLower = fileName.toLowerCase();
     
     let content = '';
 
     if (isFolder) {
-        // Ikon Folder Besar Kuning
+        // Ikon Folder Kuning Besar (Tanpa Kotak)
         content = `<i class="icon fa-solid fa-folder"></i>`;
-    } else if (fileNameLower.match(/\.(jpg|jpeg|png|webp|gif)$/)) {
-        // Thumbnail Gambar dalam kotak
+    } else if (fileName.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif)$/)) {
+        // Gambar
         const url = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
         content = `<div class="thumb-box"><img src="${url}" class="thumb-img" loading="lazy"></div>`;
     } else {
-        // Ikon File Lain
+        // File Lain
         content = `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     }
 
@@ -110,31 +105,14 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// === STORAGE ===
-async function calculateStorage() {
-    if (!currentUser) return;
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('type', 'file')
-        ]);
-        let total = 0;
-        res.documents.forEach(doc => total += (doc.size || 0));
-        const mb = (total / (1024 * 1024)).toFixed(2);
-        const pct = Math.min((total / (2 * 1024 * 1024 * 1024)) * 100, 100);
-        el('storageUsed').innerText = `${mb} MB / 2 GB`;
-        el('storageBar').style.width = pct + "%";
-    } catch (e) { console.error(e); }
-}
-
-// === ACTIONS ===
+// === FUNCTIONS ===
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
 window.submitCreateFolder = async () => {
     const n = el('newFolderName').value.trim(); if(!n) return;
     closeModal('folderModal'); showLoading();
     try {
-        // SIMPAN KE KOLOM 'name'
+        // Simpan ke 'name'
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: n, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0
         });
@@ -148,7 +126,7 @@ window.submitUploadFile = async () => {
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), window.selectedFile);
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        // SIMPAN KE KOLOM 'name'
+        // Simpan ke 'name'
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: window.selectedFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: window.selectedFile.size
         });
@@ -166,7 +144,19 @@ window.deleteItem = async (id, type, fileId) => {
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// === UI UTILS ===
+async function calculateStorage() {
+    if (!currentUser) return;
+    try {
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')
+        ]);
+        let total = 0; res.documents.forEach(d => total += (d.size || 0));
+        el('storageUsed').innerText = `${(total/1048576).toFixed(2)} MB / 2 GB`;
+        el('storageBar').style.width = Math.min((total/2147483648)*100, 100) + "%";
+    } catch(e){}
+}
+
+// UI & Auth
 window.nav = (p) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); el(p).classList.remove('hidden'); };
 window.openModal = (m) => el(m).classList.remove('hidden');
 window.closeModal = (m) => el(m).classList.add('hidden');
@@ -175,14 +165,12 @@ window.togglePass = (id, icon) => { const i = el(id); i.type = i.type==='passwor
 function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Night"; el('headerTitle').innerText = `Welcome In Drive ${s}`; }
 window.triggerUploadModal = () => openModal('uploadModal');
 window.createFolder = () => openModal('folderModal');
-
 el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
 el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
 function handleFileSelect(f) { window.selectedFile = f; el('fileInfoText').innerText = `File: ${f.name}`; }
 el('searchInput').addEventListener('input', () => loadFiles(currentFolderId));
 
-// LOGIN SYSTEM
 if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     let id = el('loginEmail').value.trim(); const pw = el('loginPass').value;
@@ -199,4 +187,5 @@ if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
         checkSession();
     } catch(e) { alert(e.message); hideLoading(); }
 });
-// (Pastikan signup/logout juga ada)
+// (Signup & Logout sama seperti sebelumnya)
+if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => { if(confirm("Keluar?")){ await account.deleteSession('current'); nav('loginPage'); } });
