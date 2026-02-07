@@ -1,204 +1,104 @@
-/* ================= MASTER STYLE FIX (MACBOOK GRID EDITION) ================= */
-
-/* 1. RESET GLOBAL */
+/* ================= CSS MASTER LAYOUT TENGAH ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
     --bg-color: #004e64;
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --text-main: #ffffff;
     --accent: #4ade80;
 }
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: var(--bg-color); color: var(--text-main);
-    overflow-x: hidden;
-}
-
-.liquid-bg {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at top left, var(--bg-gradient-end), var(--bg-gradient-start));
-    z-index: -1;
-}
-
+body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; }
+.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; }
-.active { display: flex !important; }
 
-/* === LOGIN & SIGNUP (TIDAK DIUBAH) === */
-.full-screen-center {
-    min-height: 100vh; width: 100%;
-    display: flex; justify-content: center; align-items: center; padding: 30px 15px;
-}
+/* AUTH */
+.full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.auth-card { width: 380px; padding: 30px; text-align: center; }
+.pill-input { width: 100%; height: 45px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 15px; margin-bottom: 12px; display: flex; align-items: center; border: 1px solid var(--glass-border); }
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; }
+.btn-pill { border-radius: 50px; border: none; cursor: pointer; font-weight: 700; height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+.primary { background: white; color: #002835; width: 100%; }
 
-.glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border); border-radius: 20px;
-    box-shadow: var(--glass-shadow);
-}
-
-.auth-card {
-    width: 100%; max-width: 380px; padding: 30px 25px;
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-}
-
-.auth-header { width: 100%; margin-bottom: 20px; }
-.auth-logo { width: 150px; margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); }
-.auth-header h3 { font-size: 1.2rem; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
-
-form { width: 100%; display: flex; flex-direction: column; align-items: center; }
-
-.pill-input {
-    width: 100%; height: 45px; background: rgba(255, 255, 255, 0.15); 
-    border-radius: 50px; padding: 0 15px; margin-bottom: 12px;
-    display: flex; align-items: center; border: 1px solid rgba(255, 255, 255, 0.2);
-    gap: 10px; transition: all 0.3s ease;
-}
-.pill-input:focus-within { background: rgba(255, 255, 255, 0.25); border-color: #ffffff; }
-.pill-input i { width: 25px; text-align: center; color: #b0b0b0; font-size: 1rem; flex-shrink: 0; }
-.pill-input input { background: transparent; border: none; outline: none; color: #ffffff !important; width: 100%; height: 100%; font-size: 0.95rem; font-weight: 500; }
-.pill-input input::placeholder { color: rgba(255, 255, 255, 0.7); font-weight: 400; }
-.toggle-eye { cursor: pointer; margin-left: auto; color: #ffffff !important; flex-shrink: 0; font-size: 0.9rem; }
-
-.auth-actions { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-
-.btn-pill {
-    width: 100%; height: 45px; border-radius: 50px; border: none;
-    font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s;
-    display: flex; justify-content: center; align-items: center;
-}
-.primary { background: #ffffff; color: #002835; }
-.primary:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
-
-.auth-footer { width: 100%; margin-top: 15px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); text-align: center; }
-.link-text { color: #ffffff; font-weight: 700; cursor: pointer; text-decoration: underline; margin-left: 5px; transition: 0.3s; }
-
-/* === DASHBOARD LAYOUT (BAGIAN INI YANG DIROMBAK) === */
-.dashboard-layout { height: 100vh; padding: 15px 20px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 50px; }
-.profile-area { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover;}
+/* DASHBOARD LAYOUT */
+.dashboard-layout { height: 100vh; padding: 15px 25px; display: flex; flex-direction: column; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
 .btn-pill.small { width: auto; height: 35px; padding: 0 15px; font-size: 0.8rem; background: rgba(255,255,255,0.2); color: white; }
 
+/* KUNCI: SPLIT LAYOUT (SIDEBAR & MAIN) */
 .main-glass-panel { 
-    flex: 1; background: var(--glass-bg); backdrop-filter: blur(20px); 
-    border-radius: 20px; border: 1px solid var(--glass-border); 
-    padding: 25px; display: flex; flex-direction: column; overflow: hidden; 
+    flex: 1; 
+    background: var(--glass-bg); 
+    backdrop-filter: blur(25px); 
+    border-radius: 25px; 
+    border: 1px solid var(--glass-border); 
+    padding: 25px; 
+    display: flex; 
+    gap: 30px; /* JarakSidebar ke Grid */
+    overflow: hidden; 
 }
 
-.toolbar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+/* SIDEBAR KIRI */
+.sidebar-left {
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 20px;
+}
+.new-btn { width: 100%; background: rgba(255,255,255,0.25); color: white; gap: 10px; font-size: 1rem; }
+.dropdown-content { display: none; position: absolute; top: 110%; left: 0; width: 100%; background: #00384d; border-radius: 12px; z-index: 100; border: 1px solid var(--glass-border); }
+.dropdown-content.show { display: block; }
+.dropdown-content a { display: block; padding: 12px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
 
-.new-btn-wrapper { position: relative; }
-.new-btn { height: 40px; padding: 0 25px; font-size: 1rem; background: rgba(255,255,255,0.25); color: white; gap: 8px;}
-.dropdown-content { display: none; position: absolute; top: 110%; left: 0; background: #00384d; border: 1px solid var(--glass-border); min-width: 180px; border-radius: 12px; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
-.dropdown-content a { display: block; padding: 12px 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
-.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
+.storage-widget { margin-top: 10px; }
+.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 8px 0; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width 0.5s; }
+.storage-text { font-size: 0.75rem; opacity: 0.8; }
 
-.search-bar-pill { flex: 1; background: rgba(0, 0, 0, 0.2); border-radius: 50px; height: 40px; padding: 0 20px; display: flex; align-items: center; }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; margin-left: 10px;}
+/* MAIN AREA (TENGAH) */
+.main-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.search-row { margin-bottom: 25px; }
+.search-bar-pill { width: 100%; background: rgba(0,0,0,0.25); border-radius: 50px; height: 45px; padding: 0 20px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 1rem; }
 
-.content-header { display: flex; align-items: flex-end; gap: 30px; margin-bottom: 20px; }
-.storage-widget { min-width: 180px; }
-.storage-label { font-size: 0.8rem; margin-bottom: 5px; }
-.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 5px; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-.storage-text { font-size: 0.75rem; text-align: right; opacity: 0.8; }
-.breadcrumb-area { display: flex; align-items: center; gap: 10px;}
-.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 500; margin: 0; }
+.header-info { margin-bottom: 20px; padding-left: 10px; }
+.header-info h2 { font-size: 1.6rem; font-weight: 500; }
 
-/* === GRID FILE & FOLDER (MODIFIKASI MACBOOK STYLE) === */
+/* GRID FOLDER DI TENGAH (SESUAI GAMBAR) */
 .file-grid-area { 
     flex: 1; 
     overflow-y: auto; 
     display: grid; 
-    /* Membuat grid responsif: minimal 140px, maksimal memenuhi ruang */
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-    gap: 25px; 
-    padding: 10px 5px; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 30px; 
+    padding: 10px;
+    justify-content: center; /* MEMINDAHKAN KE TENGAH SECARA HORIZONTAL */
+    align-content: start;
 }
 
-/* KARTU FOLDER/FILE BESAR */
+/* ITEM CARD (MACBOOK STYLE) */
 .item-card { 
-    background: rgba(255, 255, 255, 0.15); /* Transparan Abu-abu */
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    border-radius: 20px; /* Sudut membulat besar */
-    aspect-ratio: 1/1; /* Selalu Kotak */
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    cursor: pointer; 
-    position: relative; 
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.12); 
+    border: 1px solid var(--glass-border); 
+    border-radius: 22px; 
+    aspect-ratio: 1/1; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    cursor: pointer; position: relative; transition: 0.3s;
+    overflow: hidden;
 }
+.item-card:hover { background: rgba(255, 255, 255, 0.22); transform: translateY(-5px); border-color: white; }
+.item-card i.icon { font-size: 4rem; margin-bottom: 12px; }
+.fa-folder { color: #facc15; }
+.thumb-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+.item-name { font-size: 0.9rem; font-weight: 600; color: white; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; background: rgba(0,0,0,0.35); padding: 4px; border-radius: 5px; }
 
-.item-card:hover { 
-    background: rgba(255, 255, 255, 0.25); 
-    transform: translateY(-5px) scale(1.02); /* Efek melayang */
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    border-color: #ffffff;
-}
-
-/* Ikon Folder/File Besar di Tengah */
-.item-card i.icon { 
-    font-size: 3.5rem; /* Ukuran Ikon Besar */
-    margin-bottom: 15px; 
-    transition: 0.3s;
-}
-
-.item-card .fa-folder { color: #facc15; text-shadow: 0 2px 10px rgba(250, 204, 21, 0.3); }
-.item-card .fa-file { color: #60a5fa; text-shadow: 0 2px 10px rgba(96, 165, 250, 0.3); }
-
-/* Nama File/Folder */
-.item-name { 
-    font-size: 0.9rem; 
-    text-align: center; 
-    width: 90%; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap; 
-    font-weight: 600;
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
-
-/* Tombol Hapus (Muncul saat hover) */
-.del-btn { 
-    position: absolute; 
-    top: 8px; right: 8px; 
-    color: #ffadad; 
-    background: rgba(0,0,0,0.3); 
-    border-radius: 50%;
-    width: 25px; height: 25px;
-    border: none; 
-    display: none; /* Sembunyi default */
-    align-items: center; justify-content: center;
-}
+.del-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #ffadad; width: 26px; height: 26px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; }
 .item-card:hover .del-btn { display: flex; }
-.del-btn:hover { background: #ff5252; color: white; }
-
-/* === MODAL STYLES === */
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; animation: fadeIn 0.3s ease; }
-.modal-box { width: 90%; max-width: 450px; padding: 30px; background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; display: flex; flex-direction: column; gap: 20px; transform: scale(1); animation: popUp 0.3s; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; margin-bottom: 5px; }
-.modal-header h3 { font-size: 1.2rem; font-weight: 600; margin: 0; color: white; display: flex; align-items: center; gap: 10px; }
-.close-icon { cursor: pointer; font-size: 1.2rem; color: rgba(255,255,255,0.6); transition: 0.3s; }
-.close-icon:hover { color: #ff6b6b; transform: rotate(90deg); }
-.modal-body p { color: rgba(255, 255, 255, 0.8); margin-bottom: 15px; font-size: 0.9rem; text-align: center; }
-.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.3); border-radius: 20px; padding: 30px 20px; text-align: center; background: rgba(255, 255, 255, 0.05); transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
-.drag-drop-area.dragover { border-color: #4ade80; background: rgba(74, 222, 128, 0.1); transform: scale(1.02); }
-.cloud-icon { font-size: 3rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 10px; transition: 0.3s; }
-.drag-drop-area:hover .cloud-icon { color: #4ade80; transform: translateY(-5px); }
-.file-info { font-size: 0.85rem; color: #4ade80; margin-top: 10px; font-weight: 600; min-height: 20px;}
-.modal-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 5px; }
-.modal-actions .btn-pill { padding: 0 20px; font-size: 0.9rem; width: auto; height: 40px; }

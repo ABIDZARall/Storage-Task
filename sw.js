@@ -1,38 +1,136 @@
-// KITA UBAH KE v3 AGAR BROWSER MERESET TAMPILAN LAMA
-const CACHE_NAME = "appwrite-tasks-v3";
+const client = new Appwrite.Client();
+const account = new Appwrite.Account(client);
+const databases = new Appwrite.Databases(client);
+const storage = new Appwrite.Storage(client);
 
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "https://cdn.jsdelivr.net/npm/appwrite@14.0.1",
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-];
+const CONFIG = {
+    ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
+    PROJECT_ID: '697f71b40034438bb559', 
+    DB_ID: 'storagedb',
+    COLLECTION_FILES: 'files',   
+    COLLECTION_USERS: 'users',   
+    BUCKET_ID: 'taskfiles'
+};
+const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
-self.addEventListener("install", (e) => {
-  self.skipWaiting(); // Paksa update segera
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
-});
+client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key); // Hapus cache versi lama (v1/v2)
-          }
-        })
-      );
-    })
-  );
-  return self.clients.claim();
-});
+let currentUser = null;
+let currentFolderId = 'root';
+let currentFolderName = "Drive";
 
-self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
-  );
-});
+const el = (id) => document.getElementById(id);
+
+// === STORAGE CALCULATION ===
+async function calculateStorage() {
+    if (!currentUser) return;
+    try {
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file')
+        ]);
+        let total = 0;
+        res.documents.forEach(doc => total += (doc.size || 0));
+        const mb = (total / (1024 * 1024)).toFixed(2);
+        const pct = Math.min((total / (2 * 1024 * 1024 * 1024)) * 100, 100);
+        el('storageUsed').innerText = `${mb} MB / 2 GB`;
+        el('storageBar').style.width = pct + "%";
+    } catch (e) { console.error(e); }
+}
+
+// === LOAD FILES & HEADER DYNAMICS ===
+async function loadFiles(folderId) {
+    if (!currentUser) return;
+    const grid = el('fileGrid'); grid.innerHTML = '';
+    const header = el('headerTitle');
+
+    if(folderId === 'root') {
+        updateGreeting(); 
+    } else {
+        header.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px; margin-right:15px; display:inline-flex;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${currentFolderName}`;
+    }
+
+    try {
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('parentId', folderId)
+        ]);
+        if(res.documents.length === 0) grid.innerHTML = `<p style="color:rgba(255,255,255,0.3); width:100%; text-align:center; grid-column: 1/-1;">Folder ini masih kosong</p>`;
+        res.documents.forEach(doc => renderItem(doc));
+    } catch (e) { console.error(e); }
+}
+
+function renderItem(doc) {
+    const grid = el('fileGrid');
+    const div = document.createElement('div');
+    const isFolder = doc.type === 'folder';
+    let preview = '';
+    const namaFile = (doc.nama || "").toLowerCase();
+
+    if (isFolder) {
+        preview = `<i class="icon fa-solid fa-folder"></i>`;
+    } else if (namaFile.match(/\.(jpg|jpeg|png|webp|gif)$/)) {
+        const url = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
+        preview = `<img src="${url}" class="thumb-img" loading="lazy">`;
+    } else {
+        preview = `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
+    }
+
+    const action = isFolder ? `openFolder('${doc.$id}', '${doc.nama}')` : `window.open('${doc.url}', '_blank')`;
+    div.className = 'item-card';
+    div.innerHTML = `
+        <button class="del-btn" onclick="deleteItem('${doc.$id}','${doc.type}','${doc.fileId}')"><i class="fa-solid fa-xmark"></i></button>
+        <div onclick="${action}" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            ${preview}
+            <div class="item-name">${doc.nama || "Item"}</div>
+        </div>`;
+    grid.appendChild(div);
+}
+
+// === FUNCTIONS ===
+window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
+
+window.submitCreateFolder = async () => {
+    const n = el('newFolderName').value.trim(); if(!n) return;
+    closeModal('folderModal'); el('loading').classList.remove('hidden');
+    try {
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            nama: n, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0
+        });
+        loadFiles(currentFolderId);
+    } finally { el('loading').classList.add('hidden'); }
+};
+
+window.submitUploadFile = async () => {
+    if (!window.selectedFile) return alert("Pilih file!");
+    closeModal('uploadModal'); el('loading').classList.remove('hidden');
+    try {
+        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), window.selectedFile);
+        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            nama: window.selectedFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: window.selectedFile.size
+        });
+        loadFiles(currentFolderId); calculateStorage();
+    } finally { el('loading').classList.add('hidden'); }
+};
+
+// === INIT ===
+async function checkSession() {
+    try {
+        currentUser = await account.get();
+        nav('dashboardPage'); updateGreeting(); calculateStorage(); loadFiles('root');
+    } catch (e) { nav('loginPage'); }
+}
+document.addEventListener('DOMContentLoaded', checkSession);
+
+window.nav = (p) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); el(p).classList.remove('hidden'); };
+window.openModal = (m) => el(m).classList.remove('hidden');
+window.closeModal = (m) => el(m).classList.add('hidden');
+window.toggleDropdown = () => el('dropdownMenu').classList.toggle('show');
+window.togglePass = (id, icon) => { const i = el(id); i.type = i.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
+function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Night"; el('headerTitle').innerText = `Welcome In Drive ${s}`; }
+el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
+el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
+el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+function handleFileSelect(f) { window.selectedFile = f; el('fileInfoText').innerText = `File: ${f.name}`; }
+el('searchInput').addEventListener('input', () => loadFiles(currentFolderId));
