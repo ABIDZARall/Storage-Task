@@ -72,11 +72,55 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .dropdown-content a:hover { background: rgba(255,255,255,0.1); }
 
-.storage-widget { margin-top: auto; /* Dorong ke bawah */ padding-bottom: 10px; }
-.storage-label { margin-bottom: 10px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
-.progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; transition: width 0.5s ease; }
-.storage-text { font-size: 0.8rem; opacity: 0.7; text-align: right; }
+/* ================= STORAGE WIDGET STYLING ================= */
+
+.storage-widget {
+    margin-top: auto; /* Memastikan posisi tetap di bawah sidebar */
+    padding: 15px 0;
+    width: 100%;
+}
+
+.storage-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-main);
+}
+
+/* Wadah Bilah Kemajuan */
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1); /* Warna abu-abu transparan */
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+/* Bilah Pengisi Dinamis */
+.progress-fill {
+    height: 100%;
+    width: 0%; /* Nilai ini akan diubah oleh JavaScript */
+    background: var(--accent); /* Menggunakan warna hijau/cyan aksen */
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out; /* Efek transisi halus saat mengisi */
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+
+.storage-text {
+    font-size: 0.75rem;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.5px;
+}
+
+#storageUsed {
+    font-weight: 700;
+    color: var(--text-main);
+}
 
 /* MAIN CONTENT (Search & Folder Grid) */
 .main-content-area {

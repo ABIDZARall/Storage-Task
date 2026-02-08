@@ -263,6 +263,58 @@ if (el('logoutBtn')) {
     });
 }
 
+// ======================================================
+// STORAGE CALCULATION LOGIC
+// ======================================================
+
+async function calculateStorage() {
+    if (!currentUser) return;
+
+    try {
+        // 1. Ambil semua dokumen dengan tipe 'file' milik user ini
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file')
+        ]);
+
+        let totalBytes = 0;
+        
+        // 2. Jumlahkan semua ukuran file (pastikan field 'size' ada di database)
+        res.documents.forEach(doc => {
+            totalBytes += (doc.size || 0);
+        });
+
+        // 3. Konversi Bytes ke Megabytes (1 MB = 1,048,576 Bytes)
+        const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+        
+        // 4. Hitung Persentase (Berdasarkan Kapasitas 2 GB = 2048 MB)
+        const maxStorageMB = 2048; 
+        const percentage = Math.min((parseFloat(totalMB) / maxStorageMB) * 100, 100);
+
+        // 5. Update Tampilan UI
+        const usedTextEl = el('storageUsed');
+        const barFillEl = el('storageBar');
+
+        if (usedTextEl) {
+            usedTextEl.innerText = `${totalMB} MB`;
+        }
+        
+        if (barFillEl) {
+            barFillEl.style.width = `${percentage}%`;
+            
+            // Perubahan warna bar jika hampir penuh (opsional)
+            if (percentage > 90) {
+                barFillEl.style.background = "#ff5252"; // Merah jika > 90%
+            } else {
+                barFillEl.style.background = "var(--accent)";
+            }
+        }
+
+    } catch (e) {
+        console.error("Gagal menghitung storage:", e);
+    }
+}
+
 // Helpers
 window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
 window.closeModal = (id) => el(id).classList.add('hidden');
