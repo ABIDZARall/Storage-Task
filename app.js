@@ -115,81 +115,109 @@ if (el('logoutBtn')) {
 // STORAGE LOGIC (RENDER & NAVIGASI FOLDER)
 // ======================================================
 
-// Cek Sesi
+// === 1. OTENTIKASI & SESI (DIPERTAHANKAN AGAR FOLDER BISA DIBUKA) ===
 async function checkSession() {
     showLoading();
     try {
         currentUser = await account.get();
-        nav('dashboardPage'); 
+        window.nav('dashboardPage'); 
         updateGreeting(); 
-        loadFiles('root'); // Load folder utama
-    } catch (e) { nav('loginPage'); }
+        loadFiles('root'); 
+    } catch (e) { window.nav('loginPage'); }
     finally { setTimeout(hideLoading, 500); }
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// Load Files dari Database
+// === 2. LOGIKA FOLDER & FILE ===
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
-    grid.innerHTML = ''; // Bersihkan grid
+    if (grid) grid.innerHTML = ''; 
 
-    // Tombol Kembali (Jika masuk ke folder)
+    // Update Area Header / Breadcrumb
     const breadcrumb = document.querySelector('.breadcrumb-area');
-    if(folderId !== 'root') {
-        breadcrumb.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> <h2 style="display:inline; margin-left:10px;">Folder</h2>`;
-    } else {
-        breadcrumb.innerHTML = `<h2 id="welcomeText">Welcome In Drive</h2>`;
-        updateGreeting();
+    if (breadcrumb) {
+        if(folderId !== 'root') {
+            // Tampilan saat di dalam folder (Misal folder "p")
+            // Memberikan jarak vertikal antara tombol dan judul folder
+            breadcrumb.innerHTML = `
+                <div class="dynamic-header">
+                    <button onclick="loadFiles('root')" class="btn-pill small back-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali
+                    </button> 
+                    <h2 id="headerTitle">${currentFolderName}</h2>
+                </div>`;
+        } else {
+            // Tampilan awal (Root)
+            breadcrumb.innerHTML = `<h2 id="headerTitle">Welcome In Drive</h2>`;
+            updateGreeting();
+        }
     }
 
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('parentId', folderId) // Menampilkan isi folder yang sesuai
+            Appwrite.Query.equal('parentId', folderId)
         ]);
         
         if(res.documents.length === 0) {
-            grid.innerHTML = `<p style="color:rgba(255,255,255,0.5); width:100%; text-align:center;">Folder Kosong</p>`;
+            grid.innerHTML = `<p class="empty-msg">Folder Kosong</p>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
         }
-        
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Gagal memuat folder:", e); }
 }
 
-// Render Item (Tampilan Kotak Besar di Tengah)
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div'); 
-    div.className = 'item-card'; // Menggunakan style CSS baru
+    div.className = 'item-card'; 
     
     const isFolder = doc.type === 'folder';
     const icon = isFolder ? 'fa-folder' : 'fa-file';
+    const fileName = doc.name || doc.nama || "Tanpa Nama";
     
-    // Aksi Klik: Masuk Folder (ubah currentFolderId) atau Buka File
+    // Sanitasi nama folder untuk mencegah error saat diklik
+    const safeName = fileName.replace(/'/g, "\\'");
+
+    // PERBAIKAN: Mengirim dua parameter (ID dan Nama) agar folder bisa dibuka
     const clickAction = isFolder 
-        ? `openFolder('${doc.$id}')` 
+        ? `openFolder('${doc.$id}', '${safeName}')` 
         : `window.open('${doc.url}', '_blank')`;
 
     div.innerHTML = `
         <button class="del-btn" onclick="deleteItem('${doc.$id}','${doc.type}','${doc.fileId}')">
             <i class="fa-solid fa-xmark"></i>
         </button>
-        <div onclick="${clickAction}" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div onclick="${clickAction}" class="item-content">
             <i class="icon fa-solid ${icon}"></i>
-            <div class="item-name">${doc.name}</div>
+            <div class="item-name">${fileName}</div>
         </div>`;
     grid.appendChild(div);
 }
 
-// Fungsi Pindah Folder
+// FUNGSI MEMBUKA FOLDER (DIPERBAIKI)
 window.openFolder = (id, nama) => { 
     currentFolderId = id; 
-    currentFolderName = nama; // Menyimpan nama folder 'p'
-    document.getElementById('headerTitle').innerText = nama; // Mengubah teks 'Welcome' menjadi 'p'
-    loadFiles(id); 
+    currentFolderName = nama; // Menyimpan nama folder yang diklik (misal: "p")
+    loadFiles(id); // Memuat isi folder tersebut
 };
+
+// === 3. UTILITAS LAINNYA ===
+window.nav = (pageId) => {
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
+        if(el(id)) el(id).classList.add('hidden');
+    });
+    if(el(pageId)) el(pageId).classList.remove('hidden');
+};
+
+function updateGreeting() {
+    const h = new Date().getHours();
+    let s = "Morning";
+    if(h>=12) s="Afternoon"; if(h>=18) s="Night";
+    const title = el('headerTitle');
+    if (title && currentFolderId === 'root') title.innerText = `Welcome In Drive ${s}`;
+}
 
 // ======================================================
 // FITUR MODAL (BUAT FOLDER & UPLOAD)

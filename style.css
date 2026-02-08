@@ -162,6 +162,65 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
 .modal-actions .btn-pill { padding: 0 30px; }
 
+/* ================= PERBAIKAN JARAK & TATA LETAK ================= */
+
+/* 1. Mengatur Jarak di Header Dinamis */
+.dynamic-header {
+    display: flex;
+    flex-direction: column; /* Menyusun elemen atas-bawah */
+    align-items: flex-start;
+    gap: 30px; /* JARAK ANTARA TOMBOL KEMBALI DAN JUDUL FOLDER (Misal: 'p') */
+    margin-bottom: 50px; /* Jarak ke konten folder di bawahnya */
+}
+
+/* 2. Gaya Judul Folder */
+#headerTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* 3. Tombol Kembali agar lebih rapi */
+.back-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid var(--glass-border) !important;
+    padding: 10px 25px !important;
+    width: auto !important;
+}
+
+/* 4. MEMBUAT PESAN "FOLDER KOSONG" KE TENGAH TOTAL */
+.empty-msg {
+    grid-column: 1 / -1; /* Mengambil lebar penuh baris grid */
+    width: 100%;
+    min-height: 300px;
+    display: flex;
+    justify-content: center; /* Tengah horizontal */
+    align-items: center;     /* Tengah vertikal */
+    text-align: center;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    letter-spacing: 1px;
+}
+
+/* 5. Item Card Content Alignment */
+.item-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Menghilangkan kotak abu-abu di judul folder sesuai permintaan sebelumnya */
+.item-name {
+    background: transparent !important;
+    padding: 0 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
 /* ================= PERBAIKAN TATA LETAK HEADER & TOMBOL KEMBALI ================= */
 
 /* 1. MEMBERIKAN JARAK ANTARA TOMBOL 'KEMBALI' DENGAN JUDUL FOLDER */
