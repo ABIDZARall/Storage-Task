@@ -30,20 +30,19 @@ const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidde
 // 2. FUNGSI UTAMA (INIT & SESSION)
 // ======================================================
 
-// Cek apakah user sudah login saat aplikasi dibuka
+// Cek Sesi Login
 async function checkSession() {
     showLoading();
     try {
         currentUser = await account.get();
         window.nav('dashboardPage'); 
         
-        // Reset ke root
         currentFolderId = 'root';
         currentFolderName = "Drive";
         
-        // Jalankan fungsi penting
-        calculateStorage(); // Hitung penyimpanan (Auto-Repair)
-        loadFiles('root');  // Muat file
+        // Panggil fungsi penting
+        calculateStorage(); 
+        loadFiles('root');  
         
     } catch (e) { 
         window.nav('loginPage'); 
@@ -53,7 +52,7 @@ async function checkSession() {
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// Logika Navigasi Halaman (Login <-> Dashboard)
+// Navigasi Halaman
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
         if(el(id)) el(id).classList.add('hidden');
@@ -61,7 +60,7 @@ window.nav = (pageId) => {
     if(el(pageId)) el(pageId).classList.remove('hidden');
 };
 
-// Logika Waktu (Greeting)
+// Logika Waktu
 function updateGreeting() {
     const h = new Date().getHours();
     let timeString = "Morning";
@@ -82,46 +81,37 @@ async function calculateStorage() {
     if (!currentUser) return;
 
     try {
-        // A. Ambil daftar file dari DATABASE
-        const dbPromise = databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('type', 'file'),
-            Appwrite.Query.limit(100)
+        // Ambil data dari Database & Bucket secara paralel
+        const [dbRes, bucketRes] = await Promise.all([
+            databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+                Appwrite.Query.equal('owner', currentUser.$id),
+                Appwrite.Query.equal('type', 'file'),
+                Appwrite.Query.limit(100)
+            ]),
+            storage.listFiles(CONFIG.BUCKET_ID, [Appwrite.Query.limit(100)])
         ]);
 
-        // B. Ambil daftar file asli dari BUCKET (untuk perbaikan data lama)
-        const bucketPromise = storage.listFiles(CONFIG.BUCKET_ID, [
-            Appwrite.Query.limit(100)
-        ]);
-
-        const [dbRes, bucketRes] = await Promise.all([dbPromise, bucketPromise]);
-
-        // C. Petakan ukuran asli dari bucket
+        // Peta ukuran asli
         const realSizes = {};
-        bucketRes.files.forEach(f => {
-            realSizes[f.$id] = f.sizeOriginal;
-        });
+        bucketRes.files.forEach(f => { realSizes[f.$id] = f.sizeOriginal; });
 
         let totalBytes = 0;
 
-        // D. Loop per file dan perbaiki jika ukurannya 0
+        // Loop perbaikan data
         for (const doc of dbRes.documents) {
             let size = doc.size;
-
             if (!size || size === 0) {
                 const realSize = realSizes[doc.fileId];
                 if (realSize) {
                     size = realSize;
-                    // Auto-Repair ke Database
-                    databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
-                        size: size
-                    }).catch(err => console.log("Auto-repair skip:", err));
+                    databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { size: size })
+                        .catch(err => console.log("Skip repair:", err));
                 }
             }
             totalBytes += (size || 0);
         }
 
-        // E. Konversi ke MB dan Tampilkan
+        // Tampilkan
         const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
         const maxStorageMB = 2048; // 2 GB
         const percentage = Math.min((parseFloat(totalMB) / maxStorageMB) * 100, 100);
@@ -132,9 +122,7 @@ async function calculateStorage() {
             el('storageBar').style.background = percentage > 90 ? '#ff5252' : 'var(--accent)';
         }
 
-    } catch (e) {
-        console.error("Gagal hitung storage:", e);
-    }
+    } catch (e) { console.error("Gagal hitung storage:", e); }
 }
 
 // ======================================================
@@ -208,9 +196,34 @@ function renderItem(doc) {
 }
 
 // ======================================================
-// 5. FILE ACTIONS (OPEN, UPLOAD, DELETE)
+// 5. FILE ACTIONS (CREATE FOLDER, UPLOAD, DELETE)
 // ======================================================
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
+
+// --- FUNGSI CREATE FOLDER YANG SEMPAT HILANG ---
+window.submitCreateFolder = async () => {
+    const name = el('newFolderName').value.trim();
+    if (!name) return; // Jangan buat jika kosong
+
+    closeModal('folderModal'); 
+    showLoading();
+
+    try {
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: name, 
+            type: 'folder', 
+            parentId: currentFolderId, 
+            owner: currentUser.$id, 
+            size: 0
+        });
+        loadFiles(currentFolderId); // Refresh tampilan
+        el('newFolderName').value = ''; // Reset input
+    } catch (e) { 
+        alert("Gagal buat folder: " + e.message); 
+    } finally { 
+        hideLoading(); 
+    }
+};
 
 window.submitUploadFile = async () => {
     if (!window.selectedFile) return alert("Pilih file!");
@@ -221,18 +234,11 @@ window.submitUploadFile = async () => {
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
         
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: file.name, 
-            type: 'file', 
-            parentId: currentFolderId, 
-            owner: currentUser.$id, 
-            url: url.href, 
-            fileId: up.$id, 
-            size: file.size 
+            name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: file.size 
         });
         
         loadFiles(currentFolderId);
-        calculateStorage(); // Update bar storage
-        
+        calculateStorage(); 
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
@@ -243,7 +249,7 @@ window.deleteItem = async (id, type, fileId) => {
         if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
         await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
         loadFiles(currentFolderId);
-        calculateStorage(); // Update bar storage
+        calculateStorage();
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
@@ -279,26 +285,20 @@ if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
     } catch(e) { alert(e.message); } finally { hideLoading(); }
 });
 
-// --- PERBAIKAN PENTING: TOMBOL LOGOUT ---
-// Pastikan ID tombol di HTML adalah 'logoutBtn'
+// Logout
 const logoutBtn = el('logoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         if (confirm("Yakin ingin keluar?")) {
             showLoading();
             try {
-                await account.deleteSession('current'); // Hapus sesi
+                await account.deleteSession('current'); 
                 currentUser = null;
-                window.nav('loginPage'); // Kembali ke Login
-            } catch (e) {
-                alert("Gagal Logout: " + e.message);
-            } finally {
-                hideLoading();
-            }
+                window.nav('loginPage'); 
+            } catch (e) { alert("Gagal Logout: " + e.message); } 
+            finally { hideLoading(); }
         }
     });
-} else {
-    console.error("Tombol Logout tidak ditemukan di HTML!");
 }
 
 // ======================================================
