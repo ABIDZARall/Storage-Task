@@ -184,9 +184,11 @@ function renderItem(doc) {
 }
 
 // Fungsi Pindah Folder
-window.openFolder = (id) => {
-    currentFolderId = id; // Simpan posisi folder saat ini
-    loadFiles(id);
+window.openFolder = (id, nama) => { 
+    currentFolderId = id; 
+    currentFolderName = nama; // Menyimpan nama folder 'p'
+    document.getElementById('headerTitle').innerText = nama; // Mengubah teks 'Welcome' menjadi 'p'
+    loadFiles(id); 
 };
 
 // ======================================================
