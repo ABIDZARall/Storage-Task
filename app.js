@@ -160,58 +160,68 @@ function renderItem(doc) {
 }
 
 // === 6. FUNGSI AKSI ===
-window.openFolder = (id, nama) => { 
-    currentFolderId = id; 
-    currentFolderName = nama; 
-    loadFiles(id); 
-};
+// === 5. FUNGSI AKSI (UPLOAD & DELETE DIPERBAIKI) ===
+        window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
-window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim();
-    if (!name) return;
-    closeModal('folderModal'); showLoading();
-    try {
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: name, 
-            type: 'folder', 
-            parentId: currentFolderId, 
-            owner: currentUser.$id, 
-            size: 0
-        });
-        loadFiles(currentFolderId);
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
+        window.submitUploadFile = async () => {
+            if (!window.selectedFile) return alert("Pilih file!");
+            closeModal('uploadModal'); showLoading();
+            try {
+                const file = window.selectedFile;
+                const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+                const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
+                
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+                    name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: file.size
+                });
+                
+                loadFiles(currentFolderId);
+                
+                // --- PERBAIKAN: Update angka storage setelah upload ---
+                calculateStorage(); 
+                
+            } catch (e) { alert(e.message); } finally { hideLoading(); }
+        };
 
-window.submitUploadFile = async () => {
-    if (!window.selectedFile) return alert("Pilih file!");
-    closeModal('uploadModal'); showLoading();
-    try {
-        const file = window.selectedFile;
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
-        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: file.name, 
-            type: 'file', 
-            parentId: currentFolderId, 
-            owner: currentUser.$id, 
-            url: url.href, 
-            fileId: up.$id, 
-            size: file.size
-        });
-        loadFiles(currentFolderId);
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
+        window.deleteItem = async (id, type, fileId) => {
+            if (!confirm("Hapus item ini?")) return;
+            showLoading();
+            try {
+                if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
+                await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
+                
+                loadFiles(currentFolderId);
+                
+                // --- PERBAIKAN: Update angka storage setelah menghapus ---
+                calculateStorage(); 
+                
+            } catch (e) { alert(e.message); } finally { hideLoading(); }
+        };
+        // === 6. LOGIKA PENGHITUNG STORAGE (INTI MASALAH) ===
+        async function calculateStorage() {
+            if (!currentUser) return;
 
-window.deleteItem = async (id, type, fileId) => {
-    if (!confirm("Hapus item ini?")) return;
-    showLoading();
-    try {
-        if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
-        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
-        loadFiles(currentFolderId);
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
+            try {
+                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+                    Appwrite.Query.equal('owner', currentUser.$id),
+                    Appwrite.Query.equal('type', 'file')
+                ]);
+
+                let totalBytes = 0;
+                res.documents.forEach(doc => {
+                    totalBytes += (doc.size || 0); // Menjumlahkan field 'size'
+                });
+
+                const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+                const maxStorageMB = 2048; // Batas 2 GB
+                const percentage = Math.min((parseFloat(totalMB) / maxStorageMB) * 100, 100);
+
+                // Update ke elemen HTML
+                if (el('storageUsed')) el('storageUsed').innerText = `${totalMB} MB`;
+                if (el('storageBar')) el('storageBar').style.width = `${percentage}%`;
+
+            } catch (e) { console.error("Gagal hitung storage:", e); }
+        }
 
 // === 7. LOGIN & SIGNUP HANDLER ===
 if (el('loginForm')) {
@@ -261,58 +271,6 @@ if (el('logoutBtn')) {
         if (!confirm("Keluar?")) return;
         try { await account.deleteSession('current'); nav('loginPage'); } catch (e) {}
     });
-}
-
-// ======================================================
-// STORAGE CALCULATION LOGIC
-// ======================================================
-
-async function calculateStorage() {
-    if (!currentUser) return;
-
-    try {
-        // 1. Ambil semua dokumen dengan tipe 'file' milik user ini
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('type', 'file')
-        ]);
-
-        let totalBytes = 0;
-        
-        // 2. Jumlahkan semua ukuran file (pastikan field 'size' ada di database)
-        res.documents.forEach(doc => {
-            totalBytes += (doc.size || 0);
-        });
-
-        // 3. Konversi Bytes ke Megabytes (1 MB = 1,048,576 Bytes)
-        const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
-        
-        // 4. Hitung Persentase (Berdasarkan Kapasitas 2 GB = 2048 MB)
-        const maxStorageMB = 2048; 
-        const percentage = Math.min((parseFloat(totalMB) / maxStorageMB) * 100, 100);
-
-        // 5. Update Tampilan UI
-        const usedTextEl = el('storageUsed');
-        const barFillEl = el('storageBar');
-
-        if (usedTextEl) {
-            usedTextEl.innerText = `${totalMB} MB`;
-        }
-        
-        if (barFillEl) {
-            barFillEl.style.width = `${percentage}%`;
-            
-            // Perubahan warna bar jika hampir penuh (opsional)
-            if (percentage > 90) {
-                barFillEl.style.background = "#ff5252"; // Merah jika > 90%
-            } else {
-                barFillEl.style.background = "var(--accent)";
-            }
-        }
-
-    } catch (e) {
-        console.error("Gagal menghitung storage:", e);
-    }
 }
 
 // Helpers
