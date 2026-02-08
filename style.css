@@ -80,63 +80,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .search-bar-pill { width: 100%; background: rgba(0,0,0,0.2); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
-/* ... (Gaya sebelumnya dipertahankan) ... */
+.breadcrumb-area { margin-bottom: 30px; padding-left: 10px; }
+.breadcrumb-area h2 { font-size: 2rem; font-weight: 700; color: white; }
 
-/* PERBAIKAN JARAK HEADER */
-.breadcrumb-area {
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* Jarak lega agar tidak berdempetan */
-    margin-bottom: 40px;
+.file-grid-area { 
+    flex: 1; overflow-y: auto; display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 40px; padding: 10px 20px; justify-content: center; align-content: start;
 }
 
-.breadcrumb-area h2 { font-size: 2.2rem; margin: 0; }
-
-/* MENU KONTEKS */
-.context-menu {
-    position: fixed;
-    background: #00384d;
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 8px 0;
-    width: 200px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 3000;
-}
-.menu-item {
-    padding: 10px 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-}
-.menu-item:hover { background: rgba(255,255,255,0.1); }
-.menu-item i { width: 18px; color: var(--accent); }
-
-/* INDIKATOR BINTANG */
-.item-card .star-icon {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: #ffd700;
-    font-size: 1.2rem;
-}
-
-/* SCROLLBAR HIDE SAAT KOSONG */
-.file-grid-area {
-    overflow-y: auto;
-    min-height: 0;
-}
-.file-grid-area::-webkit-scrollbar { width: 6px; }
-.file-grid-area::-webkit-scrollbar-track { background: transparent; }
-.file-grid-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 .item-card { 
     background: rgba(255, 255, 255, 0.05); border-radius: 20px; aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
     cursor: pointer; position: relative; transition: 0.3s;
 }
-
 .item-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-5px); }
 .item-card i.icon { font-size: 4.5rem; margin-bottom: 12px; }
 .item-name { font-size: 0.9rem; font-weight: 600; color: white; text-align: center; width: 85%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
