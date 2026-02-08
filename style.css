@@ -101,107 +101,95 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ================= PERBAIKAN SCROLLBAR & AREA GRID (CLEAN UI) ================= */
 
 /* 1. AREA UTAMA GRID */
+/* ================= PERBAIKAN SCROLLBAR & AREA GRID (FINAL FIX) ================= */
+
+/* 1. AREA UTAMA GRID */
 .file-grid-area { 
     flex: 1; 
-    /* 'auto' memastikan scrollbar HANYA muncul jika file benar-benar banyak */
+    /* 'auto' adalah KUNCI: Scrollbar HANYA muncul jika file menumpuk melebihi layar.
+       Jika kosong/sedikit, scrollbar TIDAK AKAN MUNCUL. */
     overflow-y: auto; 
-    overflow-x: hidden; /* Mencegah geser ke samping */
+    overflow-x: hidden; 
     
     display: grid; 
-    /* Mengatur kolom folder tetap rapi di tengah */
+    /* Mengatur kolom folder tetap rapi */
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     gap: 40px; 
     padding: 10px 20px;
+    
+    /* Posisi konten */
     justify-content: center; 
     align-content: start;
 
-    /* PENTING: Jangan gunakan min-height yang besar di sini */
+    /* Pastikan container tidak memaksa tinggi minimal */
     min-height: 0; 
+    height: 100%;
 }
 
-/* 2. MENGHILANGKAN JEJAK SCROLLBAR (TRACK) SAAT KOSONG */
-/* Kode ini memanipulasi scrollbar agar tidak meninggalkan kotak abu-abu di kanan */
+/* 2. MENYEMBUNYIKAN SCROLLBAR SAAT TIDAK DIPERLUKAN */
+
+/* Lebar scrollbar */
 .file-grid-area::-webkit-scrollbar {
-    width: 6px; /* Sangat tipis agar tidak mengganggu */
+    width: 6px; 
 }
 
+/* TRACK (Jalur Scrollbar): Dibuat Transparan Total */
+/* Ini yang membuat garis panjang di kanan hilang saat tidak ada scroll */
 .file-grid-area::-webkit-scrollbar-track {
-    /* Membuat jalur scrollbar transparan total */
     background: transparent; 
 }
 
+/* THUMB (Batang Scrollbar): */
 .file-grid-area::-webkit-scrollbar-thumb {
-    /* Batang scrollbar hanya akan terlihat jika ada aktivitas gulung */
-    background-color: rgba(255, 255, 255, 0.0); 
+    /* Default warnanya transparan (tidak terlihat) */
+    background-color: transparent; 
     border-radius: 10px;
-    transition: background-color 0.3s;
 }
 
-/* Scrollbar baru akan terlihat warnanya sedikit saat mouse berada di atas area grid */
+/* Scrollbar baru muncul warnanya HANYA jika file BANYAK (bisa discroll) 
+   DAN user sedang mengarahkan mouse ke sana */
 .file-grid-area:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    /* Gunakan warna putih transparan yang halus */
+    background-color: rgba(255, 255, 255, 0.2); 
 }
 
-/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
+/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (PENYEBAB SCROLL MUNCUL) */
 .file-grid-area p {
-    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
+    grid-column: 1 / -1; /* Membentang penuh kiri-kanan */
     width: 100%;
     
-    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
+    /* === PERBAIKAN PENTING DI SINI === */
+    /* Sebelumnya ada min-height: 300px <- INI YANG BIKIN SCROLLBAR MUNCUL TERUS */
+    /* Sekarang kita ganti menjadi auto atau dihapus */
     height: auto; 
-    margin: 0;
-    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
+    min-height: 0; 
+    
+    /* Gunakan margin atas untuk posisi visual, bukan height */
+    margin-top: 15%; 
+    margin-bottom: 0;
     
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Agar tidak memaksa tinggi ke bawah */
     
     text-align: center;
     color: rgba(255, 255, 255, 0.4);
     font-size: 1.2rem;
     font-weight: 500;
-    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
+    
+    /* Agar teks tidak menghalangi klik di area kosong */
+    pointer-events: none; 
 }
 
-/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
+/* 4. PENGATURAN INDUK (MAIN CONTENT) */
 .main-content-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
+    /* Memastikan tidak ada yang bocor keluar container */
     overflow: hidden; 
+    position: relative;
 }
-
-/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
-.file-grid-area p {
-    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
-    width: 100%;
-    
-    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
-    height: auto; 
-    margin: 0;
-    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.2rem;
-    font-weight: 500;
-    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
-}
-
-/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
-.main-content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
-    overflow: hidden; 
-}
-
 
 /* KARTU FOLDER/FILE */
 .item-card { 
