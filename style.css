@@ -29,6 +29,42 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .link-text { color: white; text-decoration: underline; cursor: pointer; font-weight: bold; }
 
 /* === DASHBOARD LAYOUT === */
+/* ... (Gaya Body & Auth dipertahankan) ... */
+
+/* SIDEBAR LAYOUT */
+.new-btn-wrapper { position: relative; width: 100%; }
+
+.new-btn { 
+    width: 100%; background: rgba(255,255,255,0.2); color: white; 
+    justify-content: flex-start; padding-left: 25px; gap: 12px; 
+    font-size: 1.1rem; height: 55px; border: 1px solid var(--glass-border);
+}
+.new-btn:hover { background: rgba(255,255,255,0.3); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+/* DROPDOWN MENU */
+.dropdown-content { 
+    display: none; position: absolute; top: 60px; left: 0; width: 100%; 
+    background: #00384d; border-radius: 15px; z-index: 1000; 
+    border: 1px solid var(--glass-border); box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.dropdown-content.show { display: block; animation: fadeIn 0.2s ease; }
+.dropdown-content a { 
+    display: flex; align-items: center; gap: 12px; padding: 15px 20px; 
+    color: white; text-decoration: none; cursor: pointer; transition: 0.2s;
+}
+.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
+
+/* DRAG & DROP AREA */
+.drag-drop-area {
+    border: 2px dashed rgba(255,255,255,0.2); border-radius: 20px;
+    padding: 30px; text-align: center; transition: 0.3s;
+    background: rgba(255,255,255,0.05); margin-bottom: 15px;
+}
+.drag-drop-area.dragover { border-color: var(--accent); background: rgba(74, 222, 128, 0.1); }
+.file-info { font-size: 0.9rem; text-align: center; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+
+/* ... (Gaya Sidebar Menu & Grid dipertahankan dari versi sebelumnya) ... */
 .dashboard-layout { height: 100vh; padding: 20px 30px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
 .profile-area { display: flex; align-items: center; gap: 15px; }
