@@ -175,7 +175,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     /* PROPERTI PENTING: MENAMBAH JARAK */
     gap: 20px; /* Memberikan celah 20px antara tombol dan teks judul */
     
-    margin-bottom: 30px; /* Memberikan jarak tambahan ke bawah (ke arah konten folder) */
+    margin-bottom: 40px; /* Memberikan jarak tambahan ke bawah (ke arah konten folder) */
     width: 100%; /* Memastikan lebar penuh agar tidak terpotong */
 }
 
