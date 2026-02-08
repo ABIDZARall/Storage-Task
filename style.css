@@ -91,8 +91,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .search-bar-pill i { color: #ccc; font-size: 1.1rem; }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
-.header-info { margin-bottom: 25px; padding-left: 10px; display: flex; align-items: center; }
-.header-info h2 { font-size: 1.8rem; font-weight: 600; letter-spacing: 0.5px; }
+.header-info { 
+    margin-top: 10px;
+    margin-bottom: 70px; /* Menambah jarak signifikan sesuai instruksi */
+    padding-left: 10px; 
+}
+.header-info h2 { font-size: 1.8rem; font-weight: 600; color: white; }
+/* .header-info { margin-bottom: 25px; padding-left: 10px; display: flex; align-items: center; }
+.header-info h2 { font-size: 1.8rem; font-weight: 600; letter-spacing: 0.5px; } */
 
 /* GRID FOLDER (POSISI TENGAH) */
 .file-grid-area { 
@@ -110,21 +116,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* KARTU FOLDER/FILE */
 .item-card { 
-    background: rgba(255, 255, 255, 0.1); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 25px; 
+    background: transparent; /* Menghapus kotak abu-abu di belakang folder */
+    border: none; 
     aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    cursor: pointer; position: relative; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    overflow: hidden;
+    cursor: pointer; position: relative; transition: 0.3s;
 }
-.item-card:hover { 
-    background: rgba(255, 255, 255, 0.2); 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    border-color: rgba(255,255,255,0.4);
-}
+.item-card:hover { transform: translateY(-10px); }
 
 .item-card i.icon { font-size: 4.5rem; margin-bottom: 15px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2)); }
 .fa-folder { color: #facc15; }
