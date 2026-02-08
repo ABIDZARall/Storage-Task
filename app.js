@@ -3,7 +3,9 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI
+// ======================================================
+// 1. KONFIGURASI PROYEK
+// ======================================================
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -12,7 +14,6 @@ const CONFIG = {
     COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
-
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -25,7 +26,42 @@ const el = (id) => document.getElementById(id);
 const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
 const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
 
-// === 1. LOGIKA WAKTU (GREETING) ===
+// ======================================================
+// 2. FUNGSI UTAMA (INIT & SESSION)
+// ======================================================
+
+// Cek apakah user sudah login saat aplikasi dibuka
+async function checkSession() {
+    showLoading();
+    try {
+        currentUser = await account.get();
+        window.nav('dashboardPage'); 
+        
+        // Reset ke root
+        currentFolderId = 'root';
+        currentFolderName = "Drive";
+        
+        // Jalankan fungsi penting
+        calculateStorage(); // Hitung penyimpanan (Auto-Repair)
+        loadFiles('root');  // Muat file
+        
+    } catch (e) { 
+        window.nav('loginPage'); 
+    } finally { 
+        setTimeout(hideLoading, 500); 
+    }
+}
+document.addEventListener('DOMContentLoaded', checkSession);
+
+// Logika Navigasi Halaman (Login <-> Dashboard)
+window.nav = (pageId) => {
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
+        if(el(id)) el(id).classList.add('hidden');
+    });
+    if(el(pageId)) el(pageId).classList.remove('hidden');
+};
+
+// Logika Waktu (Greeting)
 function updateGreeting() {
     const h = new Date().getHours();
     let timeString = "Morning";
@@ -39,27 +75,9 @@ function updateGreeting() {
     }
 }
 
-// === 2. CEK SESI USER ===
-async function checkSession() {
-    showLoading();
-    try {
-        currentUser = await account.get();
-        window.nav('dashboardPage'); 
-        currentFolderId = 'root';
-        
-        // Panggil hitung storage saat awal masuk
-        calculateStorage(); 
-        
-        loadFiles('root'); 
-    } catch (e) { 
-        window.nav('loginPage'); 
-    } finally { 
-        setTimeout(hideLoading, 500); 
-    }
-}
-document.addEventListener('DOMContentLoaded', checkSession);
-
-// === 3. FUNGSI PENGHITUNG STORAGE CERDAS (AUTO-REPAIR) ===
+// ======================================================
+// 3. STORAGE CALCULATION (AUTO REPAIR)
+// ======================================================
 async function calculateStorage() {
     if (!currentUser) return;
 
@@ -68,46 +86,38 @@ async function calculateStorage() {
         const dbPromise = databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id),
             Appwrite.Query.equal('type', 'file'),
-            Appwrite.Query.limit(100) // Batas ambil 100 file untuk dihitung
+            Appwrite.Query.limit(100)
         ]);
 
-        // B. Ambil daftar file asli dari STORAGE BUCKET (Sumber kebenaran)
-        // Ini untuk mendapatkan ukuran file lama yang belum tercatat di database
+        // B. Ambil daftar file asli dari BUCKET (untuk perbaikan data lama)
         const bucketPromise = storage.listFiles(CONFIG.BUCKET_ID, [
             Appwrite.Query.limit(100)
         ]);
 
         const [dbRes, bucketRes] = await Promise.all([dbPromise, bucketPromise]);
 
-        // C. Buat peta ukuran file dari bucket (ID File -> Ukuran Asli)
+        // C. Petakan ukuran asli dari bucket
         const realSizes = {};
         bucketRes.files.forEach(f => {
             realSizes[f.$id] = f.sizeOriginal;
         });
 
         let totalBytes = 0;
-        let needsUpdate = false;
 
-        // D. Loop dan Hitung
+        // D. Loop per file dan perbaiki jika ukurannya 0
         for (const doc of dbRes.documents) {
             let size = doc.size;
 
-            // JIKA UKURAN KOSONG/NOL (Kasus File Lama)
             if (!size || size === 0) {
-                // Cari ukuran aslinya di bucket
                 const realSize = realSizes[doc.fileId];
-                
                 if (realSize) {
                     size = realSize;
-                    // AUTO-REPAIR: Simpan ukuran ini ke database agar besok tidak perlu cari lagi
+                    // Auto-Repair ke Database
                     databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
                         size: size
-                    }).catch(err => console.log("Gagal auto-repair:", err));
-                    
-                    console.log(`Memperbaiki data ukuran file: ${doc.name} -> ${size} bytes`);
+                    }).catch(err => console.log("Auto-repair skip:", err));
                 }
             }
-            
             totalBytes += (size || 0);
         }
 
@@ -116,20 +126,20 @@ async function calculateStorage() {
         const maxStorageMB = 2048; // 2 GB
         const percentage = Math.min((parseFloat(totalMB) / maxStorageMB) * 100, 100);
 
-        // Update UI
         if (el('storageUsed')) el('storageUsed').innerText = `${totalMB} MB`;
         if (el('storageBar')) {
             el('storageBar').style.width = `${percentage}%`;
-            // Ubah warna jadi merah jika hampir penuh (>90%)
             el('storageBar').style.background = percentage > 90 ? '#ff5252' : 'var(--accent)';
         }
 
     } catch (e) {
-        console.error("Gagal menghitung storage:", e);
+        console.error("Gagal hitung storage:", e);
     }
 }
 
-// === 4. LOAD FILES & HEADER ===
+// ======================================================
+// 4. LOAD FILES & RENDER
+// ======================================================
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
@@ -167,7 +177,6 @@ async function loadFiles(folderId) {
     } catch (e) { console.error(e); }
 }
 
-// === 5. RENDER ITEM ===
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div'); 
@@ -186,7 +195,9 @@ function renderItem(doc) {
         content = `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     }
 
-    const clickAction = isFolder ? `openFolder('${doc.$id}', '${safeName}')` : `window.open('${doc.url}', '_blank')`;
+    const clickAction = isFolder 
+        ? `openFolder('${doc.$id}', '${safeName}')` 
+        : `window.open('${doc.url}', '_blank')`;
 
     div.innerHTML = `
         <button class="del-btn" onclick="deleteItem('${doc.$id}','${doc.type}','${doc.fileId}')"><i class="fa-solid fa-xmark"></i></button>
@@ -196,7 +207,9 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// === 6. FUNGSI AKSI ===
+// ======================================================
+// 5. FILE ACTIONS (OPEN, UPLOAD, DELETE)
+// ======================================================
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
 window.submitUploadFile = async () => {
@@ -204,11 +217,9 @@ window.submitUploadFile = async () => {
     closeModal('uploadModal'); showLoading();
     try {
         const file = window.selectedFile;
-        // 1. Upload ke Bucket
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
         
-        // 2. Simpan ke Database (TERMASUK SIZE)
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: file.name, 
             type: 'file', 
@@ -216,7 +227,7 @@ window.submitUploadFile = async () => {
             owner: currentUser.$id, 
             url: url.href, 
             fileId: up.$id, 
-            size: file.size // <--- PENTING: Menyimpan ukuran file
+            size: file.size 
         });
         
         loadFiles(currentFolderId);
@@ -231,22 +242,16 @@ window.deleteItem = async (id, type, fileId) => {
     try {
         if (type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, fileId);
         await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, id);
-        
         loadFiles(currentFolderId);
         calculateStorage(); // Update bar storage
-        
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// UI Helpers
-window.nav = (p) => { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); if(el(p)) el(p).classList.remove('hidden'); };
-window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
-window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => openModal('uploadModal');
-window.createFolder = () => openModal('folderModal');
-window.toggleDropdown = () => el('dropdownMenu').classList.toggle('show');
+// ======================================================
+// 6. EVENT LISTENER (LOGIN, SIGNUP, LOGOUT)
+// ======================================================
 
-// Login Handlers
+// Login
 if(el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     let id = el('loginEmail').value.trim(); const pw = el('loginPass').value;
@@ -262,7 +267,49 @@ if(el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
     } catch(e) { alert(e.message); hideLoading(); }
 });
 
-// Drag Drop
+// Signup
+if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = el('regName').value; const email = el('regEmail').value;
+    showLoading();
+    try {
+        const auth = await account.create(Appwrite.ID.unique(), email, el('regPass').value, name);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email });
+        alert("Daftar Berhasil!"); nav('loginPage');
+    } catch(e) { alert(e.message); } finally { hideLoading(); }
+});
+
+// --- PERBAIKAN PENTING: TOMBOL LOGOUT ---
+// Pastikan ID tombol di HTML adalah 'logoutBtn'
+const logoutBtn = el('logoutBtn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+        if (confirm("Yakin ingin keluar?")) {
+            showLoading();
+            try {
+                await account.deleteSession('current'); // Hapus sesi
+                currentUser = null;
+                window.nav('loginPage'); // Kembali ke Login
+            } catch (e) {
+                alert("Gagal Logout: " + e.message);
+            } finally {
+                hideLoading();
+            }
+        }
+    });
+} else {
+    console.error("Tombol Logout tidak ditemukan di HTML!");
+}
+
+// ======================================================
+// 7. HELPERS & DRAG DROP
+// ======================================================
+window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
+window.closeModal = (id) => el(id).classList.add('hidden');
+window.triggerUploadModal = () => openModal('uploadModal');
+window.createFolder = () => openModal('folderModal');
+window.toggleDropdown = () => el('dropdownMenu').classList.toggle('show');
+
 el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
 el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
