@@ -11,384 +11,97 @@ body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); c
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
 .hidden { display: none !important; }
 
-/* === AUTH FIX (LOGIN TIDAK BERANTAKAN LAGI) === */
+/* === AUTH FIX === */
 .full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
 .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .auth-card { width: 100%; max-width: 400px; padding: 40px 30px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-
-/* PERBAIKAN LOGO: Membatasi ukuran agar tidak raksasa */
 .auth-logo { width: 150px; height: auto; margin-bottom: 10px; object-fit: contain; }
 .auth-header h3 { margin-bottom: 20px; font-size: 1.5rem; letter-spacing: 1px; }
 
 form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .pill-input { width: 100%; height: 50px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 20px; display: flex; align-items: center; border: 1px solid var(--glass-border); gap: 10px; transition: 0.3s; }
-.pill-input:focus-within { background: rgba(255, 255, 255, 0.25); border-color: white; }
 .pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; }
 .pill-input i { color: #ccc; }
 
 .btn-pill { border-radius: 50px; border: none; cursor: pointer; font-weight: 700; height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-size: 1rem; }
 .primary { background: white; color: #002835; width: 100%; }
-.primary:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(255,255,255,0.2); }
 .auth-footer { margin-top: 15px; font-size: 0.9rem; color: #ddd; }
 .link-text { color: white; text-decoration: underline; cursor: pointer; font-weight: bold; }
 
-/* === DASHBOARD LAYOUT (SIDEBAR & MAIN CONTENT) === */
+/* === DASHBOARD LAYOUT === */
 .dashboard-layout { height: 100vh; padding: 20px 30px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
 .profile-area { display: flex; align-items: center; gap: 15px; }
 .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
 .btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
 
-/* MAIN PANEL: MEMISAHKAN KIRI DAN KANAN */
 .main-glass-panel { 
-    flex: 1; 
-    background: var(--glass-bg); 
-    backdrop-filter: blur(25px); 
-    border-radius: 30px; 
-    border: 1px solid var(--glass-border); 
-    padding: 30px; 
-    display: flex; 
-    gap: 40px; /* Jarak antara Sidebar dan Folder */
-    overflow: hidden; 
+    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
+    border-radius: 30px; border: 1px solid var(--glass-border); 
+    padding: 30px; display: flex; gap: 40px; overflow: hidden; 
 }
 
-/* SIDEBAR KIRI (Storage & New Button) */
+/* SIDEBAR KIRI */
 .sidebar-left {
-    width: 240px; /* Lebar tetap */
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    padding-right: 30px;
-    flex-shrink: 0; /* Jangan menyusut */
+    width: 250px; display: flex; flex-direction: column; 
+    gap: 20px; border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 25px; flex-shrink: 0;
 }
 
-.new-btn-wrapper { position: relative; width: 100%; }
 .new-btn { width: 100%; background: rgba(255,255,255,0.2); color: white; justify-content: flex-start; padding-left: 25px; gap: 12px; font-size: 1.1rem; height: 55px; }
-.new-btn:hover { background: rgba(255,255,255,0.3); }
-
-.dropdown-content { display: none; position: absolute; top: 120%; left: 0; width: 100%; background: #00384d; border-radius: 15px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.dropdown-content { display: none; position: absolute; top: 120%; left: 0; width: 100%; background: #00384d; border-radius: 15px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; }
 .dropdown-content.show { display: block; animation: fadeIn 0.2s; }
-.dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.dropdown-content a:hover { background: rgba(255,255,255,0.1); }
+.dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; }
 
-/* ================= STORAGE WIDGET STYLING ================= */
-
-.storage-widget {
-    margin-top: auto; /* Memastikan posisi tetap di bawah sidebar */
-    padding: 15px 0;
-    width: 100%;
+/* NAVIGASI MENU (FITUR BARU) */
+.sidebar-menu {
+    display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-top: 10px;
 }
 
-.storage-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-main);
+.nav-item {
+    display: flex; align-items: center; gap: 15px; padding: 0 20px; height: 48px;
+    border-radius: 25px; color: rgba(255, 255, 255, 0.8); text-decoration: none;
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s;
 }
 
-/* Wadah Bilah Kemajuan */
-.progress-track {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1); /* Warna abu-abu transparan */
-    border-radius: 10px;
-    margin-bottom: 8px;
-    overflow: hidden;
-}
+.nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+.nav-item:hover { background-color: rgba(255, 255, 255, 0.1); color: white; }
+.nav-item.active { background-color: rgba(74, 222, 128, 0.2); color: var(--accent); font-weight: 700; }
 
-/* Bilah Pengisi Dinamis */
-.progress-fill {
-    height: 100%;
-    width: 0%; /* Nilai ini akan diubah oleh JavaScript */
-    background: var(--accent); /* Menggunakan warna hijau/cyan aksen */
-    border-radius: 10px;
-    transition: width 0.5s ease-in-out; /* Efek transisi halus saat mengisi */
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
-}
+/* STORAGE WIDGET */
+.storage-widget { padding: 15px 0; width: 100%; }
+.storage-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+.progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 10px; transition: width 0.5s ease-in-out; }
+.storage-text { font-size: 0.75rem; text-align: right; color: rgba(255, 255, 255, 0.7); }
 
-.storage-text {
-    font-size: 0.75rem;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.7);
-    letter-spacing: 0.5px;
-}
-
-#storageUsed {
-    font-weight: 700;
-    color: var(--text-main);
-}
-
-/* MAIN CONTENT (Search & Folder Grid) */
-.main-content-area {
-    flex: 1; /* Ambil sisa ruang */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.search-row { margin-bottom: 30px; }
-.search-bar-pill { width: 100%; background: rgba(0,0,0,0.2); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-.search-bar-pill i { color: #ccc; font-size: 1.1rem; }
+/* MAIN CONTENT */
+.main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.search-bar-pill { width: 100%; background: rgba(0,0,0,0.2); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
-.header-info { margin-top: 30px; margin-bottom: 50px; padding-left: 10px; display: flex; align-items: center; }
-.header-info h2 { font-size: 1.8rem; font-weight: 600; letter-spacing: 0.5px; }
+.breadcrumb-area { margin-bottom: 30px; padding-left: 10px; }
+.breadcrumb-area h2 { font-size: 2rem; font-weight: 700; color: white; }
 
-/* GRID FOLDER (POSISI TENGAH) */
-/* ================= GRID AREA & SCROLLBAR FIX ================= */
-
-/* Area Utama Grid File/Folder */
-/* ================= PERBAIKAN SCROLLBAR & AREA GRID (CLEAN UI) ================= */
-
-/* 1. AREA UTAMA GRID */
-/* ================= PERBAIKAN SCROLLBAR & AREA GRID (FINAL FIX) ================= */
-
-/* 1. AREA UTAMA GRID */
 .file-grid-area { 
-    flex: 1; 
-    /* 'auto' adalah KUNCI: Scrollbar HANYA muncul jika file menumpuk melebihi layar.
-       Jika kosong/sedikit, scrollbar TIDAK AKAN MUNCUL. */
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    
-    display: grid; 
-    /* Mengatur kolom folder tetap rapi */
+    flex: 1; overflow-y: auto; display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-    gap: 40px; 
-    padding: 10px 20px;
-    
-    /* Posisi konten */
-    justify-content: center; 
-    align-content: start;
-
-    /* Pastikan container tidak memaksa tinggi minimal */
-    min-height: 0; 
-    height: 100%;
+    gap: 40px; padding: 10px 20px; justify-content: center; align-content: start;
 }
 
-/* 2. MENYEMBUNYIKAN SCROLLBAR SAAT TIDAK DIPERLUKAN */
-
-/* Lebar scrollbar */
-.file-grid-area::-webkit-scrollbar {
-    width: 6px; 
-}
-
-/* TRACK (Jalur Scrollbar): Dibuat Transparan Total */
-/* Ini yang membuat garis panjang di kanan hilang saat tidak ada scroll */
-.file-grid-area::-webkit-scrollbar-track {
-    background: transparent; 
-}
-
-/* THUMB (Batang Scrollbar): */
-.file-grid-area::-webkit-scrollbar-thumb {
-    /* Default warnanya transparan (tidak terlihat) */
-    background-color: transparent; 
-    border-radius: 10px;
-}
-
-/* Scrollbar baru muncul warnanya HANYA jika file BANYAK (bisa discroll) 
-   DAN user sedang mengarahkan mouse ke sana */
-.file-grid-area:hover::-webkit-scrollbar-thumb {
-    /* Gunakan warna putih transparan yang halus */
-    background-color: rgba(255, 255, 255, 0.2); 
-}
-
-/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (PENYEBAB SCROLL MUNCUL) */
-.file-grid-area p {
-    grid-column: 1 / -1; /* Membentang penuh kiri-kanan */
-    width: 100%;
-    
-    /* === PERBAIKAN PENTING DI SINI === */
-    /* Sebelumnya ada min-height: 300px <- INI YANG BIKIN SCROLLBAR MUNCUL TERUS */
-    /* Sekarang kita ganti menjadi auto atau dihapus */
-    height: auto; 
-    min-height: 0; 
-    
-    /* Gunakan margin atas untuk posisi visual, bukan height */
-    margin-top: 15%; 
-    margin-bottom: 0;
-    
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Agar tidak memaksa tinggi ke bawah */
-    
-    text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.2rem;
-    font-weight: 500;
-    
-    /* Agar teks tidak menghalangi klik di area kosong */
-    pointer-events: none; 
-}
-
-/* 4. PENGATURAN INDUK (MAIN CONTENT) */
-.main-content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    /* Memastikan tidak ada yang bocor keluar container */
-    overflow: hidden; 
-    position: relative;
-}
-
-/* KARTU FOLDER/FILE */
 .item-card { 
-    background: rgba(255, 255, 255, 0.1); 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 25px; 
-    aspect-ratio: 1/1; 
+    background: rgba(255, 255, 255, 0.05); border-radius: 20px; aspect-ratio: 1/1; 
     display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    cursor: pointer; position: relative; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    overflow: hidden;
+    cursor: pointer; position: relative; transition: 0.3s;
 }
-.item-card:hover { 
-    background: rgba(255, 255, 255, 0.2); 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    border-color: rgba(255,255,255,0.4);
-}
-
-.item-card i.icon { font-size: 4.5rem; margin-bottom: 15px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2)); }
+.item-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-5px); }
+.item-card i.icon { font-size: 4.5rem; margin-bottom: 12px; }
+.item-name { font-size: 0.9rem; font-weight: 600; color: white; text-align: center; width: 85%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fa-folder { color: #facc15; }
 .fa-file-lines { color: #60a5fa; }
-.thumb-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.85; transition: 0.3s; }
-.item-card:hover .thumb-img { opacity: 1; transform: scale(1.05); }
-
-.item-name { 
-    font-size: 0.9rem; font-weight: 600; color: white; 
-    text-align: center; width: 90%; white-space: nowrap; 
-    overflow: hidden; text-overflow: ellipsis; 
-    z-index: 2; 
-    /* background: rgba(0, 0, 0, 0.4); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(4px); */
-}
-
-.del-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #ffadad; width: 30px; height: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; cursor: pointer; transition: 0.2s;}
-.del-btn:hover { background: #ff5252; color: white; }
+.del-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.6); color: white; border-radius: 50%; width: 25px; height: 25px; display: none; align-items: center; justify-content: center; border: none; }
 .item-card:hover .del-btn { display: flex; }
 
-/* MODALS */
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 53, 0.95); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 90%; max-width: 450px; padding: 35px; background: #002835; border: 1px solid rgba(255,255,255,0.2); border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
-.modal-header h3 { font-size: 1.3rem; color: white; }
-.close-icon { cursor: pointer; font-size: 1.3rem; color: #aaa; transition: 0.3s; }
-.close-icon:hover { color: #ff6b6b; transform: rotate(90deg); }
-.drag-drop-area { border: 2px dashed rgba(255,255,255,0.3); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; display: flex; flex-direction: column; gap: 15px; align-items: center; background: rgba(255,255,255,0.03); transition: 0.3s; }
-.drag-drop-area:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
-.file-info { margin-top: 15px; color: var(--accent); font-size: 0.9rem; font-weight: 600; min-height: 20px; text-align: center; }
-.modal-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
-.modal-actions .btn-pill { padding: 0 30px; }
-
-/* ================= PERBAIKAN JARAK & TATA LETAK ================= */
-
-/* 1. Mengatur Jarak di Header Dinamis */
-.dynamic-header {
-    display: flex;
-    flex-direction: column; /* Menyusun elemen atas-bawah */
-    align-items: flex-start;
-    gap: 30px; /* JARAK ANTARA TOMBOL KEMBALI DAN JUDUL FOLDER (Misal: 'p') */
-    margin-bottom: 50px; /* Jarak ke konten folder di bawahnya */
-}
-
-/* 2. Gaya Judul Folder */
-#headerTitle {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin: 0;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-/* 3. Tombol Kembali agar lebih rapi */
-.back-btn {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid var(--glass-border) !important;
-    padding: 10px 25px !important;
-    width: auto !important;
-}
-
-/* 4. MEMBUAT PESAN "FOLDER KOSONG" KE TENGAH TOTAL */
-.empty-msg {
-    grid-column: 1 / -1; /* Mengambil lebar penuh baris grid */
-    width: 100%;
-    min-height: 300px;
-    display: flex;
-    justify-content: center; /* Tengah horizontal */
-    align-items: center;     /* Tengah vertikal */
-    text-align: center;
-    font-size: 1.2rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-style: italic;
-    letter-spacing: 1px;
-}
-
-/* 5. Item Card Content Alignment */
-.item-content {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Menghilangkan kotak abu-abu di judul folder sesuai permintaan sebelumnya */
-.item-name {
-    background: transparent !important;
-    padding: 0 !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-/* ================= PERBAIKAN TATA LETAK HEADER & TOMBOL KEMBALI ================= */
-
-/* 1. MEMBERIKAN JARAK ANTARA TOMBOL 'KEMBALI' DENGAN JUDUL FOLDER */
-/* Target: Area judul di header (breadcrumb-area atau header-info) */
-.header-info h2,
-.breadcrumb-area h2 { 
-    display: flex;
-    flex-direction: column; /* Menyusun elemen secara vertikal (atas-bawah) */
-    align-items: flex-start; /* Rata kiri */
-    
-    /* PROPERTI PENTING: MENAMBAH JARAK */
-    gap: 20px; /* Memberikan celah 20px antara tombol dan teks judul */
-    
-    margin-bottom: 40px; /* Memberikan jarak tambahan ke bawah (ke arah konten folder) */
-    width: 100%; /* Memastikan lebar penuh agar tidak terpotong */
-}
-
-/* 2. PENGATURAN KHUSUS UNTUK TOMBOL KEMBALI */
-/* Memastikan tombol tidak memiliki margin aneh yang mengganggu layout */
-.header-info button,
-.breadcrumb-area button {
-    margin: 0; /* Reset margin bawaan */
-    margin-bottom: 10px; /* Tambahan jarak kecil khusus di bawah tombol */
-    align-self: flex-start; /* Pastikan tombol tetap di kiri */
-}
-
-/* 3. MEMASTIKAN TULISAN "FOLDER KOSONG" BENAR-BENAR DI TENGAH */
-/* Target: Elemen paragraf <p> di dalam grid area */
-.file-grid-area p {
-    grid-column: 1 / -1; /* Membentang dari kolom pertama hingga terakhir */
-    width: 100%;
-    height: 100%;
-    min-height: 300px; /* Tinggi minimal area kosong */
-    
-    display: flex;
-    justify-content: center; /* Tengah secara horizontal */
-    align-items: center;     /* Tengah secara vertikal */
-    
-    text-align: center;
-    color: rgba(255, 255, 255, 0.5); /* Warna teks sedikit transparan */
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin: 0;
-}

@@ -76,8 +76,34 @@
                     </div>
                 </div>
 
+                <nav class="sidebar-menu">
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
+                        <i class="fa-solid fa-house"></i> Beranda
+                    </a>
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item">
+                        <i class="fa-brands fa-google-drive"></i> Drive Saya
+                    </a>
+                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item">
+                        <i class="fa-solid fa-computer"></i> Komputer
+                    </a>
+                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item">
+                        <i class="fa-solid fa-user-group"></i> Dibagikan kepada saya
+                    </a>
+                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item">
+                        <i class="fa-solid fa-clock"></i> Terbaru
+                    </a>
+                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item">
+                        <i class="fa-solid fa-star"></i> Berbintang
+                    </a>
+                    <a onclick="handleMenuClick(this, 'spam')" class="nav-item">
+                        <i class="fa-solid fa-circle-exclamation"></i> Spam
+                    </a>
+                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item">
+                        <i class="fa-solid fa-trash-can"></i> Sampah
+                    </a>
+                </nav>
+
                 <div class="storage-widget">
-                    <div class="storage-widget">
                     <div class="storage-label">
                         <i class="fa-solid fa-cloud"></i> Storage
                     </div>
@@ -108,7 +134,7 @@
         </div>
     </section>
 
-    <div id="loading" class="loading-overlay"><div class="spinner"></div><p>Processing...</p></div>
+    <div id="loading" class="loading-overlay hidden"><div class="spinner"></div><p>Processing...</p></div>
 
     <div id="folderModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
