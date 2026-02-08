@@ -3,13 +3,11 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',
     COLLECTION_FILES: 'files',   
-    COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
 
@@ -18,53 +16,180 @@ client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 let currentUser = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
-let currentViewMode = 'root'; // Menyimpan status view (root, recent, starred, etc)
+let currentViewMode = 'root'; // root, recent, starred, trash
+let selectedItem = null; // Untuk menu klik kanan
 
 const el = (id) => document.getElementById(id);
-const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
-const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
+const showLoading = () => el('loading').classList.remove('hidden');
+const hideLoading = () => el('loading').classList.add('hidden');
 
-// ======================================================
-// FUNGSI NAVIGASI MENU (FITUR BARU)
-// ======================================================
+// === NAVIGASI MENU ===
 window.handleMenuClick = (element, mode) => {
-    // 1. Ubah tampilan tombol aktif
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
-
-    // 2. Tentukan logika view
     currentViewMode = mode;
-    if (mode === 'root') {
-        currentFolderId = 'root';
-        currentFolderName = "Drive";
-        loadFiles('root');
-    } else {
-        // Untuk fitur placeholder seperti Komputer, Shared, Spam
-        currentFolderName = element.innerText.trim();
-        currentFolderId = 'root'; // Reset folder agar tidak masuk ke folder sebelumnya
-        loadFiles(mode); 
-    }
+    currentFolderId = 'root';
+    currentFolderName = element.innerText.trim();
+    loadFiles(mode);
 };
 
-// ======================================================
-// CEK SESI LOGIN & INIT
-// ======================================================
+// === LOAD FILES DENGAN FILTER ===
+async function loadFiles(param) {
+    if (!currentUser) return;
+    const grid = el('fileGrid'); 
+    grid.innerHTML = ''; 
+
+    // Query Dasar: Milik User
+    let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
+    
+    // Logika Filter
+    if (param === 'recent') {
+        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20));
+        queries.push(Appwrite.Query.equal('trashed', false));
+    } else if (param === 'starred') {
+        queries.push(Appwrite.Query.equal('starred', true));
+        queries.push(Appwrite.Query.equal('trashed', false));
+    } else if (param === 'trash') {
+        queries.push(Appwrite.Query.equal('trashed', true));
+    } else {
+        // Mode Folder Normal
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId));
+        queries.push(Appwrite.Query.equal('trashed', false));
+    }
+
+    updateHeaderTitle();
+
+    try {
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
+        if(res.documents.length === 0) {
+            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5; margin-top:100px;">Folder Kosong</p>`;
+        } else {
+            res.documents.forEach(doc => renderItem(doc));
+        }
+    } catch (e) { console.error(e); }
+}
+
+function renderItem(doc) {
+    const grid = el('fileGrid');
+    const div = document.createElement('div'); 
+    div.className = 'item-card';
+    const isFolder = doc.type === 'folder';
+    const name = doc.name || "Tanpa Nama";
+    
+    // Tampilan Bintang
+    const starIcon = doc.starred ? `<i class="fa-solid fa-star star-icon"></i>` : '';
+
+    div.oncontextmenu = (e) => showContextMenu(e, doc);
+    
+    div.onclick = () => {
+        if(doc.trashed) return; // Nonaktifkan klik jika di sampah
+        if(isFolder) openFolder(doc.$id, name);
+        else window.open(doc.url, '_blank');
+    };
+
+    div.innerHTML = `
+        ${starIcon}
+        <i class="icon fa-solid ${isFolder ? 'fa-folder' : 'fa-file-lines'}"></i>
+        <div class="item-name">${name}</div>`;
+    grid.appendChild(div);
+}
+
+// === MENU KLIK KANAN (CONTEXT MENU) ===
+function showContextMenu(e, doc) {
+    e.preventDefault();
+    selectedItem = doc;
+    const menu = el('contextMenu');
+    menu.style.top = `${e.clientY}px`;
+    menu.style.left = `${e.clientX}px`;
+    menu.classList.remove('hidden');
+
+    // Update Teks Menu
+    el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+    
+    // Toggle Tombol Berdasarkan Mode Trash
+    if(doc.trashed) {
+        el('trashBtn').classList.add('hidden');
+        el('restoreBtn').classList.remove('hidden');
+        el('permDeleteBtn').classList.remove('hidden');
+    } else {
+        el('trashBtn').classList.remove('hidden');
+        el('restoreBtn').classList.add('hidden');
+        el('permDeleteBtn').classList.add('hidden');
+    }
+
+    document.onclick = () => menu.classList.add('hidden');
+}
+
+// === AKSI ITEM ===
+window.toggleStarItem = async () => {
+    try {
+        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred });
+        loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
+    } catch(e) { alert(e.message); }
+};
+
+window.moveItemToTrash = async () => {
+    try {
+        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true });
+        loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
+    } catch(e) { alert(e.message); }
+};
+
+window.restoreFromTrash = async () => {
+    try {
+        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false });
+        loadFiles('trash');
+    } catch(e) { alert(e.message); }
+};
+
+window.deleteItemPermanently = async () => {
+    if(!confirm("Hapus selamanya?")) return;
+    try {
+        if(selectedItem.type === 'file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId);
+        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id);
+        loadFiles('trash');
+        calculateStorage();
+    } catch(e) { alert(e.message); }
+};
+
+// === INITIALIZATION & UI HELPERS ===
+function updateHeaderTitle() {
+    const titleEl = el('headerTitle');
+    const container = document.querySelector('.breadcrumb-area');
+    
+    if(currentFolderId === 'root' && currentViewMode === 'root') {
+        const h = new Date().getHours();
+        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
+        titleEl.innerText = `Welcome In Drive ${s}`;
+        // Hapus tombol kembali jika ada
+        const backBtn = container.querySelector('button');
+        if(backBtn) backBtn.remove();
+    } else {
+        titleEl.innerText = currentFolderName;
+        // Tambahkan tombol kembali jika di dalam folder
+        if(currentFolderId !== 'root' && !container.querySelector('button')) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-pill small';
+            btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Kembali';
+            btn.onclick = () => { currentFolderId = 'root'; loadFiles('root'); };
+            container.prepend(btn);
+        }
+    }
+}
+
 async function checkSession() {
     showLoading();
     try {
         currentUser = await account.get();
-        window.nav('dashboardPage'); 
-        currentFolderId = 'root';
-        currentFolderName = "Drive";
-        calculateStorage(); 
-        loadFiles('root');  
-    } catch (e) { 
-        window.nav('loginPage'); 
-    } finally { 
-        setTimeout(hideLoading, 500); 
-    }
+        el('dashboardPage').classList.remove('hidden');
+        loadFiles('root');
+        calculateStorage();
+    } catch (e) { el('loginPage').classList.remove('hidden'); }
+    finally { hideLoading(); }
 }
 document.addEventListener('DOMContentLoaded', checkSession);
+
+// ... (Gunakan fungsi calculateStorage, submitUpload, logout dari versi sebelumnya) ...
 
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
