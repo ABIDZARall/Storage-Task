@@ -23,18 +23,18 @@ let currentFolderId = 'root';
 let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
 let selectedItem = null; 
+let selectedUploadFile = null; // Menyimpan file yang akan diupload
 
 const el = (id) => document.getElementById(id);
 const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
 const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
 
 // ======================================================
-// 2. LOGIKA LOGIN (SUPPORT USERNAME & EMAIL)
+// 2. LOGIKA LOGIN (USERNAME & EMAIL)
 // ======================================================
 async function checkSession() {
     showLoading();
     try {
-        // Cek apakah sudah ada sesi
         currentUser = await account.get();
         window.nav('dashboardPage'); 
         currentFolderId = 'root';
@@ -42,116 +42,131 @@ async function checkSession() {
         calculateStorage(); 
         loadFiles('root');  
     } catch (e) { 
-        // Jika belum login, tampilkan halaman login
         window.nav('loginPage'); 
     } finally { 
         setTimeout(hideLoading, 500); 
     }
 }
-document.addEventListener('DOMContentLoaded', checkSession);
+document.addEventListener('DOMContentLoaded', () => {
+    checkSession();
+    initDragAndDrop(); // Inisialisasi Drag & Drop saat load
+});
 
 if(el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        let inputId = el('loginEmail').value.trim(); // Bisa username atau email
+        let inputId = el('loginEmail').value.trim();
         const pass = el('loginPass').value;
-        
         showLoading();
         try {
-            // A. Cek Jika Input Bukan Email (Berarti Username)
             if (!inputId.includes('@')) {
-                // Cari email berdasarkan username di database users
-                const res = await databases.listDocuments(
-                    CONFIG.DB_ID, 
-                    CONFIG.COLLECTION_USERS, 
-                    [Appwrite.Query.equal('name', inputId)]
-                );
-                
-                if (res.documents.length === 0) {
-                    throw new Error("Username tidak ditemukan!");
-                }
-                
-                // Ganti inputId dengan email yang ditemukan
+                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
+                if (res.documents.length === 0) throw new Error("Username tidak ditemukan!");
                 inputId = res.documents[0].email;
             }
-
-            // B. Proses Login ke Appwrite
-            try {
-                // Cek dulu apakah ada sesi nyangkut
-                await account.get(); 
-            } catch (err) {
-                // Jika belum login, buat sesi baru
-                await account.createEmailPasswordSession(inputId, pass);
-            }
-            
-            // C. Masuk Dashboard
+            try { await account.get(); } catch (err) { await account.createEmailPasswordSession(inputId, pass); }
             checkSession();
-            
         } catch (error) {
-            // Tangani error khusus jika sesi sudah ada
-            if(error.message.includes('session is active')) {
-                checkSession();
-            } else {
-                alert("Login Gagal: " + error.message);
-                hideLoading();
-            }
+            if(error.message.includes('session is active')) checkSession();
+            else { alert("Login Gagal: " + error.message); hideLoading(); }
         }
     });
 }
 
-// Signup Handler
 if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = el('regName').value;
-    const email = el('regEmail').value;
-    const pass = el('regPass').value;
+    const name = el('regName').value; const email = el('regEmail').value; const pass = el('regPass').value;
     showLoading();
     try {
         const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email });
-        alert("Daftar Berhasil! Silakan Login."); 
-        window.nav('loginPage');
+        alert("Daftar Berhasil! Silakan Login."); window.nav('loginPage');
     } catch(e) { alert(e.message); } finally { hideLoading(); }
 });
 
 // ======================================================
-// 3. LOGIKA TOMBOL 'NEW' (DROPDOWN FIX)
+// 3. PERBAIKAN TOMBOL NEW & DROPDOWN (PENTING)
 // ======================================================
-// Fungsi ini DITARUH DI GLOBAL WINDOW agar HTML bisa akses
-window.toggleDropdown = () => {
+// Membuka/Tutup Menu Dropdown
+window.toggleDropdown = (event) => {
+    // Mencegah event bubbling agar tidak langsung ditutup oleh window.onclick
+    if(event) event.stopPropagation();
+    
     const menu = el('dropdownMenu');
-    if (menu) {
-        menu.classList.toggle('show');
-    }
+    if (menu) menu.classList.toggle('show');
 };
 
-// Menutup dropdown jika klik sembarang tempat
+// Menutup dropdown jika klik di luar area tombol
 window.onclick = function(event) {
-    if (!event.target.closest('.new-btn')) {
+    if (!event.target.closest('.new-btn-wrapper')) {
         const dropdowns = document.getElementsByClassName("dropdown-content");
         for (let i = 0; i < dropdowns.length; i++) {
-            const openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
+            if (dropdowns[i].classList.contains('show')) {
+                dropdowns[i].classList.remove('show');
             }
         }
     }
 };
 
 // ======================================================
-// 4. NAVIGASI HALAMAN & TOMBOL KEMBALI
+// 4. PERBAIKAN DRAG & DROP DAN UPLOAD
+// ======================================================
+function initDragAndDrop() {
+    const dropZone = el('dropZone');
+    const fileInput = el('fileInputHidden');
+
+    if (dropZone) {
+        // Mencegah browser membuka file saat di-drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Efek visual saat file ditarik
+        dropZone.addEventListener('dragover', () => dropZone.style.borderColor = '#4ade80');
+        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'rgba(255,255,255,0.2)');
+
+        // Saat file dilepas (Dropped)
+        dropZone.addEventListener('drop', (e) => {
+            dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+    }
+}
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function handleFiles(files) {
+    if (files.length > 0) {
+        selectedUploadFile = files[0]; // Simpan file ke variabel global
+        const infoText = el('fileInfoText');
+        if (infoText) {
+            infoText.innerText = `Terpilih: ${selectedUploadFile.name} (${(selectedUploadFile.size/1024).toFixed(1)} KB)`;
+            infoText.style.color = '#4ade80'; // Hijau tanda sukses pilih
+        }
+    }
+}
+
+// ======================================================
+// 5. NAVIGASI HALAMAN & FOLDER
 // ======================================================
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
-        if(el(id)) el(id).classList.add('hidden');
-    });
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => { if(el(id)) el(id).classList.add('hidden'); });
     if(el(pageId)) el(pageId).classList.remove('hidden');
 };
 
 window.goBack = () => {
-    currentFolderId = 'root';
-    currentFolderName = "Drive";
-    currentViewMode = 'root';
+    currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.nav-item')[1].classList.add('active'); 
     loadFiles('root');
@@ -173,31 +188,25 @@ window.handleMenuClick = (element, mode) => {
 };
 
 // ======================================================
-// 5. LOAD FILES & RENDER
+// 6. LOAD FILES
 // ======================================================
 async function loadFiles(param) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
     grid.innerHTML = ''; 
-
     updateHeaderUI();
 
     let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
     
     if (param === 'recent') {
-        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20));
-        queries.push(Appwrite.Query.equal('trashed', false));
+        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20), Appwrite.Query.equal('trashed', false));
     } else if (param === 'starred') {
-        queries.push(Appwrite.Query.equal('starred', true));
-        queries.push(Appwrite.Query.equal('trashed', false));
+        queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
     } else if (param === 'trash') {
         queries.push(Appwrite.Query.equal('trashed', true));
     } else if (param === 'root' || typeof param === 'string') {
-        if (typeof param === 'string' && param !== 'root' && param !== 'recent' && param !== 'starred' && param !== 'trash') {
-            currentFolderId = param;
-        }
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId));
-        queries.push(Appwrite.Query.equal('trashed', false));
+        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param;
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
     }
 
     try {
@@ -215,27 +224,19 @@ function updateHeaderUI() {
     if (!container) return; 
     const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
     if (isRoot) {
-        const h = new Date().getHours();
-        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
+        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`;
     } else {
-        container.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:15px;">
-                <button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 20px;">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali
-                </button> 
-                <h2 id="headerTitle">${currentFolderName}</h2>
-            </div>`;
+        container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:15px;"><button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2);width:auto;padding:0 20px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button><h2 id="headerTitle">${currentFolderName}</h2></div>`;
     }
 }
 
 function renderItem(doc) {
     const grid = el('fileGrid');
-    const div = document.createElement('div'); 
-    div.className = 'item-card';
+    const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     const name = doc.name || "Tanpa Nama";
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute; top:12px; left:12px; color:#ffd700; font-size:1rem; z-index:10;"></i>` : '';
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;font-size:1rem;z-index:10;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : 
                   name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/) ? 
                   `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>` :
@@ -244,19 +245,12 @@ function renderItem(doc) {
     div.oncontextmenu = (e) => {
         e.preventDefault(); selectedItem = doc;
         const menu = el('contextMenu');
-        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
-        menu.classList.remove('hidden');
+        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`; menu.classList.remove('hidden');
         if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-        
-        if(doc.trashed) {
-            el('trashBtn').classList.add('hidden');
-            el('restoreBtn').classList.remove('hidden');
-            el('permDeleteBtn').classList.remove('hidden');
-        } else {
-            el('trashBtn').classList.remove('hidden');
-            el('restoreBtn').classList.add('hidden');
-            el('permDeleteBtn').classList.add('hidden');
-        }
+        const isTrash = doc.trashed;
+        el('trashBtn').classList.toggle('hidden', isTrash);
+        el('restoreBtn').classList.toggle('hidden', !isTrash);
+        el('permDeleteBtn').classList.toggle('hidden', !isTrash);
         document.addEventListener('click', () => menu.classList.add('hidden'), {once:true});
     };
     
@@ -268,7 +262,93 @@ function renderItem(doc) {
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; currentViewMode = 'root'; loadFiles(id); };
 
 // ======================================================
-// 6. STORAGE & AUTO REPAIR
+// 7. AKSI: CREATE FOLDER & UPLOAD FILE (FIXED)
+// ======================================================
+
+// Dipanggil oleh tombol "Buat" di modal folder
+window.submitCreateFolder = async () => {
+    const nameInput = el('newFolderName');
+    const name = nameInput.value.trim();
+    
+    if (!name) { alert("Nama folder tidak boleh kosong!"); return; }
+    
+    closeModal('folderModal'); 
+    showLoading();
+
+    try {
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: name, 
+            type: 'folder', 
+            parentId: currentFolderId, 
+            owner: currentUser.$id, 
+            size: 0, 
+            starred: false, 
+            trashed: false
+        });
+        loadFiles(currentFolderId);
+        nameInput.value = ''; // Reset input
+    } catch (e) { 
+        alert("Gagal Buat Folder: " + e.message); 
+    } finally { 
+        hideLoading(); 
+    }
+};
+
+// Dipanggil oleh tombol "Upload" di modal upload
+window.submitUploadFile = async () => {
+    // Gunakan variabel global 'selectedUploadFile' yang diset oleh handleFiles
+    if (!selectedUploadFile) {
+        alert("Silakan pilih file terlebih dahulu!"); 
+        return;
+    }
+
+    closeModal('uploadModal'); 
+    showLoading();
+
+    try {
+        // 1. Upload ke Storage Bucket
+        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
+        
+        // 2. Ambil URL View
+        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
+        
+        // 3. Simpan Metadata ke Database
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: selectedUploadFile.name, 
+            type: 'file', 
+            parentId: currentFolderId, 
+            owner: currentUser.$id, 
+            url: url.href, 
+            fileId: up.$id, 
+            size: selectedUploadFile.size, 
+            starred: false, 
+            trashed: false
+        });
+        
+        // 4. Reset & Refresh
+        selectedUploadFile = null; // Kosongkan file terpilih
+        if(el('fileInfoText')) {
+            el('fileInfoText').innerText = "Belum ada file dipilih";
+            el('fileInfoText').style.color = "white";
+        }
+        
+        loadFiles(currentFolderId); 
+        calculateStorage();
+
+    } catch (e) { 
+        alert("Gagal Upload: " + e.message); 
+    } finally { 
+        hideLoading(); 
+    }
+};
+
+// Logout
+if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
+    if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); currentUser = null; window.nav('loginPage'); } catch (e) { alert("Gagal: " + e.message); } finally { hideLoading(); } }
+});
+
+// ======================================================
+// 8. STORAGE & AUTO REPAIR
 // ======================================================
 async function calculateStorage() {
     if (!currentUser) return;
@@ -294,52 +374,20 @@ async function calculateStorage() {
     } catch (e) { console.error(e); }
 }
 
-// ======================================================
-// 7. AKSI (CREATE, UPLOAD, DELETE, LOGOUT)
-// ======================================================
-window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim();
-    if (!name) return;
-    closeModal('folderModal'); showLoading();
-    try {
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false
-        });
-        loadFiles(currentFolderId); el('newFolderName').value = '';
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
-
-window.submitUploadFile = async () => {
-    if (!window.selectedFile) return alert("Pilih file");
-    closeModal('uploadModal'); showLoading();
-    try {
-        const file = window.selectedFile;
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
-        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: file.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: file.size, starred: false, trashed: false
-        });
-        loadFiles(currentFolderId); calculateStorage();
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
-
 // Context Actions
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
 
-// Logout
-if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
-    if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); currentUser = null; window.nav('loginPage'); } catch (e) { alert("Gagal: " + e.message); } finally { hideLoading(); } }
-});
-
-// Helpers
-window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
+// Helpers UI
+window.openModal = (id) => { 
+    // Tutup dropdown menu dulu sebelum buka modal
+    const menu = el('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    
+    el(id).classList.remove('hidden'); 
+};
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => openModal('uploadModal');
 window.createFolder = () => openModal('folderModal');
-el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
-el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
-el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
-function handleFileSelect(f) { window.selectedFile = f; el('fileInfoText').innerText = `File: ${f.name}`; }
