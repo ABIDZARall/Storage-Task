@@ -172,6 +172,37 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     overflow: hidden; 
 }
 
+/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
+.file-grid-area p {
+    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
+    width: 100%;
+    
+    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
+    height: auto; 
+    margin: 0;
+    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+    font-weight: 500;
+    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
+}
+
+/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
+.main-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
+    overflow: hidden; 
+}
+
+
 /* KARTU FOLDER/FILE */
 .item-card { 
     background: rgba(255, 255, 255, 0.1); 
@@ -202,36 +233,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     overflow: hidden; text-overflow: ellipsis; 
     z-index: 2; 
     /* background: rgba(0, 0, 0, 0.4); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(4px); */
-}
-
-/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
-.file-grid-area p {
-    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
-    width: 100%;
-    
-    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
-    height: auto; 
-    margin: 0;
-    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.2rem;
-    font-weight: 500;
-    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
-}
-
-/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
-.main-content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
-    overflow: hidden; 
 }
 
 .del-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #ffadad; width: 30px; height: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; cursor: pointer; transition: 0.2s;}
