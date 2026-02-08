@@ -23,14 +23,14 @@ let currentFolderId = 'root';
 let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
 let selectedItem = null; 
-let selectedUploadFile = null; // Menyimpan file yang akan diupload
+let selectedUploadFile = null; // Menyimpan file untuk upload
 
 const el = (id) => document.getElementById(id);
 const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
 const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
 
 // ======================================================
-// 2. LOGIKA LOGIN (USERNAME & EMAIL)
+// 2. SISTEM LOGIN & SESI
 // ======================================================
 async function checkSession() {
     showLoading();
@@ -38,7 +38,6 @@ async function checkSession() {
         currentUser = await account.get();
         window.nav('dashboardPage'); 
         currentFolderId = 'root';
-        currentFolderName = "Drive";
         calculateStorage(); 
         loadFiles('root');  
     } catch (e) { 
@@ -47,11 +46,13 @@ async function checkSession() {
         setTimeout(hideLoading, 500); 
     }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-    initDragAndDrop(); // Inisialisasi Drag & Drop saat load
+    initDragAndDrop(); // Inisialisasi area seret file
 });
 
+// Handler Login
 if(el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -73,92 +74,141 @@ if(el('loginForm')) {
     });
 }
 
-if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = el('regName').value; const email = el('regEmail').value; const pass = el('regPass').value;
-    showLoading();
-    try {
-        const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email });
-        alert("Daftar Berhasil! Silakan Login."); window.nav('loginPage');
-    } catch(e) { alert(e.message); } finally { hideLoading(); }
-});
-
 // ======================================================
-// 3. PERBAIKAN TOMBOL NEW & DROPDOWN (PENTING)
+// 3. PERBAIKAN DROPDOWN 'NEW' (UTAMA)
 // ======================================================
-// Membuka/Tutup Menu Dropdown
 window.toggleDropdown = (event) => {
-    // Mencegah event bubbling agar tidak langsung ditutup oleh window.onclick
+    // Kunci Perbaikan: Menghentikan klik agar tidak tembus ke window.onclick
     if(event) event.stopPropagation();
     
     const menu = el('dropdownMenu');
-    if (menu) menu.classList.toggle('show');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
 };
 
-// Menutup dropdown jika klik di luar area tombol
+// Menutup dropdown jika klik di luar area menu
 window.onclick = function(event) {
-    if (!event.target.closest('.new-btn-wrapper')) {
-        const dropdowns = document.getElementsByClassName("dropdown-content");
-        for (let i = 0; i < dropdowns.length; i++) {
-            if (dropdowns[i].classList.contains('show')) {
-                dropdowns[i].classList.remove('show');
-            }
+    const menu = el('dropdownMenu');
+    // Jika menu sedang terbuka dan yang diklik bukan bagian dari tombol/menu
+    if (menu && menu.classList.contains('show')) {
+        if (!event.target.closest('.new-btn-wrapper')) {
+            menu.classList.remove('show');
         }
     }
 };
 
 // ======================================================
-// 4. PERBAIKAN DRAG & DROP DAN UPLOAD
+// 4. PERBAIKAN MODAL & UPLOAD
+// ======================================================
+window.openModal = (id) => { 
+    // Tutup dropdown menu secara otomatis saat modal dibuka
+    const menu = el('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    
+    const modal = el(id);
+    if(modal) modal.classList.remove('hidden'); 
+};
+
+window.closeModal = (id) => {
+    const modal = el(id);
+    if(modal) modal.classList.add('hidden');
+};
+
+window.triggerUploadModal = () => window.openModal('uploadModal');
+window.createFolder = () => window.openModal('folderModal');
+
+// FUNGSI UPLOAD (DIPERBAIKI)
+window.submitUploadFile = async () => {
+    if (!selectedUploadFile) {
+        alert("Pilih atau seret file terlebih dahulu!"); 
+        return;
+    }
+
+    closeModal('uploadModal'); 
+    showLoading();
+
+    try {
+        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
+        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
+        
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: selectedUploadFile.name, 
+            type: 'file', 
+            parentId: currentFolderId, 
+            owner: currentUser.$id, 
+            url: url.href, 
+            fileId: up.$id, 
+            size: selectedUploadFile.size, 
+            starred: false, 
+            trashed: false
+        });
+        
+        // Reset state upload
+        selectedUploadFile = null;
+        if(el('fileInfoText')) el('fileInfoText').innerText = "Belum ada file dipilih";
+        
+        loadFiles(currentFolderId); 
+        calculateStorage();
+    } catch (e) { 
+        alert("Gagal Upload: " + e.message); 
+    } finally { 
+        hideLoading(); 
+    }
+};
+
+// ======================================================
+// 5. FITUR DRAG & DROP (FIXED)
 // ======================================================
 function initDragAndDrop() {
     const dropZone = el('dropZone');
     const fileInput = el('fileInputHidden');
 
-    if (dropZone) {
-        // Mencegah browser membuka file saat di-drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-        });
+    if (!dropZone) return;
 
-        // Efek visual saat file ditarik
-        dropZone.addEventListener('dragover', () => dropZone.style.borderColor = '#4ade80');
-        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'rgba(255,255,255,0.2)');
+    // Mencegah browser membuka file secara default
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
 
-        // Saat file dilepas (Dropped)
-        dropZone.addEventListener('drop', (e) => {
-            dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        });
-    }
+    // Efek visual saat file ditarik masuk
+    dropZone.addEventListener('dragover', () => dropZone.style.background = 'rgba(74, 222, 128, 0.1)');
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = 'transparent');
 
+    // Menangani file yang dijatuhkan (dropped)
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.style.background = 'transparent';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            selectedUploadFile = files[0];
+            updateUploadUI(selectedUploadFile);
+        }
+    });
+
+    // Menangani file dari tombol "Pilih"
     if (fileInput) {
         fileInput.addEventListener('change', function() {
-            handleFiles(this.files);
+            if (this.files.length > 0) {
+                selectedUploadFile = this.files[0];
+                updateUploadUI(selectedUploadFile);
+            }
         });
     }
 }
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
-
-function handleFiles(files) {
-    if (files.length > 0) {
-        selectedUploadFile = files[0]; // Simpan file ke variabel global
-        const infoText = el('fileInfoText');
-        if (infoText) {
-            infoText.innerText = `Terpilih: ${selectedUploadFile.name} (${(selectedUploadFile.size/1024).toFixed(1)} KB)`;
-            infoText.style.color = '#4ade80'; // Hijau tanda sukses pilih
-        }
+function updateUploadUI(file) {
+    const infoText = el('fileInfoText');
+    if (infoText) {
+        infoText.innerText = `Terpilih: ${file.name}`;
+        infoText.style.color = '#4ade80';
     }
 }
 
 // ======================================================
-// 5. NAVIGASI HALAMAN & FOLDER
+// 6. NAVIGASI & LOAD DATA
 // ======================================================
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => { if(el(id)) el(id).classList.add('hidden'); });
@@ -177,34 +227,22 @@ window.handleMenuClick = (element, mode) => {
     element.classList.add('active');
     currentViewMode = mode;
     currentFolderId = 'root'; 
-    
-    if(mode === 'root') currentFolderName = "Drive";
-    else if(mode === 'recent') currentFolderName = "Terbaru";
-    else if(mode === 'starred') currentFolderName = "Berbintang";
-    else if(mode === 'trash') currentFolderName = "Sampah";
-    else currentFolderName = element.innerText.trim();
-
+    currentFolderName = mode === 'root' ? 'Drive' : element.innerText.trim();
     loadFiles(mode);
 };
 
-// ======================================================
-// 6. LOAD FILES
-// ======================================================
 async function loadFiles(param) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
-    grid.innerHTML = ''; 
+    if(grid) grid.innerHTML = ''; 
     updateHeaderUI();
 
     let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
     
-    if (param === 'recent') {
-        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20), Appwrite.Query.equal('trashed', false));
-    } else if (param === 'starred') {
-        queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
-    } else if (param === 'trash') {
-        queries.push(Appwrite.Query.equal('trashed', true));
-    } else if (param === 'root' || typeof param === 'string') {
+    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20), Appwrite.Query.equal('trashed', false));
+    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
+    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true));
+    else {
         if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param;
         queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
     }
@@ -227,7 +265,7 @@ function updateHeaderUI() {
         const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`;
     } else {
-        container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:15px;"><button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2);width:auto;padding:0 20px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button><h2 id="headerTitle">${currentFolderName}</h2></div>`;
+        container.innerHTML = `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:15px;"><button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2);width:auto;padding:0 20px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button><h2 id="headerTitle">${currentFolderName}</h2></div>`;
     }
 }
 
@@ -237,6 +275,7 @@ function renderItem(doc) {
     const isFolder = doc.type === 'folder';
     const name = doc.name || "Tanpa Nama";
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;font-size:1rem;z-index:10;"></i>` : '';
+    
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : 
                   name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/) ? 
                   `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>` :
@@ -246,11 +285,6 @@ function renderItem(doc) {
         e.preventDefault(); selectedItem = doc;
         const menu = el('contextMenu');
         menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`; menu.classList.remove('hidden');
-        if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-        const isTrash = doc.trashed;
-        el('trashBtn').classList.toggle('hidden', isTrash);
-        el('restoreBtn').classList.toggle('hidden', !isTrash);
-        el('permDeleteBtn').classList.toggle('hidden', !isTrash);
         document.addEventListener('click', () => menu.classList.add('hidden'), {once:true});
     };
     
@@ -262,94 +296,22 @@ function renderItem(doc) {
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; currentViewMode = 'root'; loadFiles(id); };
 
 // ======================================================
-// 7. AKSI: CREATE FOLDER & UPLOAD FILE (FIXED)
+// 7. CREATE FOLDER & STORAGE
 // ======================================================
-
-// Dipanggil oleh tombol "Buat" di modal folder
 window.submitCreateFolder = async () => {
     const nameInput = el('newFolderName');
     const name = nameInput.value.trim();
-    
-    if (!name) { alert("Nama folder tidak boleh kosong!"); return; }
-    
-    closeModal('folderModal'); 
-    showLoading();
-
+    if (!name) return;
+    closeModal('folderModal'); showLoading();
     try {
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: name, 
-            type: 'folder', 
-            parentId: currentFolderId, 
-            owner: currentUser.$id, 
-            size: 0, 
-            starred: false, 
-            trashed: false
+            name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false
         });
         loadFiles(currentFolderId);
-        nameInput.value = ''; // Reset input
-    } catch (e) { 
-        alert("Gagal Buat Folder: " + e.message); 
-    } finally { 
-        hideLoading(); 
-    }
+        nameInput.value = '';
+    } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-// Dipanggil oleh tombol "Upload" di modal upload
-window.submitUploadFile = async () => {
-    // Gunakan variabel global 'selectedUploadFile' yang diset oleh handleFiles
-    if (!selectedUploadFile) {
-        alert("Silakan pilih file terlebih dahulu!"); 
-        return;
-    }
-
-    closeModal('uploadModal'); 
-    showLoading();
-
-    try {
-        // 1. Upload ke Storage Bucket
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
-        
-        // 2. Ambil URL View
-        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        
-        // 3. Simpan Metadata ke Database
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: selectedUploadFile.name, 
-            type: 'file', 
-            parentId: currentFolderId, 
-            owner: currentUser.$id, 
-            url: url.href, 
-            fileId: up.$id, 
-            size: selectedUploadFile.size, 
-            starred: false, 
-            trashed: false
-        });
-        
-        // 4. Reset & Refresh
-        selectedUploadFile = null; // Kosongkan file terpilih
-        if(el('fileInfoText')) {
-            el('fileInfoText').innerText = "Belum ada file dipilih";
-            el('fileInfoText').style.color = "white";
-        }
-        
-        loadFiles(currentFolderId); 
-        calculateStorage();
-
-    } catch (e) { 
-        alert("Gagal Upload: " + e.message); 
-    } finally { 
-        hideLoading(); 
-    }
-};
-
-// Logout
-if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
-    if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); currentUser = null; window.nav('loginPage'); } catch (e) { alert("Gagal: " + e.message); } finally { hideLoading(); } }
-});
-
-// ======================================================
-// 8. STORAGE & AUTO REPAIR
-// ======================================================
 async function calculateStorage() {
     if (!currentUser) return;
     try {
@@ -368,26 +330,12 @@ async function calculateStorage() {
             if(doc.type === 'file') totalBytes += (doc.size || 0);
         }
         const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
-        const percentage = Math.min((parseFloat(totalMB) / 2048) * 100, 100);
         if (el('storageUsed')) el('storageUsed').innerText = `${totalMB} MB`;
-        if (el('storageBar')) el('storageBar').style.width = `${percentage}%`;
+        if (el('storageBar')) el('storageBar').style.width = `${Math.min((totalMB / 2048) * 100, 100)}%`;
     } catch (e) { console.error(e); }
 }
 
-// Context Actions
-window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);} };
-window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
-window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
-
-// Helpers UI
-window.openModal = (id) => { 
-    // Tutup dropdown menu dulu sebelum buka modal
-    const menu = el('dropdownMenu');
-    if(menu) menu.classList.remove('show');
-    
-    el(id).classList.remove('hidden'); 
-};
-window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => openModal('uploadModal');
-window.createFolder = () => openModal('folderModal');
+// LOGOUT
+if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
+    if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); location.reload(); } catch (e) { hideLoading(); } }
+});
