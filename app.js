@@ -128,29 +128,45 @@ async function checkSession() {
 }
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// === 2. LOGIKA FOLDER & FILE ===
+// ======================================================
+// PERBAIKAN LOGIKA GREETING & NAVIGASI (SINKRONISASI ID)
+// ======================================================
+
+// 1. Fungsi Update Greeting (Gunakan Satu ID Konsisten: headerTitle)
+function updateGreeting() {
+    const h = new Date().getHours();
+    let s = "Morning";
+    if (h >= 12 && h < 18) s = "Afternoon";
+    else if (h >= 18 || h < 4) s = "Night";
+    
+    const titleEl = el('headerTitle');
+    if (titleEl && currentFolderId === 'root') {
+        titleEl.innerText = `Welcome In Drive ${s}`;
+    }
+}
+
+// 2. Perbaikan Fungsi Load Files
 async function loadFiles(folderId) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
     if (grid) grid.innerHTML = ''; 
 
-    // Update Area Header / Breadcrumb
     const breadcrumb = document.querySelector('.breadcrumb-area');
     if (breadcrumb) {
         if(folderId !== 'root') {
-            // Tampilan saat di dalam folder (Misal folder "p")
-            // Memberikan jarak vertikal antara tombol dan judul folder
+            // Tampilan saat di dalam folder (Misal: Folder "p")
             breadcrumb.innerHTML = `
-                <div class="dynamic-header">
-                    <button onclick="loadFiles('root')" class="btn-pill small back-btn">
+                <div class="dynamic-header" style="display:flex; flex-direction:column; gap:20px; margin-bottom:40px;">
+                    <button onclick="loadFiles('root')" class="btn-pill small" style="width:fit-content; padding:0 20px; background:rgba(255,255,255,0.2);">
                         <i class="fa-solid fa-arrow-left"></i> Kembali
                     </button> 
                     <h2 id="headerTitle">${currentFolderName}</h2>
                 </div>`;
         } else {
-            // Tampilan awal (Root)
+            // Tampilan Utama (Root) - Pastikan ID elemen adalah headerTitle
             breadcrumb.innerHTML = `<h2 id="headerTitle">Welcome In Drive</h2>`;
-            updateGreeting();
+            currentFolderId = 'root';
+            updateGreeting(); // Panggil fungsi untuk menambahkan Morning/Afternoon
         }
     }
 
@@ -161,13 +177,14 @@ async function loadFiles(folderId) {
         ]);
         
         if(res.documents.length === 0) {
-            grid.innerHTML = `<p class="empty-msg">Folder Kosong</p>`;
+            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5; margin-top:50px;">Folder Kosong</p>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
         }
-    } catch (e) { console.error("Gagal memuat folder:", e); }
+    } catch (e) { console.error("Gagal load:", e); }
 }
 
+// 3. Perbaikan Render Item (Pastikan Nama Terkirim ke openFolder)
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div'); 
@@ -175,32 +192,29 @@ function renderItem(doc) {
     
     const isFolder = doc.type === 'folder';
     const icon = isFolder ? 'fa-folder' : 'fa-file';
-    const fileName = doc.name || doc.nama || "Tanpa Nama";
+    const fileName = doc.name || "Tanpa Nama";
     
-    // Sanitasi nama folder untuk mencegah error saat diklik
-    const safeName = fileName.replace(/'/g, "\\'");
-
-    // PERBAIKAN: Mengirim dua parameter (ID dan Nama) agar folder bisa dibuka
+    // Kirim ID dan Nama agar folder bisa dibuka dan judul berubah
     const clickAction = isFolder 
-        ? `openFolder('${doc.$id}', '${safeName}')` 
+        ? `openFolder('${doc.$id}', '${fileName.replace(/'/g, "\\'")}')` 
         : `window.open('${doc.url}', '_blank')`;
 
     div.innerHTML = `
         <button class="del-btn" onclick="deleteItem('${doc.$id}','${doc.type}','${doc.fileId}')">
             <i class="fa-solid fa-xmark"></i>
         </button>
-        <div onclick="${clickAction}" class="item-content">
+        <div onclick="${clickAction}" style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <i class="icon fa-solid ${icon}"></i>
             <div class="item-name">${fileName}</div>
         </div>`;
     grid.appendChild(div);
 }
 
-// FUNGSI MEMBUKA FOLDER (DIPERBAIKI)
+// 4. Fungsi Open Folder yang Diperbaiki
 window.openFolder = (id, nama) => { 
     currentFolderId = id; 
-    currentFolderName = nama; // Menyimpan nama folder yang diklik (misal: "p")
-    loadFiles(id); // Memuat isi folder tersebut
+    currentFolderName = nama; 
+    loadFiles(id); 
 };
 
 // === 3. UTILITAS LAINNYA ===

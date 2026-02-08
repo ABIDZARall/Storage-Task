@@ -214,11 +214,21 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     justify-content: center;
 }
 
-/* Menghilangkan kotak abu-abu di judul folder sesuai permintaan sebelumnya */
+/* Pastikan Judul Header memiliki jarak yang lega */
+#headerTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 60px; /* JARAK DARI FOLDER DI BAWAHNYA */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Hilangkan kotak abu-abu di judul folder agar bersih */
 .item-name {
     background: transparent !important;
     padding: 0 !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* ================= PERBAIKAN TATA LETAK HEADER & TOMBOL KEMBALI ================= */
