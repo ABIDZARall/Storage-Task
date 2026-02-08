@@ -98,56 +98,78 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ================= GRID AREA & SCROLLBAR FIX ================= */
 
 /* Area Utama Grid File/Folder */
+/* ================= PERBAIKAN SCROLLBAR & AREA GRID (CLEAN UI) ================= */
+
+/* 1. AREA UTAMA GRID */
 .file-grid-area { 
     flex: 1; 
-    /* PENTING: 'auto' berarti scrollbar HANYA muncul jika konten melebihi tinggi layar */
+    /* 'auto' memastikan scrollbar HANYA muncul jika file benar-benar banyak */
     overflow-y: auto; 
+    overflow-x: hidden; /* Mencegah geser ke samping */
     
     display: grid; 
+    /* Mengatur kolom folder tetap rapi di tengah */
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     gap: 40px; 
-    padding: 10px;
-    
-    /* Memberi sedikit jarak di kanan agar scrollbar tidak menempel ikon */
-    padding-right: 15px; 
-    
+    padding: 10px 20px;
     justify-content: center; 
     align-content: start;
-    
-    /* Pastikan min-height tidak terlalu memaksa jika layar pendek */
+
+    /* PENTING: Jangan gunakan min-height yang besar di sini */
     min-height: 0; 
 }
 
-/* ================= CUSTOM SCROLLBAR (KUNCI AGAR TIDAK ADA KOTAK SCROLL) ================= */
-
-/* 1. Mengatur Lebar Scrollbar */
+/* 2. MENGHILANGKAN JEJAK SCROLLBAR (TRACK) SAAT KOSONG */
+/* Kode ini memanipulasi scrollbar agar tidak meninggalkan kotak abu-abu di kanan */
 .file-grid-area::-webkit-scrollbar {
-    width: 8px; /* Lebar tipis agar elegan */
+    width: 6px; /* Sangat tipis agar tidak mengganggu */
 }
 
-/* 2. Mengatur Jalur (Track) Scrollbar - Dibuat Transparan */
-/* Ini yang membuat kotak panjang di kanan hilang saat kosong */
 .file-grid-area::-webkit-scrollbar-track {
+    /* Membuat jalur scrollbar transparan total */
     background: transparent; 
 }
 
-/* 3. Mengatur Batang (Thumb) Scrollbar */
 .file-grid-area::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.0); /* Default: Transparan (Tidak terlihat) */
+    /* Batang scrollbar hanya akan terlihat jika ada aktivitas gulung */
+    background-color: rgba(255, 255, 255, 0.0); 
     border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: content-box;
+    transition: background-color 0.3s;
 }
 
-/* 4. Scrollbar MUNCUL hanya saat user mengarahkan mouse ke area tersebut atau saat scrolling aktif */
+/* Scrollbar baru akan terlihat warnanya sedikit saat mouse berada di atas area grid */
 .file-grid-area:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2); /* Muncul warna putih transparan saat di-hover */
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Untuk Firefox (Opsional) */
-.file-grid-area {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.2) transparent;
+/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
+.file-grid-area p {
+    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
+    width: 100%;
+    
+    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
+    height: auto; 
+    margin: 0;
+    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+    font-weight: 500;
+    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
+}
+
+/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
+.main-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
+    overflow: hidden; 
 }
 
 /* KARTU FOLDER/FILE */
@@ -182,18 +204,34 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     /* background: rgba(0, 0, 0, 0.4); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(4px); */
 }
 
-/* Pesan Folder Kosong (Agar tetap di tengah tanpa scroll) */
+/* 3. PERBAIKAN PESAN "FOLDER KOSONG" (AGAR TIDAK MEMICU SCROLL) */
 .file-grid-area p {
-    grid-column: 1 / -1;
+    grid-column: 1 / -1; /* Membentang penuh agar bisa di tengah */
     width: 100%;
-    height: 100%;
+    
+    /* JANGAN gunakan min-height: 300px atau sejenisnya karena ini pemicu scroll */
+    height: auto; 
+    margin: 0;
+    margin-top: 100px; /* Memberi jarak dari atas tanpa memaksa tinggi area */
+    
     display: flex;
     justify-content: center;
     align-items: center;
+    
     text-align: center;
     color: rgba(255, 255, 255, 0.4);
     font-size: 1.2rem;
-    margin-top: 50px; /* Jarak aman dari atas */
+    font-weight: 500;
+    pointer-events: none; /* Agar tidak mengganggu klik di area belakangnya */
+}
+
+/* 4. MEMASTIKAN CONTAINER INDUK TIDAK MEMAKSA TINGGI */
+.main-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* Memastikan konten di dalamnya tidak meluap keluar secara tidak sengaja */
+    overflow: hidden; 
 }
 
 .del-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #ffadad; width: 30px; height: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; border: none; z-index: 10; cursor: pointer; transition: 0.2s;}
