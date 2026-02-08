@@ -21,7 +21,7 @@ client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 let currentUser = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
-let currentViewMode = 'root'; // root, recent, starred, trash
+let currentViewMode = 'root'; 
 let selectedItem = null; 
 
 const el = (id) => document.getElementById(id);
@@ -29,60 +29,68 @@ const showLoading = () => { if(el('loading')) el('loading').classList.remove('hi
 const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
 
 // ======================================================
-// 2. LOGIKA LOGIN & SESI (PERBAIKAN ERROR SESSION ACTIVE)
+// 2. LOGIKA LOGIN (SUPPORT USERNAME & EMAIL)
 // ======================================================
 async function checkSession() {
     showLoading();
     try {
-        // Coba ambil data user
+        // Cek apakah sudah ada sesi
         currentUser = await account.get();
-        
-        // Jika berhasil, langsung masuk dashboard
         window.nav('dashboardPage'); 
         currentFolderId = 'root';
         currentFolderName = "Drive";
-        
-        // Jalankan fungsi data
         calculateStorage(); 
         loadFiles('root');  
-        
     } catch (e) { 
-        // Jika gagal (belum login), tampilkan halaman login
-        console.log("Belum login atau sesi habis");
+        // Jika belum login, tampilkan halaman login
         window.nav('loginPage'); 
     } finally { 
         setTimeout(hideLoading, 500); 
     }
 }
-// Jalankan saat halaman dimuat
 document.addEventListener('DOMContentLoaded', checkSession);
 
-// Handler Login Form
 if(el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = el('loginEmail').value.trim();
+        let inputId = el('loginEmail').value.trim(); // Bisa username atau email
         const pass = el('loginPass').value;
         
         showLoading();
         try {
-            // Cek apakah sudah ada sesi aktif?
-            try {
-                await account.get();
-                // Jika tidak error, berarti sudah login. Langsung ke dashboard.
-                return checkSession();
-            } catch (err) {
-                // Jika error, berarti belum login. Lanjut buat sesi.
+            // A. Cek Jika Input Bukan Email (Berarti Username)
+            if (!inputId.includes('@')) {
+                // Cari email berdasarkan username di database users
+                const res = await databases.listDocuments(
+                    CONFIG.DB_ID, 
+                    CONFIG.COLLECTION_USERS, 
+                    [Appwrite.Query.equal('name', inputId)]
+                );
+                
+                if (res.documents.length === 0) {
+                    throw new Error("Username tidak ditemukan!");
+                }
+                
+                // Ganti inputId dengan email yang ditemukan
+                inputId = res.documents[0].email;
             }
 
-            // Login dengan Email/Password
-            await account.createEmailPasswordSession(email, pass);
+            // B. Proses Login ke Appwrite
+            try {
+                // Cek dulu apakah ada sesi nyangkut
+                await account.get(); 
+            } catch (err) {
+                // Jika belum login, buat sesi baru
+                await account.createEmailPasswordSession(inputId, pass);
+            }
+            
+            // C. Masuk Dashboard
             checkSession();
             
         } catch (error) {
-            // Tangani error khusus "Session Active"
+            // Tangani error khusus jika sesi sudah ada
             if(error.message.includes('session is active')) {
-                checkSession(); // Langsung masuk saja
+                checkSession();
             } else {
                 alert("Login Gagal: " + error.message);
                 hideLoading();
@@ -91,10 +99,25 @@ if(el('loginForm')) {
     });
 }
 
+// Signup Handler
+if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = el('regName').value;
+    const email = el('regEmail').value;
+    const pass = el('regPass').value;
+    showLoading();
+    try {
+        const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email });
+        alert("Daftar Berhasil! Silakan Login."); 
+        window.nav('loginPage');
+    } catch(e) { alert(e.message); } finally { hideLoading(); }
+});
+
 // ======================================================
-// 3. LOGIKA TOMBOL 'NEW' & DROPDOWN (YANG MACET)
+// 3. LOGIKA TOMBOL 'NEW' (DROPDOWN FIX)
 // ======================================================
-// Fungsi global agar bisa dipanggil dari onclick HTML
+// Fungsi ini DITARUH DI GLOBAL WINDOW agar HTML bisa akses
 window.toggleDropdown = () => {
     const menu = el('dropdownMenu');
     if (menu) {
@@ -102,7 +125,7 @@ window.toggleDropdown = () => {
     }
 };
 
-// Menutup dropdown jika klik di luar
+// Menutup dropdown jika klik sembarang tempat
 window.onclick = function(event) {
     if (!event.target.closest('.new-btn')) {
         const dropdowns = document.getElementsByClassName("dropdown-content");
@@ -125,24 +148,18 @@ window.nav = (pageId) => {
     if(el(pageId)) el(pageId).classList.remove('hidden');
 };
 
-// Fungsi Kembali
 window.goBack = () => {
     currentFolderId = 'root';
     currentFolderName = "Drive";
     currentViewMode = 'root';
-    
-    // Reset Sidebar ke 'Drive Saya'
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.nav-item')[1].classList.add('active'); 
-
     loadFiles('root');
 };
 
-// Handler Sidebar Menu
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
-
     currentViewMode = mode;
     currentFolderId = 'root'; 
     
@@ -156,7 +173,7 @@ window.handleMenuClick = (element, mode) => {
 };
 
 // ======================================================
-// 5. LOAD FILES & UPDATE HEADER
+// 5. LOAD FILES & RENDER
 // ======================================================
 async function loadFiles(param) {
     if (!currentUser) return;
@@ -167,7 +184,6 @@ async function loadFiles(param) {
 
     let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
     
-    // Logika Filter
     if (param === 'recent') {
         queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20));
         queries.push(Appwrite.Query.equal('trashed', false));
@@ -177,7 +193,6 @@ async function loadFiles(param) {
     } else if (param === 'trash') {
         queries.push(Appwrite.Query.equal('trashed', true));
     } else if (param === 'root' || typeof param === 'string') {
-        // Mode Folder Normal
         if (typeof param === 'string' && param !== 'root' && param !== 'recent' && param !== 'starred' && param !== 'trash') {
             currentFolderId = param;
         }
@@ -187,13 +202,8 @@ async function loadFiles(param) {
 
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
-        
         if(res.documents.length === 0) {
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.5; margin-top:50px;">
-                    <i class="fa-solid fa-folder-open" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                    <p>Folder Kosong</p>
-                </div>`;
+            grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
         }
@@ -203,9 +213,7 @@ async function loadFiles(param) {
 function updateHeaderUI() {
     const container = document.querySelector('.breadcrumb-area');
     if (!container) return; 
-
     const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
-    
     if (isRoot) {
         const h = new Date().getHours();
         const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
@@ -221,118 +229,73 @@ function updateHeaderUI() {
     }
 }
 
-// ======================================================
-// 6. RENDER ITEM
-// ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div'); 
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     const name = doc.name || "Tanpa Nama";
-    
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute; top:12px; left:12px; color:#ffd700; font-size:1rem; z-index:10;"></i>` : '';
+    let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : 
+                  name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/) ? 
+                  `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>` :
+                  `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
 
-    let content = '';
-    if(isFolder) {
-        content = `<i class="icon fa-solid fa-folder"></i>`;
-    } else if (name.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/)) {
-        const url = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
-        content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"></div>`;
-    } else {
-        content = `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
-    }
-
-    // Klik Kanan Context Menu
     div.oncontextmenu = (e) => {
-        e.preventDefault();
-        selectedItem = doc;
+        e.preventDefault(); selectedItem = doc;
         const menu = el('contextMenu');
-        if(menu) {
-            menu.style.top = `${e.clientY}px`;
-            menu.style.left = `${e.clientX}px`;
-            menu.classList.remove('hidden');
-            
-            if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-            
-            if(doc.trashed) {
-                if(el('trashBtn')) el('trashBtn').classList.add('hidden');
-                if(el('restoreBtn')) el('restoreBtn').classList.remove('hidden');
-                if(el('permDeleteBtn')) el('permDeleteBtn').classList.remove('hidden');
-            } else {
-                if(el('trashBtn')) el('trashBtn').classList.remove('hidden');
-                if(el('restoreBtn')) el('restoreBtn').classList.add('hidden');
-                if(el('permDeleteBtn')) el('permDeleteBtn').classList.add('hidden');
-            }
+        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
+        menu.classList.remove('hidden');
+        if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        
+        if(doc.trashed) {
+            el('trashBtn').classList.add('hidden');
+            el('restoreBtn').classList.remove('hidden');
+            el('permDeleteBtn').classList.remove('hidden');
+        } else {
+            el('trashBtn').classList.remove('hidden');
+            el('restoreBtn').classList.add('hidden');
+            el('permDeleteBtn').classList.add('hidden');
         }
         document.addEventListener('click', () => menu.classList.add('hidden'), {once:true});
     };
     
-    // Klik Kiri Buka Item
-    div.onclick = () => {
-        if(doc.trashed) return; 
-        if(isFolder) {
-            window.openFolder(doc.$id, name);
-        } else {
-            window.open(doc.url, '_blank');
-        }
-    };
-
-    div.innerHTML = `
-        ${starHTML}
-        ${content}
-        <div class="item-name">${name}</div>`;
+    div.onclick = () => { if(!doc.trashed) isFolder ? window.openFolder(doc.$id, name) : window.open(doc.url, '_blank'); };
+    div.innerHTML = `${starHTML}${content}<div class="item-name">${name}</div>`;
     grid.appendChild(div);
 }
 
-// Fungsi Global Buka Folder
-window.openFolder = (id, nama) => {
-    currentFolderId = id;
-    currentFolderName = nama;
-    currentViewMode = 'root'; 
-    loadFiles(id);
-};
+window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; currentViewMode = 'root'; loadFiles(id); };
 
 // ======================================================
-// 7. STORAGE & AUTO REPAIR
+// 6. STORAGE & AUTO REPAIR
 // ======================================================
 async function calculateStorage() {
     if (!currentUser) return;
     try {
         const [dbRes, bucketRes] = await Promise.all([
-            databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-                Appwrite.Query.equal('owner', currentUser.$id),
-                Appwrite.Query.limit(100)
-            ]),
+            databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]),
             storage.listFiles(CONFIG.BUCKET_ID, [Appwrite.Query.limit(100)])
         ]);
-
-        const realSizes = {};
-        bucketRes.files.forEach(f => { realSizes[f.$id] = f.sizeOriginal; });
-
+        const realSizes = {}; bucketRes.files.forEach(f => { realSizes[f.$id] = f.sizeOriginal; });
         let totalBytes = 0;
         for (const doc of dbRes.documents) {
-            // AUTO REPAIR DATA
             if (doc.trashed === null || doc.starred === null || doc.size === null) {
                 databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
-                    trashed: doc.trashed ?? false,
-                    starred: doc.starred ?? false,
-                    size: doc.size ?? (realSizes[doc.fileId] || 0)
+                    trashed: doc.trashed ?? false, starred: doc.starred ?? false, size: doc.size ?? (realSizes[doc.fileId] || 0)
                 }).catch(()=>{});
             }
             if(doc.type === 'file') totalBytes += (doc.size || 0);
         }
-
         const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
         const percentage = Math.min((parseFloat(totalMB) / 2048) * 100, 100);
-
         if (el('storageUsed')) el('storageUsed').innerText = `${totalMB} MB`;
         if (el('storageBar')) el('storageBar').style.width = `${percentage}%`;
     } catch (e) { console.error(e); }
 }
 
 // ======================================================
-// 8. AKSI (CREATE, UPLOAD, DELETE, LOGOUT)
+// 7. AKSI (CREATE, UPLOAD, DELETE, LOGOUT)
 // ======================================================
 window.submitCreateFolder = async () => {
     const name = el('newFolderName').value.trim();
@@ -342,8 +305,7 @@ window.submitCreateFolder = async () => {
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false
         });
-        loadFiles(currentFolderId);
-        el('newFolderName').value = '';
+        loadFiles(currentFolderId); el('newFolderName').value = '';
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
@@ -361,46 +323,22 @@ window.submitUploadFile = async () => {
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
+// Context Actions
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
+
 // Logout
 if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
-    if (confirm("Keluar?")) {
-        showLoading();
-        try {
-            await account.deleteSession('current'); 
-            currentUser = null;
-            window.nav('loginPage'); 
-        } catch (e) { alert("Gagal Logout: " + e.message); } 
-        finally { hideLoading(); }
-    }
+    if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); currentUser = null; window.nav('loginPage'); } catch (e) { alert("Gagal: " + e.message); } finally { hideLoading(); } }
 });
 
-// Context Menu Actions
-window.toggleStarItem = async () => {
-    try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);}
-};
-window.moveItemToTrash = async () => {
-    try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);}
-};
-window.restoreFromTrash = async () => {
-    try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);}
-};
-window.deleteItemPermanently = async () => {
-    if(!confirm("Hapus permanen?")) return;
-    try { 
-        if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId);
-        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id);
-        loadFiles('trash'); calculateStorage();
-    } catch(e){alert(e.message);}
-};
-
-// ======================================================
-// 9. HELPERS
-// ======================================================
+// Helpers
 window.openModal = (id) => { el(id).classList.remove('hidden'); el('dropdownMenu').classList.remove('show'); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => openModal('uploadModal');
 window.createFolder = () => openModal('folderModal');
-
 el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
 el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
