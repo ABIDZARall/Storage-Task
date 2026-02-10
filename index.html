@@ -11,6 +11,17 @@
 </head>
 <body>
 
+    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
+        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
+    </div>
+
     <div class="liquid-bg"></div>
 
     <section id="loginPage" class="full-screen-center hidden">
@@ -130,16 +141,16 @@
 
                 <nav class="sidebar-menu">
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
-                    
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
-                    
+                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item">
+                        <i class="fa-brands fa-google-drive"></i> Drive Saya
+                    </a>                    
                     <a onclick="handleMenuClick(this, 'computer')" class="nav-item"><i class="fa-solid fa-computer"></i> Komputer</a>
                     <a onclick="handleMenuClick(this, 'shared')" class="nav-item"><i class="fa-solid fa-user-group"></i> Dibagikan</a>
                     <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> Terbaru</a>
                     <a onclick="handleMenuClick(this, 'starred')" class="nav-item"><i class="fa-solid fa-star"></i> Berbintang</a>
                     <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> Sampah</a>
                 </nav>
-                
+
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;">
                     <div class="storage-label"><i class="fa-solid fa-cloud"></i> Storage</div>
                     <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
@@ -243,17 +254,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
-        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
-        <hr class="menu-divider">
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
-        <hr class="menu-divider">
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
     </div>
 
     <script src="app.js"></script>

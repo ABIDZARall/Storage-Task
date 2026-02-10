@@ -3,13 +3,15 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
+// ======================================================
 // 1. KONFIGURASI
+// ======================================================
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',
     COLLECTION_FILES: 'files',   
-    COLLECTION_USERS: 'users',
+    COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
 
@@ -64,11 +66,11 @@ async function recordActivity(sheetName, userData) {
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-    initNewButtonLogic(); // Klik Kiri Tombol New
+    initNewButtonLogic(); 
     initDragAndDrop();
     initLogout();
     initSearchBar();
-    initAllContextMenus(); // <--- SEMUA LOGIKA KLIK KANAN DI SINI
+    initAllContextMenus(); // <--- Inisialisasi Klik Kanan Lengkap
 });
 
 window.togglePass = (id, icon) => {
@@ -78,52 +80,52 @@ window.togglePass = (id, icon) => {
 };
 
 // ======================================================
-// 4. LOGIKA KLIK KANAN LENGKAP (NEW, DRIVE, FILE, GLOBAL)
+// 4. LOGIKA KLIK KANAN (DRIVE SAYA, FILE, TOMBOL NEW)
 // ======================================================
 function initAllContextMenus() {
-    const globalMenu = el('globalContextMenu');
-    const newBtnMenu = el('dropdownMenu');
-    const fileMenu = el('contextMenu');
+    const globalMenu = el('globalContextMenu'); // Menu Buat Folder/Upload
+    const fileMenu = el('contextMenu');         // Menu Hapus/Bintang
+    const newDropdown = el('dropdownMenu');     // Menu Dropdown Tombol New
     
     const newBtn = el('newBtnMain');
-    const navDrive = el('navDrive');
-    const mainArea = document.querySelector('.main-content-area');
+    const navDrive = el('navDrive');            // Tombol Sidebar "Drive Saya"
+    const mainArea = document.querySelector('.main-content-area'); // Area Kosong
 
-    // Helper: Tutup semua menu
+    // Fungsi Pembantu: Tutup Semua Menu
     const closeAllMenus = () => {
         if(globalMenu) globalMenu.classList.remove('show');
-        if(newBtnMenu) newBtnMenu.classList.remove('show');
+        if(newDropdown) newDropdown.classList.remove('show');
         if(fileMenu) fileMenu.classList.add('hidden');
     };
 
-    // A. KLIK KANAN PADA TOMBOL "+ NEW"
-    if (newBtn && newBtnMenu) {
+    // A. KLIK KANAN: TOMBOL "+ NEW"
+    if (newBtn && newDropdown) {
         newBtn.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
+            e.preventDefault(); 
             e.stopPropagation();
             closeAllMenus();
-            newBtnMenu.classList.add('show'); // Tampilkan menu dropdown New
+            newDropdown.classList.toggle('show'); // Munculkan dropdown aslinya
         });
     }
 
-    // B. KLIK KANAN PADA "DRIVE SAYA" (SIDEBAR)
+    // B. KLIK KANAN: SIDEBAR "DRIVE SAYA"
     if (navDrive && globalMenu) {
         navDrive.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
             closeAllMenus();
             
-            // Munculkan menu global di posisi mouse
+            // Munculkan Menu Global di posisi mouse
             globalMenu.style.top = `${e.clientY}px`;
             globalMenu.style.left = `${e.clientX}px`;
             globalMenu.classList.add('show');
         });
     }
 
-    // C. KLIK KANAN DI AREA KOSONG (BACKGROUND)
+    // C. KLIK KANAN: AREA KOSONG (BACKGROUND)
     if (mainArea && globalMenu) {
         mainArea.addEventListener('contextmenu', (e) => {
-            // Jika yang diklik adalah FILE (item-card), biarkan logika renderItem yang menangani
+            // Jika yang diklik adalah item file/folder, jangan lakukan apa-apa (biarkan renderItem handle)
             if (e.target.closest('.item-card')) return;
 
             e.preventDefault();
@@ -135,9 +137,9 @@ function initAllContextMenus() {
         });
     }
 
-    // D. KLIK KIRI DI MANA SAJA (TUTUP MENU)
+    // D. KLIK KIRI DI MANA SAJA: TUTUP SEMUA MENU
     window.addEventListener('click', (e) => {
-        // Jangan tutup jika sedang klik di dalam menu itu sendiri
+        // Jangan tutup jika mengklik di dalam menu itu sendiri
         if (e.target.closest('.dropdown-content') || e.target.closest('.context-menu')) return;
         closeAllMenus();
     });
