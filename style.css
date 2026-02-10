@@ -793,12 +793,27 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-weight: 600;
 }
 
-/* Memastikan item menu yang tidak memiliki class hidden tetap tampil secara flex */
+/* PERBAIKAN BUG DISPLAY HIDDEN */
+
+/* Pastikan class .hidden mengalahkan display flex bawaan */
+.ctx-item.hidden {
+    display: none !important;
+}
+
+/* Pastikan item yang TIDAK hidden tampil flex */
 .ctx-item:not(.hidden) {
     display: flex !important;
 }
 
-/* Memastikan tombol bahaya memiliki warna yang tepat saat hover */
+/* Memastikan Menu Modern muncul di atas segalanya (termasuk modal lain) */
+.context-menu-modern {
+    z-index: 999999 !important; 
+}
+
+/* Memastikan tombol sampah berwarna merah saat di hover */
+.ctx-item.ctx-danger:hover {
+    background: rgba(248, 113, 113, 0.15) !important;
+}
 .ctx-item.ctx-danger:hover i, 
 .ctx-item.ctx-danger:hover span {
     color: #f87171 !important;

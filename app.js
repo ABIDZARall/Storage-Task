@@ -283,7 +283,7 @@ function renderItem(doc) {
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     
-    // Ikon & Thumbnail
+    // Setup Icon/Thumbnail
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
@@ -292,53 +292,62 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
     
-    // Klik Kiri: Buka
+    // KLIK KIRI (Buka File/Folder)
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // Klik Kanan: Context Menu
+    // KLIK KANAN (WAJIB MEMBUKA contextMenu, BUKAN storageModal)
     div.oncontextmenu = (e) => { 
-        e.preventDefault(); e.stopPropagation(); 
+        e.preventDefault(); 
+        e.stopPropagation(); 
         
-        // Tutup menu lain
+        // Tutup menu lain yang mungkin terbuka
         if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
         if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
+        // Pastikan modal storage tertutup jika tidak sengaja terbuka
+        el('storageModal').classList.add('hidden');
 
-        // Set Item yang dipilih
         selectedItem = doc; 
         
-        // Munculkan Menu
+        // Targetkan elemen Menu Klik Kanan yang benar
         const menu = el('contextMenu'); 
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`; 
-        menu.classList.remove('hidden'); 
-        menu.classList.add('show');
         
-        // UPDATE TAMPILAN MENU (Sangat Penting!)
+        // Update logika tombol Sampah sebelum menampilkan
         updateContextMenuUI(doc);
+        
+        // Tampilkan
+        menu.classList.remove('hidden');
+        menu.classList.add('show');
     };
     grid.appendChild(div);
 }
 
 function updateContextMenuUI(doc) {
-    const starText = el('ctxStarText'); 
-    const starIcon = el('ctxStarIcon');
-    
-    // Logika Bintang
+    // 1. Atur Bintang
+    const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
     if (doc.starred) { 
         starText.innerText = "Hapus dari Berbintang"; 
         starIcon.style.color = '#ffd700'; 
+        starIcon.classList.remove('fa-regular'); starIcon.classList.add('fa-solid');
     } else { 
         starText.innerText = "Tambahkan ke Berbintang"; 
         starIcon.style.color = 'rgba(255,255,255,0.7)'; 
     }
 
-    // FIX TOMBOL SAMPAH: Pastikan ID sesuai dengan HTML
-    const isTrash = doc.trashed;
+    // 2. LOGIKA SAMPAH (FIXED)
+    const isTrash = doc.trashed; // Cek status file
     const btnTrash = el('ctxTrashBtn');
     const btnRestore = el('ctxRestoreBtn');
     const btnPermDel = el('ctxPermDeleteBtn');
 
+    // Reset dulu semua class hidden
+    btnTrash.classList.remove('hidden');
+    btnRestore.classList.add('hidden');
+    btnPermDel.classList.add('hidden');
+
     if (isTrash) {
+        // Jika di folder sampah:
         btnTrash.classList.add('hidden'); // Sembunyikan 'Pindahkan ke Sampah'
         btnRestore.classList.remove('hidden'); // Tampilkan 'Pulihkan'
         btnPermDel.classList.remove('hidden'); // Tampilkan 'Hapus Permanen'
@@ -347,6 +356,8 @@ function updateContextMenuUI(doc) {
         btnRestore.classList.add('hidden');
         btnPermDel.classList.add('hidden');
     }
+    // Jika tidak di sampah, biarkan default (btnTrash muncul)
+
 }
 
 // FUNGSI EKSEKUSI HAPUS (KE SAMPAH)
@@ -454,17 +465,23 @@ async function calculateStorage() {
     } catch (e) {}
 }
 
+// Fungsi Khusus Membuka Storage (Hanya dipanggil saat klik Widget Storage)
 window.openStorageModal = () => {
+    // Hitung persentase bar
     const total = storageDetail.total || 1;
     el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
     el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
     el('barDocs').style.width = `${(storageDetail.docs/total)*100}%`;
     el('barOthers').style.width = `${(storageDetail.others/total)*100}%`;
+    
+    // Isi teks angka
     el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
     el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
     el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
     el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+    
+    // BUKA MODAL YANG BENAR (ID: storageModal)
     window.openModal('storageModal');
 };
 
