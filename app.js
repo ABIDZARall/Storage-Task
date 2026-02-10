@@ -201,6 +201,11 @@ window.clearSearch = () => {
 // ======================================================
 // 5. LOGIKA KLIK KANAN LENGKAP (CONTEXT MENUS)
 // ======================================================
+// ... (Kode konfigurasi & init lain tetap sama) ...
+
+// ======================================================
+// FUNGSI INISIALISASI KLIK KANAN (DIPERBARUI)
+// ======================================================
 function initAllContextMenus() {
     const globalMenu = el('globalContextMenu');
     const newBtnMenu = el('dropdownMenu');
@@ -213,11 +218,20 @@ function initAllContextMenus() {
     const closeAllMenus = () => {
         if(globalMenu) globalMenu.classList.remove('show');
         if(newBtnMenu) newBtnMenu.classList.remove('show');
-        if(fileMenu) fileMenu.classList.add('hidden');
+        if(fileMenu) fileMenu.classList.add('hidden'); // Gunakan hidden untuk menu file
+        if(fileMenu) fileMenu.classList.remove('show'); // Jaga-jaga jika pakai class show
     };
 
-    // A. Klik Kanan Tombol New
+    // A. Tombol New (Klik Kiri & Kanan)
     if (newBtn) {
+        // Klik Kiri
+        newBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Toggle: Jika sudah buka, tutup. Jika tutup, buka.
+            if(newBtnMenu.classList.contains('show')) closeAllMenus();
+            else { closeAllMenus(); newBtnMenu.classList.add('show'); }
+        });
+        // Klik Kanan
         newBtn.addEventListener('contextmenu', (e) => {
             e.preventDefault(); e.stopPropagation();
             closeAllMenus();
@@ -225,7 +239,7 @@ function initAllContextMenus() {
         });
     }
 
-    // B. Klik Kanan Sidebar Drive
+    // B. Sidebar Drive Saya (Klik Kanan)
     if (navDrive) {
         navDrive.addEventListener('contextmenu', (e) => {
             e.preventDefault(); e.stopPropagation();
@@ -236,10 +250,10 @@ function initAllContextMenus() {
         });
     }
 
-    // C. Klik Kanan Area Kosong
+    // C. Area Kosong (Klik Kanan)
     if (mainArea) {
         mainArea.addEventListener('contextmenu', (e) => {
-            if (e.target.closest('.item-card')) return; // Biarkan file handle sendiri
+            if (e.target.closest('.item-card')) return; // Biar file handle sendiri
             e.preventDefault();
             closeAllMenus();
             globalMenu.style.top = `${e.clientY}px`;
@@ -248,16 +262,15 @@ function initAllContextMenus() {
         });
     }
 
-    // D. Klik Kiri di mana saja (Tutup Menu)
+    // D. Klik Kiri di mana saja (Tutup)
     window.addEventListener('click', (e) => {
-        // Jangan tutup jika klik di dalam menu
         if (e.target.closest('.dropdown-content') || e.target.closest('.context-menu-modern')) return;
         closeAllMenus();
     });
 }
 
 // ======================================================
-// 6. RENDER ITEM & FILE CONTEXT MENU
+// FUNGSI RENDER ITEM & MENU FILE (DIPERBARUI)
 // ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid');
@@ -265,7 +278,6 @@ function renderItem(doc) {
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     
-    // Icon
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
@@ -274,14 +286,13 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
     
-    // Klik Kiri: Buka
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // Klik Kanan: Context Menu File
+    // KLIK KANAN FILE/FOLDER
     div.oncontextmenu = (e) => { 
         e.preventDefault(); e.stopPropagation(); 
         
-        // Tutup menu lain
+        // Tutup menu global
         el('globalContextMenu').classList.remove('show');
         el('dropdownMenu').classList.remove('show');
 
@@ -290,23 +301,26 @@ function renderItem(doc) {
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`; 
         menu.classList.remove('hidden'); 
+        menu.classList.add('show'); // Tambahkan ini untuk animasi CSS
         
-        // Update UI Menu (Bintang/Sampah)
         updateContextMenuUI(doc);
     };
     grid.appendChild(div);
 }
 
+// UPDATE TAMPILAN MENU FILE (DINAMIS)
 function updateContextMenuUI(doc) {
     const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
-    if (doc.starred) { starText.innerText = "Hapus Bintang"; starIcon.style.color = '#ffd700'; }
-    else { starText.innerText = "Bintangi"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
+    if (doc.starred) { starText.innerText = "Hapus dari Berbintang"; starIcon.style.color = '#ffd700'; }
+    else { starText.innerText = "Tambahkan ke Berbintang"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
 
     const isTrash = doc.trashed;
     el('ctxTrashBtn').classList.toggle('hidden', isTrash);
     el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
     el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
 }
+
+// ... (Sisa fungsi helper, auth, dll tetap sama) ...
 
 // Aksi Menu Baru
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('contextMenu').classList.add('hidden'); };
