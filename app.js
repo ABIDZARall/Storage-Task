@@ -3,213 +3,181 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
+// ======================================================
+// 1. KONFIGURASI
+// ======================================================
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',
     COLLECTION_FILES: 'files',   
-    COLLECTION_USERS: 'users',
+    COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
+// STATE VARIABLES
 let currentUser = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
 let selectedItem = null; 
-let selectedFile = null; // Variabel global untuk menampung file upload
+let selectedUploadFile = null;
 
 const el = (id) => document.getElementById(id);
-const showLoading = () => el('loading').classList.remove('hidden');
-const hideLoading = () => el('loading').classList.add('hidden');
+const showLoading = () => { if(el('loading')) el('loading').classList.remove('hidden'); };
+const hideLoading = () => { if(el('loading')) el('loading').classList.add('hidden'); };
 
 // ======================================================
-// INISIALISASI UTAMA
+// 2. INISIALISASI (JALAN SAAT LOAD)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-    initNewButtonLogic();
-    initDragAndDrop();
+    initNewButtonLogic(); // Fungsi khusus untuk tombol New
+    initDragAndDrop();    // Fungsi khusus untuk upload
 });
 
-// Fix Tombol New & Dropdown
+// ======================================================
+// 3. LOGIKA TOMBOL 'NEW' & DROPDOWN (SOLUSI FIX)
+// ======================================================
 function initNewButtonLogic() {
-    const btn = el('newBtnMain');
+    const newBtn = el('newBtnMain');
     const menu = el('dropdownMenu');
-    
-    if (btn && menu) {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
+
+    if (newBtn && menu) {
+        // Hapus semua event lama (bersih-bersih)
+        const newBtnClone = newBtn.cloneNode(true);
+        newBtn.parentNode.replaceChild(newBtnClone, newBtn);
+
+        // Pasang Event Listener Baru pada tombol yang bersih
+        newBtnClone.addEventListener('click', (e) => {
+            // SANGAT PENTING: Mencegah klik menyebar ke window
+            e.stopPropagation(); 
+            // Toggle menu (Buka/Tutup)
             menu.classList.toggle('show');
         });
-    }
 
-    // Klik di luar untuk menutup dropdown
-    window.addEventListener('click', (e) => {
-        if (menu && !btn.contains(e.target) && !menu.contains(e.target)) {
-            menu.classList.remove('show');
-        }
-    });
-}
-
-// Fix Drag & Drop
-function initDragAndDrop() {
-    const zone = el('dropZone');
-    if (!zone) return;
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
-    });
-
-    zone.addEventListener('dragover', () => zone.classList.add('dragover'));
-    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-    
-    zone.addEventListener('drop', (e) => {
-        zone.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) handleFileSelect(files[0]);
-    });
-
-    el('fileInputHidden').addEventListener('change', (e) => {
-        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-    });
-}
-
-function handleFileSelect(file) {
-    selectedFile = file;
-    el('fileInfoText').innerText = `Terpilih: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-}
-
-// ======================================================
-// NAVIGASI & LOAD DATA
-// ======================================================
-async function checkSession() {
-    showLoading();
-    try {
-        currentUser = await account.get();
-        el('dashboardPage').classList.remove('hidden');
-        calculateStorage();
-        loadFiles('root');
-    } catch (e) { el('loginPage').classList.remove('hidden'); }
-    finally { setTimeout(hideLoading, 500); }
-}
-
-async function loadFiles(param) {
-    if (!currentUser) return;
-    const grid = el('fileGrid'); 
-    grid.innerHTML = ''; 
-    updateHeaderUI();
-
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
-    
-    if (param === 'recent') {
-        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20));
-        queries.push(Appwrite.Query.equal('trashed', false));
-    } else if (param === 'starred') {
-        queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
-    } else if (param === 'trash') {
-        queries.push(Appwrite.Query.equal('trashed', true));
-    } else {
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
-    }
-
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
-        if(res.documents.length === 0) {
-            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5; margin-top:100px;">Folder Kosong</p>`;
-        } else {
-            res.documents.forEach(doc => renderItem(doc));
-        }
-    } catch (e) { console.error(e); }
-}
-
-// ======================================================
-// AKSI (UPLOAD, FOLDER, DELETE)
-// ======================================================
-window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim();
-    if (!name) return;
-    closeModal('folderModal'); showLoading();
-    try {
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false
-        });
-        loadFiles(currentFolderId);
-        el('newFolderName').value = '';
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
-
-window.submitUploadFile = async () => {
-    if (!selectedFile) return alert("Pilih file dulu!");
-    closeModal('uploadModal'); showLoading();
-    try {
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedFile);
-        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name: selectedFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: selectedFile.size, starred: false, trashed: false
-        });
-        selectedFile = null; el('fileInfoText').innerText = "Belum ada file dipilih";
-        loadFiles(currentFolderId); calculateStorage();
-    } catch (e) { alert(e.message); } finally { hideLoading(); }
-};
-
-// ... (Ganti handleMenuClick, renderItem, Context Menu, dan Storage dari versi stabil sebelumnya) ...
-
-// Helper Modal
-window.openModal = (id) => { el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); };
-window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => openModal('uploadModal');
-window.createFolder = () => openModal('folderModal');
-
-// ======================================================
-// 5. FITUR DRAG & DROP
-// ======================================================
-function initDragAndDrop() {
-    const dropZone = el('dropZone');
-    const fileInput = el('fileInputHidden');
-    if (!dropZone) return;
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
-        dropZone.addEventListener(name, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        }, false);
-    });
-
-    dropZone.addEventListener('dragover', () => dropZone.style.background = 'rgba(74, 222, 128, 0.1)');
-    dropZone.addEventListener('dragleave', () => dropZone.style.background = 'transparent');
-
-    dropZone.addEventListener('drop', (e) => {
-        dropZone.style.background = 'transparent';
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            selectedUploadFile = files[0];
-            updateUploadInfo(selectedUploadFile);
-        }
-    });
-
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                selectedUploadFile = this.files[0];
-                updateUploadInfo(selectedUploadFile);
+        // Event Global: Tutup menu jika klik di mana saja SELAIN tombol/menu
+        window.addEventListener('click', (e) => {
+            if (!newBtnClone.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.remove('show');
             }
         });
     }
 }
 
-function updateUploadInfo(file) {
+// ======================================================
+// 4. LOGIKA DRAG & DROP
+// ======================================================
+function initDragAndDrop() {
+    const dropZone = el('dropZone');
+    const fileInput = el('fileInputHidden');
+
+    if (!dropZone) return;
+
+    // Mencegah browser membuka file gambar saat di-drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    // Efek visual saat file ditarik
+    dropZone.addEventListener('dragover', () => {
+        dropZone.style.borderColor = '#4ade80';
+        dropZone.style.background = 'rgba(74, 222, 128, 0.1)';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+        dropZone.style.background = 'transparent';
+    });
+
+    // Saat file dilepas (Drop)
+    dropZone.addEventListener('drop', (e) => {
+        dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+        dropZone.style.background = 'transparent';
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+
+    // Saat file dipilih lewat tombol
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+    }
+}
+
+function handleFileSelect(file) {
+    selectedUploadFile = file;
     const infoText = el('fileInfoText');
     if (infoText) {
-        infoText.innerText = `Terpilih: ${file.name}`;
+        infoText.innerText = `Siap Upload: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
         infoText.style.color = '#4ade80';
+        infoText.style.fontWeight = 'bold';
     }
 }
 
 // ======================================================
-// 6. NAVIGASI DASHBOARD
+// 5. SISTEM LOGIN
+// ======================================================
+async function checkSession() {
+    showLoading();
+    try {
+        currentUser = await account.get();
+        window.nav('dashboardPage'); 
+        currentFolderId = 'root';
+        calculateStorage(); 
+        loadFiles('root');  
+    } catch (e) { 
+        window.nav('loginPage'); 
+    } finally { 
+        setTimeout(hideLoading, 500); 
+    }
+}
+
+if(el('loginForm')) {
+    el('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let inputId = el('loginEmail').value.trim();
+        const pass = el('loginPass').value;
+        showLoading();
+        try {
+            if (!inputId.includes('@')) {
+                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
+                if (res.documents.length === 0) throw new Error("Username tidak ditemukan!");
+                inputId = res.documents[0].email;
+            }
+            try { await account.get(); } catch (err) { await account.createEmailPasswordSession(inputId, pass); }
+            checkSession();
+        } catch (error) {
+            if(error.message.includes('session is active')) checkSession();
+            else { alert("Login Gagal: " + error.message); hideLoading(); }
+        }
+    });
+}
+
+if(el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = el('regName').value; const email = el('regEmail').value; const pass = el('regPass').value;
+    showLoading();
+    try {
+        const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email });
+        alert("Daftar Berhasil! Silakan Login."); window.nav('loginPage');
+    } catch(e) { alert(e.message); } finally { hideLoading(); }
+});
+
+// ======================================================
+// 6. NAVIGASI
 // ======================================================
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => { if(el(id)) el(id).classList.add('hidden'); });
@@ -219,7 +187,7 @@ window.nav = (pageId) => {
 window.goBack = () => {
     currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.nav-item')[0].classList.add('active'); // Beranda
+    document.querySelectorAll('.nav-item')[1].classList.add('active'); 
     loadFiles('root');
 };
 
@@ -228,12 +196,16 @@ window.handleMenuClick = (element, mode) => {
     element.classList.add('active');
     currentViewMode = mode;
     currentFolderId = 'root'; 
-    currentFolderName = mode === 'root' ? 'Drive' : element.innerText.trim();
+    if(mode === 'root') currentFolderName = "Drive";
+    else if(mode === 'recent') currentFolderName = "Terbaru";
+    else if(mode === 'starred') currentFolderName = "Berbintang";
+    else if(mode === 'trash') currentFolderName = "Sampah";
+    else currentFolderName = element.innerText.trim();
     loadFiles(mode);
 };
 
 // ======================================================
-// 7. DATA MANAGEMENT
+// 7. LOAD DATA & RENDER
 // ======================================================
 async function loadFiles(param) {
     if (!currentUser) return;
@@ -269,7 +241,7 @@ function updateHeaderUI() {
         const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`;
     } else {
-        container.innerHTML = `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:15px;"><button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2);width:auto;padding:0 20px;border:1px solid rgba(255,255,255,0.2);"><i class="fa-solid fa-arrow-left"></i> Kembali</button><h2 id="headerTitle">${currentFolderName}</h2></div>`;
+        container.innerHTML = `<div style="display:flex; flex-direction:column; align-items:flex-start; gap:15px;"><button onclick="goBack()" class="btn-pill small" style="background:rgba(255,255,255,0.2);width:auto;padding:0 20px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button><h2 id="headerTitle">${currentFolderName}</h2></div>`;
     }
 }
 
@@ -289,6 +261,13 @@ function renderItem(doc) {
         e.preventDefault(); selectedItem = doc;
         const menu = el('contextMenu');
         menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`; menu.classList.remove('hidden');
+        if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        
+        const isTrash = doc.trashed;
+        if(el('trashBtn')) el('trashBtn').classList.toggle('hidden', isTrash);
+        if(el('restoreBtn')) el('restoreBtn').classList.toggle('hidden', !isTrash);
+        if(el('permDeleteBtn')) el('permDeleteBtn').classList.toggle('hidden', !isTrash);
+        
         document.addEventListener('click', () => menu.classList.add('hidden'), {once:true});
     };
     
@@ -300,7 +279,7 @@ function renderItem(doc) {
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; currentViewMode = 'root'; loadFiles(id); };
 
 // ======================================================
-// 8. STORAGE & FOLDER ACTION
+// 8. ACTIONS (CREATE, UPLOAD, DELETE)
 // ======================================================
 window.submitCreateFolder = async () => {
     const nameInput = el('newFolderName');
@@ -313,6 +292,21 @@ window.submitCreateFolder = async () => {
         });
         loadFiles(currentFolderId);
         nameInput.value = '';
+    } catch (e) { alert(e.message); } finally { hideLoading(); }
+};
+
+window.submitUploadFile = async () => {
+    if (!selectedUploadFile) { alert("Pilih file dulu!"); return; }
+    closeModal('uploadModal'); showLoading();
+    try {
+        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
+        const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false
+        });
+        selectedUploadFile = null;
+        if(el('fileInfoText')) el('fileInfoText').innerText = "Belum ada file dipilih";
+        loadFiles(currentFolderId); calculateStorage();
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
@@ -343,3 +337,21 @@ async function calculateStorage() {
 if (el('logoutBtn')) el('logoutBtn').addEventListener('click', async () => {
     if (confirm("Keluar?")) { showLoading(); try { await account.deleteSession('current'); location.reload(); } catch (e) { hideLoading(); } }
 });
+
+// Helpers UI
+window.openModal = (id) => { 
+    // Tutup menu dropdown jika terbuka
+    const menu = el('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    el(id).classList.remove('hidden'); 
+};
+window.closeModal = (id) => el(id).classList.add('hidden');
+window.triggerUploadModal = () => window.openModal('uploadModal');
+window.createFolder = () => window.openModal('folderModal');
+window.togglePass = (id, icon) => { const i = el(id); i.type = i.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
+
+// Context Actions
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };

@@ -64,19 +64,17 @@
         </header>
 
         <div class="main-glass-panel">
-            
             <aside class="sidebar-left">
+                
                 <div class="new-btn-wrapper" id="dropdownContainer">
-                    <button class="btn-pill new-btn" onclick="toggleDropdown(event)">
+                    <button class="btn-pill new-btn" id="newBtnMain">
                         <i class="fa-solid fa-plus"></i> New
-                        </button>
                     </button>
                     <div id="dropdownMenu" class="dropdown-content">
                         <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
                         <a onclick="triggerUploadModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</a>
                     </div>
                 </div>
-
                 <nav class="sidebar-menu">
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
                         <i class="fa-solid fa-house"></i> Beranda
@@ -149,10 +147,16 @@
         <div class="glass-card modal-box">
             <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
             <div class="modal-body">
-                <div id="dropZone" class="drag-drop-area"><h4>Drag & Drop File</h4><button class="btn-pill small" onclick="document.getElementById('fileInputHidden').click()">Pilih</button><input type="file" id="fileInputHidden" hidden></div>
+                <div id="dropZone" class="drag-drop-area">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; margin-bottom: 10px; color:rgba(255,255,255,0.5);"></i>
+                    <h4>Drag & Drop File Here</h4>
+                    <p style="font-size: 0.8rem; margin: 10px 0;">Atau klik tombol pilih</p>
+                    <button class="btn-pill small" onclick="document.getElementById('fileInputHidden').click()">Pilih Manual</button>
+                    <input type="file" id="fileInputHidden" hidden>
+                </div>
                 <p id="fileInfoText" class="file-info">Belum ada file dipilih</p>
             </div>
-            <div class="modal-actions"><button class="btn-pill primary" onclick="submitUploadFile()">Upload</button></div>
+            <div class="modal-actions"><button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button></div>
         </div>
     </div>
 
@@ -160,7 +164,7 @@
         <div class="menu-item" onclick="toggleStarItem()">
             <i class="fa-solid fa-star"></i> <span id="starText">Tambahkan ke Berbintang</span>
         </div>
-        <div class="menu-item" onclick="moveItemToTrash()">
+        <div class="menu-item" id="trashBtn" onclick="moveItemToTrash()">
             <i class="fa-solid fa-trash-can"></i> Pindahkan ke Sampah
         </div>
         <div class="menu-item delete-permanent hidden" id="permDeleteBtn" onclick="deleteItemPermanently()">
