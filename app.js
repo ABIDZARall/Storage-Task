@@ -26,7 +26,7 @@ let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
 let selectedItem = null; 
 let selectedUploadFile = null; 
-
+let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 const el = (id) => document.getElementById(id);
 const showLoading = () => el('loading').classList.remove('hidden');
 const hideLoading = () => el('loading').classList.add('hidden');
@@ -421,11 +421,39 @@ window.submitCreateFolder = async () => {
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')]);
-        let total = 0; res.documents.forEach(d => total += (d.size || 0));
-        const mb = (total / 1048576).toFixed(2);
-        el('storageUsed').innerText = `${mb} MB`; el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
-    } catch (e) {}
+        // Ambil semua dokumen bertipe file milik user
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file'),
+            Appwrite.Query.limit(100) // Ambil hingga 100 file untuk perhitungan
+        ]);
+
+        // Reset Hitungan
+        storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+
+        res.documents.forEach(doc => {
+            const size = doc.size || 0;
+            const name = doc.name.toLowerCase();
+            storageDetail.total += size;
+
+            // Kategorisasi berdasarkan ekstensi file
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
+                storageDetail.images += size;
+            } else if (name.match(/\.(mp4|mkv|avi|mov|wmv)$/)) {
+                storageDetail.videos += size;
+            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) {
+                storageDetail.docs += size;
+            } else {
+                storageDetail.others += size;
+            }
+        });
+
+        // Update Tampilan Bar di Sidebar
+        const mb = (storageDetail.total / 1048576).toFixed(2);
+        el('storageUsed').innerText = `${mb} MB`;
+        el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
+
+    } catch (e) { console.error("Storage Error", e); }
 }
 
 window.openModal = (id) => { el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
@@ -436,3 +464,28 @@ window.toggleStarItem = async () => { try { await databases.updateDocument(CONFI
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
+
+window.openStorageModal = () => {
+    // 1. Hitung Persentase untuk Diagram
+    const total = storageDetail.total || 1; // hindari pembagian nol
+    const pImg = (storageDetail.images / total) * 100;
+    const pVid = (storageDetail.videos / total) * 100;
+    const pDoc = (storageDetail.docs / total) * 100;
+    const pOth = (storageDetail.others / total) * 100;
+
+    // 2. Terapkan Lebar Batang Diagram
+    el('barImages').style.width = `${pImg}%`;
+    el('barVideos').style.width = `${pVid}%`;
+    el('barDocs').style.width = `${pDoc}%`;
+    el('barOthers').style.width = `${pOth}%`;
+
+    // 3. Tampilkan Angka Detail (Konversi ke MB)
+    el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
+    el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
+    el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
+    el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
+    el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+
+    // 4. Munculkan Modal
+    window.openModal('storageModal');
+};
