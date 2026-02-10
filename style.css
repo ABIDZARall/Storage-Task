@@ -48,68 +48,73 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     padding-right: 25px; flex-shrink: 0;
 }
 
-.new-btn { width: 100%; background: rgba(255,255,255,0.2); color: white; justify-content: flex-start; padding-left: 25px; gap: 12px; font-size: 1.1rem; height: 55px; }
-/* ================= PERBAIKAN DROPDOWN MENU (FIXED) ================= */
+/* ================= PERBAIKAN TAMPILAN SIDEBAR & MENU ================= */
 
-/* Wadah utama dropdown */
+/* 1. KUNCI AGAR MENU TIDAK MELEBAR (WAJIB ADA) */
+.new-btn-wrapper {
+    position: relative; /* Penting! Menjadi patokan posisi menu dropdown */
+    width: 100%;
+    margin-bottom: 15px; /* Jarak ke menu di bawahnya */
+}
+
+/* 2. GAYA TOMBOL NEW */
+.new-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    justify-content: flex-start;
+    padding-left: 25px;
+    gap: 15px;
+    font-size: 1.1rem;
+    height: 55px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: 0.3s;
+}
+.new-btn:hover {
+    background: rgba(255,255,255,0.3);
+    box-shadow: 0 0 15px rgba(255,255,255,0.1);
+}
+
+/* 3. GAYA MENU DROPDOWN (YANG TADI PANJANG) */
 .dropdown-content { 
-    display: none; 
+    display: none; /* Tersembunyi saat awal */
     position: absolute; 
-    
-    /* Mengatur posisi agar tepat di bawah tombol New */
-    top: 65px; 
+    top: 65px; /* Muncul tepat di bawah tombol */
     left: 0; 
     
-    /* PERBAIKAN PENTING: Lebar fix, bukan 100% */
-    width: 230px; 
+    /* PERBAIKAN: Lebar tetap, agar tidak memenuhi layar */
+    width: 240px; 
     
-    /* Warna dan Border */
     background: #00384d; 
     border-radius: 12px; 
+    z-index: 9999; /* Agar muncul paling depan */
     border: 1px solid rgba(255, 255, 255, 0.2); 
-    
-    /* PERBAIKAN PENTING: Z-Index super tinggi agar bisa diklik */
-    z-index: 9999; 
-    
-    /* Bayangan agar terlihat melayang */
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     overflow: hidden;
 }
 
-/* Animasi Muncul */
+/* Kelas untuk memunculkan menu */
 .dropdown-content.show { 
     display: block; 
-    animation: slideDown 0.2s ease forwards;
+    animation: fadeIn 0.2s ease;
 }
 
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Item Menu (Tombol Folder/Upload) */
+/* Item di dalam menu */
 .dropdown-content a { 
     display: flex; 
     align-items: center; 
     gap: 15px; 
-    padding: 12px 20px; 
-    
-    color: rgba(255, 255, 255, 0.9); 
+    padding: 15px 20px; 
+    color: white; 
     text-decoration: none; 
     cursor: pointer; 
-    transition: all 0.2s ease;
-    
     font-size: 0.95rem;
-    font-weight: 500;
 }
-
-/* Efek Hover saat mouse diarahkan */
-.dropdown-content a:hover { 
-    background-color: rgba(74, 222, 128, 0.15); /* Hijau transparan */
-    color: #4ade80; /* Teks jadi hijau */
-    padding-left: 25px; /* Efek geser sedikit */
-}
-
+.dropdown-content a:hover { background: rgba(255,255,255,0.1); color: #4ade80; }
 .dropdown-content a i {
     width: 20px;
     text-align: center;

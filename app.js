@@ -27,66 +27,45 @@ const showLoading = () => el('loading').classList.remove('hidden');
 const hideLoading = () => el('loading').classList.add('hidden');
 
 // ======================================================
-// 2. INISIALISASI (JALAN SAAT HALAMAN DIBUKA)
+// LOGIKA TOMBOL NEW & DROPDOWN (VERSI FINAL & STABIL)
 // ======================================================
-document.addEventListener('DOMContentLoaded', () => {
-    checkSession();
-    initNewButton(); // Aktifkan tombol New
-    initDragAndDrop(); // Aktifkan Drag & Drop
-});
-
-// === LOGIKA TOMBOL NEW & DROPDOWN (FIXED) ===
 function initNewButton() {
-    const btn = el('newBtnMain');
-    const menu = el('dropdownMenu');
-    
+    const btn = document.getElementById('newBtnMain');
+    const menu = document.getElementById('dropdownMenu');
+
+    // Pastikan elemen ditemukan sebelum menjalankan logika
     if (btn && menu) {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Mencegah klik menyebar ke window
+        // Hapus event lama (opsional, untuk kebersihan)
+        const newBtnClone = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtnClone, btn);
+
+        // Pasang Event Listener Baru
+        newBtnClone.addEventListener('click', (e) => {
+            // PENTING: Hentikan klik agar tidak tembus ke window
+            e.stopPropagation(); 
+            e.preventDefault();
+            
+            // Tampilkan/Sembunyikan Menu
             menu.classList.toggle('show');
         });
-    }
 
-    // Klik di luar untuk menutup menu
-    window.addEventListener('click', (e) => {
-        if (menu && !btn.contains(e.target) && !menu.contains(e.target)) {
-            menu.classList.remove('show');
-        }
-    });
-}
-
-// === LOGIKA DRAG & DROP (FIXED) ===
-function initDragAndDrop() {
-    const zone = el('dropZone');
-    const input = el('fileInputHidden');
-
-    if (!zone) return;
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
-    });
-
-    zone.addEventListener('dragover', () => zone.classList.add('active'));
-    zone.addEventListener('dragleave', () => zone.classList.remove('active'));
-    
-    zone.addEventListener('drop', (e) => {
-        zone.classList.remove('active');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) processFile(files[0]);
-    });
-
-    if (input) {
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) processFile(e.target.files[0]);
+        // Event Global: Tutup menu jika klik di luar
+        window.addEventListener('click', (e) => {
+            if (!newBtnClone.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.remove('show');
+            }
         });
+    } else {
+        console.error("Tombol New atau Menu tidak ditemukan di HTML!");
     }
 }
 
-function processFile(file) {
-    selectedFileToUpload = file;
-    el('fileInfoText').innerText = `Terpilih: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-    el('fileInfoText').style.color = 'var(--accent)';
-}
+// Pastikan fungsi ini dipanggil di dalam DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    checkSession();
+    initNewButton(); // <--- PANGGIL DI SINI
+    initDragAndDrop();
+});
 
 // ======================================================
 // 3. FUNGSI AUTH & LOGIN
