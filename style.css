@@ -35,6 +35,39 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
 .btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
 
+/* TAMBAHAN: GAYA TOMBOL KEMBALI */
+.back-nav-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-5px); /* Efek gerak ke kiri */
+    color: white;
+}
+
+.back-btn i { font-size: 0.9rem; }
+
+
 .main-glass-panel { 
     flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
     border-radius: 30px; border: 1px solid var(--glass-border); 
