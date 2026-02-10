@@ -231,7 +231,41 @@ async function calculateStorage() {
 }
 
 // Helpers
-window.openModal = (id) => { el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); };
-window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => openModal('uploadModal');
-window.createFolder = () => openModal('folderModal');
+// ======================================================
+// HELPERS UI (DIPERBAIKI AGAR MENU TERTUTUP OTOMATIS)
+// ======================================================
+
+// Fungsi membuka modal
+window.openModal = (id) => { 
+    // 1. Tutup menu dropdown dulu (PENTING)
+    const menu = document.getElementById('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    
+    // 2. Baru buka modal
+    const modal = document.getElementById(id);
+    if(modal) modal.classList.remove('hidden'); 
+};
+
+window.closeModal = (id) => {
+    const modal = document.getElementById(id);
+    if(modal) modal.classList.add('hidden');
+};
+
+// Fungsi Helper Tombol
+window.triggerUploadModal = () => {
+    // Tutup menu dropdown secara eksplisit
+    const menu = document.getElementById('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    
+    // Buka modal
+    openModal('uploadModal');
+};
+
+window.createFolder = () => {
+    // Tutup menu dropdown secara eksplisit
+    const menu = document.getElementById('dropdownMenu');
+    if(menu) menu.classList.remove('show');
+    
+    // Buka modal
+    openModal('folderModal');
+};

@@ -49,34 +49,71 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .new-btn { width: 100%; background: rgba(255,255,255,0.2); color: white; justify-content: flex-start; padding-left: 25px; gap: 12px; font-size: 1.1rem; height: 55px; }
-/* Pastikan bagian dropdown-content seperti ini */
+/* ================= PERBAIKAN DROPDOWN MENU (FIXED) ================= */
+
+/* Wadah utama dropdown */
 .dropdown-content { 
     display: none; 
     position: absolute; 
-    top: 60px; /* Jarak dari tombol */
+    
+    /* Mengatur posisi agar tepat di bawah tombol New */
+    top: 65px; 
     left: 0; 
-    width: 100%; 
+    
+    /* PERBAIKAN PENTING: Lebar fix, bukan 100% */
+    width: 230px; 
+    
+    /* Warna dan Border */
     background: #00384d; 
-    border-radius: 15px; 
-    z-index: 9999; /* Sangat penting agar muncul di depan */
-    border: 1px solid var(--glass-border); 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border-radius: 12px; 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    
+    /* PERBAIKAN PENTING: Z-Index super tinggi agar bisa diklik */
+    z-index: 9999; 
+    
+    /* Bayangan agar terlihat melayang */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     overflow: hidden;
 }
 
-.dropdown-content.show { display: block; }
-
-/* Gaya untuk Drag & Drop Zone */
-.drag-drop-area {
-    border: 2px dashed rgba(255,255,255,0.2);
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    transition: 0.3s;
-    background: rgba(255,255,255,0.05);
+/* Animasi Muncul */
+.dropdown-content.show { 
+    display: block; 
+    animation: slideDown 0.2s ease forwards;
 }
-.drag-drop-area.active { border-color: var(--accent); background: rgba(74, 222, 128, 0.1); }
-.dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Item Menu (Tombol Folder/Upload) */
+.dropdown-content a { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    padding: 12px 20px; 
+    
+    color: rgba(255, 255, 255, 0.9); 
+    text-decoration: none; 
+    cursor: pointer; 
+    transition: all 0.2s ease;
+    
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Efek Hover saat mouse diarahkan */
+.dropdown-content a:hover { 
+    background-color: rgba(74, 222, 128, 0.15); /* Hijau transparan */
+    color: #4ade80; /* Teks jadi hijau */
+    padding-left: 25px; /* Efek geser sedikit */
+}
+
+.dropdown-content a i {
+    width: 20px;
+    text-align: center;
+}
 
 /* NAVIGASI MENU (FITUR BARU) */
 .sidebar-menu {

@@ -66,14 +66,13 @@
         <div class="main-glass-panel">
             <aside class="sidebar-left">
                 
-                <div class="new-btn-wrapper" id="dropdownContainer">
-                    <button class="btn-pill new-btn" id="newBtnMain">
-                        <i class="fa-solid fa-plus"></i> New
-                    </button>
-                    <div id="dropdownMenu" class="dropdown-content">
-                        <a onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder Baru</a>
-                        <a onclick="triggerUploadModal()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</a>
-                    </div>
+                <div id="dropdownMenu" class="dropdown-content">
+                    <a href="javascript:void(0)" onclick="createFolder()">
+                        <i class="fa-solid fa-folder-plus"></i> Folder Baru
+                    </a>
+                    <a href="javascript:void(0)" onclick="triggerUploadModal()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
+                    </a>
                 </div>
                 <nav class="sidebar-menu">
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
