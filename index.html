@@ -138,12 +138,13 @@
 
             <main class="main-content-area">
                 <div class="search-row">
-                    <div class="search-bar-pill">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="searchInput" placeholder="Search in Storage Task">
+                    <div class="search-bar-pill" id="searchContainer">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="Search in Storage Task" autocomplete="off">
+                        <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
                     </div>
                 </div>
-
+                
                 <div class="breadcrumb-area">
                     <h2 id="headerTitle">Welcome In Drive</h2>
                 </div>
