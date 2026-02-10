@@ -792,3 +792,40 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     color: rgba(255, 255, 255, 0.4);
     font-weight: 600;
 }
+
+/* Styling Menu Modern */
+.context-menu-modern {
+    position: fixed;
+    z-index: 99999; /* Paling depan */
+    width: 280px;
+    background: #00384d;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    padding: 8px 0;
+    display: none; /* Default sembunyi */
+    flex-direction: column;
+}
+
+/* Helper Class untuk Menampilkan */
+.show, .context-menu-modern:not(.hidden) {
+    display: flex !important;
+}
+
+/* Item Menu */
+.ctx-item {
+    display: flex; align-items: center; padding: 8px 16px;
+    cursor: pointer; color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem; transition: background 0.1s;
+}
+.ctx-item:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* Ikon */
+.ctx-item i:first-child { width: 20px; text-align: center; margin-right: 12px; color: rgba(255, 255, 255, 0.7); }
+
+/* Tombol Bahaya (Hapus) */
+.ctx-item.ctx-danger:hover { background: rgba(248, 113, 113, 0.15); }
+.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span { color: #f87171; }
+
+.ctx-divider { height: 1px; border: 0; background: rgba(255,255,255,0.1); margin: 6px 0; }
+.ctx-shortcut { margin-left: auto; font-size: 0.75rem; color: rgba(255,255,255,0.4); }
