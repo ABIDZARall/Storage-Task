@@ -272,12 +272,16 @@ function initAllContextMenus() {
 // ======================================================
 // FUNGSI RENDER ITEM & MENU FILE (DIPERBARUI)
 // ======================================================
+// ======================================================
+// FUNGSI RENDER ITEM & MENU KLIK KANAN
+// ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div');
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     
+    // Ikon & Thumbnail
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
@@ -286,40 +290,96 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
     
+    // Klik Kiri: Buka
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // KLIK KANAN FILE/FOLDER
+    // Klik Kanan: Context Menu
     div.oncontextmenu = (e) => { 
         e.preventDefault(); e.stopPropagation(); 
         
-        // Tutup menu global
-        el('globalContextMenu').classList.remove('show');
-        el('dropdownMenu').classList.remove('show');
+        // Tutup menu lain
+        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+        if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
 
+        // Set Item yang dipilih
         selectedItem = doc; 
+        
+        // Munculkan Menu
         const menu = el('contextMenu'); 
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`; 
         menu.classList.remove('hidden'); 
-        menu.classList.add('show'); // Tambahkan ini untuk animasi CSS
+        menu.classList.add('show');
         
+        // UPDATE TAMPILAN MENU (Sangat Penting!)
         updateContextMenuUI(doc);
     };
     grid.appendChild(div);
 }
 
-// UPDATE TAMPILAN MENU FILE (DINAMIS)
+// FUNGSI UPDATE TAMPILAN MENU (DINAMIS)
 function updateContextMenuUI(doc) {
-    const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
-    if (doc.starred) { starText.innerText = "Hapus dari Berbintang"; starIcon.style.color = '#ffd700'; }
-    else { starText.innerText = "Tambahkan ke Berbintang"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
+    // 1. Atur Bintang
+    const starText = el('ctxStarText'); 
+    const starIcon = el('ctxStarIcon');
+    if (doc.starred) { 
+        starText.innerText = "Hapus dari Berbintang"; 
+        starIcon.style.color = '#ffd700'; 
+        starIcon.classList.remove('fa-regular');
+        starIcon.classList.add('fa-solid');
+    } else { 
+        starText.innerText = "Tambahkan ke Berbintang"; 
+        starIcon.style.color = 'rgba(255,255,255,0.7)'; 
+    }
 
-    const isTrash = doc.trashed;
-    el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-    el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-    el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+    // 2. Atur Tombol Sampah vs Restore
+    const isTrash = doc.trashed; // Cek status apakah file sudah di sampah
+    const btnTrash = el('ctxTrashBtn');
+    const btnRestore = el('ctxRestoreBtn');
+    const btnPermDel = el('ctxPermDeleteBtn');
+
+    if (isTrash) {
+        // Jika file SUDAH di sampah:
+        // Sembunyikan "Pindahkan ke Sampah"
+        // Tampilkan "Pulihkan" dan "Hapus Permanen"
+        btnTrash.classList.add('hidden');
+        btnRestore.classList.remove('hidden');
+        btnPermDel.classList.remove('hidden');
+    } else {
+        // Jika file MASIH NORMAL (di Drive):
+        // Tampilkan "Pindahkan ke Sampah"
+        // Sembunyikan tombol restore/permanen
+        btnTrash.classList.remove('hidden');
+        btnRestore.classList.add('hidden');
+        btnPermDel.classList.add('hidden');
+    }
 }
 
+// FUNGSI EKSEKUSI HAPUS (KE SAMPAH)
+window.moveItemToTrash = async () => {
+    if (!selectedItem) return;
+    
+    // Konfirmasi opsional (bisa dihapus jika ingin instan)
+    if(!confirm(`Pindahkan "${selectedItem.name}" ke Sampah?`)) return;
+
+    try {
+        await databases.updateDocument(
+            CONFIG.DB_ID, 
+            CONFIG.COLLECTION_FILES, 
+            selectedItem.$id, 
+            { trashed: true } // Update status trashed menjadi TRUE
+        );
+        
+        // Refresh halaman saat ini agar file menghilang dari pandangan
+        loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
+        
+        // Sembunyikan menu
+        el('contextMenu').classList.add('hidden');
+        
+    } catch(e) {
+        alert("Gagal menghapus: " + e.message);
+    }
+};
 // ... (Sisa fungsi helper, auth, dll tetap sama) ...
 
 // Aksi Menu Baru

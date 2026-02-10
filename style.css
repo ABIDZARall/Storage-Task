@@ -774,3 +774,21 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .context-menu-fixed {
     position: fixed;
 }
+
+/* Styling Khusus Tombol Hapus/Bahaya */
+.ctx-item.ctx-danger:hover {
+    background: rgba(248, 113, 113, 0.15); /* Merah transparan saat hover */
+}
+
+.ctx-item.ctx-danger:hover i, 
+.ctx-item.ctx-danger:hover span {
+    color: #f87171; /* Ikon dan teks berubah merah */
+}
+
+/* Pastikan shortcut Del juga terlihat rapi */
+.ctx-shortcut {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
