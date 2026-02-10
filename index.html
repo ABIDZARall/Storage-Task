@@ -129,11 +129,11 @@
                 </div>
 
                 <nav class="sidebar-menu">
+                        <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
                         <i class="fa-solid fa-house"></i> Beranda
                     </a>
-                    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
-                        <a onclick="handleMenuClick(this, 'root')" class="nav-item">
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item">
                         <i class="fa-brands fa-google-drive"></i> Drive Saya
                     </a>
                         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
@@ -144,10 +144,6 @@
                         <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
                         <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
                         <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
-                    </div>
-
-
-
                     <a onclick="handleMenuClick(this, 'computer')" class="nav-item">
                         <i class="fa-solid fa-computer"></i> Komputer
                     </a>
@@ -163,6 +159,7 @@
                     <a onclick="handleMenuClick(this, 'trash')" class="nav-item">
                         <i class="fa-solid fa-trash-can"></i> Sampah
                     </a>
+                    </div>
                 </nav>
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;">
