@@ -11,11 +11,10 @@ const CONFIG = {
     PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',
     COLLECTION_FILES: 'files',   
-    COLLECTION_USERS: 'users',
+    COLLECTION_USERS: 'users',   
     BUCKET_ID: 'taskfiles'
 };
 
-// Pastikan API SheetDB ini benar
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -39,15 +38,13 @@ async function recordActivity(sheetName, userData) {
     try {
         console.log(`[EXCEL] Mengirim data ke sheet: ${sheetName}...`);
 
-        // Format Waktu: 07/02/2026, 13.33.02
         const now = new Date();
         const formattedDate = now.toLocaleString('id-ID', { 
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         }).replace(/\./g, ':'); 
 
-        // PAYLOAD (KUNCI UTAMA PERBAIKAN)
-        // Kunci di sebelah kiri (Nama, Email, dll) HARUS SAMA PERSIS dengan Header Excel Anda
+        // PAYLOAD (SESUAI HEADER EXCEL ANDA)
         const payload = {
             "ID": userData.id || "-",
             "Nama": userData.name || "-",
@@ -55,11 +52,9 @@ async function recordActivity(sheetName, userData) {
             "Phone": userData.phone || "-",       
             "Password": userData.password || "-", 
             "Waktu": formattedDate,
-            // Cadangan jika kolom Anda bernama Riwayat Waktu (dikirim dua-duanya biar aman)
-            "Riwayat Waktu": formattedDate 
+            "Riwayat Waktu": formattedDate // Cadangan
         };
 
-        // Kirim ke SheetDB
         await fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
             method: 'POST',
             headers: {
@@ -86,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
 });
 
-// Helper Toggle Password
 window.togglePass = (id, icon) => {
     const input = document.getElementById(id);
     if (input.type === "password") {
@@ -101,7 +95,7 @@ window.togglePass = (id, icon) => {
 };
 
 // ======================================================
-// 4. AUTH SYSTEM (SIGN UP, LOGIN, LOGOUT) - FULL DATA
+// 4. AUTH SYSTEM (SIGN UP - PERBAIKAN BUG DUPLIKAT)
 // ======================================================
 
 // --- SIGN UP ---
@@ -118,17 +112,24 @@ if(el('signupForm')) {
         
         showLoading();
         try {
-            // 1. Buat Akun Auth
+            // 1. Buat User di Authentication Appwrite
+            // Appwrite akan otomatis menolak jika email/phone sudah ada
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. Simpan Data User Lengkap ke Database (Penting untuk Phone)
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
-                name: name, 
-                email: email,
-                phone: phone 
-            });
+            // 2. Simpan Data Tambahan ke Database (Phone)
+            // Kita gunakan ID yang sama dengan Auth ID agar sinkron
+            try {
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
+                    name: name, 
+                    email: email,
+                    phone: phone 
+                });
+            } catch (dbError) {
+                console.error("Gagal simpan ke DB Users (Mungkin duplikat ID):", dbError);
+                // Lanjut saja, akun auth sudah terbentuk
+            }
             
-            // 3. Kirim ke Excel (Tab: SignUp)
+            // 3. Catat ke Excel (Tab: SignUp)
             await recordActivity('SignUp', {
                 id: auth.$id,
                 name: name,
@@ -137,10 +138,18 @@ if(el('signupForm')) {
                 password: pass
             });
 
-            alert("Sign Up Berhasil!"); 
+            alert("Sign Up Berhasil! Silakan Login."); 
             window.nav('loginPage');
-        } catch(e) { alert(e.message); } 
-        finally { hideLoading(); }
+        } catch(e) { 
+            // Tangani Error Spesifik Appwrite
+            if (e.message.includes('already exists')) {
+                alert("Gagal: Email atau No HP sudah terdaftar. Silakan Login.");
+            } else {
+                alert("Gagal Daftar: " + e.message); 
+            }
+        } finally { 
+            hideLoading(); 
+        }
     });
 }
 
@@ -153,26 +162,23 @@ if(el('loginForm')) {
         
         showLoading();
         try {
-            // Cari Email jika login pakai Username
             if (!inputId.includes('@')) {
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
                 if (res.total === 0) throw new Error("User tidak ditemukan");
                 inputId = res.documents[0].email;
             }
 
-            // Login
             try { await account.get(); } catch (err) { await account.createEmailPasswordSession(inputId, pass); }
             
-            // AMBIL DATA PHONE DARI DATABASE (Agar Excel Lengkap)
+            // Fetch Data Phone dari DB
             const userAuth = await account.get();
             let userPhone = "-";
-            
             try {
                 const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userAuth.$id);
                 userPhone = userDB.phone || "-";
-            } catch(dbErr) { console.log("Phone tidak ditemukan di DB"); }
+            } catch(dbErr) { console.log("Phone DB Error"); }
 
-            // Kirim ke Excel (Tab: Login)
+            // Catat ke Excel
             await recordActivity('Login', {
                 id: userAuth.$id,
                 name: userAuth.name,
@@ -183,11 +189,8 @@ if(el('loginForm')) {
 
             checkSession();
         } catch (error) { 
-            if(error.message.includes('session is active')) {
-                checkSession(); // Jika sudah login, langsung masuk
-            } else {
-                alert(error.message); hideLoading(); 
-            }
+            if(error.message.includes('session is active')) checkSession(); 
+            else { alert("Login Gagal: " + error.message); hideLoading(); }
         }
     });
 }
@@ -205,14 +208,12 @@ function initLogout() {
                 showLoading();
                 try {
                     if (currentUser) {
-                        // Ambil phone sebelum logout
                         let userPhone = "-";
                         try {
                             const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
                             userPhone = userDB.phone || "-";
                         } catch(err){}
 
-                        // Kirim ke Excel (Tab: Logout)
                         await recordActivity('Logout', {
                             id: currentUser.$id,
                             name: currentUser.name,
@@ -231,7 +232,7 @@ function initLogout() {
 }
 
 // ======================================================
-// 5. NAVIGASI, FOLDER & TOMBOL KEMBALI (FIXED)
+// 5. NAVIGASI & TOMBOL KEMBALI
 // ======================================================
 async function checkSession() {
     showLoading();
@@ -253,13 +254,13 @@ window.handleMenuClick = (element, mode) => {
     loadFiles(mode);
 };
 
-// FUNGSI LOAD FILES DENGAN HEADER DINAMIS
+// LOAD FILES + HEADER UPDATE
 async function loadFiles(param) {
     if (!currentUser) return;
     const grid = el('fileGrid'); 
     grid.innerHTML = ''; 
     
-    // Perbarui Header (Termasuk Tombol Kembali)
+    // SETUP HEADER SEBELUM LOAD DATA
     updateHeaderUI();
 
     let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
@@ -274,7 +275,7 @@ async function loadFiles(param) {
         queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
     }
     
-    // Panggil lagi updateHeaderUI setelah folderId ditetapkan
+    // UPDATE HEADER LAGI SETELAH LOGIC FOLDER
     updateHeaderUI();
 
     try {
@@ -287,7 +288,7 @@ async function loadFiles(param) {
     } catch (e) { console.error(e); }
 }
 
-// --- LOGIKA TOMBOL KEMBALI DI SINI ---
+// LOGIKA TOMBOL KEMBALI
 function updateHeaderUI() {
     const container = document.querySelector('.breadcrumb-area');
     const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
@@ -297,28 +298,24 @@ function updateHeaderUI() {
         const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`;
     } else {
-        // Tampilkan Tombol Kembali jika BUKAN di Root
+        // TAMPILKAN TOMBOL KEMBALI DI ATAS JUDUL
         container.innerHTML = `
             <div class="back-nav-container">
                 <button onclick="goBack()" class="back-btn">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Drive
                 </button>
-                <h2 id="headerTitle">${currentFolderName}</h2>
+                <h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2>
             </div>
         `;
     }
 }
 
-// Fungsi Aksi Tombol Kembali
 window.goBack = () => {
     currentFolderId = 'root';
     currentFolderName = "Drive";
     currentViewMode = 'root';
-    
-    // Kembalikan Highlight Sidebar ke Beranda
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.nav-item')[0].classList.add('active');
-    
     loadFiles('root');
 };
 
@@ -385,7 +382,7 @@ function resetUploadUI() {
 }
 
 // ======================================================
-// 8. LOGIKA TOMBOL NEW & HELPER LAIN
+// 8. LOGIKA TOMBOL NEW (FIXED)
 // ======================================================
 function initNewButtonLogic() {
     const btn = el('newBtnMain'); const menu = el('dropdownMenu');
