@@ -611,3 +611,74 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     z-index: 99999 !important;
     background: #012a36;
 }
+
+/* ================= GOOGLE DRIVE STYLE CONTEXT MENU ================= */
+
+.context-menu-modern {
+    position: fixed;
+    z-index: 99999;
+    width: 280px; /* Lebar standar menu GDrive */
+    background: #00384d; /* Warna tema gelap */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px; /* Sudut sedikit membulat */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); /* Bayangan soft */
+    padding: 8px 0;
+    overflow: hidden;
+    animation: fadeInMenu 0.1s ease-out;
+}
+
+/* Animasi Muncul Cepat */
+@keyframes fadeInMenu {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Item Menu */
+.ctx-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    transition: background 0.1s;
+    position: relative;
+}
+
+.ctx-item:hover {
+    background: rgba(255, 255, 255, 0.1); /* Efek hover halus */
+}
+
+/* Ikon di Kiri */
+.ctx-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 15px;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Shortcut di Kanan (cth: Ctrl+C) */
+.ctx-shortcut {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+}
+
+/* Garis Pemisah */
+.ctx-divider {
+    height: 1px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 6px 0;
+}
+
+/* Styling Khusus Tombol Bahaya (Hapus) */
+.ctx-item.ctx-danger:hover {
+    background: rgba(248, 113, 113, 0.15); /* Merah transparan saat hover */
+}
+.ctx-item.ctx-danger:hover i,
+.ctx-item.ctx-danger:hover span {
+    color: #f87171;
+}

@@ -93,44 +93,139 @@ function initAllContextMenus() {
 // ======================================================
 // 3. FUNGSI RENDER ITEM (KLIK KANAN FILE & FOLDER)
 // ======================================================
+// ... (Bagian atas app.js tetap sama) ...
+
+// ======================================================
+// 7. RENDER ITEM (UPDATE: MENU GOOGLE DRIVE STYLE)
+// ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div');
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     
+    // Icon Logic
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:12px;left:12px;color:#ffd700;"></i>` : '';
     let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
     if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
         content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
     }
 
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
+    
+    // --- KLIK KIRI (BUKA) ---
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-
-    // LOGIKA KLIK KANAN SPESIFIK FILE/FOLDER
-    div.oncontextmenu = (e) => {
-        e.preventDefault(); e.stopPropagation();
+    
+    // --- KLIK KANAN (CONTEXT MENU BARU) ---
+    div.oncontextmenu = (e) => { 
+        e.preventDefault(); 
+        e.stopPropagation(); // Mencegah menu global muncul
         
-        // Tutup menu global agar tidak tumpang tindih
+        // 1. Tutup menu lain yang mungkin terbuka
         el('globalContextMenu').classList.remove('show');
         el('dropdownMenu').classList.remove('show');
 
-        selectedItem = doc;
-        const menu = el('contextMenu');
-        menu.style.top = `${e.clientY}px`;
-        menu.style.left = `${e.clientX}px`;
-        menu.classList.remove('hidden');
+        // 2. Set Selected Item Global
+        selectedItem = doc; 
 
-        if(el('starText')) el('starText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-        const isTrash = doc.trashed;
-        el('trashBtn').classList.toggle('hidden', isTrash);
-        el('restoreBtn').classList.toggle('hidden', !isTrash);
-        el('permDeleteBtn').classList.toggle('hidden', !isTrash);
+        // 3. Atur Posisi Menu
+        const menu = el('contextMenu'); 
+        menu.style.top = `${e.clientY}px`; 
+        menu.style.left = `${e.clientX}px`; 
+        menu.classList.remove('hidden'); 
+        
+        // 4. Update Teks Menu Berdasarkan Kondisi File
+        updateContextMenuUI(doc);
     };
-
+    
     grid.appendChild(div);
 }
+
+// --- LOGIKA UPDATE TAMPILAN MENU (DINAMIS) ---
+function updateContextMenuUI(doc) {
+    // A. Atur Bintang (Star/Unstar)
+    const starText = el('ctxStarText');
+    const starIcon = el('ctxStarIcon');
+    if (doc.starred) {
+        starText.innerText = "Hapus dari Berbintang";
+        starIcon.classList.remove('fa-regular');
+        starIcon.classList.add('fa-solid');
+        starIcon.style.color = '#ffd700';
+    } else {
+        starText.innerText = "Tambahkan ke Berbintang";
+        starIcon.style.color = 'rgba(255,255,255,0.7)';
+    }
+
+    // B. Atur Tombol Sampah vs Restore
+    const isTrash = doc.trashed;
+    const btnTrash = el('ctxTrashBtn');
+    const btnRestore = el('ctxRestoreBtn');
+    const btnPermDel = el('ctxPermDeleteBtn');
+
+    if (isTrash) {
+        // Jika di folder sampah: Tampilkan Restore & Hapus Permanen
+        btnTrash.classList.add('hidden');
+        btnRestore.classList.remove('hidden');
+        btnPermDel.classList.remove('hidden');
+    } else {
+        // Jika file normal: Tampilkan Pindahkan ke Sampah
+        btnTrash.classList.remove('hidden');
+        btnRestore.classList.add('hidden');
+        btnPermDel.classList.add('hidden');
+    }
+}
+
+// --- FUNGSI AKSI BARU (DOWNLOAD & RENAME) ---
+
+// 1. Fungsi Buka File
+window.openCurrentItem = () => {
+    if (!selectedItem) return;
+    if (selectedItem.type === 'folder') {
+        openFolder(selectedItem.$id, selectedItem.name);
+    } else {
+        window.open(selectedItem.url, '_blank');
+    }
+    el('contextMenu').classList.add('hidden');
+};
+
+// 2. Fungsi Download
+window.downloadCurrentItem = () => {
+    if (!selectedItem) return;
+    if (selectedItem.type === 'folder') {
+        alert("Download folder belum didukung. Silakan buka folder dan download file di dalamnya.");
+    } else {
+        // Appwrite menyediakan URL download
+        const downloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId);
+        window.open(downloadUrl, '_blank');
+    }
+    el('contextMenu').classList.add('hidden');
+};
+
+// 3. Fungsi Ganti Nama (Rename)
+window.renameCurrentItem = async () => {
+    if (!selectedItem) return;
+    const newName = prompt("Masukkan nama baru:", selectedItem.name);
+    
+    if (newName && newName !== selectedItem.name) {
+        showLoading();
+        try {
+            await databases.updateDocument(
+                CONFIG.DB_ID, 
+                CONFIG.COLLECTION_FILES, 
+                selectedItem.$id, 
+                { name: newName }
+            );
+            loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
+        } catch (e) {
+            alert("Gagal mengganti nama: " + e.message);
+        } finally {
+            hideLoading();
+            el('contextMenu').classList.add('hidden');
+        }
+    }
+};
+
+// ... (Sisa fungsi lain seperti toggleStarItem, moveItemToTrash tetap sama di bawah) ...
 
 // ======================================================
 // 4. AUTH & SESSION
