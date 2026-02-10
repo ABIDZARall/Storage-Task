@@ -441,3 +441,25 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: #facc15; }
 .dot-others { background-color: #a78bfa; }
 .val-text { margin-left: auto; font-weight: 600; color: white; }
+
+/* ================= LOGO INTERACTIVE (HOME BUTTON) ================= */
+.brand-area {
+    display: flex;
+    align-items: center;
+    cursor: pointer; /* Mengubah kursor menjadi jari telunjuk */
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+/* Efek saat mouse diarahkan ke logo */
+.brand-area:hover {
+    transform: scale(1.05); /* Membesar sedikit */
+    background: rgba(255, 255, 255, 0.05); /* Memberi latar tipis */
+}
+
+/* Efek saat logo diklik */
+.brand-area:active {
+    transform: scale(0.95); /* Mengecil sedikit (efek tekan) */
+}
+
