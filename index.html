@@ -95,12 +95,35 @@
                         <i class="fa-solid fa-plus"></i> New
                     </button>
                     
-                    <div id="dropdownMenu" class="dropdown-content">
+                    <div id="dropdownMenu" class="dropdown-content extended-menu">
                         <a href="javascript:void(0)" onclick="createFolder()">
-                            <i class="fa-solid fa-folder-plus"></i> Folder Baru
+                            <i class="fa-solid fa-folder-plus"></i> Folder baru
                         </a>
+                        <hr class="menu-divider">
                         <a href="javascript:void(0)" onclick="triggerUploadModal()">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload File
+                            <i class="fa-solid fa-file-arrow-up"></i> Upload file
+                        </a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()"> <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
+                        </a>
+                        <hr class="menu-divider">
+                        <a href="javascript:void(0)" class="menu-has-arrow">
+                            <i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen
+                            <i class="fa-solid fa-caret-right arrow-right"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="menu-has-arrow">
+                            <i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet
+                            <i class="fa-solid fa-caret-right arrow-right"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="menu-has-arrow">
+                            <i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide
+                            <i class="fa-solid fa-caret-right arrow-right"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="menu-has-arrow">
+                            <i class="fa-solid fa-file-lines" style="color:#db4437"></i> Google Formulir
+                            <i class="fa-solid fa-caret-right arrow-right"></i>
+                        </a>
+                        <a href="javascript:void(0)">
+                            <i class="fa-solid fa-ellipsis"></i> Lainnya
                         </a>
                     </div>
                 </div>
@@ -109,9 +132,20 @@
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
                         <i class="fa-solid fa-house"></i> Beranda
                     </a>
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item">
+                    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
+                        <a onclick="handleMenuClick(this, 'root')" class="nav-item">
                         <i class="fa-brands fa-google-drive"></i> Drive Saya
+                        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+                        <hr class="menu-divider">
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+                        <hr class="menu-divider">
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
                     </a>
+                    </div>
+
                     <a onclick="handleMenuClick(this, 'computer')" class="nav-item">
                         <i class="fa-solid fa-computer"></i> Komputer
                     </a>
@@ -144,7 +178,7 @@
                         <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
                     </div>
                 </div>
-                
+
                 <div class="breadcrumb-area">
                     <h2 id="headerTitle">Welcome In Drive</h2>
                 </div>

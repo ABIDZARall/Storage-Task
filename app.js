@@ -604,6 +604,53 @@ async function calculateStorage() {
     } catch (e) { console.error("Storage Error", e); }
 }
 
+// ======================================================
+// LOGIKA KLIK KANAN GLOBAL (AREA KOSONG)
+// ======================================================
+function initGlobalContextMenu() {
+    const globalMenu = document.getElementById('globalContextMenu');
+    const mainArea = document.querySelector('.main-content-area'); // Area klik kanan
+    const fileGrid = document.getElementById('fileGrid');
+
+    if (!globalMenu || !mainArea) return;
+
+    // Mencegah menu bawaan browser muncul di area main
+    mainArea.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        
+        // PENTING: Cek apakah yang diklik adalah FILE atau KOSONG
+        // Jika yang diklik adalah elemen .item-card, biarkan logika renderItem yang menangani
+        if (e.target.closest('.item-card')) {
+            globalMenu.classList.remove('show'); // Tutup menu global
+            return; 
+        }
+
+        // Tampilkan Menu Global di posisi mouse
+        globalMenu.style.top = `${e.clientY}px`;
+        globalMenu.style.left = `${e.clientX}px`;
+        globalMenu.classList.add('show');
+        
+        // Tutup menu tombol New jika terbuka
+        const newMenu = document.getElementById('dropdownMenu');
+        if (newMenu) newMenu.classList.remove('show');
+    });
+
+    // Tutup menu saat klik di mana saja (kiri)
+    window.addEventListener('click', () => {
+        globalMenu.classList.remove('show');
+    });
+}
+
+// PANGGIL FUNGSI INI DI DOMCONTENTLOADED
+document.addEventListener('DOMContentLoaded', () => {
+    checkSession();
+    initNewButtonLogic();
+    initDragAndDrop();
+    initLogout();
+    initSearchBar();
+    initGlobalContextMenu(); // <--- TAMBAHAN BARU
+});
+
 window.openModal = (id) => { el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };

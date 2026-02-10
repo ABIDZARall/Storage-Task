@@ -546,3 +546,67 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* ================= EXTENDED MENU STYLE (GOOGLE DRIVE LOOK) ================= */
+
+/* Menu yang lebih lebar dan rapi */
+.extended-menu {
+    width: 280px; /* Lebih lebar untuk menampung teks panjang */
+    padding: 10px 0;
+    border-radius: 8px; /* Sudut lebih tajam dikit ala GDrive */
+}
+
+.extended-menu a {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.extended-menu a i {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Garis Pemisah */
+.menu-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 8px 0;
+}
+
+/* Panah kanan untuk submenu */
+.menu-has-arrow {
+    justify-content: space-between;
+}
+.arrow-right {
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.4);
+    margin-left: auto;
+}
+
+/* ================= GLOBAL CONTEXT MENU (KLIK KANAN) ================= */
+.context-menu-fixed {
+    position: fixed;
+    z-index: 10001; /* Di atas segalanya */
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    background: #00384d; /* Konsisten dengan tema */
+    display: none;
+    /* Animasi muncul */
+    transform-origin: top left;
+    animation: scaleIn 0.1s ease-out;
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Tampilkan menu saat kelas 'show' aktif */
+.context-menu-fixed.show {
+    display: block;
+}
