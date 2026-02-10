@@ -74,161 +74,54 @@ async function recordActivity(sheetName, userData) {
 // ======================================================
 // 3. INISIALISASI
 // ======================================================
-// ... (Kode Konfigurasi dan Variabel State sebelumnya tetap sama) ...
 
 // ======================================================
-// UPDATE PADA BAGIAN INISIALISASI
+// LOGIKA KLIK KANAN GLOBAL (AREA KOSONG)
 // ======================================================
+function initGlobalContextMenu() {
+    const globalMenu = document.getElementById('globalContextMenu');
+    const mainArea = document.querySelector('.main-content-area'); // Area klik kanan
+    const fileGrid = document.getElementById('fileGrid');
+
+    if (!globalMenu || !mainArea) return;
+
+    // Mencegah menu bawaan browser muncul di area main
+    mainArea.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        
+        // PENTING: Cek apakah yang diklik adalah FILE atau KOSONG
+        // Jika yang diklik adalah elemen .item-card, biarkan logika renderItem yang menangani
+        if (e.target.closest('.item-card')) {
+            globalMenu.classList.remove('show'); // Tutup menu global
+            return; 
+        }
+
+        // Tampilkan Menu Global di posisi mouse
+        globalMenu.style.top = `${e.clientY}px`;
+        globalMenu.style.left = `${e.clientX}px`;
+        globalMenu.classList.add('show');
+        
+        // Tutup menu tombol New jika terbuka
+        const newMenu = document.getElementById('dropdownMenu');
+        if (newMenu) newMenu.classList.remove('show');
+    });
+
+    // Tutup menu saat klik di mana saja (kiri)
+    window.addEventListener('click', () => {
+        globalMenu.classList.remove('show');
+    });
+}
+
+// PANGGIL FUNGSI INI DI DOMCONTENTLOADED
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
     initNewButtonLogic();
     initDragAndDrop();
     initLogout();
-    initSearchBar(); // <--- TAMBAHKAN INI
+    initSearchBar();
+    initGlobalContextMenu(); // <--- TAMBAHAN BARU
 });
 
-// ======================================================
-// LOGIKA SEARCH ENGINE CANGGIH (BARU)
-// ======================================================
-let searchTimeout = null; // Variabel untuk Debounce
-
-function initSearchBar() {
-    const input = el('searchInput');
-    const clearBtn = el('clearSearchBtn');
-
-    if (!input) return;
-
-    // Event Listener saat mengetik
-    input.addEventListener('input', (e) => {
-        const query = e.target.value.trim();
-
-        // 1. Tampilkan/Sembunyikan tombol X
-        if (query.length > 0) {
-            clearBtn.classList.remove('hidden');
-        } else {
-            clearBtn.classList.add('hidden');
-            // Jika kosong, kembalikan ke folder awal secara otomatis
-            loadFiles(currentFolderId);
-            return;
-        }
-
-        // 2. DEBOUNCE (Tunggu user selesai mengetik 500ms baru cari)
-        // Ini mencegah aplikasi lag/lemot karena request berlebihan
-        clearTimeout(searchTimeout);
-        
-        // Tampilkan loading spinner sementara menunggu
-        el('fileGrid').innerHTML = `
-            <div style="grid-column:1/-1; display:flex; flex-direction:column; align-items:center; margin-top:50px; opacity:0.7;">
-                <div class="spinner" style="width:30px; height:30px; border-width:3px;"></div>
-                <p>Mencari "${query}"...</p>
-            </div>
-        `;
-
-        searchTimeout = setTimeout(() => {
-            performSearch(query);
-        }, 600); // Delay 0.6 detik
-    });
-}
-
-// Fungsi Eksekusi Pencarian
-async function performSearch(keyword) {
-    if (!currentUser) return;
-
-    // Update Header agar user tahu sedang mode pencarian
-    const headerTitle = el('headerTitle');
-    headerTitle.innerText = `Hasil pencarian: "${keyword}"`;
-    
-    // Pastikan tombol kembali muncul agar bisa exit dari search
-    const breadcrumb = document.querySelector('.breadcrumb-area');
-    if (!breadcrumb.querySelector('.back-btn')) {
-        breadcrumb.innerHTML = `
-            <div class="back-nav-container">
-                <button onclick="clearSearch()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
-                <h2 id="headerTitle" style="margin-top:10px;">Hasil pencarian: "${keyword}"</h2>
-            </div>
-        `;
-    }
-
-    try {
-        // QUERY PENCARIAN
-        // Kita mencari di 'name' file yang mengandung keyword.
-        // Catatan: Appwrite Query.search membutuhkan Index FullText pada atribut 'name'.
-        // Jika belum ada Index, kita gunakan pencarian manual (filtering client-side) untuk keamanan.
-        
-        // Ambil SEMUA file milik user (Global Search)
-        // Kita limit 100 hasil teratas agar tidak berat
-        const res = await databases.listDocuments(
-            CONFIG.DB_ID, 
-            CONFIG.COLLECTION_FILES, 
-            [
-                Appwrite.Query.equal('owner', currentUser.$id),
-                Appwrite.Query.search('name', keyword), // Mencoba Search Engine Appwrite
-                Appwrite.Query.equal('trashed', false), // Jangan tampilkan sampah
-                Appwrite.Query.limit(50)
-            ]
-        );
-
-        // Render Hasil
-        const grid = el('fileGrid');
-        grid.innerHTML = '';
-
-        if (res.documents.length === 0) {
-            grid.innerHTML = `
-                <div style="grid-column:1/-1; text-align:center; opacity:0.6; margin-top:50px;">
-                    <i class="fa-solid fa-magnifying-glass" style="font-size:3rem; margin-bottom:15px;"></i>
-                    <p style="font-size:1.1rem;">Tidak ditemukan hasil untuk "${keyword}"</p>
-                    <p style="font-size:0.9rem;">Coba kata kunci lain atau periksa ejaan.</p>
-                </div>
-            `;
-        } else {
-            res.documents.forEach(doc => renderItem(doc));
-        }
-
-    } catch (e) {
-        // Fallback jika Index belum dibuat di Appwrite Console (Client Side Search)
-        console.warn("Search index error (Fallback mode):", e);
-        fallbackSearch(keyword);
-    }
-}
-
-// Fungsi Pencarian Cadangan (Jika server error/index belum ada)
-async function fallbackSearch(keyword) {
-    try {
-        const res = await databases.listDocuments(
-            CONFIG.DB_ID, CONFIG.COLLECTION_FILES, 
-            [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]
-        );
-        
-        const filtered = res.documents.filter(doc => 
-            doc.name.toLowerCase().includes(keyword.toLowerCase()) && !doc.trashed
-        );
-
-        const grid = el('fileGrid');
-        grid.innerHTML = '';
-
-        if (filtered.length === 0) {
-            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5; margin-top:50px;">Tidak ditemukan (Mode Lokal)</p>`;
-        } else {
-            filtered.forEach(doc => renderItem(doc));
-        }
-    } catch(err) { console.error(err); }
-}
-
-// Fungsi Tombol X / Reset
-window.clearSearch = () => {
-    const input = el('searchInput');
-    const clearBtn = el('clearSearchBtn');
-    
-    input.value = ''; // Kosongkan input
-    clearBtn.classList.add('hidden'); // Sembunyikan X
-    
-    // Kembalikan ke tampilan folder terakhir
-    updateHeaderUI(); 
-    loadFiles(currentFolderId);
-};
-
-// ... (Sisa kode app.js lainnya seperti loadFiles, renderItem, dll JANGAN DIHAPUS) ...
-// ======================================================
 window.togglePass = (id, icon) => {
     const input = document.getElementById(id);
     if (input.type === "password") {
@@ -603,53 +496,6 @@ async function calculateStorage() {
 
     } catch (e) { console.error("Storage Error", e); }
 }
-
-// ======================================================
-// LOGIKA KLIK KANAN GLOBAL (AREA KOSONG)
-// ======================================================
-function initGlobalContextMenu() {
-    const globalMenu = document.getElementById('globalContextMenu');
-    const mainArea = document.querySelector('.main-content-area'); // Area klik kanan
-    const fileGrid = document.getElementById('fileGrid');
-
-    if (!globalMenu || !mainArea) return;
-
-    // Mencegah menu bawaan browser muncul di area main
-    mainArea.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        
-        // PENTING: Cek apakah yang diklik adalah FILE atau KOSONG
-        // Jika yang diklik adalah elemen .item-card, biarkan logika renderItem yang menangani
-        if (e.target.closest('.item-card')) {
-            globalMenu.classList.remove('show'); // Tutup menu global
-            return; 
-        }
-
-        // Tampilkan Menu Global di posisi mouse
-        globalMenu.style.top = `${e.clientY}px`;
-        globalMenu.style.left = `${e.clientX}px`;
-        globalMenu.classList.add('show');
-        
-        // Tutup menu tombol New jika terbuka
-        const newMenu = document.getElementById('dropdownMenu');
-        if (newMenu) newMenu.classList.remove('show');
-    });
-
-    // Tutup menu saat klik di mana saja (kiri)
-    window.addEventListener('click', () => {
-        globalMenu.classList.remove('show');
-    });
-}
-
-// PANGGIL FUNGSI INI DI DOMCONTENTLOADED
-document.addEventListener('DOMContentLoaded', () => {
-    checkSession();
-    initNewButtonLogic();
-    initDragAndDrop();
-    initLogout();
-    initSearchBar();
-    initGlobalContextMenu(); // <--- TAMBAHAN BARU
-});
 
 window.openModal = (id) => { el('dropdownMenu').classList.remove('show'); el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
