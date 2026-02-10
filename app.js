@@ -652,3 +652,27 @@ window.moveItemToTrash = async () => { try { await databases.updateDocument(CONF
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
 
+window.openStorageModal = () => {
+    // 1. Hitung Persentase untuk Diagram
+    const total = storageDetail.total || 1; // hindari pembagian nol
+    const pImg = (storageDetail.images / total) * 100;
+    const pVid = (storageDetail.videos / total) * 100;
+    const pDoc = (storageDetail.docs / total) * 100;
+    const pOth = (storageDetail.others / total) * 100;
+
+    // 2. Terapkan Lebar Batang Diagram
+    el('barImages').style.width = `${pImg}%`;
+    el('barVideos').style.width = `${pVid}%`;
+    el('barDocs').style.width = `${pDoc}%`;
+    el('barOthers').style.width = `${pOth}%`;
+
+    // 3. Tampilkan Angka Detail (Konversi ke MB)
+    el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
+    el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
+    el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
+    el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
+    el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+
+    // 4. Munculkan Modal
+    window.openModal('storageModal');
+};
