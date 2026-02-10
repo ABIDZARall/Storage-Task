@@ -140,19 +140,29 @@
     </div>
 
     <div id="uploadModal" class="modal-overlay hidden">
-        <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
+        <div class="glass-card modal-box upload-box-style">
+            <div class="modal-header">
+                <h3>Upload File</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
+            </div>
             <div class="modal-body">
-                <div id="dropZone" class="drag-drop-area">
-                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3rem; margin-bottom: 10px; color:rgba(255,255,255,0.5);"></i>
-                    <h4>Drag & Drop File Here</h4>
-                    <p style="font-size: 0.8rem; margin: 10px 0;">Atau klik tombol pilih</p>
-                    <button class="btn-pill small" onclick="document.getElementById('fileInputHidden').click()">Pilih Manual</button>
+                <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
+                    <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
+                    <h4>Seret & Lepas File di Sini</h4>
+                    <p>Atau klik area ini untuk memilih manual</p>
                     <input type="file" id="fileInputHidden" hidden>
                 </div>
-                <p id="fileInfoText" class="file-info">Belum ada file dipilih</p>
+                
+                <div id="fileInfoContainer" class="file-info-container hidden">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <p id="fileInfoText" class="file-info">Belum ada file dipilih</p>
+                </div>
             </div>
-            <div class="modal-actions"><button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button></div>
+            <div class="modal-actions">
+                <button class="btn-pill primary" onclick="submitUploadFile()">
+                    <i class="fa-solid fa-upload"></i> Upload Sekarang
+                </button>
+            </div>
         </div>
     </div>
 

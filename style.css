@@ -120,6 +120,61 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     text-align: center;
 }
 
+/* ================= MODAL UPLOAD MODERN & ANIMASI ================= */
+
+.upload-box-style { max-width: 450px; }
+
+.drag-drop-area {
+    border: 3px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 25px;
+    padding: 40px 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drag-drop-area .animate-icon {
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 15px;
+    transition: all 0.4s ease;
+}
+
+/* ANIMASI SAAT FILE DISERET DI ATASNYA */
+.drag-drop-area.active {
+    border-color: var(--accent);
+    background: rgba(74, 222, 128, 0.15);
+    transform: scale(1.02); 
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.3);
+}
+
+.drag-drop-area.active .animate-icon {
+    color: var(--accent);
+    transform: translateY(-15px) scale(1.1);
+}
+
+/* TAMPILAN INFORMASI FILE SUKSES TERPILIH */
+.file-info-container {
+    margin-top: 20px;
+    background: rgba(74, 222, 128, 0.2);
+    border: 1px solid var(--accent);
+    padding: 15px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: slideUpFade 0.3s ease forwards;
+}
+
+.file-info-container i { font-size: 1.5rem; color: var(--accent); }
+.file-info { margin: 0; color: white; font-weight: 500; font-size: 0.95rem; }
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ================= PERBAIKAN MODAL (POPUP) ================= */
 
 /* 1. Latar Belakang Gelap (Overlay) */

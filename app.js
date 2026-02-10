@@ -173,29 +173,45 @@ async function checkSession() {
 // 7. DRAG & DROP & UPLOAD
 // ======================================================
 function initDragAndDrop() {
-    const dropZone = el('dropZone');
-    const fileInput = el('fileInputHidden');
-    if (!dropZone) return;
+    const zone = el('dropZone');
+    const input = el('fileInputHidden');
+
+    if (!zone) return;
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        dropZone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
+        zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
     });
 
-    dropZone.addEventListener('dragover', () => { dropZone.style.borderColor = '#4ade80'; dropZone.style.background = 'rgba(74, 222, 128, 0.1)'; });
-    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = 'rgba(255,255,255,0.2)'; dropZone.style.background = 'transparent'; });
+    // Menambah animasi saat file masuk/keluar
+    ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, () => zone.classList.add('active'));
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, () => zone.classList.remove('active'));
+    });
     
-    dropZone.addEventListener('drop', (e) => {
-        dropZone.style.borderColor = 'rgba(255,255,255,0.2)'; dropZone.style.background = 'transparent';
+    zone.addEventListener('drop', (e) => {
         if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
     });
 
-    if (fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
+    if (input) input.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+    });
 }
 
 function handleFileSelect(file) {
     selectedUploadFile = file;
-    el('fileInfoText').innerText = `Terpilih: ${file.name}`;
-    el('fileInfoText').style.color = '#4ade80';
+    const infoText = el('fileInfoText');
+    const infoContainer = el('fileInfoContainer');
+    
+    if (infoText && infoContainer) {
+        let sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+        if (file.size < 1024 * 1024) sizeFormatted = (file.size / 1024).toFixed(1) + ' KB';
+
+        infoText.innerText = `${file.name} (${sizeFormatted})`;
+        infoContainer.classList.remove('hidden'); // Memunculkan kotak hijau sukses
+    }
 }
 
 window.submitUploadFile = async () => {
