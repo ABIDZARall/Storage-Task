@@ -41,6 +41,23 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     padding: 30px; display: flex; gap: 40px; overflow: hidden; 
 }
 
+/* Styling untuk ikon mata (Show/Hide Password) */
+.toggle-eye {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: 0.3s;
+    padding: 5px; /* Memberikan area klik lebih luas */
+}
+
+.toggle-eye:hover {
+    color: var(--accent); /* Berubah hijau saat dihover */
+}
+
+/* Memastikan input field mengisi ruang sisa agar ikon mata mojok ke kanan */
+.pill-input input {
+    flex: 1; /* Mengambil sisa ruang */
+}
+
 /* SIDEBAR KIRI */
 .sidebar-left {
     width: 250px; display: flex; flex-direction: column; 

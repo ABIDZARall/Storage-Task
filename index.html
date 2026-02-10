@@ -42,11 +42,33 @@
                 <h3>Sign Up</h3>
             </div>
             <form id="signupForm">
-                <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Username" required></div>
-                <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
-                <div class="pill-input"><i class="fa-solid fa-phone"></i><input type="tel" id="regPhone" placeholder="Phone"></div>
-                <div class="pill-input"><i class="fa-solid fa-key"></i><input type="password" id="regPass" placeholder="Password" required></div>
-                <div class="pill-input"><i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Verifikasi" required></div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="regName" placeholder="Username" required>
+                </div>
+                
+                <div class="pill-input">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="Email" required>
+                </div>
+                
+                <div class="pill-input">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="regPhone" placeholder="Phone Number" required>
+                </div>
+                
+                <div class="pill-input">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="regPass" placeholder="Password" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regPass', this)"></i>
+                </div>
+                
+                <div class="pill-input">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <input type="password" id="regVerify" placeholder="Verifikasi Password" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regVerify', this)"></i>
+                </div>
+                
                 <button type="submit" class="btn-pill primary">Sign Up</button>
                 <div class="auth-footer">Sudah punya akun? <span class="link-text" onclick="nav('loginPage')">Login</span></div>
             </form>
