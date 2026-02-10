@@ -49,8 +49,33 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .new-btn { width: 100%; background: rgba(255,255,255,0.2); color: white; justify-content: flex-start; padding-left: 25px; gap: 12px; font-size: 1.1rem; height: 55px; }
-.dropdown-content { display: none; position: absolute; top: 120%; left: 0; width: 100%; background: #00384d; border-radius: 15px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; }
-.dropdown-content.show { display: block; animation: fadeIn 0.2s; }
+/* Pastikan bagian dropdown-content seperti ini */
+.dropdown-content { 
+    display: none; 
+    position: absolute; 
+    top: 60px; /* Jarak dari tombol */
+    left: 0; 
+    width: 100%; 
+    background: #00384d; 
+    border-radius: 15px; 
+    z-index: 9999; /* Sangat penting agar muncul di depan */
+    border: 1px solid var(--glass-border); 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.dropdown-content.show { display: block; }
+
+/* Gaya untuk Drag & Drop Zone */
+.drag-drop-area {
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: 0.3s;
+    background: rgba(255,255,255,0.05);
+}
+.drag-drop-area.active { border-color: var(--accent); background: rgba(74, 222, 128, 0.1); }
 .dropdown-content a { display: block; padding: 15px; color: white; text-decoration: none; cursor: pointer; }
 
 /* NAVIGASI MENU (FITUR BARU) */
