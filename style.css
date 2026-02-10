@@ -346,3 +346,71 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* ================= MODERN SCROLLBAR (PILL DESIGN) ================= */
+
+/* 1. Mengatur Ukuran Scrollbar (Global) */
+/* Ini berlaku untuk Chrome, Edge, Safari, dan Opera */
+::-webkit-scrollbar {
+    width: 12px;  /* Lebar untuk scrollbar vertikal */
+    height: 12px; /* Tinggi untuk scrollbar horizontal */
+}
+
+/* 2. Jalur Scrollbar (Track) */
+/* Kita buat transparan agar terlihat bersih dan menyatu dengan background */
+::-webkit-scrollbar-track {
+    background: transparent; 
+    margin-block: 5px; /* Memberi sedikit jarak di atas dan bawah */
+    border-radius: 10px;
+}
+
+/* 3. Batang Scroll (Thumb) */
+/* Ini adalah bagian yang Anda geser */
+::-webkit-scrollbar-thumb {
+    /* Warna putih transparan agar cocok dengan tema biru gelap Anda */
+    background-color: rgba(255, 255, 255, 0.2); 
+    
+    /* Membuat bentuk bulat sempurna (Pill Shape) */
+    border-radius: 20px;
+    
+    /* TRIK DESAIN: Border transparan + background-clip */
+    /* Ini membuat thumb terlihat "melayang" dan lebih kecil dari track-nya */
+    border: 3px solid transparent;
+    background-clip: content-box;
+    
+    /* Transisi halus saat di-hover */
+    transition: background-color 0.3s ease;
+}
+
+/* 4. Efek Saat Mouse Diarahkan ke Scrollbar (Hover) */
+::-webkit-scrollbar-thumb:hover {
+    /* Warnanya menjadi lebih terang/jelas saat disentuh */
+    background-color: rgba(255, 255, 255, 0.5); 
+    
+    /* Tetap mempertahankan efek melayang */
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+/* 5. Efek Saat Scrollbar Diklik/Aktif */
+::-webkit-scrollbar-thumb:active {
+    background-color: var(--accent); /* Warna hijau aksen saat diklik */
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+/* 6. Dukungan untuk Firefox (Browser lain) */
+/* Firefox menggunakan properti standar yang berbeda */
+* {
+    scrollbar-width: thin; /* Membuat scrollbar lebih tipis */
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; /* Thumb Track */
+}
+
+/* KHUSUS: Memperbaiki Scrollbar di Sidebar agar tidak terlalu mepet */
+.sidebar-menu::-webkit-scrollbar {
+    width: 8px; /* Lebih tipis khusus untuk sidebar */
+}
+
+.file-grid-area::-webkit-scrollbar {
+    width: 10px; /* Ukuran standar untuk area file */
+}
