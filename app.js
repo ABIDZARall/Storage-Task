@@ -203,9 +203,6 @@ window.clearSearch = () => {
 // ======================================================
 // ... (Kode konfigurasi & init lain tetap sama) ...
 
-// ======================================================
-// FUNGSI INISIALISASI KLIK KANAN (DIPERBARUI)
-// ======================================================
 function initAllContextMenus() {
     const globalMenu = el('globalContextMenu');
     const newBtnMenu = el('dropdownMenu');
@@ -218,28 +215,34 @@ function initAllContextMenus() {
     const closeAllMenus = () => {
         if(globalMenu) globalMenu.classList.remove('show');
         if(newBtnMenu) newBtnMenu.classList.remove('show');
-        if(fileMenu) fileMenu.classList.add('hidden'); // Gunakan hidden untuk menu file
-        if(fileMenu) fileMenu.classList.remove('show'); // Jaga-jaga jika pakai class show
+        if(fileMenu) fileMenu.classList.add('hidden');
+        if(fileMenu) fileMenu.classList.remove('show');
     };
 
-    // A. Tombol New (Klik Kiri & Kanan)
+    // FIX TOMBOL NEW: Bersihkan listener lama dan pasang yang baru (Kiri & Kanan)
     if (newBtn) {
-        // Klik Kiri
-        newBtn.addEventListener('click', (e) => {
+        const newBtnClean = newBtn.cloneNode(true);
+        newBtn.parentNode.replaceChild(newBtnClean, newBtn);
+
+        // KLIK KIRI (Membuka/Menutup Menu)
+        newBtnClean.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            // Toggle: Jika sudah buka, tutup. Jika tutup, buka.
-            if(newBtnMenu.classList.contains('show')) closeAllMenus();
-            else { closeAllMenus(); newBtnMenu.classList.add('show'); }
+            const isOpen = newBtnMenu.classList.contains('show');
+            closeAllMenus();
+            if (!isOpen) newBtnMenu.classList.add('show');
         });
-        // Klik Kanan
-        newBtn.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); e.stopPropagation();
+
+        // KLIK KANAN (Sama dengan Klik Kiri)
+        newBtnClean.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             closeAllMenus();
             newBtnMenu.classList.add('show');
         });
     }
 
-    // B. Sidebar Drive Saya (Klik Kanan)
+    // KLIK KANAN: SIDEBAR DRIVE SAYA
     if (navDrive) {
         navDrive.addEventListener('contextmenu', (e) => {
             e.preventDefault(); e.stopPropagation();
@@ -250,10 +253,10 @@ function initAllContextMenus() {
         });
     }
 
-    // C. Area Kosong (Klik Kanan)
+    // KLIK KANAN: AREA KOSONG
     if (mainArea) {
         mainArea.addEventListener('contextmenu', (e) => {
-            if (e.target.closest('.item-card')) return; // Biar file handle sendiri
+            if (e.target.closest('.item-card')) return;
             e.preventDefault();
             closeAllMenus();
             globalMenu.style.top = `${e.clientY}px`;
@@ -262,13 +265,12 @@ function initAllContextMenus() {
         });
     }
 
-    // D. Klik Kiri di mana saja (Tutup)
+    // TUTUP SEMUA SAAT KLIK DI MANA SAJA
     window.addEventListener('click', (e) => {
         if (e.target.closest('.dropdown-content') || e.target.closest('.context-menu-modern')) return;
         closeAllMenus();
     });
 }
-
 // ======================================================
 // FUNGSI RENDER ITEM & MENU FILE (DIPERBARUI)
 // ======================================================
@@ -317,39 +319,31 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// FUNGSI UPDATE TAMPILAN MENU (DINAMIS)
 function updateContextMenuUI(doc) {
-    // 1. Atur Bintang
     const starText = el('ctxStarText'); 
     const starIcon = el('ctxStarIcon');
+    
+    // Logika Bintang
     if (doc.starred) { 
         starText.innerText = "Hapus dari Berbintang"; 
         starIcon.style.color = '#ffd700'; 
-        starIcon.classList.remove('fa-regular');
-        starIcon.classList.add('fa-solid');
     } else { 
         starText.innerText = "Tambahkan ke Berbintang"; 
         starIcon.style.color = 'rgba(255,255,255,0.7)'; 
     }
 
-    // 2. Atur Tombol Sampah vs Restore
-    const isTrash = doc.trashed; // Cek status apakah file sudah di sampah
+    // FIX TOMBOL SAMPAH: Pastikan ID sesuai dengan HTML
+    const isTrash = doc.trashed;
     const btnTrash = el('ctxTrashBtn');
     const btnRestore = el('ctxRestoreBtn');
     const btnPermDel = el('ctxPermDeleteBtn');
 
     if (isTrash) {
-        // Jika file SUDAH di sampah:
-        // Sembunyikan "Pindahkan ke Sampah"
-        // Tampilkan "Pulihkan" dan "Hapus Permanen"
-        btnTrash.classList.add('hidden');
-        btnRestore.classList.remove('hidden');
-        btnPermDel.classList.remove('hidden');
+        btnTrash.classList.add('hidden'); // Sembunyikan 'Pindahkan ke Sampah'
+        btnRestore.classList.remove('hidden'); // Tampilkan 'Pulihkan'
+        btnPermDel.classList.remove('hidden'); // Tampilkan 'Hapus Permanen'
     } else {
-        // Jika file MASIH NORMAL (di Drive):
-        // Tampilkan "Pindahkan ke Sampah"
-        // Sembunyikan tombol restore/permanen
-        btnTrash.classList.remove('hidden');
+        btnTrash.classList.remove('hidden'); // TAMPILKAN 'Pindahkan ke Sampah'
         btnRestore.classList.add('hidden');
         btnPermDel.classList.add('hidden');
     }

@@ -793,3 +793,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-weight: 600;
 }
 
+/* Memastikan item menu yang tidak memiliki class hidden tetap tampil secara flex */
+.ctx-item:not(.hidden) {
+    display: flex !important;
+}
+
+/* Memastikan tombol bahaya memiliki warna yang tepat saat hover */
+.ctx-item.ctx-danger:hover i, 
+.ctx-item.ctx-danger:hover span {
+    color: #f87171 !important;
+}
