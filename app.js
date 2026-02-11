@@ -438,28 +438,28 @@ async function calculateStorage() {
     } catch (e) { console.error("Storage Calculation Error", e); }
 }
 
-// FUNGSI STORAGE (DIPERBAIKI)
+// FUNGSI MEMBUKA DETAIL STORAGE (DIPERBAIKI)
 window.openStorageModal = () => {
-    // 1. Tutup menu konteks secara paksa agar tidak tabrakan
+    // 1. JAMINAN: Tutup menu klik kanan agar tidak tumpang tindih
     el('contextMenu').classList.add('hidden');
-    el('globalContextMenu').classList.remove('show');
+    el('contextMenu').classList.remove('show');
     
     const total = storageDetail.total || 1;
 
-    // 2. Update Grafik Bar
+    // 2. Update Batang Progress (Persentase)
     el('barImages').style.width = `${(storageDetail.images / total) * 100}%`;
     el('barVideos').style.width = `${(storageDetail.videos / total) * 100}%`;
     el('barDocs').style.width = `${(storageDetail.docs / total) * 100}%`;
     el('barOthers').style.width = `${(storageDetail.others / total) * 100}%`;
 
-    // 3. Update Teks Angka
+    // 3. Update Angka MB
     el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
     el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
     el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
     el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
 
-    // 4. Buka Modal Penyimpanan
+    // 4. Munculkan Modal
     window.openModal('storageModal');
 };
 
@@ -475,7 +475,7 @@ function updateContextMenuUI(doc) {
         btnRestore.classList.remove('hidden');
         btnPermDel.classList.remove('hidden');
     } else {
-        btnTrash.classList.remove('hidden'); // Pastikan ini muncul untuk file normal
+        btnTrash.classList.remove('hidden'); // Menjamin tombol muncul untuk file normal
         btnRestore.classList.add('hidden');
         btnPermDel.classList.add('hidden');
     }
