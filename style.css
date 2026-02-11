@@ -613,19 +613,153 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     z-index: 99999 !important;
     background: #012a36;
 }
-/* ... (Gunakan kode CSS sebelumnya untuk bagian atas) ... */
 
-/* FIX UNTUK ELEMEN YANG HILANG/KOSONG */
-.hidden { display: none !important; }
+/* ================= GOOGLE DRIVE MENU STYLING (LENGKAP) ================= */
 
-/* Pastikan Dashboard memiliki tinggi penuh */
-.dashboard-layout { min-height: 100vh; display: flex; flex-direction: column; }
+/* 1. Base Styles untuk Menu Dropdown & Context Menu */
+.extended-menu, .context-menu-modern {
+    background: #00384d;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    padding: 8px 0;
+    width: 280px; /* Lebar diperbesar agar muat teks panjang */
+    display: none;
+    flex-direction: column;
+    z-index: 99999;
+}
 
-/* Perbaikan Z-Index untuk Modal dan Menu */
-#storageModal { z-index: 999999 !important; }
-.context-menu-modern { z-index: 1000000 !important; position: fixed; }
-.context-menu-fixed { z-index: 999998 !important; position: fixed; }
+/* Animasi Muncul */
+.show, .context-menu-modern:not(.hidden) {
+    display: flex !important;
+    animation: fadeInMenu 0.1s ease-out;
+}
 
-/* Pastikan item menu tampil flex */
-.ctx-item { display: flex !important; align-items: center; }
-.ctx-item.hidden { display: none !important; }
+@keyframes fadeInMenu {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* 2. Styling Item Menu */
+.extended-menu a, .ctx-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px; /* Padding lebih rapat ala GDrive */
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.extended-menu a:hover, .ctx-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 3. Ikon di Kiri */
+.extended-menu a i:first-child, .ctx-item i:first-child {
+    width: 20px;
+    text-align: center;
+    margin-right: 12px;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 4. Teks Label & Shortcut */
+.menu-label { flex: 1; display: flex; align-items: center; gap: 12px; }
+.ctx-shortcut {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
+
+/* 5. Panah Kanan (Submenu indicator) */
+.arrow-right, .ctx-arrow-right {
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.4);
+    margin-left: auto;
+}
+
+/* 6. Garis Pemisah (Divider) */
+.menu-divider, .ctx-divider {
+    height: 1px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 6px 0;
+    width: 100%;
+}
+
+/* 7. Styling Tombol Bahaya (Hapus) */
+.ctx-item.ctx-danger:hover {
+    background: rgba(248, 113, 113, 0.15); 
+}
+.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span {
+    color: #f87171;
+}
+
+/* Fix Posisi Context Menu Global */
+.context-menu-fixed {
+    position: fixed;
+}
+
+/* Styling Khusus Tombol Hapus/Bahaya */
+.ctx-item.ctx-danger:hover {
+    background: rgba(248, 113, 113, 0.15); /* Merah transparan saat hover */
+}
+
+.ctx-item.ctx-danger:hover i, 
+.ctx-item.ctx-danger:hover span {
+    color: #f87171; /* Ikon dan teks berubah merah */
+}
+
+/* Pastikan shortcut Del juga terlihat rapi */
+.ctx-shortcut {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
+
+/* === FIX VISIBILITAS MENU === */
+.ctx-item.hidden {
+    display: none !important; /* Paksa sembunyi meskipun ada flex */
+}
+
+.ctx-item:not(.hidden) {
+    display: flex !important; /* Tampilkan secara flex jika tidak ada class hidden */
+}
+
+/* Pastikan Context Menu berada di atas modal apapun */
+.context-menu-modern {
+    z-index: 1000001 !important; 
+    position: fixed;
+}
+
+/* Modal Overlay Penyimpanan */
+#storageModal {
+    z-index: 1000000 !important;
+}
+
+/* Memastikan Modal Penyimpanan menutupi seluruh layar */
+#storageModal {
+    z-index: 999999 !important;
+}
+
+/* Memastikan Menu Klik Kanan juga berada di depan */
+.context-menu-modern {
+    z-index: 1000000 !important;
+}
+
+/* Fix agar class 'hidden' selalu bekerja */
+.hidden {
+    display: none !important;
+}
+
+.ctx-item:not(.hidden) {
+    display: flex !important;
+}
+
