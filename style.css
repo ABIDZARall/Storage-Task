@@ -1,765 +1,168 @@
-/* ================= MASTER STYLE FIX (TOTAL REPAIR) ================= */
+/* ====================================================== */
+/* 1. RESET & VARIABLE GLOBAL */
+/* ====================================================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
 :root {
     --bg-color: #004e64;
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
     --text-main: #ffffff;
-    --accent: #4ade80;
+    --accent: #4ade80; /* Warna Hijau App */
 }
-body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; }
-.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
+
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    overflow-x: hidden; 
+}
+
+/* Background Animasi */
+.liquid-bg { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: radial-gradient(circle at top left, #00607a, #002835); 
+    z-index: -1; 
+}
+
+/* UTILITY CLASS PENTING: Menyembunyikan elemen */
 .hidden { display: none !important; }
 
-/* === AUTH FIX === */
+/* ====================================================== */
+/* 2. AUTHENTICATION (LOGIN/SIGNUP) */
+/* ====================================================== */
 .full-screen-center { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
 .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .auth-card { width: 100%; max-width: 400px; padding: 40px 30px; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .auth-logo { width: 150px; height: auto; margin-bottom: 10px; object-fit: contain; }
 .auth-header h3 { margin-bottom: 20px; font-size: 1.5rem; letter-spacing: 1px; }
 
+/* Form Elements */
 form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .pill-input { width: 100%; height: 50px; background: rgba(255, 255, 255, 0.15); border-radius: 50px; padding: 0 20px; display: flex; align-items: center; border: 1px solid var(--glass-border); gap: 10px; transition: 0.3s; }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; }
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; flex: 1; }
 .pill-input i { color: #ccc; }
+.toggle-eye { cursor: pointer; color: rgba(255, 255, 255, 0.6); padding: 5px; }
 
 .btn-pill { border-radius: 50px; border: none; cursor: pointer; font-weight: 700; height: 45px; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-size: 1rem; }
 .primary { background: white; color: #002835; width: 100%; }
 .auth-footer { margin-top: 15px; font-size: 0.9rem; color: #ddd; }
 .link-text { color: white; text-decoration: underline; cursor: pointer; font-weight: bold; }
 
-/* === DASHBOARD LAYOUT === */
-.dashboard-layout { height: 100vh; padding: 20px 30px; display: flex; flex-direction: column; }
+/* ====================================================== */
+/* 3. DASHBOARD LAYOUT */
+/* ====================================================== */
+.dashboard-layout { min-height: 100vh; padding: 20px 30px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; }
 .profile-area { display: flex; align-items: center; gap: 15px; }
 .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); object-fit: cover; }
-.btn-pill.small { width: auto; height: 35px; padding: 0 20px; font-size: 0.85rem; background: rgba(255,255,255,0.2); color: white; }
+.logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 5px 15px; border-radius: 20px; border: none; cursor: pointer; }
 
-/* TAMBAHAN: GAYA TOMBOL KEMBALI */
-.back-nav-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 20px;
-}
+/* Brand / Home Button */
+.brand-area { display: flex; align-items: center; cursor: pointer; transition: transform 0.2s; padding: 5px; border-radius: 10px; }
+.brand-area:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.05); }
 
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--accent);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
+/* Panel Kaca Utama */
+.main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); border-radius: 30px; border: 1px solid var(--glass-border); padding: 30px; display: flex; gap: 40px; overflow: hidden; }
 
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateX(-5px); /* Efek gerak ke kiri */
-    color: white;
-}
+/* ====================================================== */
+/* 4. SIDEBAR & MENU */
+/* ====================================================== */
+.sidebar-left { width: 250px; display: flex; flex-direction: column; gap: 20px; border-right: 1px solid rgba(255, 255, 255, 0.1); padding-right: 25px; flex-shrink: 0; }
 
-.back-btn i { font-size: 0.9rem; }
+/* Tombol New */
+.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
+.new-btn { width: 100%; background: rgba(255,255,255,0.2); color: white; justify-content: flex-start; padding-left: 25px; gap: 15px; font-size: 1.1rem; height: 55px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+.new-btn:hover { background: rgba(255,255,255,0.3); box-shadow: 0 0 15px rgba(255,255,255,0.1); }
 
-
-.main-glass-panel { 
-    flex: 1; background: var(--glass-bg); backdrop-filter: blur(25px); 
-    border-radius: 30px; border: 1px solid var(--glass-border); 
-    padding: 30px; display: flex; gap: 40px; overflow: hidden; 
-}
-
-/* Styling untuk ikon mata (Show/Hide Password) */
-.toggle-eye {
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.6);
-    transition: 0.3s;
-    padding: 5px; /* Memberikan area klik lebih luas */
-}
-
-.toggle-eye:hover {
-    color: var(--accent); /* Berubah hijau saat dihover */
-}
-
-/* Memastikan input field mengisi ruang sisa agar ikon mata mojok ke kanan */
-.pill-input input {
-    flex: 1; /* Mengambil sisa ruang */
-}
-
-/* SIDEBAR KIRI */
-.sidebar-left {
-    width: 250px; display: flex; flex-direction: column; 
-    gap: 20px; border-right: 1px solid rgba(255, 255, 255, 0.1);
-    padding-right: 25px; flex-shrink: 0;
-}
-
-/* ================= PERBAIKAN TAMPILAN SIDEBAR & MENU ================= */
-
-/* 1. KUNCI AGAR MENU TIDAK MELEBAR (WAJIB ADA) */
-.new-btn-wrapper {
-    position: relative; /* Penting! Menjadi patokan posisi menu dropdown */
-    width: 100%;
-    margin-bottom: 15px; /* Jarak ke menu di bawahnya */
-}
-
-/* 2. GAYA TOMBOL NEW */
-.new-btn {
-    width: 100%;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    justify-content: flex-start;
-    padding-left: 25px;
-    gap: 15px;
-    font-size: 1.1rem;
-    height: 55px;
-    border-radius: 30px;
-    border: 1px solid rgba(255,255,255,0.1);
-    cursor: pointer;
-    transition: 0.3s;
-}
-.new-btn:hover {
-    background: rgba(255,255,255,0.3);
-    box-shadow: 0 0 15px rgba(255,255,255,0.1);
-}
-
-/* 3. GAYA MENU DROPDOWN (YANG TADI PANJANG) */
-.dropdown-content { 
-    display: none; /* Tersembunyi saat awal */
-    position: absolute; 
-    top: 65px; /* Muncul tepat di bawah tombol */
-    left: 0; 
-    
-    /* PERBAIKAN: Lebar tetap, agar tidak memenuhi layar */
-    width: 240px; 
-    
-    background: #00384d; 
-    border-radius: 12px; 
-    z-index: 9999; /* Agar muncul paling depan */
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    overflow: hidden;
-}
-
-/* Kelas untuk memunculkan menu */
-.dropdown-content.show { 
-    display: block; 
-    animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Item di dalam menu */
-.dropdown-content a { 
-    display: flex; 
-    align-items: center; 
-    gap: 15px; 
-    padding: 15px 20px; 
-    color: white; 
-    text-decoration: none; 
-    cursor: pointer; 
-    font-size: 0.95rem;
-}
-.dropdown-content a:hover { background: rgba(255,255,255,0.1); color: #4ade80; }
-.dropdown-content a i {
-    width: 20px;
-    text-align: center;
-}
-
-/* ================= MODAL UPLOAD MODERN & ANIMASI ================= */
-
-.upload-box-style { max-width: 450px; }
-
-.drag-drop-area {
-    border: 3px dashed rgba(255, 255, 255, 0.25);
-    border-radius: 25px;
-    padding: 40px 20px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.03);
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.drag-drop-area .animate-icon {
-    font-size: 4rem;
-    color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 15px;
-    transition: all 0.4s ease;
-}
-
-/* ANIMASI SAAT FILE DISERET DI ATASNYA */
-.drag-drop-area.active {
-    border-color: var(--accent);
-    background: rgba(74, 222, 128, 0.15);
-    transform: scale(1.02); 
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.3);
-}
-
-.drag-drop-area.active .animate-icon {
-    color: var(--accent);
-    transform: translateY(-15px) scale(1.1);
-}
-
-/* TAMPILAN INFORMASI FILE SUKSES TERPILIH */
-.file-info-container {
-    margin-top: 20px;
-    background: rgba(74, 222, 128, 0.2);
-    border: 1px solid var(--accent);
-    padding: 15px;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    animation: slideUpFade 0.3s ease forwards;
-}
-
-.file-info-container i { font-size: 1.5rem; color: var(--accent); }
-.file-info { margin: 0; color: white; font-weight: 500; font-size: 0.95rem; }
-
-@keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ================= PERBAIKAN MODAL (POPUP) ================= */
-
-/* 1. Latar Belakang Gelap (Overlay) */
-.modal-overlay {
-    position: fixed; /* KUNCI: Agar menempel di layar, bukan di bawah konten */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Latar belakang gelap transparan */
-    backdrop-filter: blur(5px); /* Efek blur di belakang */
-    z-index: 10000; /* KUNCI: Harus lebih tinggi dari sidebar & header */
-    
-    /* Mengatur posisi kotak modal ke tengah */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    /* Transisi halus */
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-/* Kelas untuk menyembunyikan modal */
-.hidden {
-    display: none !important;
-}
-
-/* 2. Kotak Modal (Isinya) */
-.modal-box {
-    background: #00384d; /* Warna latar kotak */
-    width: 400px;
-    max-width: 90%;
-    padding: 25px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    
-    /* Animasi muncul */
-    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes scaleUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Header Modal */
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.modal-header h3 { color: white; font-size: 1.2rem; }
-.close-icon { cursor: pointer; color: #ccc; transition: 0.3s; }
-.close-icon:hover { color: #ff5252; }
-
-/* Tombol Aksi di Modal */
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-/* NAVIGASI MENU (FITUR BARU) */
-.sidebar-menu {
-    display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; margin-top: 10px;
-}
-
-.nav-item {
-    display: flex; align-items: center; gap: 15px; padding: 0 20px; height: 48px;
-    border-radius: 25px; color: rgba(255, 255, 255, 0.8); text-decoration: none;
-    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s;
-}
-
-.nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+/* Sidebar Menu Items */
+.sidebar-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 15px; padding: 0 20px; height: 48px; border-radius: 25px; color: rgba(255, 255, 255, 0.8); cursor: pointer; text-decoration: none; transition: 0.2s; font-size: 0.95rem; font-weight: 500; }
+.nav-item i { width: 20px; text-align: center; }
 .nav-item:hover { background-color: rgba(255, 255, 255, 0.1); color: white; }
 .nav-item.active { background-color: rgba(74, 222, 128, 0.2); color: var(--accent); font-weight: 700; }
 
-/* STORAGE WIDGET */
+/* Storage Widget */
 .storage-widget { padding: 15px 0; width: 100%; }
 .storage-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; color: var(--text-main); }
 .progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
 .progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 10px; transition: width 0.5s ease-in-out; }
 .storage-text { font-size: 0.75rem; text-align: right; color: rgba(255, 255, 255, 0.7); }
 
-/* MAIN CONTENT */
+/* ====================================================== */
+/* 5. MAIN CONTENT (FILE GRID & SEARCH) */
+/* ====================================================== */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.search-bar-pill { width: 100%; background: rgba(0,0,0,0.2); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1rem; }
 
+/* Search Bar */
+.search-row { width: 100%; margin-bottom: 25px; display: flex; justify-content: center; }
+.search-bar-pill { width: 100%; max-width: 800px; background: rgba(0,0,0,0.2); border-radius: 50px; height: 55px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.search-bar-pill:focus-within { background: rgba(0,0,0,0.4); border-color: var(--accent); transform: translateY(-2px); }
+.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 15px; font-size: 1.05rem; }
+.search-icon { color: rgba(255, 255, 255, 0.5); font-size: 1.2rem; }
+.clear-icon { color: rgba(255, 255, 255, 0.5); cursor: pointer; font-size: 1.1rem; padding: 8px; border-radius: 50%; transition: 0.2s; }
+.clear-icon:hover { background: rgba(255,255,255,0.1); color: #ff5252; }
+
+/* File Grid */
 .breadcrumb-area { margin-bottom: 30px; padding-left: 10px; }
 .breadcrumb-area h2 { font-size: 2rem; font-weight: 700; color: white; }
+.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 40px; padding: 10px 20px; align-content: start; }
 
-.file-grid-area { 
-    flex: 1; overflow-y: auto; display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-    gap: 40px; padding: 10px 20px; justify-content: center; align-content: start;
-}
-
-.item-card { 
-    background: rgba(255, 255, 255, 0.05); border-radius: 20px; aspect-ratio: 1/1; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center; 
-    cursor: pointer; position: relative; transition: 0.3s;
-}
+/* Kartu File */
+.item-card { background: rgba(255, 255, 255, 0.05); border-radius: 20px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.3s; }
 .item-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-5px); }
 .item-card i.icon { font-size: 4.5rem; margin-bottom: 12px; }
 .item-name { font-size: 0.9rem; font-weight: 600; color: white; text-align: center; width: 85%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fa-folder { color: #facc15; }
-.fa-file-lines { color: #60a5fa; }
-.del-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.6); color: white; border-radius: 50%; width: 25px; height: 25px; display: none; align-items: center; justify-content: center; border: none; }
-.item-card:hover .del-btn { display: flex; }
+.fa-folder { color: #facc15; } .fa-file-lines { color: #60a5fa; }
 
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-.spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* ====================================================== */
+/* 6. MODALS & CONTEXT MENUS (Z-INDEX TINGGI) */
+/* ====================================================== */
 
-/* ================= MODERN SCROLLBAR (PILL DESIGN) ================= */
+/* Overlay Modal (Latar Gelap) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; transition: opacity 0.3s; }
+.modal-box { background: #00384d; width: 400px; max-width: 90%; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 20px; animation: scaleUp 0.3s ease; }
+@keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* 1. Mengatur Ukuran Scrollbar (Global) */
-/* Ini berlaku untuk Chrome, Edge, Safari, dan Opera */
-::-webkit-scrollbar {
-    width: 12px;  /* Lebar untuk scrollbar vertikal */
-    height: 12px; /* Tinggi untuk scrollbar horizontal */
-}
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { color: white; font-size: 1.2rem; }
+.close-icon { cursor: pointer; color: #ccc; transition: 0.3s; }
+.close-icon:hover { color: #ff5252; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-/* 2. Jalur Scrollbar (Track) */
-/* Kita buat transparan agar terlihat bersih dan menyatu dengan background */
-::-webkit-scrollbar-track {
-    background: transparent; 
-    margin-block: 5px; /* Memberi sedikit jarak di atas dan bawah */
-    border-radius: 10px;
-}
+/* Context Menus & Dropdowns */
+.context-menu-modern, .dropdown-content { position: fixed; z-index: 1000000 !important; background: #00384d; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); padding: 8px 0; min-width: 240px; display: none; flex-direction: column; }
+.context-menu-fixed { position: fixed; z-index: 999998 !important; }
 
-/* 3. Batang Scroll (Thumb) */
-/* Ini adalah bagian yang Anda geser */
-::-webkit-scrollbar-thumb {
-    /* Warna putih transparan agar cocok dengan tema biru gelap Anda */
-    background-color: rgba(255, 255, 255, 0.2); 
-    
-    /* Membuat bentuk bulat sempurna (Pill Shape) */
-    border-radius: 20px;
-    
-    /* TRIK DESAIN: Border transparan + background-clip */
-    /* Ini membuat thumb terlihat "melayang" dan lebih kecil dari track-nya */
-    border: 3px solid transparent;
-    background-clip: content-box;
-    
-    /* Transisi halus saat di-hover */
-    transition: background-color 0.3s ease;
-}
+/* Item Menu */
+.ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 10px 16px; cursor: pointer; color: white; font-size: 0.9rem; text-decoration: none; }
+.ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.1); }
+.ctx-item i { width: 20px; margin-right: 15px; color: rgba(255, 255, 255, 0.7); }
+.menu-divider, .ctx-divider { height: 1px; border: 0; background: rgba(255, 255, 255, 0.1); margin: 6px 0; width: 100%; }
 
-/* 4. Efek Saat Mouse Diarahkan ke Scrollbar (Hover) */
-::-webkit-scrollbar-thumb:hover {
-    /* Warnanya menjadi lebih terang/jelas saat disentuh */
-    background-color: rgba(255, 255, 255, 0.5); 
-    
-    /* Tetap mempertahankan efek melayang */
-    border: 3px solid transparent;
-    background-clip: content-box;
-}
+/* Tombol Bahaya (Merah) */
+.ctx-item.ctx-danger:hover { background: rgba(248, 113, 113, 0.1) !important; }
+.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span { color: #f87171 !important; }
 
-/* 5. Efek Saat Scrollbar Diklik/Aktif */
-::-webkit-scrollbar-thumb:active {
-    background-color: var(--accent); /* Warna hijau aksen saat diklik */
-    border: 3px solid transparent;
-    background-clip: content-box;
-}
-
-/* 6. Dukungan untuk Firefox (Browser lain) */
-/* Firefox menggunakan properti standar yang berbeda */
-* {
-    scrollbar-width: thin; /* Membuat scrollbar lebih tipis */
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; /* Thumb Track */
-}
-
-/* KHUSUS: Memperbaiki Scrollbar di Sidebar agar tidak terlalu mepet */
-.sidebar-menu::-webkit-scrollbar {
-    width: 8px; /* Lebih tipis khusus untuk sidebar */
-}
-
-.file-grid-area::-webkit-scrollbar {
-    width: 10px; /* Ukuran standar untuk area file */
-}
-
-/* ================= STORAGE DETAIL MODAL ================= */
-.storage-detail-box { max-width: 450px; text-align: left; }
+/* Storage Modal Bar Warna-Warni */
+.storage-detail-box { max-width: 450px; }
 .storage-big-text { font-size: 2.5rem; font-weight: 700; margin-bottom: 5px; color: white; }
-.storage-sub-text { color: rgba(255, 255, 255, 0.7); margin-bottom: 20px; }
-
-/* Diagram Batang Warna-Warni */
-.multi-color-progress {
-    width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px; display: flex; overflow: hidden; margin-bottom: 25px;
-}
-
+.multi-color-progress { width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; overflow: hidden; margin: 20px 0; }
 .bar-segment { height: 100%; transition: width 0.5s ease; }
-.bar-images { background-color: #60a5fa; } 
-.bar-videos { background-color: #f87171; } 
-.bar-docs { background-color: #facc15; }   
-.bar-others { background-color: #a78bfa; }  
+.bar-images { background-color: #60a5fa; } .bar-videos { background-color: #f87171; } .bar-docs { background-color: #facc15; } .bar-others { background-color: #a78bfa; }
+.storage-legend { display: flex; flex-direction: column; gap: 10px; }
+.legend-item { display: flex; align-items: center; gap: 10px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-images { background: #60a5fa; } .dot-videos { background: #f87171; } .dot-docs { background: #facc15; } .dot-others { background: #a78bfa; }
+.val-text { margin-left: auto; font-weight: 700; }
 
-.storage-legend { display: flex; flex-direction: column; gap: 12px; }
-.legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.9); }
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-images { background-color: #60a5fa; }
-.dot-videos { background-color: #f87171; }
-.dot-docs { background-color: #facc15; }
-.dot-others { background-color: #a78bfa; }
-.val-text { margin-left: auto; font-weight: 600; color: white; }
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,0.4); }
 
-/* Pastikan Modal memiliki prioritas tinggi */
-#storageModal { z-index: 1000000 !important; }
-
-/* ================= LOGO INTERACTIVE (HOME BUTTON) ================= */
-.brand-area {
-    display: flex;
-    align-items: center;
-    cursor: pointer; /* Mengubah kursor menjadi jari telunjuk */
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 5px;
-    border-radius: 10px;
-}
-
-/* Efek saat mouse diarahkan ke logo */
-.brand-area:hover {
-    transform: scale(1.05); /* Membesar sedikit */
-    background: rgba(255, 255, 255, 0.05); /* Memberi latar tipis */
-}
-
-/* Efek saat logo diklik */
-.brand-area:active {
-    transform: scale(0.95); /* Mengecil sedikit (efek tekan) */
-}
-
-/* ================= ADVANCED SEARCH BAR DESIGN ================= */
-
-.search-row {
-    width: 100%;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: center;
-}
-
-.search-bar-pill {
-    width: 100%;
-    max-width: 800px; /* Membatasi lebar agar rapi di layar besar */
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 50px;
-    height: 55px;
-    padding: 0 25px;
-    display: flex;
-    align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Efek Fokus (Saat user mengetik) */
-.search-bar-pill:focus-within {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: var(--accent); /* Warna Hijau */
-    box-shadow: 0 0 20px rgba(74, 222, 128, 0.2); /* Glow Effect Hijau */
-    transform: translateY(-2px);
-}
-
-.search-icon {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 1.2rem;
-    transition: color 0.3s;
-}
-
-.search-bar-pill:focus-within .search-icon {
-    color: var(--accent);
-}
-
-.search-bar-pill input {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: white;
-    width: 100%;
-    margin-left: 15px;
-    font-size: 1.05rem;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
-
-.search-bar-pill input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-    transition: color 0.3s;
-}
-
-.search-bar-pill:focus-within input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-/* Tombol Clear (X) */
-.clear-icon {
-    color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    font-size: 1.1rem;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s;
-}
-
-.clear-icon:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ff5252; /* Merah saat hover */
-}
-
-/* Animasi Putar Loading (Opsional jika ingin dipakai nanti) */
-@keyframes spinSearch {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* ================= EXTENDED MENU STYLE (GOOGLE DRIVE LOOK) ================= */
-
-/* Menu yang lebih lebar dan rapi */
-.extended-menu {
-    width: 280px; /* Lebih lebar untuk menampung teks panjang */
-    padding: 10px 0;
-    border-radius: 8px; /* Sudut lebih tajam dikit ala GDrive */
-}
-
-.extended-menu a {
-    padding: 10px 20px;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.extended-menu a i {
-    width: 20px;
-    text-align: center;
-    font-size: 1rem;
-}
-
-/* Garis Pemisah */
-.menu-divider {
-    border: 0;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 8px 0;
-}
-
-/* Panah kanan untuk submenu */
-.menu-has-arrow {
-    justify-content: space-between;
-}
-.arrow-right {
-    font-size: 0.8rem !important;
-    color: rgba(255, 255, 255, 0.4);
-    margin-left: auto;
-}
-
-/* Pastikan menu selalu berada di paling depan */
-.context-menu-fixed {
-    position: fixed !important;
-    z-index: 99999 !important; /* Nilai sangat tinggi agar tidak tertutup grid */
-    background: #00384d;
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    display: none; /* Default sembunyi */
-    width: 220px;
-}
-
-/* Munculkan saat ada class .show */
-.context-menu-fixed.show {
-    display: block !important;
-}
-
-/* Pastikan contextMenu untuk file/folder juga muncul di depan */
-#contextMenu {
-    position: fixed !important;
-    z-index: 99999 !important;
-    background: #012a36;
-}
-
-/* ================= GOOGLE DRIVE MENU STYLING (LENGKAP) ================= */
-
-/* 1. Base Styles untuk Menu Dropdown & Context Menu */
-.extended-menu, .context-menu-modern {
-    background: #00384d;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    padding: 8px 0;
-    width: 280px; /* Lebar diperbesar agar muat teks panjang */
-    display: none;
-    flex-direction: column;
-    z-index: 99999;
-}
-
-/* Animasi Muncul */
-.show, .context-menu-modern:not(.hidden) {
-    display: flex !important;
-    animation: fadeInMenu 0.1s ease-out;
-}
-
-@keyframes fadeInMenu {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* 2. Styling Item Menu */
-.extended-menu a, .ctx-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px; /* Padding lebih rapat ala GDrive */
-    color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.1s;
-    position: relative;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.extended-menu a:hover, .ctx-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* 3. Ikon di Kiri */
-.extended-menu a i:first-child, .ctx-item i:first-child {
-    width: 20px;
-    text-align: center;
-    margin-right: 12px;
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-/* 4. Teks Label & Shortcut */
-.menu-label { flex: 1; display: flex; align-items: center; gap: 12px; }
-.ctx-shortcut {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-weight: 600;
-}
-
-/* 5. Panah Kanan (Submenu indicator) */
-.arrow-right, .ctx-arrow-right {
-    font-size: 0.8rem !important;
-    color: rgba(255, 255, 255, 0.4);
-    margin-left: auto;
-}
-
-/* 6. Garis Pemisah (Divider) */
-.menu-divider, .ctx-divider {
-    height: 1px;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 6px 0;
-    width: 100%;
-}
-
-/* 7. Styling Tombol Bahaya (Hapus) */
-.ctx-item.ctx-danger:hover {
-    background: rgba(248, 113, 113, 0.15); 
-}
-.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span {
-    color: #f87171;
-}
-
-/* Fix Posisi Context Menu Global */
-.context-menu-fixed {
-    position: fixed;
-}
-
-/* Styling Khusus Tombol Hapus/Bahaya */
-.ctx-item.ctx-danger:hover {
-    background: rgba(248, 113, 113, 0.15); /* Merah transparan saat hover */
-}
-
-.ctx-item.ctx-danger:hover i, 
-.ctx-item.ctx-danger:hover span {
-    color: #f87171; /* Ikon dan teks berubah merah */
-}
-
-/* Pastikan shortcut Del juga terlihat rapi */
-.ctx-shortcut {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-weight: 600;
-}
-
-/* === FIX VISIBILITAS MENU === */
-.ctx-item.hidden {
-    display: none !important; /* Paksa sembunyi meskipun ada flex */
-}
-
-.ctx-item:not(.hidden) {
-    display: flex !important; /* Tampilkan secara flex jika tidak ada class hidden */
-}
-
-/* Pastikan Context Menu berada di atas modal apapun */
-.context-menu-modern {
-    z-index: 1000001 !important; 
-    position: fixed;
-}
-
-/* Modal Overlay Penyimpanan */
-#storageModal {
-    z-index: 1000000 !important;
-}
-
-/* Memastikan Modal Penyimpanan menutupi seluruh layar */
-#storageModal {
-    z-index: 999999 !important;
-}
-
-/* Memastikan Menu Klik Kanan juga berada di depan */
-.context-menu-modern {
-    z-index: 1000000 !important;
-}
-
-/* Fix agar class 'hidden' selalu bekerja */
-.hidden {
-    display: none !important;
-}
-
-.ctx-item:not(.hidden) {
-    display: flex !important;
-}
-
+/* Menu Dropdown New (Posisi Khusus) */
+.dropdown-content { top: 65px; left: 0; position: absolute; }
+.dropdown-content.show { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
