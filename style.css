@@ -615,32 +615,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 /* ... (Gunakan kode CSS sebelumnya untuk bagian atas) ... */
 
-/* FIX VISIBILITAS KONTEN */
+/* FIX UNTUK ELEMEN YANG HILANG/KOSONG */
 .hidden { display: none !important; }
 
-/* MODERN CONTEXT MENU & MODAL STORAGE */
-.context-menu-modern, .context-menu-fixed {
-    position: fixed; z-index: 999999 !important; background: #00384d;
-    border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); padding: 8px 0; min-width: 240px;
-}
+/* Pastikan Dashboard memiliki tinggi penuh */
+.dashboard-layout { min-height: 100vh; display: flex; flex-direction: column; }
 
-.ctx-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; color: white; font-size: 0.9rem; }
-.ctx-item:hover { background: rgba(255, 255, 255, 0.1); }
+/* Perbaikan Z-Index untuk Modal dan Menu */
+#storageModal { z-index: 999999 !important; }
+.context-menu-modern { z-index: 1000000 !important; position: fixed; }
+.context-menu-fixed { z-index: 999998 !important; position: fixed; }
+
+/* Pastikan item menu tampil flex */
+.ctx-item { display: flex !important; align-items: center; }
 .ctx-item.hidden { display: none !important; }
-.ctx-item i { width: 20px; margin-right: 15px; color: rgba(255, 255, 255, 0.7); }
-
-/* Tombol Sampah Merah */
-.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span { color: #f87171 !important; }
-.ctx-item.ctx-danger:hover { background: rgba(248, 113, 113, 0.1) !important; }
-
-/* Progress Bar Warna-Warni */
-.multi-color-progress { width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; display: flex; overflow: hidden; margin: 20px 0; }
-.bar-segment { height: 100%; transition: width 0.5s ease; }
-.bar-images { background-color: #60a5fa; } .bar-videos { background-color: #f87171; }
-.bar-docs { background-color: #facc15; } .bar-others { background-color: #a78bfa; }
-
-.storage-legend { display: flex; flex-direction: column; gap: 10px; }
-.legend-item { display: flex; align-items: center; gap: 10px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.val-text { margin-left: auto; font-weight: 700; }

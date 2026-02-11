@@ -134,42 +134,39 @@ async function performSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// ======================================================
-// 6. LOGIKA KLIK KANAN & TOMBOL NEW (SOLUSI TERBENTROK)
-// ======================================================
+// LOGIKA KLIK KIRI & KANAN (SOLUSI FIX MACET)
 function initAllContextMenus() {
-    const globalMenu = el('globalContextMenu');
-    const newBtnMenu = el('dropdownMenu');
-    const fileMenu = el('contextMenu');
     const newBtn = el('newBtnMain');
+    const newMenu = el('dropdownMenu');
     const navDrive = el('navDrive');
+    const globalMenu = el('globalContextMenu');
+    const fileMenu = el('contextMenu');
     const mainArea = document.querySelector('.main-content-area');
 
     const closeAll = () => {
+        if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
-        if(newBtnMenu) newBtnMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
-        // Jaminan Modal Storage Tertutup
         if(el('storageModal')) el('storageModal').classList.add('hidden');
     };
 
-    // A. Tombol New (Klik Kiri & Kanan Terpadu)
-    if (newBtn) {
-        newBtn.onclick = (e) => { e.stopPropagation(); const wasOpen = newBtnMenu.classList.contains('show'); closeAll(); if(!wasOpen) newBtnMenu.classList.add('show'); };
-        newBtn.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAll(); newBtnMenu.classList.add('show'); };
+    // Tombol New (Klik Kiri & Kanan Terpadu)
+    if(newBtn) {
+        newBtn.onclick = (e) => { e.stopPropagation(); const wasOpen = newMenu.classList.contains('show'); closeAll(); if(!wasOpen) newMenu.classList.add('show'); };
+        newBtn.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAll(); newMenu.classList.add('show'); };
     }
 
-    // B. Sidebar Drive Saya (Klik Kanan)
-    if (navDrive) {
-        navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAll();
+    // Drive Saya Sidebar (Klik Kanan)
+    if(navDrive) {
+        navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAll(); 
             globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show');
         };
     }
 
-    // C. Area Kosong (Klik Kanan)
-    if (mainArea) {
+    // Area Kosong Dashboard (Klik Kanan)
+    if(mainArea) {
         mainArea.oncontextmenu = (e) => {
-            if (e.target.closest('.item-card')) return; // Biarkan logika file yang handle
+            if (e.target.closest('.item-card')) return;
             e.preventDefault(); closeAll();
             globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show');
         };
@@ -178,53 +175,40 @@ function initAllContextMenus() {
     window.onclick = () => closeAll();
 }
 
-// ======================================================
-// 7. RENDER ITEM & MENU FILE (MENU SAMPAH MUNCUL)
-// ======================================================
+// RENDER ITEM DENGAN LOGIKA SAMPAH OTOMATIS
 function renderItem(doc) {
     const grid = el('fileGrid');
     const div = document.createElement('div');
     div.className = 'item-card';
     const isFolder = doc.type === 'folder';
-    
-    // Icon Logic
     const content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;"></i>` : '';
     
-    div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
+    div.innerHTML = `${doc.starred ? '<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;"></i>' : ''}${content}<div class="item-name">${doc.name}</div>`;
+    
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-
-    // KLIK KANAN PADA FILE/FOLDER
+    
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
-        
-        // JAMINAN: Tutup modal storage dan menu global agar tidak tabrakan
         if(el('storageModal')) el('storageModal').classList.add('hidden');
-        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-        if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
-
         selectedItem = doc;
         const menu = el('contextMenu');
         menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
         menu.classList.remove('hidden'); menu.classList.add('show');
-
-        // Logika Dinamis (Bintang & Sampah)
+        
+        // Atur visibilitas tombol Hapus vs Restore
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        el('ctxStarText').innerText = doc.starred ? "Hapus dari Berbintang" : "Tambahkan ke Berbintang";
+        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
     };
     grid.appendChild(div);
 }
 
-// ======================================================
-// 8. STORAGE DETAIL (SESUAI GAMBAR)
-// ======================================================
+// ... (Gunakan fungsi checkSession, handleMenuClick, Search, dan Auth dari app.js Anda yang terakhir) ...
+
+// STORAGE DETAIL (Sesuai image_2052da.png)
 window.openStorageModal = () => {
-    // Tutup menu klik kanan agar tidak tabrakan
-    el('contextMenu').classList.add('hidden');
-    
     const total = storageDetail.total || 1;
     el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
     el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
@@ -237,6 +221,7 @@ window.openStorageModal = () => {
     el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
 
+    if(el('contextMenu')) el('contextMenu').classList.add('hidden');
     window.openModal('storageModal');
 };
 
