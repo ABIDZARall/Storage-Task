@@ -793,28 +793,22 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-weight: 600;
 }
 
-/* PERBAIKAN BUG DISPLAY HIDDEN */
-
-/* Pastikan class .hidden mengalahkan display flex bawaan */
+/* === FIX VISIBILITAS MENU === */
 .ctx-item.hidden {
-    display: none !important;
+    display: none !important; /* Paksa sembunyi meskipun ada flex */
 }
 
-/* Pastikan item yang TIDAK hidden tampil flex */
 .ctx-item:not(.hidden) {
-    display: flex !important;
+    display: flex !important; /* Tampilkan secara flex jika tidak ada class hidden */
 }
 
-/* Memastikan Menu Modern muncul di atas segalanya (termasuk modal lain) */
+/* Pastikan Context Menu berada di atas modal apapun */
 .context-menu-modern {
-    z-index: 999999 !important; 
+    z-index: 1000001 !important; 
+    position: fixed;
 }
 
-/* Memastikan tombol sampah berwarna merah saat di hover */
-.ctx-item.ctx-danger:hover {
-    background: rgba(248, 113, 113, 0.15) !important;
-}
-.ctx-item.ctx-danger:hover i, 
-.ctx-item.ctx-danger:hover span {
-    color: #f87171 !important;
+/* Modal Overlay Penyimpanan */
+#storageModal {
+    z-index: 1000000 !important;
 }

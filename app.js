@@ -295,28 +295,25 @@ function renderItem(doc) {
     // KLIK KIRI (Buka File/Folder)
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // KLIK KANAN (WAJIB MEMBUKA contextMenu, BUKAN storageModal)
-    div.oncontextmenu = (e) => { 
+div.oncontextmenu = (e) => { 
         e.preventDefault(); 
         e.stopPropagation(); 
         
-        // Tutup menu lain yang mungkin terbuka
-        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-        if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
-        // Pastikan modal storage tertutup jika tidak sengaja terbuka
+        // JAMINAN: Tutup modal storage jika sedang terbuka agar tidak tabrakan
         el('storageModal').classList.add('hidden');
+        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
 
         selectedItem = doc; 
-        
-        // Targetkan elemen Menu Klik Kanan yang benar
         const menu = el('contextMenu'); 
+        
+        // PENTING: Gunakan ID contextMenu, bukan storageModal
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`; 
         
-        // Update logika tombol Sampah sebelum menampilkan
+        // Perbarui tampilan item menu (Bintang & Sampah)
         updateContextMenuUI(doc);
         
-        // Tampilkan
+        // Tampilkan menu
         menu.classList.remove('hidden');
         menu.classList.add('show');
     };
@@ -324,40 +321,26 @@ function renderItem(doc) {
 }
 
 function updateContextMenuUI(doc) {
-    // 1. Atur Bintang
+    // Logika Bintang
     const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
-    if (doc.starred) { 
-        starText.innerText = "Hapus dari Berbintang"; 
-        starIcon.style.color = '#ffd700'; 
-        starIcon.classList.remove('fa-regular'); starIcon.classList.add('fa-solid');
-    } else { 
-        starText.innerText = "Tambahkan ke Berbintang"; 
-        starIcon.style.color = 'rgba(255,255,255,0.7)'; 
-    }
+    if (doc.starred) { starText.innerText = "Hapus dari Berbintang"; starIcon.style.color = '#ffd700'; }
+    else { starText.innerText = "Tambahkan ke Berbintang"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
 
-    // 2. LOGIKA SAMPAH (FIXED)
-    const isTrash = doc.trashed; // Cek status file
+    // Logika Tombol Sampah (Pindahkan vs Pulihkan)
+    const isTrash = doc.trashed;
     const btnTrash = el('ctxTrashBtn');
     const btnRestore = el('ctxRestoreBtn');
     const btnPermDel = el('ctxPermDeleteBtn');
 
-    // Reset dulu semua class hidden
-    btnTrash.classList.remove('hidden');
-    btnRestore.classList.add('hidden');
-    btnPermDel.classList.add('hidden');
-
     if (isTrash) {
-        // Jika di folder sampah:
         btnTrash.classList.add('hidden'); // Sembunyikan 'Pindahkan ke Sampah'
-        btnRestore.classList.remove('hidden'); // Tampilkan 'Pulihkan'
-        btnPermDel.classList.remove('hidden'); // Tampilkan 'Hapus Permanen'
+        btnRestore.classList.remove('hidden'); // Munculkan 'Pulihkan'
+        btnPermDel.classList.remove('hidden'); // Munculkan 'Hapus Permanen'
     } else {
-        btnTrash.classList.remove('hidden'); // TAMPILKAN 'Pindahkan ke Sampah'
+        btnTrash.classList.remove('hidden'); // MUNCULKAN 'Pindahkan ke Sampah'
         btnRestore.classList.add('hidden');
         btnPermDel.classList.add('hidden');
     }
-    // Jika tidak di sampah, biarkan default (btnTrash muncul)
-
 }
 
 // FUNGSI EKSEKUSI HAPUS (KE SAMPAH)
@@ -465,23 +448,26 @@ async function calculateStorage() {
     } catch (e) {}
 }
 
-// Fungsi Khusus Membuka Storage (Hanya dipanggil saat klik Widget Storage)
 window.openStorageModal = () => {
-    // Hitung persentase bar
     const total = storageDetail.total || 1;
+    // Update bar progress
     el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
     el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
     el('barDocs').style.width = `${(storageDetail.docs/total)*100}%`;
     el('barOthers').style.width = `${(storageDetail.others/total)*100}%`;
     
-    // Isi teks angka
+    // Update teks angka
     el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
     el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
     el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
     el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
     
-    // BUKA MODAL YANG BENAR (ID: storageModal)
+    // Pastikan menu klik kanan tertutup
+    el('contextMenu').classList.add('hidden');
+    el('contextMenu').classList.remove('show');
+    
+    // Buka Modal Storage (ID: storageModal)
     window.openModal('storageModal');
 };
 
