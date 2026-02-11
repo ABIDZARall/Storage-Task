@@ -47,11 +47,13 @@
                 <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
                 <div class="pill-input"><i class="fa-solid fa-phone"></i><input type="tel" id="regPhone" placeholder="Phone Number" required></div>
                 <div class="pill-input">
-                    <i class="fa-solid fa-key"></i><input type="password" id="regPass" placeholder="Password" required>
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="regPass" placeholder="Password" required>
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regPass', this)"></i>
                 </div>
                 <div class="pill-input">
-                    <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Verifikasi Password" required>
+                    <i class="fa-solid fa-check-circle"></i>
+                    <input type="password" id="regVerify" placeholder="Verifikasi Password" required>
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regVerify', this)"></i>
                 </div>
                 <button type="submit" class="btn-pill primary">Sign Up</button>
@@ -77,7 +79,6 @@
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> New</button>
-                    
                     <div id="dropdownMenu" class="dropdown-content extended-menu">
                         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
                         <hr class="menu-divider">
@@ -114,75 +115,49 @@
                         <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
                     </div>
                 </div>
-                
-                <div class="breadcrumb-area">
-                    <h2 id="headerTitle">Welcome In Drive</h2>
-                </div>
-                
+                <div class="breadcrumb-area"><h2 id="headerTitle">Welcome In Drive</h2></div>
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
         </div>
     </section>
 
-    <div id="loading" class="loading-overlay hidden">
-        <div class="spinner"></div><p>Processing...</p>
-    </div>
+    <div id="loading" class="loading-overlay hidden"><div class="spinner"></div><p>Processing...</p></div>
 
     <div id="folderModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
-            <div class="modal-header">
-                <h3>Buat Folder</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
-            </div>
-            <div class="modal-body">
-                <div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
-            </div>
+            <div class="modal-header"><h3>Buat Folder</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
+            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
+            <div class="modal-actions"><button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button></div>
         </div>
     </div>
 
     <div id="uploadModal" class="modal-overlay hidden">
         <div class="glass-card modal-box upload-box-style">
-            <div class="modal-header">
-                <h3>Upload File</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
-            </div>
+            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
-                    <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
-                    <h4>Seret & Lepas File</h4>
+                    <i class="fa-solid fa-cloud-arrow-up animate-icon"></i><h4>Seret & Lepas File</h4>
                     <input type="file" id="fileInputHidden" hidden>
                 </div>
                 <div id="fileInfoContainer" class="file-info-container hidden">
-                    <i class="fa-solid fa-check-circle"></i>
-                    <p id="fileInfoText" class="file-info"></p>
+                    <i class="fa-solid fa-check-circle"></i><p id="fileInfoText" class="file-info"></p>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button>
-            </div>
+            <div class="modal-actions"><button class="btn-pill primary" onclick="submitUploadFile()">Upload Sekarang</button></div>
         </div>
     </div>
 
     <div id="storageModal" class="modal-overlay hidden">
         <div class="glass-card modal-box storage-detail-box">
-            <div class="modal-header">
-                <h3>Penyimpanan</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
-            </div>
+            <div class="modal-header"><h3>Penyimpanan</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i></div>
             <div class="modal-body">
-                <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
-                <p class="storage-sub-text">dari 2 GB telah digunakan</p>
-                
+                <h1 id="storageBigText" class="storage-big-text">0 MB</h1><p class="storage-sub-text">dari 2 GB telah digunakan</p>
                 <div class="multi-color-progress">
                     <div id="barImages" class="bar-segment bar-images"></div>
                     <div id="barVideos" class="bar-segment bar-videos"></div>
                     <div id="barDocs" class="bar-segment bar-docs"></div>
                     <div id="barOthers" class="bar-segment bar-others"></div>
                 </div>
-                
                 <div class="storage-legend">
                     <div class="legend-item"><span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span></div>
                     <div class="legend-item"><span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span></div>
