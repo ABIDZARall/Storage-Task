@@ -434,18 +434,38 @@ async function recordActivity(sheetName, userData) {
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file'), Appwrite.Query.limit(100)]);
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file'),
+            Appwrite.Query.limit(100)
+        ]);
+        
+        // Reset hitungan setiap kali kalkulasi ulang
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+
         res.documents.forEach(doc => {
-            const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) storageDetail.images += size;
-            else if (name.match(/\.(mp4|mkv|avi|mov|wmv)$/)) storageDetail.videos += size;
-            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) storageDetail.docs += size;
-            else storageDetail.others += size;
+            const size = doc.size || 0;
+            const name = doc.name.toLowerCase();
+            storageDetail.total += size;
+
+            // Logika klasifikasi ekstensi
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg|jfif)$/)) {
+                storageDetail.images += size;
+            } else if (name.match(/\.(mp4|mkv|avi|mov|wmv)$/)) {
+                storageDetail.videos += size;
+            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) {
+                storageDetail.docs += size;
+            } else {
+                storageDetail.others += size;
+            }
         });
+
+        // Update tampilan widget sidebar
         const mb = (storageDetail.total / 1048576).toFixed(2);
-        el('storageUsed').innerText = `${mb} MB`; el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
-    } catch (e) {}
+        el('storageUsed').innerText = `${mb} MB`;
+        el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
+
+    } catch (e) { console.error("Gagal menghitung storage:", e); }
 }
 
 window.openStorageModal = () => {
@@ -595,3 +615,23 @@ window.toggleStarItem = async () => { try { await databases.updateDocument(CONFI
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
+window.openStorageModal = () => {
+    const total = storageDetail.total || 1; // Cegah pembagian dengan nol
+
+    // 1. Set Lebar Batang Diagram (Persentase)
+    el('barImages').style.width = `${(storageDetail.images / total) * 100}%`;
+    el('barVideos').style.width = `${(storageDetail.videos / total) * 100}%`;
+    el('barDocs').style.width = `${(storageDetail.docs / total) * 100}%`;
+    el('barOthers').style.width = `${(storageDetail.others / total) * 100}%`;
+
+    // 2. Set Teks Angka MB (Konversi dari Byte)
+    el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
+    el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
+    el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
+    el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
+    el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+
+    // 3. Tutup context menu (jika ada yang terbuka) dan buka modal
+    if(el('contextMenu')) el('contextMenu').classList.add('hidden');
+    window.openModal('storageModal');
+};

@@ -297,31 +297,43 @@
         </div>
 
             <div id="storageModal" class="modal-overlay hidden">
-            <div class="glass-card modal-box storage-detail-box">
-                <div class="modal-header">
-                    <h3>Penyimpanan</h3>
-                    <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
-                </div>
-                <div class="modal-body">
-                    <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
-                    <p class="storage-sub-text">dari 2 GB telah digunakan</p>
-
-                    <div class="multi-color-progress">
-                        <div id="barImages" class="bar-segment bar-images"></div>
-                        <div id="barVideos" class="bar-segment bar-videos"></div>
-                        <div id="barDocs" class="bar-segment bar-docs"></div>
-                        <div id="barOthers" class="bar-segment bar-others"></div>
+                <div class="glass-card modal-box storage-detail-box">
+                    <div class="modal-header">
+                        <h3>Penyimpanan</h3>
+                        <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
                     </div>
+                    <div class="modal-body">
+                        <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
+                        <p class="storage-sub-text">dari 2 GB telah digunakan</p>
+                        
+                        <div class="multi-color-progress">
+                            <div id="barImages" class="bar-segment bar-images"></div>
+                            <div id="barVideos" class="bar-segment bar-videos"></div>
+                            <div id="barDocs" class="bar-segment bar-docs"></div>
+                            <div id="barOthers" class="bar-segment bar-others"></div>
+                        </div>
 
-                    <div class="storage-legend">
-                        <div class="legend-item"><span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span></div>
-                        <div class="legend-item"><span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span></div>
-                        <div class="legend-item"><span class="dot dot-docs"></span> Dokumen <span id="valDocs" class="val-text">0 MB</span></div>
-                        <div class="legend-item"><span class="dot dot-others"></span> Lainnya <span id="valOthers" class="val-text">0 MB</span></div>
+                        <div class="storage-legend">
+                            <div class="legend-item">
+                                <span class="dot dot-images"></span> Gambar 
+                                <span id="valImages" class="val-text">0 MB</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="dot dot-videos"></span> Video 
+                                <span id="valVideos" class="val-text">0 MB</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="dot dot-docs"></span> Dokumen 
+                                <span id="valDocs" class="val-text">0 MB</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="dot dot-others"></span> Lainnya 
+                                <span id="valOthers" class="val-text">0 MB</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
         <div id="contextMenu" class="context-menu-modern hidden">
             <div class="ctx-item" onclick="openCurrentItem()">

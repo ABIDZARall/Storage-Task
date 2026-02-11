@@ -420,7 +420,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .storage-big-text { font-size: 2.5rem; font-weight: 700; margin-bottom: 5px; color: white; }
 .storage-sub-text { color: rgba(255, 255, 255, 0.7); margin-bottom: 20px; }
 
-/* Multi-Color Progress Bar */
+/* Multi-Color Progress Bar (Sesuai image_b787f6.png) */
 .multi-color-progress {
     width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1);
     border-radius: 10px; display: flex; overflow: hidden; margin-bottom: 25px;
@@ -432,15 +432,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .bar-docs { background-color: #facc15; }   /* Kuning */
 .bar-others { background-color: #a78bfa; }  /* Ungu */
 
-/* Legend / Keterangan Kategori */
-.storage-legend { display: flex; flex-wrap: wrap; gap: 15px; }
-.legend-item { width: 45%; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); }
+/* Legend Detail */
+.storage-legend { display: flex; flex-direction: column; gap: 12px; }
+.legend-item { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: rgba(255, 255, 255, 0.9); }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot-images { background-color: #60a5fa; }
 .dot-videos { background-color: #f87171; }
 .dot-docs { background-color: #facc15; }
 .dot-others { background-color: #a78bfa; }
 .val-text { margin-left: auto; font-weight: 600; color: white; }
+
+/* Pastikan Modal di atas segalanya */
+#storageModal { z-index: 1000000 !important; }
 
 /* ================= LOGO INTERACTIVE (HOME BUTTON) ================= */
 .brand-area {
