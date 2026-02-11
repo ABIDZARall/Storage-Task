@@ -320,29 +320,6 @@ div.oncontextmenu = (e) => {
     grid.appendChild(div);
 }
 
-function updateContextMenuUI(doc) {
-    // Logika Bintang
-    const starText = el('ctxStarText'); const starIcon = el('ctxStarIcon');
-    if (doc.starred) { starText.innerText = "Hapus dari Berbintang"; starIcon.style.color = '#ffd700'; }
-    else { starText.innerText = "Tambahkan ke Berbintang"; starIcon.style.color = 'rgba(255,255,255,0.7)'; }
-
-    // Logika Tombol Sampah (Pindahkan vs Pulihkan)
-    const isTrash = doc.trashed;
-    const btnTrash = el('ctxTrashBtn');
-    const btnRestore = el('ctxRestoreBtn');
-    const btnPermDel = el('ctxPermDeleteBtn');
-
-    if (isTrash) {
-        btnTrash.classList.add('hidden'); // Sembunyikan 'Pindahkan ke Sampah'
-        btnRestore.classList.remove('hidden'); // Munculkan 'Pulihkan'
-        btnPermDel.classList.remove('hidden'); // Munculkan 'Hapus Permanen'
-    } else {
-        btnTrash.classList.remove('hidden'); // MUNCULKAN 'Pindahkan ke Sampah'
-        btnRestore.classList.add('hidden');
-        btnPermDel.classList.add('hidden');
-    }
-}
-
 // FUNGSI EKSEKUSI HAPUS (KE SAMPAH)
 window.moveItemToTrash = async () => {
     if (!selectedItem) return;
@@ -461,30 +438,48 @@ async function calculateStorage() {
     } catch (e) { console.error("Storage Calculation Error", e); }
 }
 
+// FUNGSI STORAGE (DIPERBAIKI)
 window.openStorageModal = () => {
-    // Tutup modal lain untuk menghindari tabrakan
-    if(el('contextMenu')) el('contextMenu').classList.add('hidden');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
-
+    // 1. Tutup menu konteks secara paksa agar tidak tabrakan
+    el('contextMenu').classList.add('hidden');
+    el('globalContextMenu').classList.remove('show');
+    
     const total = storageDetail.total || 1;
 
-    // Set Lebar Bar Persentase
+    // 2. Update Grafik Bar
     el('barImages').style.width = `${(storageDetail.images / total) * 100}%`;
     el('barVideos').style.width = `${(storageDetail.videos / total) * 100}%`;
     el('barDocs').style.width = `${(storageDetail.docs / total) * 100}%`;
     el('barOthers').style.width = `${(storageDetail.others / total) * 100}%`;
 
-    // Set Angka Detail
+    // 3. Update Teks Angka
     el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
     el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
     el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
     el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
 
-    // Buka Modal
+    // 4. Buka Modal Penyimpanan
     window.openModal('storageModal');
 };
+
+// LOGIKA UPDATE MENU (MEMASTIKAN TOMBOL SAMPAH MUNCUL)
+function updateContextMenuUI(doc) {
+    const isTrash = doc.trashed;
+    const btnTrash = el('ctxTrashBtn');
+    const btnRestore = el('ctxRestoreBtn');
+    const btnPermDel = el('ctxPermDeleteBtn');
+
+    if (isTrash) {
+        btnTrash.classList.add('hidden');
+        btnRestore.classList.remove('hidden');
+        btnPermDel.classList.remove('hidden');
+    } else {
+        btnTrash.classList.remove('hidden'); // Pastikan ini muncul untuk file normal
+        btnRestore.classList.add('hidden');
+        btnPermDel.classList.add('hidden');
+    }
+}
 
 async function checkSession() {
     showLoading();
@@ -610,3 +605,4 @@ window.toggleStarItem = async () => { try { await databases.updateDocument(CONFI
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles('root'); } catch(e){alert(e.message);} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); } catch(e){alert(e.message);} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); } catch(e){alert(e.message);} };
+

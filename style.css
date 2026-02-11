@@ -814,3 +814,21 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 #storageModal {
     z-index: 1000000 !important;
 }
+
+/* Pastikan Modal Penyimpanan menutupi area file */
+#storageModal {
+    z-index: 999999 !important;
+}
+
+/* Pastikan Menu Konteks berada di atas modal jika diperlukan */
+.context-menu-modern {
+    z-index: 1000000 !important;
+}
+
+/* Fix Visibilitas Item Menu */
+.ctx-item.hidden {
+    display: none !important;
+}
+.ctx-item:not(.hidden) {
+    display: flex !important;
+}
