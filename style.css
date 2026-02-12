@@ -42,11 +42,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 .main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 16px; border: 1px solid var(--glass-border); padding: 20px; display: flex; gap: 20px; overflow: hidden; }
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; }
+
+/* Posisi Tombol New & Dropdown */
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 .new-btn { width: 100%; background: white; color: #0f172a; justify-content: flex-start; padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
 .new-btn:hover { transform: scale(1.02); }
 
-.dropdown-content { position: absolute; top: 55px; left: 0; z-index: 20000 !important; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+/* Dropdown Menu untuk Tombol New */
+.dropdown-content { 
+    position: absolute; 
+    top: 50px; 
+    left: 0; 
+    z-index: 20000; 
+    background: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 10px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+    padding: 5px 0; 
+    width: 240px; 
+    display: none; 
+    flex-direction: column; 
+}
+
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
@@ -66,47 +83,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
 .search-icon { color: rgba(255, 255, 255, 0.5); font-size: 1rem; }
 
-/* == UPDATE BREADCRUMB & BACK BUTTON == */
-.breadcrumb-area { 
-    margin-bottom: 15px; 
-    /* Padding ditingkatkan agar geser kanan */
-    padding-left: 25px; 
-    flex-shrink: 0; 
-}
+/* Breadcrumb & Tombol Kembali */
+.breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
-
 .back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-
-/* Desain Tombol Kembali Modern */
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.08); /* Efek Glass */
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 50px;
-    color: #e2e8f0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-.back-btn:hover {
-    background: rgba(45, 212, 191, 0.15);
-    border-color: var(--accent);
-    color: white;
-    transform: translateX(-3px);
-}
+.back-btn { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px); }
+.back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
 /* GRID */
-.file-grid-area { 
-    flex: 1; overflow-y: auto; 
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-    gap: 15px; padding: 40px 10px 40px 10px; align-content: start; 
-}
+.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; padding: 40px 10px 40px 10px; align-content: start; }
 .item-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; }
 .item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3rem; margin-bottom: 8px; }
@@ -123,8 +109,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .modal-header h3 { font-size: 1.1rem; color: white; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
-.modal-actions-split { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
-.modal-actions-split button { flex: 1; height: 40px; border-radius: 8px; }
+
+/* Tombol Modal Grid Rapi */
+.modal-actions-grid { display: flex; gap: 15px; margin-top: 20px; width: 100%; }
+.modal-actions-grid button { flex: 1; height: 40px; border-radius: 8px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
 .secondary { background: rgba(255,255,255,0.1); color: white; }
 .full-width { width: 100%; }
@@ -135,7 +123,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-.context-menu-fixed { position: fixed !important; top: 0; left: 0; z-index: 99999 !important; }
+/* Context Menu Global (Fixed Position di kursor) */
+.context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+.context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
 .show { display: flex !important; }
 .ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 8px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.85rem; cursor: pointer; transition: 0.1s; }
 .ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.05); }

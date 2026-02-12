@@ -254,12 +254,13 @@ window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').
 // KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
-    const newMenu = el('dropdownMenu');
-    const navDrive = el('navDrive'); // Element Drive Saya
-    const globalMenu = el('globalContextMenu');
-    const fileMenu = el('contextMenu');
+    const newMenu = el('dropdownNewMenu'); // Dropdown Tombol New
+    const navDrive = el('navDrive'); // Sidebar Drive Saya
+    const globalMenu = el('globalContextMenu'); // Menu Global (Klik Kanan Drive Saya/Kosong)
+    const fileMenu = el('fileContextMenu'); // Menu File/Folder
     const mainArea = document.querySelector('.main-content-area');
 
+    // Fungsi Tutup Semua Menu
     const closeAll = () => {
         if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
@@ -267,7 +268,7 @@ function initAllContextMenus() {
         if(el('storageModal')) el('storageModal').classList.add('hidden');
     };
 
-    // Tombol NEW
+    // 1. TOMBOL NEW (Klik Kiri & Kanan) -> Buka Dropdown
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
@@ -282,7 +283,7 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    // Sidebar DRIVE SAYA
+    // 2. SIDEBAR DRIVE SAYA (Klik Kanan) -> Buka Global Menu di Kursor
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAll(); 
@@ -292,7 +293,7 @@ function initAllContextMenus() {
         };
     }
 
-    // Area Kosong
+    // 3. AREA KOSONG (Klik Kanan) -> Buka Global Menu
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
@@ -302,12 +303,12 @@ function initAllContextMenus() {
             globalMenu.classList.add('show');
         };
     }
+    
+    // Klik sembarang -> Tutup menu
     window.onclick = () => closeAll();
 }
 
-// ======================================================
-// 7. RENDER ITEM (LOGIKA MENU DINAMIS FILE/FOLDER)
-// ======================================================
+// Render Item
 function renderItem(doc) {
     const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
@@ -321,55 +322,52 @@ function renderItem(doc) {
     // Klik Kiri
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // Klik Kanan (Context Menu Dinamis)
+    // Klik Kanan (Menu File/Folder)
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
-        
-        // Tutup menu lain
         if(el('storageModal')) el('storageModal').classList.add('hidden');
         if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-        if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
+        if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
 
         selectedItem = doc;
-        const menu = el('contextMenu');
+        const menu = el('fileContextMenu');
         
-        // LOGIKA TAMPILKAN/SEMBUNYIKAN ITEM MENU
+        // Logika Tampilkan Item Menu Sesuai Tipe
         const btnOpen = el('ctxBtnOpenFolder');
         const btnPreview = el('ctxBtnPreview');
         const btnDownload = el('ctxBtnDownload');
+        const btnOpenWith = el('ctxBtnOpenWith');
 
         if (isFolder) {
-            // Jika Folder: Tampilkan Buka, Sembunyikan Pratinjau & Download
             if(btnOpen) btnOpen.style.display = 'flex';
             if(btnPreview) btnPreview.style.display = 'none';
-            if(btnDownload) btnDownload.style.display = 'none'; // Folder biasanya tidak didownload langsung di web app sederhana
+            if(btnDownload) btnDownload.style.display = 'none';
+            if(btnOpenWith) btnOpenWith.style.display = 'none';
         } else {
-            // Jika File: Sembunyikan Buka, Tampilkan Pratinjau & Download
             if(btnOpen) btnOpen.style.display = 'none';
             if(btnPreview) btnPreview.style.display = 'flex';
             if(btnDownload) btnDownload.style.display = 'flex';
+            if(btnOpenWith) btnOpenWith.style.display = 'flex';
         }
 
-        // Posisi Menu
-        menu.style.top = `${e.clientY}px`; 
-        menu.style.left = `${e.clientX}px`;
+        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
         
-        // Logika Sampah
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
-        menu.classList.remove('hidden'); 
-        menu.classList.add('show');
+        menu.classList.remove('hidden'); menu.classList.add('show');
     };
     grid.appendChild(div);
 }
 
 // Storage Logic
 window.openStorageModal = () => {
-    el('contextMenu').classList.add('hidden');
+    // Tutup menu lain
+    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
+    
     const total = storageDetail.total || 1;
     el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
     el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
@@ -421,13 +419,13 @@ window.submitUploadFile = async () => {
     } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
-window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('contextMenu').classList.add('hidden'); } catch(e){} };
-window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('contextMenu').classList.add('hidden'); } catch(e){} };
-window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('contextMenu').classList.add('hidden'); } catch(e){} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); el('contextMenu').classList.add('hidden'); } catch(e){} };
-window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('contextMenu').classList.add('hidden'); };
-window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); el('contextMenu').classList.add('hidden'); };
-window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } el('contextMenu').classList.add('hidden'); };
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
+window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
+window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
+window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
 
 function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
 function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').innerText = `Terpilih: ${file.name}`; el('fileInfoContainer').classList.remove('hidden'); }
@@ -473,7 +471,6 @@ function updateHeaderUI() {
         const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
     } else { 
-        // Menggunakan tombol modern baru
         container.innerHTML = `
             <div class="back-nav-container">
                 <button onclick="goBack()" class="back-btn">
