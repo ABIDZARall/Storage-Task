@@ -104,8 +104,8 @@
                 </div>
 
                 <nav class="sidebar-menu">
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
+                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
                     <a onclick="handleMenuClick(this, 'computer')" class="nav-item"><i class="fa-solid fa-computer"></i> Komputer</a>
                     <a onclick="handleMenuClick(this, 'shared')" class="nav-item"><i class="fa-solid fa-user-group"></i> Dibagikan</a>
                     <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> Terbaru</a>
@@ -135,7 +135,7 @@
         </div>
     </section>
 
-    <div id="folderModal" class="modal-overlay hidden">
+    <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
         <div class="glass-card modal-box">
             <div class="modal-header">
                 <h3>Folder Baru</h3>
@@ -147,14 +147,14 @@
                     <input type="text" id="newFolderName" placeholder="Nama Folder">
                 </div>
             </div>
-            <div class="modal-actions">
+            <div class="modal-actions-split">
                 <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
             </div>
         </div>
     </div>
 
-    <div id="uploadModal" class="modal-overlay hidden">
+    <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
         <div class="glass-card modal-box upload-box-style">
             <div class="modal-header">
                 <h3>Upload File</h3>
@@ -165,14 +165,10 @@
                     <div class="icon-wrapper">
                         <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
                     </div>
-                    <h4>Seret & Lepas File</h4>
-                    <p class="small-text">atau klik untuk menjelajah</p>
+                    <h4>Seret file ke sini</h4>
                     <input type="file" id="fileInputHidden" hidden>
                 </div>
-                <div id="fileInfoContainer" class="file-info-container hidden">
-                    <i class="fa-solid fa-file-circle-check"></i>
-                    <p id="fileInfoText" class="file-info-text"></p>
-                </div>
+                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
             </div>
             <div class="modal-actions">
                 <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
@@ -180,7 +176,7 @@
         </div>
     </div>
 
-    <div id="storageModal" class="modal-overlay hidden">
+    <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
         <div class="glass-card modal-box storage-detail-box">
             <div class="modal-header"><h3>Penyimpanan</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i></div>
             <div class="modal-body">

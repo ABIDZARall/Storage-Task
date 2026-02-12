@@ -255,7 +255,7 @@ window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     const newMenu = el('dropdownMenu');
-    const navDrive = el('navDrive'); // Element Drive Saya
+    const navDrive = el('navDrive'); // ID navDrive dari HTML
     const globalMenu = el('globalContextMenu');
     const fileMenu = el('contextMenu');
     const mainArea = document.querySelector('.main-content-area');
@@ -267,7 +267,7 @@ function initAllContextMenus() {
         if(el('storageModal')) el('storageModal').classList.add('hidden');
     };
 
-    // Tombol NEW (Klik Kiri & Kanan)
+    // 1. TOMBOL NEW (Klik Kiri & Kanan)
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
@@ -282,17 +282,18 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    // Sidebar DRIVE SAYA (Klik Kanan)
+    // 2. SIDEBAR DRIVE SAYA (Klik Kanan)
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAll(); 
+            // Posisi Menu Global di Kursor Mouse
             globalMenu.style.top = `${e.clientY}px`; 
             globalMenu.style.left = `${e.clientX}px`; 
             globalMenu.classList.add('show');
         };
     }
 
-    // Area Kosong (Klik Kanan)
+    // 3. AREA KOSONG (Klik Kanan)
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
@@ -399,33 +400,11 @@ function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').
 function initDragAndDrop() {
     const zone = el('dropZone');
     const input = el('fileInputHidden');
-    
     if (!zone) return;
-
-    zone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zone.classList.add('active');
-    });
-
-    zone.addEventListener('dragleave', () => {
-        zone.classList.remove('active');
-    }); 
-
-    zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.classList.remove('active');
-        if (e.dataTransfer.files.length > 0) {
-            handleFileSelect(e.dataTransfer.files[0]);
-        }
-    });
-
-    if (input) {
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-    }
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('active')); 
+    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('active'); if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
+    if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
 }
 
 async function loadFiles(param) { if (!currentUser) return; const grid = el('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); else { if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); } try { const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; else res.documents.forEach(doc => renderItem(doc)); } catch (e) { console.error(e); } }

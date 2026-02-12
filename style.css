@@ -1,4 +1,4 @@
-/* ================= GLOBAL & RESET ================= */
+/* ... (Bagian Global & Auth Tetap Sama) ... */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
     --bg-color: #0f172a;
@@ -12,7 +12,7 @@ body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #134e4a, #0f172a); z-index: -1; }
 .hidden { display: none !important; }
 
-/* ================= 2. AUTHENTICATION ================= */
+/* AUTHENTICATION */
 .full-screen-center { height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5000; position: relative; }
 .glass-card { background: rgba(20, 25, 40, 0.7); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6); }
 .auth-card { width: 100%; max-width: 360px; padding: 30px 25px; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -30,7 +30,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .auth-footer { margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
 .link-text { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
 
-/* ================= 3. DASHBOARD ================= */
+/* DASHBOARD */
 .dashboard-layout { height: 100vh; padding: 15px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 45px; flex-shrink: 0; }
 .brand-area { display: flex; align-items: center; cursor: pointer; transition: transform 0.2s; padding: 5px; border-radius: 8px; }
@@ -42,8 +42,27 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 .main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 16px; border: 1px solid var(--glass-border); padding: 20px; display: flex; gap: 20px; overflow: hidden; }
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; }
+
+/* FIXED: Wrapper untuk posisi Dropdown */
+.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 .new-btn { width: 100%; background: white; color: #0f172a; justify-content: flex-start; padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
 .new-btn:hover { transform: scale(1.02); }
+
+/* Dropdown Menu (Posisi Benar di Bawah Tombol New) */
+.dropdown-content { 
+    position: absolute; 
+    top: 55px; /* Tepat dibawah tombol */
+    left: 0; 
+    z-index: 20000 !important; 
+    background: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 10px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+    padding: 5px 0; 
+    width: 240px; 
+    display: none; 
+    flex-direction: column; 
+}
 
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
@@ -56,7 +75,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; border-radius: 10px; }
 .storage-text { font-size: 0.75rem; text-align: right; color: rgba(255, 255, 255, 0.6); }
 
-/* Main Area */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 .search-bar-pill { width: 100%; max-width: 600px; background: rgba(0,0,0,0.2); border-radius: 40px; height: 45px; padding: 0 20px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
@@ -67,7 +85,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .breadcrumb-area { margin-bottom: 15px; padding-left: 5px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
 
-/* Grid File */
 .file-grid-area { 
     flex: 1; overflow-y: auto; 
     display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
@@ -79,73 +96,42 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .fa-folder { color: #facc15; } .fa-file-lines { color: #3b82f6; }
 .item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0; }
 
-/* ================= 4. MODALS & DRAG DROP STYLE ================= */
+/* ================= MODALS & MENU FIX ================= */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 380px; padding: 25px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.modal-header h3 { font-size: 1.2rem; color: white; font-weight: 600; }
+.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.modal-header h3 { font-size: 1.1rem; color: white; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* Tombol Modal Rapi (Split) */
+.modal-actions-split { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+.modal-actions-split button { flex: 1; height: 40px; border-radius: 8px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
 .secondary { background: rgba(255,255,255,0.1); color: white; }
 .full-width { width: 100%; }
 
-/* Drag & Drop Area */
-.drag-drop-area {
-    border: 2px dashed rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 30px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.02);
-}
-/* Style saat file di-drag di atasnya */
-.drag-drop-area.active {
-    border-color: var(--accent);
-    background: rgba(45, 212, 191, 0.1);
-}
-.drag-drop-area h4 { font-size: 1rem; color: white; margin-bottom: 5px; }
-.small-text { font-size: 0.8rem; color: #94a3b8; }
+/* Drag & Drop Style */
+.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.02); }
+.drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.1); }
 .animate-icon { font-size: 2.5rem; color: #64748b; margin-bottom: 15px; transition: 0.3s; }
+.drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-/* Animasi Bouncing saat Drag */
-.drag-drop-area.active .animate-icon {
-    color: var(--accent);
-    animation: bounce 1s infinite;
-}
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+/* Context Menu Global (Klik Kanan) - Fixed Position */
+.context-menu-fixed { position: fixed !important; top: 0; left: 0; z-index: 99999 !important; }
 
-/* File Info Display */
-.file-info-container {
-    margin-top: 15px;
-    background: rgba(45, 212, 191, 0.15);
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--accent);
-    font-size: 0.9rem;
-    border: 1px solid rgba(45, 212, 191, 0.3);
-}
-
-/* Context Menu */
-.context-menu-modern, .dropdown-content { position: fixed; z-index: 20000 !important; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
-.dropdown-content { top: 60px; left: 0; position: absolute; }
+/* Item Menu Style */
 .show { display: flex !important; }
 .ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 8px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.85rem; cursor: pointer; transition: 0.1s; }
 .ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.05); }
 .ctx-item i, .dropdown-content a i { width: 20px; margin-right: 10px; color: #94a3b8; }
 .menu-divider, .ctx-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; border: none; }
 
-/* Warna Google Apps */
+/* Warna Icon Google Apps */
 .text-blue { color: #4285f4 !important; }
 .text-green { color: #0f9d58 !important; }
 .text-yellow { color: #f4b400 !important; }
