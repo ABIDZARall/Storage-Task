@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storage Tasks - Pro Drive</title>
+    <title>Storage Tasks - Professional Drive</title>
+    
     <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="liquid-bg"></div>
-
-    <div id="loading" class="loading-overlay hidden">
-        <div class="spinner"></div>
-        <p id="loadingText">Memuat...</p>
-    </div>
 
     <section id="loginPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Selamat Datang Kembali</h3>
-                <!-- <p>Masuk untuk mengakses file Anda</p> -->
+                <h3>Login</h3>
+                <p class="auth-sub">Masuk untuk mengakses file Anda</p>
             </div>
             <form id="loginForm">
                 <div class="pill-input">
@@ -45,7 +44,8 @@
         <div class="glass-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Buat Akun Baru</h3>
+                <h3>Sign Up</h3>
+                <p class="auth-sub">Buat akun baru dalam hitungan detik</p>
             </div>
             <form id="signupForm">
                 <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Username" required></div>
@@ -56,7 +56,8 @@
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regPass', this)"></i>
                 </div>
                 <div class="pill-input">
-                    <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Konfirmasi Password" required>
+                    <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Ulangi Password" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regVerify', this)"></i>
                 </div>
                 <button type="submit" class="btn-pill primary">Daftar</button>
                 <div class="auth-footer">
@@ -68,13 +69,13 @@
 
     <section id="dashboardPage" class="dashboard-layout hidden">
         <header class="top-nav">
-            <div class="brand-area" title="Kembali ke Beranda" onclick="goBack()">
+            <div class="brand-area" onclick="goBack()" title="Kembali ke Beranda">
                 <img src="logo.png" alt="Logo" style="height: 40px;">
-                <span style="font-weight: bold; font-size: 1.2rem;">Storage Tasks</span>
+                <span class="brand-text">Storage Tasks</span>
             </div>
             <div class="profile-area">
                 <img src="user.jpg" alt="User" class="avatar">
-                <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+                <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i> LogOut</button>
             </div>
         </header>
 
@@ -82,6 +83,7 @@
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> New</button>
+                    
                     <div id="dropdownMenu" class="dropdown-content extended-menu">
                         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
                         <hr class="menu-divider">
@@ -105,32 +107,44 @@
                 </nav>
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;">
-                    <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
+                    <div class="storage-label"><i class="fa-solid fa-cloud"></i> Storage</div>
                     <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
-                    <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
+                    <div class="storage-text"><span id="storageUsed">0.00 MB</span> / 2 GB</div>
                 </div>
             </aside>
 
             <main class="main-content-area">
                 <div class="search-row">
-                    <div class="search-bar-pill">
+                    <div class="search-bar-pill" id="searchContainer">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" id="searchInput" placeholder="Telusuri di Drive..." autocomplete="off">
                         <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
                     </div>
                 </div>
                 
-                <div class="breadcrumb-area"><h2 id="headerTitle">Welcome In Drive</h2></div>
+                <div class="breadcrumb-area">
+                    <h2 id="headerTitle">Welcome In Drive</h2>
+                </div>
                 
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
         </div>
     </section>
 
+    <div id="loading" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p id="loadingText">Memproses...</p>
+    </div>
+
     <div id="folderModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Folder Baru</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
-            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
+            <div class="modal-header">
+                <h3>Buat Folder Baru</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div>
+            </div>
             <div class="modal-actions">
                 <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
@@ -139,35 +153,55 @@
     </div>
 
     <div id="uploadModal" class="modal-overlay hidden">
-        <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
+        <div class="glass-card modal-box upload-box-style">
+            <div class="modal-header">
+                <h3>Upload File</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
+            </div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
                     <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
-                    <h4>Seret file ke sini</h4>
+                    <h4>Seret & Lepas File Di Sini</h4>
+                    <p class="small-text">atau klik untuk memilih</p>
                     <input type="file" id="fileInputHidden" hidden>
                 </div>
-                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
+                <div id="fileInfoContainer" class="file-info-container hidden">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <p id="fileInfoText" class="file-info"></p>
+                </div>
             </div>
-            <div class="modal-actions"><button class="btn-pill primary full-width" onclick="submitUploadFile()">Upload</button></div>
+            <div class="modal-actions">
+                <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
+            </div>
         </div>
     </div>
 
     <div id="storageModal" class="modal-overlay hidden">
         <div class="glass-card modal-box storage-detail-box">
-            <div class="modal-header"><h3>Penyimpanan</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i></div>
+            <div class="modal-header">
+                <h3>Penyimpanan</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
+            </div>
             <div class="modal-body">
-                <h1 id="storageBigText" class="storage-big-text">0 MB</h1><p class="storage-sub-text">dari 2 GB digunakan</p>
+                <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
+                <p class="storage-sub-text">dari 2 GB telah digunakan</p>
+                
                 <div class="multi-color-progress">
-                    <div id="barImages" class="bar-segment bar-images"></div><div id="barVideos" class="bar-segment bar-videos"></div>
-                    <div id="barDocs" class="bar-segment bar-docs"></div><div id="barOthers" class="bar-segment bar-others"></div>
+                    <div id="barImages" class="bar-segment bar-images"></div>
+                    <div id="barVideos" class="bar-segment bar-videos"></div>
+                    <div id="barDocs" class="bar-segment bar-docs"></div>
+                    <div id="barOthers" class="bar-segment bar-others"></div>
                 </div>
+                
                 <div class="storage-legend">
                     <div class="legend-item"><span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span></div>
                     <div class="legend-item"><span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span></div>
                     <div class="legend-item"><span class="dot dot-docs"></span> Dokumen <span id="valDocs" class="val-text">0 MB</span></div>
                     <div class="legend-item"><span class="dot dot-others"></span> Lainnya <span id="valOthers" class="val-text">0 MB</span></div>
                 </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-pill secondary full-width">Dapatkan penyimpanan ekstra</button>
             </div>
         </div>
     </div>
@@ -177,13 +211,14 @@
         <div class="ctx-item" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
         <hr class="ctx-divider">
         <div class="ctx-item" onclick="downloadCurrentItem()"><i class="fa-solid fa-download"></i><span>Download</span></div>
-        <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span></div>
-        <div class="ctx-item" onclick="alert('Salin segera hadir')"><i class="fa-solid fa-copy"></i><span>Buat salinan</span></div>
+        <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span><span class="ctx-shortcut">N</span></div>
+        <div class="ctx-item" onclick="alert('Fitur salin segera hadir')"><i class="fa-solid fa-copy"></i><span>Buat salinan</span></div>
         <hr class="ctx-divider">
+        <div class="ctx-item" onclick="alert('Fitur bagikan segera hadir')"><i class="fa-solid fa-user-plus"></i><span>Bagikan</span></div>
         <div class="ctx-item" onclick="toggleStarItem()"><i class="fa-solid fa-star" id="ctxStarIcon"></i><span id="ctxStarText">Bintangi</span></div>
-        <div class="ctx-item" onclick="alert('Info file')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
+        <div class="ctx-item" onclick="alert('Detail file')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
         <hr class="ctx-divider">
-        <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span></div>
+        <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span><span class="ctx-shortcut">Del</span></div>
         <div class="ctx-item hidden" id="ctxRestoreBtn" onclick="restoreFromTrash()"><i class="fa-solid fa-rotate-left"></i><span>Pulihkan</span></div>
         <div class="ctx-item ctx-danger hidden" id="ctxPermDeleteBtn" onclick="deleteItemPermanently()"><i class="fa-solid fa-ban"></i><span>Hapus Permanen</span></div>
     </div>
@@ -193,6 +228,10 @@
         <hr class="menu-divider">
         <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
         <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
     </div>
 
     <script src="app.js"></script>
