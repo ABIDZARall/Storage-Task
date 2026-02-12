@@ -24,9 +24,8 @@
         <div class="glass-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Selamat Datang</h3>
-                <p class="auth-sub">Masuk untuk mengelola file Anda</p>
-            </div>
+                <h3>Login</h3>
+                </div>
             <form id="loginForm">
                 <div class="pill-input">
                     <i class="fa-solid fa-user"></i>
@@ -49,9 +48,8 @@
         <div class="glass-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Buat Akun</h3>
-                <p class="auth-sub">Bergabunglah dengan Storage Tasks</p>
-            </div>
+                <h3>Sign Up</h3>
+                </div>
             <form id="signupForm">
                 <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Username" required></div>
                 <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
@@ -188,6 +186,7 @@
         <div class="ctx-item" onclick="alert('Fitur salin segera hadir')"><i class="fa-solid fa-copy"></i><span>Buat salinan</span></div>
         <hr class="ctx-divider">
         <div class="ctx-item" onclick="toggleStarItem()"><i class="fa-solid fa-star" id="ctxStarIcon"></i><span id="ctxStarText">Bintangi</span></div>
+        <div class="ctx-item" onclick="alert('Detail file')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
         <hr class="ctx-divider">
         <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span></div>
         <div class="ctx-item hidden" id="ctxRestoreBtn" onclick="restoreFromTrash()"><i class="fa-solid fa-rotate-left"></i><span>Pulihkan</span></div>

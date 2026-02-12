@@ -1,124 +1,140 @@
-/* ====================================================== */
-/* 1. SETUP GLOBAL & VARIABEL */
-/* ====================================================== */
+/* ================= GLOBAL & RESET ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
-    --bg-color: #004e64;
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
+    --bg-color: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.08); /* Lebih transparan */
+    --glass-border: rgba(255, 255, 255, 0.15);
     --text-main: #ffffff;
-    --accent: #4ade80; 
-    --danger: #f87171;
+    --accent: #2dd4bf; /* Teal modern */
+    --accent-hover: #14b8a6;
+    --danger: #ef4444;
 }
-
 body { 
-    font-family: 'Segoe UI', sans-serif; 
+    font-family: 'Inter', 'Segoe UI', sans-serif; 
     background-color: var(--bg-color); 
     color: var(--text-main); 
-    /* Mencegah scroll body agar aplikasi terasa seperti app native */
     overflow: hidden; 
     height: 100vh;
 }
-
-.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #00607a, #002835); z-index: -1; }
+.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #134e4a, #0f172a); z-index: -1; }
 .hidden { display: none !important; }
 
 /* ====================================================== */
-/* 2. AUTHENTICATION (LOGIN & SIGNUP) */
+/* 2. AUTHENTICATION (DESAIN BARU: MODERN & CLEAN) */
 /* ====================================================== */
 .full-screen-center { height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 5000; position: relative; }
-.glass-card { background: var(--glass-bg); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-.auth-card { width: 100%; max-width: 420px; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-.auth-header h3 { margin-top: 10px; font-size: 1.8rem; }
-.auth-sub { font-size: 0.9rem; color: #ccc; margin-bottom: 30px; }
-.auth-logo { width: 160px; margin-bottom: 10px; }
 
-form { width: 100%; display: flex; flex-direction: column; gap: 18px; }
-.pill-input { width: 100%; height: 50px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 0 20px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
-.pill-input:focus-within { border-color: var(--accent); background: rgba(0,0,0,0.4); }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; margin-left: 10px; }
-.toggle-eye { cursor: pointer; }
+.glass-card { 
+    background: rgba(20, 25, 40, 0.6); /* Lebih gelap & elegan */
+    backdrop-filter: blur(20px); 
+    border: 1px solid var(--glass-border); 
+    border-radius: 24px; 
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+}
 
-.btn-pill { border-radius: 50px; border: none; cursor: pointer; font-weight: 700; height: 50px; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-size: 1rem; }
-.primary { background: white; color: #002835; width: 100%; }
-.primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.auth-footer { margin-top: 20px; font-size: 0.9rem; color: #bbb; }
-.link-text { color: var(--accent); cursor: pointer; font-weight: bold; text-decoration: none; }
+.auth-card { 
+    width: 100%; max-width: 400px; padding: 50px 40px; 
+    text-align: center; display: flex; flex-direction: column; align-items: center; 
+}
 
-/* ====================================================== */
-/* 3. DASHBOARD LAYOUT (FIXED SIDEBAR, SCROLLABLE CONTENT) */
-/* ====================================================== */
+.auth-logo { width: 140px; margin-bottom: 20px; }
+.auth-header h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 30px; letter-spacing: -0.5px; }
+
+/* Input Form Modern */
+form { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+.pill-input { 
+    width: 100%; height: 55px; 
+    background: rgba(255, 255, 255, 0.05); 
+    border-radius: 12px; /* Sudut sedikit kotak modern */
+    padding: 0 20px; 
+    display: flex; align-items: center; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    transition: all 0.3s ease; 
+}
+
+.pill-input:focus-within { 
+    border-color: var(--accent); 
+    background: rgba(255, 255, 255, 0.1); 
+    box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1); /* Glow effect */
+}
+
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 1rem; margin-left: 15px; }
+.pill-input i { color: #94a3b8; font-size: 1.1rem; }
+.toggle-eye { cursor: pointer; transition: color 0.3s; }
+.toggle-eye:hover { color: white; }
+
+/* Button Modern */
+.btn-pill { 
+    border-radius: 12px; border: none; cursor: pointer; 
+    font-weight: 600; height: 55px; 
+    display: flex; align-items: center; justify-content: center; 
+    transition: all 0.3s ease; font-size: 1rem; letter-spacing: 0.5px;
+}
+
+.primary { 
+    background: linear-gradient(135deg, var(--accent), #0d9488); 
+    color: #ffffff; width: 100%; 
+    box-shadow: 0 4px 15px rgba(45, 212, 191, 0.3);
+}
+
+.primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(45, 212, 191, 0.4); 
+}
+
+.auth-footer { margin-top: 25px; font-size: 0.95rem; color: #94a3b8; }
+.link-text { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; transition: 0.2s; }
+.link-text:hover { text-decoration: underline; color: #5eead4; }
+
+/* ================= DASHBOARD LAYOUT ================= */
 .dashboard-layout { height: 100vh; padding: 20px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; height: 50px; flex-shrink: 0; }
-.brand-text { font-size: 1.2rem; font-weight: 700; letter-spacing: 0.5px; margin-left: 10px; }
+.brand-text { font-size: 1.2rem; font-weight: 700; letter-spacing: 0.5px; margin-left: 10px; color: var(--accent); }
 .profile-area { display: flex; align-items: center; gap: 15px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
-.logout-btn { padding: 5px 20px; background: rgba(255,255,255,0.15); color: white; height: 35px; }
-
-/* Main Glass Container */
-.main-glass-panel { 
-    flex: 1; 
-    background: var(--glass-bg); backdrop-filter: blur(30px); 
-    border-radius: 20px; border: 1px solid var(--glass-border); 
-    padding: 20px; display: flex; gap: 30px; 
-    overflow: hidden; /* Container utama tidak boleh scroll */
-}
-
-/* Sidebar */
-.sidebar-left { width: 240px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; flex-shrink: 0; }
-.new-btn { width: 100%; background: white; color: #002835; justify-content: flex-start; padding-left: 25px; gap: 15px; height: 50px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-.nav-item { display: flex; align-items: center; gap: 15px; padding: 0 15px; height: 45px; border-radius: 10px; color: rgba(255, 255, 255, 0.8); text-decoration: none; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
-.nav-item:hover { background: rgba(255,255,255,0.1); }
-.nav-item.active { background: rgba(74, 222, 128, 0.2); color: var(--accent); font-weight: 700; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
+.logout-btn { padding: 5px 20px; background: rgba(255,255,255,0.1); color: white; height: 35px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); }
+.logout-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--danger); color: var(--danger); }
 
 /* Main Content */
+.main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 20px; border: 1px solid var(--glass-border); padding: 20px; display: flex; gap: 30px; overflow: hidden; }
+.sidebar-left { width: 240px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; flex-shrink: 0; }
+.new-btn { width: 100%; background: white; color: #0f172a; justify-content: flex-start; padding-left: 25px; gap: 15px; height: 50px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.3s; }
+.new-btn:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+
+.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+.nav-item { display: flex; align-items: center; gap: 15px; padding: 0 15px; height: 45px; border-radius: 12px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.nav-item.active { background: rgba(45, 212, 191, 0.15); color: var(--accent); font-weight: 700; }
+
+.storage-widget { padding: 15px; background: rgba(0,0,0,0.2); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+.progress-track { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; border-radius: 10px; }
+
+/* Main Area */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.search-row { display: flex; justify-content: center; margin-bottom: 20px; flex-shrink: 0; }
-.search-bar-pill { width: 100%; max-width: 700px; background: rgba(0,0,0,0.3); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; margin-left: 10px; width: 100%; }
-
-/* File Grid (INI YANG BISA DISCROLL) */
-.file-grid-area { 
-    flex: 1; 
-    overflow-y: auto; 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-    gap: 20px; padding-bottom: 50px; align-content: start;
-}
-.item-card { background: rgba(255, 255, 255, 0.05); border-radius: 15px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; }
-.item-card:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
+.search-bar-pill { width: 100%; max-width: 700px; background: rgba(0,0,0,0.2); border-radius: 50px; height: 50px; padding: 0 25px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+.search-bar-pill:focus-within { background: rgba(0,0,0,0.3); border-color: var(--accent); box-shadow: 0 0 15px rgba(45, 212, 191, 0.1); }
+.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; padding-bottom: 50px; align-content: start; }
+.item-card { background: rgba(255, 255, 255, 0.03); border-radius: 16px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; }
+.item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3.5rem; margin-bottom: 10px; }
-.fa-folder { color: #facc15; } .fa-file-lines { color: #60a5fa; }
-.item-name { font-size: 0.85rem; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fa-folder { color: #facc15; } .fa-file-lines { color: #3b82f6; }
 
-/* ====================================================== */
-/* 4. OVERLAYS & MENUS */
-/* ====================================================== */
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+/* ================= LOADERS & MODALS ================= */
+.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 400px; padding: 25px; background: #00384d; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.close-icon { cursor: pointer; color: #ccc; } .close-icon:hover { color: var(--danger); }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+.modal-box { width: 400px; padding: 25px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
+.close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
 
 /* Context Menu */
-.context-menu-modern, .dropdown-content { position: fixed; z-index: 20000 !important; background: #00384d; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); padding: 8px 0; width: 260px; display: none; flex-direction: column; }
-.dropdown-content { top: 60px; left: 0; position: absolute; }
+.context-menu-modern, .dropdown-content { position: fixed; z-index: 20000 !important; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); padding: 8px 0; width: 260px; display: none; flex-direction: column; }
+.dropdown-content { top: 65px; left: 0; position: absolute; }
 .show { display: flex !important; }
-.ctx-item { display: flex !important; align-items: center; padding: 10px 15px; color: white; font-size: 0.9rem; cursor: pointer; }
-.ctx-item:hover { background: rgba(255, 255, 255, 0.1); }
-.ctx-item i { width: 25px; color: #ccc; }
-.ctx-item.ctx-danger:hover { background: rgba(248, 113, 113, 0.15) !important; }
-.ctx-item.ctx-danger:hover i, .ctx-item.ctx-danger:hover span { color: var(--danger) !important; }
-
-/* Storage Bar */
-.multi-color-progress { display: flex; height: 10px; width: 100%; border-radius: 5px; overflow: hidden; margin: 15px 0; background: rgba(255,255,255,0.1); }
-.bar-segment { height: 100%; } .bar-images { background: #60a5fa; } .bar-videos { background: #f87171; } .bar-docs { background: #facc15; } .bar-others { background: #a78bfa; }
-.storage-legend { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
-.legend-item { display: flex; align-items: center; gap: 10px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot-images { background: #60a5fa; } .dot-videos { background: #f87171; } .dot-docs { background: #facc15; } .dot-others { background: #a78bfa; }
+.ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 10px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
+.ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.05); }
+.ctx-item.ctx-danger:hover { background: rgba(239, 68, 68, 0.1) !important; color: var(--danger) !important; }
+.ctx-item.ctx-danger:hover i { color: var(--danger) !important; }
