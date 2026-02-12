@@ -28,7 +28,7 @@ body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-
 
 .auth-card { 
     width: 100%; 
-    max-width: 360px; /* Ukuran Compact */
+    max-width: 360px; 
     padding: 30px 25px; 
     text-align: center; display: flex; flex-direction: column; align-items: center; 
 }
@@ -68,7 +68,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ================= DASHBOARD LAYOUT ================= */
 .dashboard-layout { height: 100vh; padding: 15px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 45px; flex-shrink: 0; }
-.brand-text { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; margin-left: 10px; color: var(--accent); }
+
+/* UPDATE: Hapus style .brand-text, hanya logo */
+.brand-area { display: flex; align-items: center; cursor: pointer; transition: transform 0.2s; padding: 5px; border-radius: 8px; }
+.brand-area:hover { background: rgba(255, 255, 255, 0.05); }
+
 .profile-area { display: flex; align-items: center; gap: 12px; }
 .avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
 .logout-btn { padding: 0; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); color: #ef4444; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
@@ -82,7 +86,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-.nav-item.active { background: rgba(45, 212, 191, 0.15); color: var(--accent); font-weight: 600; }
+.nav-item.active { background: rgba(45, 212, 191, 0.15); color: var(--accent); font-weight: 700; }
 
 .storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
 .storage-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: white; }
@@ -101,20 +105,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .breadcrumb-area { margin-bottom: 15px; padding-left: 5px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
 
-/* Grid File - FIX JARAK DISINI */
+/* Grid File - UPDATE JARAK ANIMASI */
 .file-grid-area { 
     flex: 1; 
     overflow-y: auto; 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
     gap: 15px; 
-    /* PADDING-TOP DITAMBAH JADI 40px */
+    /* PADDING ATAS 40px MEMBERI RUANG UNTUK ANIMASI HOVER */
     padding: 40px 10px 40px 10px; 
     align-content: start; 
 }
 
 .item-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; }
-.item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
+.item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3rem; margin-bottom: 8px; }
 .fa-folder { color: #facc15; } .fa-file-lines { color: #3b82f6; }
 .item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0; }
