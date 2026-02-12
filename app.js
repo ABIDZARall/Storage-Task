@@ -305,7 +305,9 @@ function initAllContextMenus() {
     window.onclick = () => closeAll();
 }
 
-// Render Item
+// ======================================================
+// 7. RENDER ITEM (LOGIKA MENU DINAMIS FILE/FOLDER)
+// ======================================================
 function renderItem(doc) {
     const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
@@ -315,19 +317,52 @@ function renderItem(doc) {
         content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
     }
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
+    
+    // Klik Kiri
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
+    
+    // Klik Kanan (Context Menu Dinamis)
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
+        
+        // Tutup menu lain
         if(el('storageModal')) el('storageModal').classList.add('hidden');
+        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+        if(el('dropdownMenu')) el('dropdownMenu').classList.remove('show');
+
         selectedItem = doc;
         const menu = el('contextMenu');
-        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
+        
+        // LOGIKA TAMPILKAN/SEMBUNYIKAN ITEM MENU
+        const btnOpen = el('ctxBtnOpenFolder');
+        const btnPreview = el('ctxBtnPreview');
+        const btnDownload = el('ctxBtnDownload');
+
+        if (isFolder) {
+            // Jika Folder: Tampilkan Buka, Sembunyikan Pratinjau & Download
+            if(btnOpen) btnOpen.style.display = 'flex';
+            if(btnPreview) btnPreview.style.display = 'none';
+            if(btnDownload) btnDownload.style.display = 'none'; // Folder biasanya tidak didownload langsung di web app sederhana
+        } else {
+            // Jika File: Sembunyikan Buka, Tampilkan Pratinjau & Download
+            if(btnOpen) btnOpen.style.display = 'none';
+            if(btnPreview) btnPreview.style.display = 'flex';
+            if(btnDownload) btnDownload.style.display = 'flex';
+        }
+
+        // Posisi Menu
+        menu.style.top = `${e.clientY}px`; 
+        menu.style.left = `${e.clientX}px`;
+        
+        // Logika Sampah
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-        menu.classList.remove('hidden'); menu.classList.add('show');
+
+        menu.classList.remove('hidden'); 
+        menu.classList.add('show');
     };
     grid.appendChild(div);
 }
@@ -386,8 +421,8 @@ window.submitUploadFile = async () => {
     } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
-window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentFolderId); el('contextMenu').classList.add('hidden'); } catch(e){} };
-window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentFolderId); el('contextMenu').classList.add('hidden'); } catch(e){} };
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('contextMenu').classList.add('hidden'); } catch(e){} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('contextMenu').classList.add('hidden'); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('contextMenu').classList.add('hidden'); } catch(e){} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); el('contextMenu').classList.add('hidden'); } catch(e){} };
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('contextMenu').classList.add('hidden'); };
