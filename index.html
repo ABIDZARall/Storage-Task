@@ -6,7 +6,6 @@
     <title>Storage Tasks - Pro Drive</title>
     
     <link rel="stylesheet" href="style.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
@@ -72,9 +71,8 @@
     <section id="dashboardPage" class="dashboard-layout hidden">
         <header class="top-nav">
             <div class="brand-area" onclick="goBack()" title="Ke Beranda">
-                <img src="logo.png" alt="Logo" style="height: 40px;"> 
+                <img src="logo.png" alt="Logo" style="height: 40px;">
             </div>
-            
             <div class="profile-area">
                 <img src="user.jpg" alt="User" class="avatar">
                 <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
@@ -84,16 +82,32 @@
         <div class="main-glass-panel">
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
-                    <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> New</button>
+                    <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> Baru</button>
+                    
                     <div id="dropdownMenu" class="dropdown-content extended-menu">
-                        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+                        <a href="javascript:void(0)" onclick="createFolder()">
+                            <i class="fa-solid fa-folder-plus"></i> Folder baru
+                        </a>
                         <hr class="menu-divider">
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+                            <i class="fa-solid fa-file-arrow-up"></i> Upload file
+                        </a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+                            <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
+                        </a>
                         <hr class="menu-divider">
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-word" style="color:#4285f4"></i> Google Dokumen</a>
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel" style="color:#0f9d58"></i> Google Spreadsheet</a>
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint" style="color:#f4b400"></i> Google Slide</a>
+                        <a href="javascript:void(0)">
+                            <i class="fa-solid fa-file-word text-blue"></i> Google Dokumen
+                        </a>
+                        <a href="javascript:void(0)">
+                            <i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet
+                        </a>
+                        <a href="javascript:void(0)">
+                            <i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide
+                        </a>
+                        <a href="javascript:void(0)">
+                            <i class="fa-solid fa-file-lines text-purple"></i> Google Formulir
+                        </a>
                     </div>
                 </div>
 
@@ -192,10 +206,29 @@
     </div>
 
     <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
-        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+        <a href="javascript:void(0)" onclick="createFolder()">
+            <i class="fa-solid fa-folder-plus"></i> Folder baru
+        </a>
         <hr class="menu-divider">
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+            <i class="fa-solid fa-file-arrow-up"></i> Upload file
+        </a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+            <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
+        </a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)">
+            <i class="fa-solid fa-file-word text-blue"></i> Google Dokumen
+        </a>
+        <a href="javascript:void(0)">
+            <i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet
+        </a>
+        <a href="javascript:void(0)">
+            <i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide
+        </a>
+        <a href="javascript:void(0)">
+            <i class="fa-solid fa-file-lines text-purple"></i> Google Formulir
+        </a>
     </div>
 
     <script src="app.js"></script>
