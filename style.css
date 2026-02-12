@@ -22,28 +22,26 @@ body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-
     background: rgba(20, 25, 40, 0.7); 
     backdrop-filter: blur(20px); 
     border: 1px solid var(--glass-border); 
-    border-radius: 16px; /* Sudut lebih kecil */
+    border-radius: 16px; 
     box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6); 
 }
 
 .auth-card { 
     width: 100%; 
-    max-width: 360px; /* Dikecilkan dari 420px ke 360px */
-    padding: 30px 25px; /* Padding dirapatkan */
+    max-width: 360px; /* Ukuran Compact */
+    padding: 30px 25px; 
     text-align: center; display: flex; flex-direction: column; align-items: center; 
 }
 
-/* Logo & Header Lebih Rapat */
 .auth-logo { width: 90px; margin-bottom: 15px; }
 .auth-header h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.5px; }
 
-form { width: 100%; display: flex; flex-direction: column; gap: 15px; /* Jarak antar input dirapatkan */ }
+form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
-/* Input Lebih Tipis (Compact) */
 .pill-input { 
-    width: 100%; height: 42px; /* Dikecilkan dari 50px */
+    width: 100%; height: 42px; 
     background: rgba(255, 255, 255, 0.05); 
-    border-radius: 8px; /* Lebih kotak sedikit */
+    border-radius: 8px; 
     padding: 0 15px; 
     display: flex; align-items: center; 
     border: 1px solid rgba(255, 255, 255, 0.1); 
@@ -54,10 +52,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; /* Jarak a
 .pill-input i { color: #94a3b8; font-size: 0.9rem; min-width: 20px; text-align: center; }
 .toggle-eye { cursor: pointer; color: #94a3b8; font-size: 0.9rem; }
 
-/* Tombol Lebih Ramping */
 .btn-pill { 
     border-radius: 8px; border: none; cursor: pointer; font-weight: 600; 
-    height: 42px; /* Dikecilkan */
+    height: 42px; 
     display: flex; align-items: center; justify-content: center; 
     transition: all 0.2s ease; font-size: 0.95rem; 
 }
@@ -104,8 +101,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; /* Jarak a
 .breadcrumb-area { margin-bottom: 15px; padding-left: 5px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
 
-/* Grid File Compact */
-.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; padding-bottom: 40px; align-content: start; }
+/* Grid File - FIX JARAK DISINI */
+.file-grid-area { 
+    flex: 1; 
+    overflow-y: auto; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+    gap: 15px; 
+    /* PADDING-TOP DITAMBAH JADI 40px */
+    padding: 40px 10px 40px 10px; 
+    align-content: start; 
+}
+
 .item-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; }
 .item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3rem; margin-bottom: 8px; }
