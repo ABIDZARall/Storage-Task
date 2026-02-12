@@ -20,7 +20,7 @@ const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-// Variabel Global
+// State Global
 let currentUser = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
@@ -396,10 +396,6 @@ window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", se
 
 function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
 function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').innerText = `Terpilih: ${file.name}`; el('fileInfoContainer').classList.remove('hidden'); }
-
-// --------------------------------------------------------
-// BAGIAN PERBAIKAN: Fungsi initDragAndDrop yang Bersih
-// --------------------------------------------------------
 function initDragAndDrop() {
     const zone = el('dropZone');
     const input = el('fileInputHidden');
@@ -411,7 +407,6 @@ function initDragAndDrop() {
         zone.classList.add('active');
     });
 
-    // Menghapus tanda titik koma yang salah di sini
     zone.addEventListener('dragleave', () => {
         zone.classList.remove('active');
     }); 

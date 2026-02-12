@@ -96,24 +96,16 @@
                             <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
                         </a>
                         <hr class="menu-divider">
-                        <a href="javascript:void(0)">
-                            <i class="fa-solid fa-file-word text-blue"></i> Google Dokumen
-                        </a>
-                        <a href="javascript:void(0)">
-                            <i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet
-                        </a>
-                        <a href="javascript:void(0)">
-                            <i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide
-                        </a>
-                        <a href="javascript:void(0)">
-                            <i class="fa-solid fa-file-lines text-purple"></i> Google Formulir
-                        </a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
+                        <a href="javascript:void(0)"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
                     </div>
                 </div>
 
                 <nav class="sidebar-menu">
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
+                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
                     <a onclick="handleMenuClick(this, 'computer')" class="nav-item"><i class="fa-solid fa-computer"></i> Komputer</a>
                     <a onclick="handleMenuClick(this, 'shared')" class="nav-item"><i class="fa-solid fa-user-group"></i> Dibagikan</a>
                     <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> Terbaru</a>
@@ -145,8 +137,16 @@
 
     <div id="folderModal" class="modal-overlay hidden">
         <div class="glass-card modal-box">
-            <div class="modal-header"><h3>Folder Baru</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
-            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
+            <div class="modal-header">
+                <h3>Folder Baru</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
+            </div>
+            <div class="modal-body">
+                <div class="pill-input">
+                    <i class="fa-solid fa-folder"></i>
+                    <input type="text" id="newFolderName" placeholder="Nama Folder">
+                </div>
+            </div>
             <div class="modal-actions">
                 <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
@@ -156,16 +156,27 @@
 
     <div id="uploadModal" class="modal-overlay hidden">
         <div class="glass-card modal-box upload-box-style">
-            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
+            <div class="modal-header">
+                <h3>Upload File</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
+            </div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
-                    <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
-                    <h4>Seret file ke sini</h4>
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-cloud-arrow-up animate-icon"></i>
+                    </div>
+                    <h4>Seret & Lepas File</h4>
+                    <p class="small-text">atau klik untuk menjelajah</p>
                     <input type="file" id="fileInputHidden" hidden>
                 </div>
-                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
+                <div id="fileInfoContainer" class="file-info-container hidden">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                    <p id="fileInfoText" class="file-info-text"></p>
+                </div>
             </div>
-            <div class="modal-actions"><button class="btn-pill primary full-width" onclick="submitUploadFile()">Upload</button></div>
+            <div class="modal-actions">
+                <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
+            </div>
         </div>
     </div>
 
@@ -206,29 +217,15 @@
     </div>
 
     <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
-        <a href="javascript:void(0)" onclick="createFolder()">
-            <i class="fa-solid fa-folder-plus"></i> Folder baru
-        </a>
+        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
         <hr class="menu-divider">
-        <a href="javascript:void(0)" onclick="triggerUploadModal()">
-            <i class="fa-solid fa-file-arrow-up"></i> Upload file
-        </a>
-        <a href="javascript:void(0)" onclick="triggerUploadModal()">
-            <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
-        </a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
         <hr class="menu-divider">
-        <a href="javascript:void(0)">
-            <i class="fa-solid fa-file-word text-blue"></i> Google Dokumen
-        </a>
-        <a href="javascript:void(0)">
-            <i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet
-        </a>
-        <a href="javascript:void(0)">
-            <i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide
-        </a>
-        <a href="javascript:void(0)">
-            <i class="fa-solid fa-file-lines text-purple"></i> Google Formulir
-        </a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
+        <a href="javascript:void(0)"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
     </div>
 
     <script src="app.js"></script>
