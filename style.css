@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: GOOGLE DRIVE LAYOUT) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: BUTTONS SIDE-BY-SIDE) === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -287,23 +287,27 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Tombol Aksi (Google Drive Style) */
-.storage-actions-vertical {
+/* Tombol Aksi - SIDE BY SIDE (HORIZONTAL) */
+.storage-actions-row {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Horizontal */
     gap: 12px;
+    margin-top: auto;
 }
 
 .btn-rect {
-    width: 100%;
+    flex: 1; /* Biar ukurannya bagi dua rata (50-50) */
     padding: 12px;
     border-radius: 8px;
     border: none;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
+    white-space: nowrap; /* Mencegah teks turun baris jika mungkin */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .secondary-dark {
@@ -334,7 +338,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         display: none; 
     }
 
-    /* Agar Modal Responsif di HP (Kembali jadi stack vertikal jika layar kecil) */
+    /* Agar Modal Responsif di HP */
     .storage-detail-box-wide {
         width: 90%;
         padding: 20px;
@@ -346,5 +350,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-hero h1 { font-size: 2.2rem; }
     .storage-col-right {
         gap: 20px;
+    }
+    
+    /* Di HP, kembalikan tombol jadi atas-bawah biar teks ga kepotong */
+    .storage-actions-row {
+        flex-direction: column;
     }
 }
