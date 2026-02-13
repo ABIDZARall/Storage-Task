@@ -191,12 +191,11 @@
 
     <section id="profilePage" class="full-screen-center hidden" style="background: rgba(15, 23, 42, 0.95); z-index: 9500;">
         <div class="glass-card auth-card" style="width: 400px; max-width: 95%;">
-            
             <div class="profile-page-header">
                 <button class="back-btn-small" onclick="closeProfilePage()"><i class="fa-solid fa-arrow-left"></i></button>
                 <h3>Edit Profil</h3>
-                <div style="width: 32px;"></div> </div>
-
+                <div style="width: 32px;"></div>
+            </div>
             <div class="profile-upload-container">
                 <div class="profile-img-wrapper" onclick="document.getElementById('profilePicInput').click()">
                     <img src="user.jpg" id="editProfilePreview" alt="Profile">
@@ -205,30 +204,17 @@
                 <input type="file" id="profilePicInput" accept="image/*" hidden onchange="handleProfileImageSelect(this)">
                 <p class="profile-upload-text">Ketuk untuk mengganti foto</p>
             </div>
-
             <form id="profileForm" onsubmit="submitUpdateProfile(event)">
-                <div class="pill-input">
-                    <i class="fa-solid fa-user"></i>
-                    <input type="text" id="editName" placeholder="Nama Lengkap" required>
-                </div>
-                <div class="pill-input">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="editEmail" placeholder="Email" readonly style="opacity: 0.6; cursor: not-allowed;" title="Email tidak dapat diubah">
-                </div>
-                <div class="pill-input">
-                    <i class="fa-solid fa-phone"></i>
-                    <input type="tel" id="editPhone" placeholder="Nomor HP">
-                </div>
-                
+                <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="editName" placeholder="Nama Lengkap" required></div>
+                <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="editEmail" placeholder="Email" readonly style="opacity: 0.6; cursor: not-allowed;" title="Email tidak dapat diubah"></div>
+                <div class="pill-input"><i class="fa-solid fa-phone"></i><input type="tel" id="editPhone" placeholder="Nomor HP"></div>
                 <hr class="menu-divider" style="margin: 10px 0; width: 100%;">
                 <p style="font-size: 0.8rem; color: #94a3b8; text-align: left; width: 100%; margin-bottom: 8px;">Ubah Password (Opsional)</p>
-
                 <div class="pill-input">
                     <i class="fa-solid fa-key"></i>
                     <input type="password" id="editPass" placeholder="Password Baru">
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('editPass', this)"></i>
                 </div>
-
                 <div class="profile-actions">
                     <button type="button" class="btn-pill secondary" onclick="closeProfilePage()">Batal</button>
                     <button type="submit" class="btn-pill primary">Simpan</button>
@@ -298,19 +284,19 @@
                             <div id="barFree" class="bar-segment bar-free" style="width: 100%"></div> 
                         </div>
                     </div>
-                    <div class="storage-btn-left-container">
-                        <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
-                    </div>
                 </div>
+                
                 <div class="storage-col-right">
-                    <div class="storage-detail-list">
-                        <div class="detail-item"><div class="dt-left"><span class="dot dot-images"></span> Gambar</div><div class="dt-right" id="valImages">0 MB</div></div>
-                        <div class="detail-item"><div class="dt-left"><span class="dot dot-videos"></span> Video</div><div class="dt-right" id="valVideos">0 MB</div></div>
-                        <div class="detail-item"><div class="dt-left"><span class="dot dot-docs"></span> Dokumen</div><div class="dt-right" id="valDocs">0 MB</div></div>
-                        <div class="detail-item"><div class="dt-left"><span class="dot dot-others"></span> Lainnya</div><div class="dt-right" id="valOthers">0 MB</div></div>
-                        <div class="detail-item item-free"><div class="dt-left"><span class="dot dot-free"></span> Tersedia</div><div class="dt-right" id="valFree">0 GB</div></div>
+                    <div class="storage-legend">
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-images"></span> Gambar</div><span id="valImages" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-videos"></span> Video</div><span id="valVideos" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div><span id="valDocs" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-others"></span> Lainnya</div><span id="valOthers" class="legend-val">0 MB</span></div>
+                        <div class="legend-item item-free"><div class="dt-left"><span class="dot dot-free"></span> Tersedia</div><div class="dt-right" id="valFree">0 GB</div></div>
                     </div>
-                    <div class="storage-btn-right-container">
+                    
+                    <div class="storage-actions-row">
+                        <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
                         <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
                     </div>
                 </div>

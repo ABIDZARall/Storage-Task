@@ -170,8 +170,6 @@ async function checkSession() {
         window.nav('dashboardPage'); 
         loadFiles('root');  
         calculateStorage();
-        // Load user photo if available (optional enhancement)
-        // updateProfileUI(); 
     } catch (e) { 
         window.nav('loginPage'); 
     } finally { 
@@ -191,10 +189,6 @@ window.nav = (pageId) => {
 // ======================================================
 // 5. FILE MANAGER & SEARCH
 // ======================================================
-// ... (Kode handleMenuClick, goBack, openFolder, initSearchBar, performSearch, fallbackSearch, clearSearch, initAllContextMenus sama seperti sebelumnya) ...
-// Saya singkat di sini untuk fokus pada fitur baru, tapi PASTIKAN Anda menyalin blok ini dari kode sebelumnya jika belum ada.
-// (Salin dari blok sebelumnya untuk fungsi-fungsi file manager standard)
-
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
@@ -425,17 +419,28 @@ function initStorageTooltip() {
 
 // NEW FUNCTION: OPEN FULL STORAGE PAGE
 window.openStoragePage = async () => {
+    // 1. Hitung data terbaru
     await calculateStorage();
+    
+    // 2. Tutup modal & dashboard
     window.closeModal('storageModal');
     window.nav('storagePage');
 
+    // 3. Populate Data ke Halaman Baru
     const totalBytes = storageDetail.total || 0;
     const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
     
+    // ===== UPDATE TULISAN PERSENTASE DI JUDUL =====
+    // Menghitung persentase dari Total File / Limit
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+    
+    // Terapkan ke Judul
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
+    
+    // Terapkan ke Sub-judul
     el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
 
+    // Update Progress Bar
     const pctImages = (storageDetail.images / limitBytes) * 100;
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
     const pctDocs = (storageDetail.docs / limitBytes) * 100;
@@ -454,18 +459,21 @@ window.openStoragePage = async () => {
     barOth.style.width = `${pctOthers}%`;
     barFree.style.width = `${pctFree}%`;
 
+    // Inject Attributes for Tooltip on New Page
     barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
     barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
     barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
     barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
     barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
 
+    // Update Detail List
     el('pageValImages').innerText = formatSize(storageDetail.images);
     el('pageValVideos').innerText = formatSize(storageDetail.videos);
     el('pageValDocs').innerText = formatSize(storageDetail.docs);
     el('pageValOthers').innerText = formatSize(storageDetail.others);
     el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
 
+    // Re-init Tooltip agar jalan di halaman baru
     initStorageTooltip();
 };
 
