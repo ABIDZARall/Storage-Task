@@ -80,7 +80,7 @@
                 <img src="logo.png" alt="Logo" style="height: 40px;">
             </div>
             <div class="profile-area">
-                <img src="user.jpg" alt="User" class="avatar">
+                <img src="user.jpg" alt="User" class="avatar" id="headerAvatar" onclick="openProfilePage()" title="Edit Profil" style="cursor: pointer;">
                 <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
@@ -140,7 +140,7 @@
             <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
             <h2>Pengelola Penyimpanan</h2>
             <div style="flex:1"></div>
-            <img src="user.jpg" alt="User" class="avatar">
+            <img src="user.jpg" alt="User" class="avatar page-avatar" onclick="openProfilePage()">
         </header>
 
         <div class="storage-page-content">
@@ -189,364 +189,51 @@
         </div>
     </section>
 
-    <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
-        <div class="glass-card modal-box">
-            <div class="modal-header">
-                <h3>Folder Baru</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
-            </div>
-            <div class="modal-body">
-                <div class="pill-input">
-                    <i class="fa-solid fa-folder"></i>
-                    <input type="text" id="newFolderName" placeholder="Nama Folder">
-                </div>
-            </div>
-            <div class="modal-actions-grid">
-                <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
-                <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
-        <div class="glass-card modal-box upload-box-style">
-            <div class="modal-header">
-                <h3>Upload File</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
-            </div>
-            <div class="modal-body">
-                <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
-                    <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
-                    <h4>Seret file ke sini</h4>
-                    <input type="file" id="fileInputHidden" hidden>
-                </div>
-                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
-        <div class="glass-card modal-box storage-detail-box-wide">
+    <section id="profilePage" class="full-screen-center hidden" style="background: rgba(15, 23, 42, 0.95); z-index: 9500;">
+        <div class="glass-card auth-card" style="width: 400px; max-width: 95%;">
             
-            <div class="storage-modal-header">
-                <h3>Penyimpanan</h3>
-                <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
-            </div>
-            
-            <div class="storage-flex-container">
-                <div class="storage-col-left">
-                    <div class="storage-content-wrapper">
-                        <div class="storage-hero">
-                            <h1 id="storageBigText">0 MB</h1>
-                            <p class="storage-sub-hero">dari 2 GB digunakan</p>
-                        </div>
-                        <div class="multi-color-progress">
-                            <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
-                            <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
-                            <div id="barDocs" class="bar-segment bar-docs" style="width: 0%"></div>
-                            <div id="barOthers" class="bar-segment bar-others" style="width: 0%"></div>
-                            <div id="barFree" class="bar-segment bar-free" style="width: 100%"></div> 
-                        </div>
-                    </div>
-                    <div class="storage-btn-left-container">
-                        <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
-                    </div>
+            <div class="profile-page-header">
+                <button class="back-btn-small" onclick="closeProfilePage()"><i class="fa-solid fa-arrow-left"></i></button>
+                <h3>Edit Profil</h3>
+                <div style="width: 32px;"></div> </div>
+
+            <div class="profile-upload-container">
+                <div class="profile-img-wrapper" onclick="document.getElementById('profilePicInput').click()">
+                    <img src="user.jpg" id="editProfilePreview" alt="Profile">
+                    <div class="edit-overlay"><i class="fa-solid fa-camera"></i></div>
                 </div>
-
-                <div class="storage-col-right">
-                    <div class="storage-legend">
-                        <div class="legend-row"><div class="legend-label"><span class="dot dot-images"></span> Gambar</div><span id="valImages" class="legend-val">0 MB</span></div>
-                        <div class="legend-row"><div class="legend-label"><span class="dot dot-videos"></span> Video</div><span id="valVideos" class="legend-val">0 MB</span></div>
-                        <div class="legend-row"><div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div><span id="valDocs" class="legend-val">0 MB</span></div>
-                        <div class="legend-row"><div class="legend-label"><span class="dot dot-others"></span> Lainnya</div><span id="valOthers" class="legend-val">0 MB</span></div>
-                    </div>
-                    <div class="storage-btn-right-container">
-                        <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
-                    </div>
-                </div>
-            </div> 
-        </div>
-    </div>
-
-    <div id="fileContextMenu" class="context-menu-modern hidden">
-        <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
-        <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
-        <div class="ctx-item" id="ctxBtnOpenWith" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
-        <hr class="ctx-divider">
-        <div class="ctx-item" id="ctxBtnDownload" onclick="downloadCurrentItem()"><i class="fa-solid fa-download"></i><span>Download</span></div>
-        <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span></div>
-        <div class="ctx-item" onclick="alert('Fitur salin segera hadir')"><i class="fa-solid fa-copy"></i><span>Buat salinan</span></div>
-        <hr class="ctx-divider">
-        <div class="ctx-item" onclick="toggleStarItem()"><i class="fa-solid fa-star" id="ctxStarIcon"></i><span id="ctxStarText">Bintangi</span></div>
-        <div class="ctx-item" onclick="alert('Info File')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
-        <hr class="ctx-divider">
-        <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span></div>
-        <div class="ctx-item hidden" id="ctxRestoreBtn" onclick="restoreFromTrash()"><i class="fa-solid fa-rotate-left"></i><span>Pulihkan</span></div>
-        <div class="ctx-item ctx-danger hidden" id="ctxPermDeleteBtn" onclick="deleteItemPermanently()"><i class="fa-solid fa-ban"></i><span>Hapus Permanen</span></div>
-    </div>
-
-    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
-        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
-        <hr class="menu-divider">
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
-        <hr class="menu-divider">
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
-        <a href="javascript:void(0)"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html><!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storage Tasks - Pro Drive</title>
-    
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
-    <link rel="manifest" href="manifest.json">
-</head>
-<body>
-    <div class="liquid-bg"></div>
-
-    <div id="loading" class="loading-overlay hidden">
-        <div class="spinner"></div>
-        <p id="loadingText">Memproses...</p>
-    </div>
-
-    <div id="customTooltip" class="custom-tooltip hidden">
-        <div class="tooltip-header" id="ttHeader">KATEGORI</div>
-        <div class="tooltip-size" id="ttSize">0 GB</div>
-        <div class="tooltip-desc" id="ttDesc">Deskripsi file disini.</div>
-    </div>
-
-    <section id="loginPage" class="full-screen-center hidden">
-        <div class="glass-card auth-card">
-            <div class="auth-header">
-                <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Login</h3>
+                <input type="file" id="profilePicInput" accept="image/*" hidden onchange="handleProfileImageSelect(this)">
+                <p class="profile-upload-text">Ketuk untuk mengganti foto</p>
             </div>
-            <form id="loginForm">
+
+            <form id="profileForm" onsubmit="submitUpdateProfile(event)">
                 <div class="pill-input">
                     <i class="fa-solid fa-user"></i>
-                    <input type="text" id="loginEmail" placeholder="Username / Email" required autocomplete="username">
+                    <input type="text" id="editName" placeholder="Nama Lengkap" required>
                 </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="editEmail" placeholder="Email" readonly style="opacity: 0.6; cursor: not-allowed;" title="Email tidak dapat diubah">
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="editPhone" placeholder="Nomor HP">
+                </div>
+                
+                <hr class="menu-divider" style="margin: 10px 0; width: 100%;">
+                <p style="font-size: 0.8rem; color: #94a3b8; text-align: left; width: 100%; margin-bottom: 8px;">Ubah Password (Opsional)</p>
+
                 <div class="pill-input">
                     <i class="fa-solid fa-key"></i>
-                    <input type="password" id="loginPass" placeholder="Password" required autocomplete="current-password">
-                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('loginPass', this)"></i>
+                    <input type="password" id="editPass" placeholder="Password Baru">
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('editPass', this)"></i>
                 </div>
-                <button type="submit" class="btn-pill primary">Masuk</button>
-                <div class="auth-footer">
-                    Belum punya akun? <span class="link-text" onclick="nav('signupPage')">Daftar</span>
-                </div>
-            </form>
-        </div>
-    </section>
 
-    <section id="signupPage" class="full-screen-center hidden">
-        <div class="glass-card auth-card">
-            <div class="auth-header">
-                <img src="logo.png" alt="Logo" class="auth-logo">
-                <h3>Sign Up</h3>
-            </div>
-            <form id="signupForm">
-                <div class="pill-input"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Username" required></div>
-                <div class="pill-input"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Email" required></div>
-                <div class="pill-input"><i class="fa-solid fa-phone"></i><input type="tel" id="regPhone" placeholder="No. HP" required></div>
-                <div class="pill-input">
-                    <i class="fa-solid fa-key"></i><input type="password" id="regPass" placeholder="Password" required>
-                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regPass', this)"></i>
-                </div>
-                <div class="pill-input">
-                    <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Ulangi Password" required>
-                </div>
-                <button type="submit" class="btn-pill primary">Daftar</button>
-                <div class="auth-footer">
-                    Sudah punya akun? <span class="link-text" onclick="nav('loginPage')">Login</span>
+                <div class="profile-actions">
+                    <button type="button" class="btn-pill secondary" onclick="closeProfilePage()">Batal</button>
+                    <button type="submit" class="btn-pill primary">Simpan</button>
                 </div>
             </form>
-        </div>
-    </section>
-
-    <section id="dashboardPage" class="dashboard-layout hidden">
-        <header class="top-nav">
-            <div class="brand-area" onclick="goBack()" title="Ke Beranda">
-                <img src="logo.png" alt="Logo" style="height: 40px;">
-            </div>
-            <div class="profile-area">
-                <div class="avatar-wrapper" onclick="openProfilePage()" title="Pengaturan Profil">
-                    <img src="user.jpg" alt="User" class="avatar" id="dashAvatar">
-                </div>
-                <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
-        </header>
-
-        <div class="main-glass-panel">
-            <aside class="sidebar-left">
-                <div class="new-btn-wrapper">
-                    <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> Baru</button>
-                    
-                    <div id="dropdownNewMenu" class="dropdown-content extended-menu">
-                        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
-                        <hr class="menu-divider">
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
-                        <hr class="menu-divider">
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
-                        <a href="javascript:void(0)"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
-                    </div>
-                </div>
-
-                <nav class="sidebar-menu">
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
-                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item"><i class="fa-solid fa-computer"></i> Komputer</a>
-                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item"><i class="fa-solid fa-user-group"></i> Dibagikan</a>
-                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> Terbaru</a>
-                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item"><i class="fa-solid fa-star"></i> Berbintang</a>
-                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> Sampah</a>
-                </nav>
-
-                <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;" title="Lihat detail penyimpanan">
-                    <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
-                    <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
-                    <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
-                </div>
-            </aside>
-
-            <main class="main-content-area">
-                <div class="search-row">
-                    <div class="search-bar-pill" id="searchContainer">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="Telusuri di Drive..." autocomplete="off">
-                        <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
-                    </div>
-                </div>
-                
-                <div class="breadcrumb-area"><h2 id="headerTitle">Welcome In Drive</h2></div>
-                <div id="fileGrid" class="file-grid-area"></div>
-            </main>
-        </div>
-    </section>
-
-    <section id="storagePage" class="full-screen-layout hidden">
-        <header class="storage-page-header">
-            <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
-            <h2>Pengelola Penyimpanan</h2>
-            <div style="flex:1"></div>
-            <img src="user.jpg" alt="User" class="avatar head-avatar">
-        </header>
-
-        <div class="storage-page-content">
-            <div class="storage-manager-card">
-                <div class="card-header-text">
-                    <h1 id="pageStoragePercent">Ruang penyimpanan 0% penuh</h1>
-                    <p>Penyimpanan Anda digunakan bersama di Google Drive, Foto, dan lainnya.</p>
-                </div>
-                <div class="storage-summary-row">
-                    <span>Penyimpanan yang digunakan</span>
-                    <span class="highlight-text" id="pageStorageUsedText">0 MB dari 2 GB</span>
-                </div>
-                <div class="multi-color-progress page-progress">
-                    <div id="pageBarImages" class="bar-segment bar-images" style="width: 0%"></div>
-                    <div id="pageBarVideos" class="bar-segment bar-videos" style="width: 0%"></div>
-                    <div id="pageBarDocs" class="bar-segment bar-docs" style="width: 0%"></div>
-                    <div id="pageBarOthers" class="bar-segment bar-others" style="width: 0%"></div>
-                    <div id="pageBarFree" class="bar-segment bar-free" style="width: 100%"></div> 
-                </div>
-                <div class="storage-detail-list">
-                    <div class="detail-item"><div class="dt-left"><span class="dot dot-images"></span> Gambar</div><div class="dt-right" id="pageValImages">0 MB</div></div>
-                    <div class="detail-item"><div class="dt-left"><span class="dot dot-videos"></span> Video</div><div class="dt-right" id="pageValVideos">0 MB</div></div>
-                    <div class="detail-item"><div class="dt-left"><span class="dot dot-docs"></span> Dokumen</div><div class="dt-right" id="pageValDocs">0 MB</div></div>
-                    <div class="detail-item"><div class="dt-left"><span class="dot dot-others"></span> Lainnya</div><div class="dt-right" id="pageValOthers">0 MB</div></div>
-                    <div class="detail-item item-free"><div class="dt-left"><span class="dot dot-free"></span> Tersedia</div><div class="dt-right" id="pageValFree">2 GB</div></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="profilePage" class="full-screen-layout hidden">
-        <header class="storage-page-header">
-            <button class="back-icon-btn" onclick="closeProfilePage()"><i class="fa-solid fa-arrow-left"></i></button>
-            <h2>Pengaturan Profil</h2>
-            <div style="flex:1"></div>
-        </header>
-
-        <div class="storage-page-content">
-            <div class="storage-manager-card profile-card">
-                
-                <div class="profile-avatar-section">
-                    <div class="avatar-edit-box" onclick="document.getElementById('profilePicInput').click()">
-                        <img src="user.jpg" alt="Profile" id="profileAvatarBig" class="avatar-big">
-                        <div class="camera-overlay"><i class="fa-solid fa-camera"></i></div>
-                    </div>
-                    <input type="file" id="profilePicInput" hidden accept="image/*">
-                    <p class="change-photo-text">Klik foto untuk mengganti</p>
-                </div>
-
-                <form id="profileForm" onsubmit="return false;">
-                    <div class="form-group">
-                        <label>Nama Lengkap</label>
-                        <div class="pill-input">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="text" id="profName" placeholder="Nama Anda">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email (Tidak dapat diubah)</label>
-                        <div class="pill-input disabled-input">
-                            <i class="fa-solid fa-envelope"></i>
-                            <input type="email" id="profEmail" placeholder="Email" readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Nomor Telepon</label>
-                        <div class="pill-input">
-                            <i class="fa-solid fa-phone"></i>
-                            <input type="tel" id="profPhone" placeholder="08xxxxxxxx">
-                        </div>
-                    </div>
-
-                    <hr class="ctx-divider" style="margin: 20px 0;">
-                    
-                    <div class="form-group">
-                        <label>Ganti Password (Opsional)</label>
-                        <div class="pill-input">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="profNewPass" placeholder="Password Baru">
-                            <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('profNewPass', this)"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="text-danger">Konfirmasi Password Lama (Wajib untuk simpan)</label>
-                        <div class="pill-input" style="border-color: rgba(239, 68, 68, 0.5);">
-                            <i class="fa-solid fa-key"></i>
-                            <input type="password" id="profOldPass" placeholder="Password Lama Anda" required>
-                            <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('profOldPass', this)"></i>
-                        </div>
-                    </div>
-
-                    <div class="profile-actions">
-                        <button class="btn-pill secondary full-width" onclick="closeProfilePage()">Batal</button>
-                        <button class="btn-pill primary full-width" onclick="saveProfileChanges()">Simpan Perubahan</button>
-                    </div>
-                </form>
-            </div>
         </div>
     </section>
 
