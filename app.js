@@ -265,7 +265,7 @@ function initAllContextMenus() {
         if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
-        if(el('storageModal')) el('storageModal').classList.add('hidden');
+        // Note: Storage Modal tidak ditutup otomatis saat klik sembarang untuk UX yang lebih baik
     };
 
     // 1. TOMBOL NEW (Klik Kiri & Kanan) -> Buka Dropdown
@@ -305,7 +305,11 @@ function initAllContextMenus() {
     }
     
     // Klik sembarang -> Tutup menu
-    window.onclick = () => closeAll();
+    window.onclick = (e) => {
+        // Jangan tutup jika sedang klik di dalam modal atau storage widget
+        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
+        closeAll();
+    };
 }
 
 // Render Item
@@ -363,40 +367,93 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// Storage Logic
-window.openStorageModal = () => {
-    // Tutup menu lain
+// ======================================================
+// 6. STORAGE LOGIC & MODAL POPUP
+// ======================================================
+window.openStorageModal = async () => {
+    // 1. Tutup menu konteks lain agar bersih
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
-    
-    const total = storageDetail.total || 1;
-    el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
-    el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
-    el('barDocs').style.width = `${(storageDetail.docs/total)*100}%`;
-    el('barOthers').style.width = `${(storageDetail.others/total)*100}%`;
-    el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
-    el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
-    el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
-    el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
-    el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+
+    // 2. Pastikan data terbaru sudah dihitung
+    await calculateStorage();
+
+    // 3. Update UI di dalam Modal Pop-up (Google Drive Style)
+    const totalBytes = storageDetail.total || 0;
+    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB dalam bytes
+
+    // Format Text Utama (misal: "1.2 GB")
+    const formattedTotal = (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
+    el('storageBigText').innerText = formattedTotal;
+
+    // Hitung Persentase Lebar Bar
+    const pctImages = (storageDetail.images / limitBytes) * 100;
+    const pctVideos = (storageDetail.videos / limitBytes) * 100;
+    const pctDocs = (storageDetail.docs / limitBytes) * 100;
+    const pctOthers = (storageDetail.others / limitBytes) * 100;
+
+    // Apply Lebar ke Bar (CSS transition akan membuatnya animasi halus)
+    el('barImages').style.width = `${pctImages}%`;
+    el('barVideos').style.width = `${pctVideos}%`;
+    el('barDocs').style.width = `${pctDocs}%`;
+    el('barOthers').style.width = `${pctOthers}%`;
+
+    // Update Text di Legenda (Daftar rincian)
+    el('valImages').innerText = (storageDetail.images / (1024*1024)).toFixed(2) + " MB";
+    el('valVideos').innerText = (storageDetail.videos / (1024*1024)).toFixed(2) + " MB";
+    el('valDocs').innerText = (storageDetail.docs / (1024*1024)).toFixed(2) + " MB";
+    el('valOthers').innerText = (storageDetail.others / (1024*1024)).toFixed(2) + " MB";
+
+    // 4. Tampilkan Modal
     window.openModal('storageModal');
 };
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')]);
+        // Ambil semua file (bukan folder) milik user
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id), 
+            Appwrite.Query.equal('type', 'file')
+        ]);
+        
+        // Reset hitungan
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+        const limit = 2 * 1024 * 1024 * 1024; // 2 GB
+
         res.documents.forEach(doc => {
-            const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif)$/)) storageDetail.images += size;
-            else if (name.match(/\.(mp4|mkv|mov|avi)$/)) storageDetail.videos += size;
-            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/)) storageDetail.docs += size;
-            else storageDetail.others += size;
+            const size = doc.size || 0; 
+            const name = doc.name.toLowerCase(); 
+            storageDetail.total += size;
+
+            // Kategorisasi berdasarkan ekstensi
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp)$/)) {
+                storageDetail.images += size;
+            } else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm)$/)) {
+                storageDetail.videos += size;
+            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv)$/)) {
+                storageDetail.docs += size;
+            } else {
+                storageDetail.others += size;
+            }
         });
-        const mb = (storageDetail.total / 1048576).toFixed(2);
+
+        // Update Widget Sidebar (Bar kecil)
+        const mb = (storageDetail.total / (1024 * 1024)).toFixed(2);
         el('storageUsed').innerText = `${mb} MB`;
-        el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
-    } catch (e) {}
+        
+        // Persentase total untuk widget sidebar
+        const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
+        el('storageBar').style.width = `${totalPct}%`;
+
+        // Ubah warna bar widget jika hampir penuh (UX tambahan)
+        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444';
+        else el('storageBar').style.backgroundColor = '';
+
+    } catch (e) {
+        console.error("Gagal hitung storage:", e);
+    }
 }
 
 // Utils (Modal, CRUD, Excel)
