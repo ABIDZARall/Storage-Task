@@ -27,12 +27,12 @@ let currentFolderName = "Drive";
 let currentViewMode = 'root';
 let selectedItem = null; 
 let selectedUploadFile = null; 
-// Struktur Data Storage Detail
+// Struktur Data Storage
 let storageDetail = { 
-    images: { size: 0, count: 0 }, 
-    videos: { size: 0, count: 0 }, 
-    docs: { size: 0, count: 0 }, 
-    others: { size: 0, count: 0 }, 
+    images: { size: 0 }, 
+    videos: { size: 0 }, 
+    docs: { size: 0 }, 
+    others: { size: 0 }, 
     total: 0 
 };
 let searchTimeout = null;
@@ -249,7 +249,7 @@ function initAllContextMenus() {
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
         if(el('storageModal')) el('storageModal').classList.add('hidden');
-        hideTooltip(); 
+        hideTooltip(); // Tutup tooltip jika terbuka
     };
 
     if (newBtn) {
@@ -336,7 +336,7 @@ function renderItem(doc) {
 }
 
 // ======================================================
-// 8. STORAGE & TOOLTIP LOGIC (DIAGRAM INTERAKTIF)
+// 8. LOGIKA STORAGE & TOOLTIP INTERAKTIF
 // ======================================================
 
 window.openStorageModal = () => {
@@ -352,16 +352,17 @@ window.openStorageModal = () => {
     let pDoc = (storageDetail.docs.size / MAX_STORAGE) * 100;
     let pOth = (storageDetail.others.size / MAX_STORAGE) * 100;
     
-    // Set Width
-    el('segImage').style.width = `${pImg}%`;
-    el('segVideo').style.width = `${pVid}%`;
-    el('segDoc').style.width = `${pDoc}%`;
-    el('segOther').style.width = `${pOth}%`;
+    // Set Width (Minimal 1% jika ada isinya agar terlihat)
+    el('segImage').style.width = pImg > 0 ? `${Math.max(pImg, 1)}%` : '0%';
+    el('segVideo').style.width = pVid > 0 ? `${Math.max(pVid, 1)}%` : '0%';
+    el('segDoc').style.width = pDoc > 0 ? `${Math.max(pDoc, 1)}%` : '0%';
+    el('segOther').style.width = pOth > 0 ? `${Math.max(pOth, 1)}%` : '0%';
+    
     // Sisanya kosong
     const remainingBytes = MAX_STORAGE - used;
     el('segFree').style.width = `${(remainingBytes / MAX_STORAGE) * 100}%`;
 
-    // Update Text
+    // Update Teks
     el('storageBigText').innerText = formatBytes(used);
     el('storageSubText').innerText = `dari 2 GB digunakan`;
     el('valImages').innerText = formatBytes(storageDetail.images.size);
@@ -372,27 +373,26 @@ window.openStorageModal = () => {
     window.openModal('storageModal');
 };
 
-// Fungsi Tampilkan Tooltip saat Hover Diagram
+// Fungsi Tooltip Interaktif
 window.showTooltip = (event, type) => {
     const tooltip = el('storageTooltip');
     const typeLabel = el('tooltipType');
     const sizeLabel = el('tooltipSize');
     let sizeBytes = 0;
 
-    // Tentukan size berdasarkan tipe
     if(type === 'Gambar') sizeBytes = storageDetail.images.size;
     else if(type === 'Video') sizeBytes = storageDetail.videos.size;
     else if(type === 'Dokumen') sizeBytes = storageDetail.docs.size;
     else if(type === 'Lainnya') sizeBytes = storageDetail.others.size;
-    else if(type === 'Kosong') sizeBytes = (2147483648 - storageDetail.total); // 2GB - used
+    else if(type === 'Tersedia') sizeBytes = (2147483648 - storageDetail.total);
 
     typeLabel.innerText = type;
     sizeLabel.innerText = formatBytes(sizeBytes);
     
     tooltip.classList.add('visible');
-    // Posisi mengikuti mouse
+    // Posisi mengikuti mouse dengan offset sedikit ke atas
     tooltip.style.left = `${event.clientX}px`; 
-    tooltip.style.top = `${event.clientY - 45}px`; 
+    tooltip.style.top = `${event.clientY - 60}px`; 
 };
 
 window.hideTooltip = () => {
@@ -407,8 +407,14 @@ async function calculateStorage() {
             Appwrite.Query.equal('type', 'file')
         ]);
         
-        // Reset
-        storageDetail = { images: {size:0}, videos: {size:0}, docs: {size:0}, others: {size:0}, total: 0 };
+        // Reset Hitungan
+        storageDetail = { 
+            images: { size: 0 }, 
+            videos: { size: 0 }, 
+            docs: { size: 0 }, 
+            others: { size: 0 }, 
+            total: 0 
+        };
 
         res.documents.forEach(doc => {
             const size = doc.size || 0; 
@@ -421,6 +427,7 @@ async function calculateStorage() {
             else storageDetail.others.size += size;
         });
 
+        // Update Sidebar Widget Text
         const mb = (storageDetail.total / 1048576).toFixed(2);
         el('storageUsed').innerText = `${mb} MB / 2 GB`;
         el('storageBar').style.width = `${Math.min((storageDetail.total / 2147483648) * 100, 100)}%`;

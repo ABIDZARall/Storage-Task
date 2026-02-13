@@ -6,6 +6,7 @@
     <title>Storage Tasks - Pro Drive</title>
     
     <link rel="stylesheet" href="style.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
@@ -83,11 +84,18 @@
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> Baru</button>
+                    
                     <div id="dropdownNewMenu" class="dropdown-content extended-menu">
-                        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+                        <a href="javascript:void(0)" onclick="createFolder()">
+                            <i class="fa-solid fa-folder-plus"></i> Folder baru
+                        </a>
                         <hr class="menu-divider">
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-                        <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+                            <i class="fa-solid fa-file-arrow-up"></i> Upload file
+                        </a>
+                        <a href="javascript:void(0)" onclick="triggerUploadModal()">
+                            <i class="fa-solid fa-folder-arrow-up"></i> Upload folder
+                        </a>
                         <hr class="menu-divider">
                         <a href="javascript:void(0)"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
                         <a href="javascript:void(0)"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
@@ -108,9 +116,7 @@
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;">
                     <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
-                    <div class="progress-track">
-                        <div id="storageBar" class="progress-fill"></div>
-                    </div>
+                    <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
                     <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
                 </div>
             </aside>
@@ -132,16 +138,8 @@
 
     <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
         <div class="glass-card modal-box">
-            <div class="modal-header">
-                <h3>Folder Baru</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
-            </div>
-            <div class="modal-body">
-                <div class="pill-input">
-                    <i class="fa-solid fa-folder"></i>
-                    <input type="text" id="newFolderName" placeholder="Nama Folder">
-                </div>
-            </div>
+            <div class="modal-header"><h3>Folder Baru</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
+            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
             <div class="modal-actions-grid">
                 <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
                 <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
@@ -151,10 +149,7 @@
 
     <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
         <div class="glass-card modal-box upload-box-style">
-            <div class="modal-header">
-                <h3>Upload File</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
-            </div>
+            <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
                     <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
@@ -163,9 +158,7 @@
                 </div>
                 <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
             </div>
-            <div class="modal-actions">
-                <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
-            </div>
+            <div class="modal-actions"><button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button></div>
         </div>
     </div>
 
@@ -175,13 +168,15 @@
                 <h3>Penyimpanan</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
             </div>
+            
             <div class="modal-body">
                 <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
                 <p id="storageSubText" class="storage-sub-text">dari 2 GB digunakan</p>
                 
                 <div class="storage-bar-wrapper">
                     <div id="storageTooltip" class="storage-tooltip hidden">
-                        <span id="tooltipType"></span>: <span id="tooltipSize"></span>
+                        <span id="tooltipType" style="opacity:0.8"></span><br>
+                        <span id="tooltipSize" style="font-weight:bold; font-size:1rem"></span>
                     </div>
 
                     <div class="google-style-bar">
@@ -189,7 +184,7 @@
                         <div id="segVideo" class="bar-seg seg-red" onmousemove="showTooltip(event, 'Video')" onmouseleave="hideTooltip()"></div>
                         <div id="segDoc" class="bar-seg seg-cyan" onmousemove="showTooltip(event, 'Dokumen')" onmouseleave="hideTooltip()"></div>
                         <div id="segOther" class="bar-seg seg-grey" onmousemove="showTooltip(event, 'Lainnya')" onmouseleave="hideTooltip()"></div>
-                        <div id="segFree" class="bar-seg seg-empty" onmousemove="showTooltip(event, 'Kosong')" onmouseleave="hideTooltip()"></div>
+                        <div id="segFree" class="bar-seg seg-empty" onmousemove="showTooltip(event, 'Tersedia')" onmouseleave="hideTooltip()"></div>
                     </div>
                 </div>
 
@@ -202,7 +197,7 @@
                 
                 <hr class="modal-divider">
                 
-                <button class="btn-pill secondary full-width btn-manager" onclick="alert('Membuka halaman Pengelola Penyimpanan...')">
+                <button class="btn-pill secondary full-width btn-manager" onclick="alert('Membuka Pengelola Penyimpanan...')">
                     Pengelola Penyimpanan <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.8rem; margin-left:5px;"></i>
                 </button>
             </div>
