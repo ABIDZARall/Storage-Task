@@ -54,7 +54,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
 .main-glass-panel { flex: 1; background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 16px; border: 1px solid var(--glass-border); padding: 20px; display: flex; gap: 20px; overflow: hidden; }
-.sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; }
+.sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; z-index: 20; position: relative; } /* Added Z-Index & Relative */
 
 /* Posisi Tombol New & Dropdown */
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
@@ -82,8 +82,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
 .nav-item.active { background: rgba(45, 212, 191, 0.15); color: var(--accent); font-weight: 700; }
 
-/* WIDGET STORAGE */
-.storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+/* WIDGET STORAGE (FIXED CLICK ISSUE) */
+.storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; cursor: pointer; z-index: 20; position: relative; }
 .storage-widget:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
 .storage-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: white; }
 .progress-track { width: 100%; height: 5px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 8px 0; overflow: hidden; }
@@ -121,7 +121,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
 .modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 5px; position: relative;}
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; position: relative;}
 .modal-header h3 { font-size: 1.2rem; font-weight: 500; color: white; margin: 0;}
 .modal-subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px; width: 90%; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
@@ -164,128 +164,159 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* === UPDATED STORAGE POPUP (NEW DESIGN) === */
-.storage-detail-box-new { 
+/* === UPDATED STORAGE POPUP (GOOGLE DRIVE STYLE - KIRI KANAN) === */
+.storage-detail-box-gdrive { 
     width: 650px; 
     max-width: 95%;
-    padding: 30px; 
+    padding: 25px; 
     background-color: #1e293b; 
     border: 1px solid var(--popup-border);
-    border-radius: 16px; 
+    border-radius: 12px; 
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
-    position: relative; /* Untuk close icon */
+    position: relative;
 }
 
-/* Header Centered */
-.storage-modal-header-centered {
-    text-align: center;
+/* Header Kiri Atas */
+.gdrive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 20px;
 }
 
-.storage-modal-header-centered h3 {
-    font-size: 1.5rem;
-    font-weight: 500;
+.gdrive-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
     color: white;
-    margin-bottom: 8px;
+    margin: 0;
 }
 
-.modal-subtitle-centered {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin: 0 auto;
-    max-width: 80%;
-}
-
-.close-icon-absolute {
-    position: absolute;
-    top: 20px; right: 20px;
+.close-icon-simple {
     color: #64748b;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: 0.2s;
     padding: 5px;
+    border-radius: 50%;
 }
-.close-icon-absolute:hover { color: white; }
+.close-icon-simple:hover { color: white; background: rgba(255,255,255,0.1); }
 
-/* Usage Row */
-.storage-usage-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: #e2e8f0;
-    margin-bottom: 10px;
-    font-weight: 500;
-}
-.usage-value { color: #94a3b8; }
-
-/* Progress Bar */
-.multi-color-progress.modal-bar {
-    margin-bottom: 30px;
-}
-
-/* Grid Layout untuk Legend (2 Kolom) */
-.storage-legend-grid {
+/* Flex Container Kiri-Kanan */
+.gdrive-content-flex {
     display: flex;
     gap: 30px;
-    margin-bottom: 30px;
+    width: 100%;
 }
-.legend-col {
+
+.gdrive-left-col {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.detail-item-compact {
+.gdrive-right-col {
+    flex: 1;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    font-size: 0.9rem;
+    flex-direction: column;
 }
 
-/* Progress Bar (Interactive with Gaps) */
+/* Hero Text di Kiri */
+.storage-hero h1 { 
+    font-size: 2.8rem; 
+    font-weight: 700; 
+    color: white; 
+    margin-bottom: 5px; 
+    letter-spacing: -1px;
+    line-height: 1;
+}
+.storage-sub-hero { 
+    color: #94a3b8; 
+    font-size: 0.95rem; 
+    margin-bottom: 15px;
+}
+
+/* Progress Bar */
 .multi-color-progress {
     width: 100%;
-    height: 12px; /* Lebih tebal agar mudah di hover */
-    background: transparent; /* Transparan agar bisa diisi segmen */
+    height: 10px;
+    background: transparent;
     border-radius: 10px;
     overflow: hidden;
-    margin-top: 10px;
+    margin-top: 5px;
     display: flex;
 }
 
-/* Style Segmen Bar + GAP/CELAH */
+/* Bar Segments */
 .bar-segment { 
     height: 100%; 
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
-    /* Membuat celah (gap) antar warna dengan border kanan yang warnanya sama dengan background modal */
     border-right: 4px solid #1e293b; 
     box-sizing: border-box;
 }
-
-/* Segmen Sisa (Track Warna Abu Gelap) */
-.bar-free {
-    background-color: var(--track-bg);
-}
-
-/* Hapus border kanan pada elemen terakhir agar rapi */
-.bar-segment:last-child {
-    border-right: none;
-}
-
-/* Efek Hover Segmen */
-.bar-segment:hover {
-    filter: brightness(1.2); /* Lebih terang saat di hover */
-}
+.bar-segment:last-child { border-right: none; }
+.bar-segment:hover { filter: brightness(1.2); }
+.bar-free { background-color: var(--track-bg); }
 
 .bar-images { background-color: var(--clr-blue); }
 .bar-videos { background-color: var(--clr-yellow); }
 .bar-docs { background-color: var(--clr-red); }
 .bar-others { background-color: var(--clr-grey); }
+
+/* Legend List di Kanan */
+.storage-legend-gdrive {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-row-gdrive {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.leg-l { display: flex; align-items: center; gap: 10px; color: #e2e8f0; font-weight: 500; }
+.leg-r { color: #94a3b8; font-family: 'Consolas', monospace; font-size: 0.85rem; }
+
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot-images { background-color: var(--clr-blue); }
+.dot-videos { background-color: var(--clr-yellow); }
+.dot-docs { background-color: var(--clr-red); }
+.dot-others { background-color: var(--clr-grey); }
+.dot-free { background-color: var(--track-bg); border: 1px solid rgba(255,255,255,0.2); }
+
+/* Tombol Aksi (Full Width, Berdampingan di Bawah) */
+.gdrive-actions-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    justify-content: flex-end;
+}
+
+.btn-rect {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.secondary-dark { background: #334155; color: white; border: 1px solid transparent; }
+.secondary-dark:hover { background: #475569; }
+
+.primary-dark { background: rgba(66, 133, 244, 0.15); color: var(--clr-blue); border: 1px solid transparent; }
+.primary-dark:hover { background: rgba(66, 133, 244, 0.25); }
+
 
 /* === CUSTOM TOOLTIP STYLE (GOOGLE DRIVE) === */
 .custom-tooltip {
@@ -336,65 +367,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     color: #5f6368; 
     line-height: 1.4;
 }
-
-/* Legend List */
-.storage-detail-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-}
-
-.dt-left { display: flex; align-items: center; gap: 15px; font-size: 0.95rem; color: #e2e8f0; font-weight: 500;}
-.dt-right { font-family: 'Consolas', monospace; color: #94a3b8; font-size: 0.9rem; }
-
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.dot-images { background-color: var(--clr-blue); }
-.dot-videos { background-color: var(--clr-yellow); }
-.dot-docs { background-color: var(--clr-red); }
-.dot-others { background-color: var(--clr-grey); }
-.dot-free { background-color: var(--track-bg); border: 1px solid rgba(255,255,255,0.2); }
-
-/* Tombol Modal Baru (Sejajar Kanan) */
-.storage-actions-row-new {
-    display: flex;
-    justify-content: flex-end; /* Dorong ke kanan */
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.storage-actions-row-new .btn-rect {
-    width: auto; /* Lebar sesuai konten */
-    padding: 10px 24px;
-    border-radius: 20px; /* Lebih bulat */
-    font-size: 0.9rem;
-}
-
-.btn-rect {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.secondary-dark { background: #334155; color: white; border: 1px solid transparent; }
-.secondary-dark:hover { background: #475569; }
-
-.primary-dark { background: rgba(66, 133, 244, 0.15); color: var(--clr-blue); border: 1px solid transparent; }
-.primary-dark:hover { background: rgba(66, 133, 244, 0.25); }
 
 /* === HALAMAN PENGELOLA PENYIMPANAN (STORAGE MANAGER PAGE) === */
 .full-screen-layout {
@@ -491,6 +463,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .storage-manager-card .detail-item {
     border-bottom: 1px solid rgba(255,255,255,0.05);
     padding: 15px 0;
+    display: flex; justify-content: space-between; align-items: center;
 }
 .storage-manager-card .detail-item:last-child { border-bottom: none; }
 
@@ -503,17 +476,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     justify-content: space-between;
     margin-bottom: 25px;
 }
-
-.back-btn-small {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: 0.2s;
-    padding: 5px;
-}
-.back-btn-small:hover { color: var(--accent); }
 
 .profile-upload-container {
     display: flex;
@@ -573,11 +535,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
     .sidebar-left { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; order: 2; display: none; }
     
-    .storage-detail-box-new { width: 90%; padding: 20px; }
-    .storage-legend-grid { flex-direction: column; gap: 0; }
-    .storage-actions-row-new { justify-content: center; flex-direction: column; }
-    .storage-actions-row-new .btn-rect { width: 100%; border-radius: 8px; }
-
+    .storage-detail-box-gdrive { width: 90%; padding: 20px; }
+    .gdrive-content-flex { flex-direction: column; gap: 20px; }
+    .gdrive-actions-row { flex-direction: column; }
+    .storage-hero h1 { font-size: 2.2rem; }
+    
     .storage-manager-card { padding: 20px; }
     .card-header-text h1 { font-size: 1.5rem; }
 }

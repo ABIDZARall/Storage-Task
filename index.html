@@ -209,39 +209,37 @@
     </section>
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
-        <div class="glass-card modal-box storage-detail-box-new">
-            <div class="storage-modal-header-centered">
-                <h3 id="modalStorageTitle">Ruang penyimpanan 0% penuh</h3>
-                <p class="modal-subtitle-centered">Penyimpanan Anda digunakan bersama di Google Drive, Foto, dan lainnya.</p>
-                <i class="fa-solid fa-xmark close-icon-absolute" onclick="closeModal('storageModal')"></i>
+        <div class="glass-card modal-box storage-detail-box-gdrive">
+            <div class="gdrive-header">
+                <h3>Penyimpanan</h3>
+                <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
             </div>
             
-            <div class="storage-usage-row">
-                <span>Penyimpanan yang digunakan</span>
-                <span class="usage-value" id="modalStorageUsedText">0 MB dari 2 GB</span>
-            </div>
-
-            <div class="multi-color-progress modal-bar">
-                <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
-                <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
-                <div id="barDocs" class="bar-segment bar-docs" style="width: 0%"></div>
-                <div id="barOthers" class="bar-segment bar-others" style="width: 0%"></div>
-                <div id="barFree" class="bar-segment bar-free" style="width: 100%"></div> 
-            </div>
-
-            <div class="storage-legend-grid">
-                <div class="legend-col">
-                    <div class="detail-item-compact"><div class="dt-left"><span class="dot dot-images"></span> Gambar</div><div class="dt-right" id="valImages">0 MB</div></div>
-                    <div class="detail-item-compact"><div class="dt-left"><span class="dot dot-videos"></span> Video</div><div class="dt-right" id="valVideos">0 MB</div></div>
-                    <div class="detail-item-compact"><div class="dt-left"><span class="dot dot-docs"></span> Dokumen</div><div class="dt-right" id="valDocs">0 MB</div></div>
+            <div class="gdrive-content-flex">
+                <div class="gdrive-left-col">
+                    <h1 id="storageBigText">0 MB</h1>
+                    <p class="storage-sub-hero" id="modalStorageUsedText">dari 2 GB digunakan</p>
+                    
+                    <div class="multi-color-progress modal-bar">
+                        <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
+                        <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
+                        <div id="barDocs" class="bar-segment bar-docs" style="width: 0%"></div>
+                        <div id="barOthers" class="bar-segment bar-others" style="width: 0%"></div>
+                        <div id="barFree" class="bar-segment bar-free" style="width: 100%"></div> 
+                    </div>
                 </div>
-                <div class="legend-col">
-                    <div class="detail-item-compact"><div class="dt-left"><span class="dot dot-others"></span> Lainnya</div><div class="dt-right" id="valOthers">0 MB</div></div>
-                    <div class="detail-item-compact item-free"><div class="dt-left"><span class="dot dot-free"></span> Tersedia</div><div class="dt-right" id="valFree">0 GB</div></div>
+
+                <div class="gdrive-right-col">
+                    <div class="storage-legend-gdrive">
+                        <div class="legend-row-gdrive"><div class="leg-l"><span class="dot dot-images"></span> Gambar</div><div class="leg-r" id="valImages">0 MB</div></div>
+                        <div class="legend-row-gdrive"><div class="leg-l"><span class="dot dot-videos"></span> Video</div><div class="leg-r" id="valVideos">0 MB</div></div>
+                        <div class="legend-row-gdrive"><div class="leg-l"><span class="dot dot-docs"></span> Dokumen</div><div class="leg-r" id="valDocs">0 MB</div></div>
+                        <div class="legend-row-gdrive"><div class="leg-l"><span class="dot dot-others"></span> Lainnya</div><div class="leg-r" id="valOthers">0 MB</div></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="storage-actions-row-new">
+            <div class="gdrive-actions-row">
                 <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
                 <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
             </div>
@@ -250,17 +248,9 @@
 
     <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
         <div class="glass-card modal-box">
-            <div class="modal-header">
-                <h3>Folder Baru</h3>
-                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
-            </div>
-            <div class="modal-body">
-                <div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div>
-            </div>
-            <div class="modal-actions-grid">
-                <button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button>
-                <button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button>
-            </div>
+            <div class="modal-header"><h3>Folder Baru</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i></div>
+            <div class="modal-body"><div class="pill-input"><i class="fa-solid fa-folder"></i><input type="text" id="newFolderName" placeholder="Nama Folder"></div></div>
+            <div class="modal-actions-grid"><button class="btn-pill secondary" onclick="closeModal('folderModal')">Batal</button><button class="btn-pill primary" onclick="submitCreateFolder()">Buat</button></div>
         </div>
     </div>
 
@@ -269,9 +259,7 @@
             <div class="modal-header"><h3>Upload File</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i></div>
             <div class="modal-body">
                 <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
-                    <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
-                    <h4>Seret file ke sini</h4>
-                    <input type="file" id="fileInputHidden" hidden>
+                    <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div><h4>Seret file ke sini</h4><input type="file" id="fileInputHidden" hidden>
                 </div>
                 <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
             </div>

