@@ -52,11 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
-    initStorageTooltip(); // Inisialisasi Tooltip Interaktif
+    initStorageTooltip();
+    
+    // Listener untuk upload foto profil
+    const profInput = el('profilePicInput');
+    if(profInput) {
+        profInput.addEventListener('change', (e) => {
+            if(e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    el('profileAvatarBig').src = ev.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
 });
 
 // ======================================================
-// 3. LOGIKA OTENTIKASI
+// 3. LOGIKA OTENTIKASI & PROFILE
 // ======================================================
 
 // LOGIN
@@ -169,6 +183,7 @@ async function checkSession() {
         window.nav('dashboardPage'); 
         loadFiles('root');  
         calculateStorage();
+        updateAvatarDisplay(); // Update avatar saat load
     } catch (e) { 
         window.nav('loginPage'); 
     } finally { 
@@ -176,8 +191,21 @@ async function checkSession() {
     }
 }
 
+function updateAvatarDisplay() {
+    if(!currentUser) return;
+    // Cek apakah ada avatar di preferences
+    const avatarUrl = currentUser.prefs && currentUser.prefs.avatar ? currentUser.prefs.avatar : 'user.jpg';
+    
+    // Update semua elemen avatar
+    const avatars = document.querySelectorAll('.avatar');
+    avatars.forEach(img => img.src = avatarUrl);
+    
+    // Update avatar di halaman profil
+    if(el('profileAvatarBig')) el('profileAvatarBig').src = avatarUrl;
+}
+
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage'].forEach(id => {
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage'].forEach(id => {
         const element = el(id);
         if(element) element.classList.add('hidden');
     });
@@ -434,14 +462,9 @@ window.openStoragePage = async () => {
     const totalBytes = storageDetail.total || 0;
     const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
     
-    // ===== UPDATE TULISAN PERSENTASE DI JUDUL =====
-    // Menghitung persentase dari Total File / Limit
+    // Update Teks Persentase
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    
-    // Terapkan ke Judul
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-    
-    // Terapkan ke Sub-judul
     el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
 
     // Update Progress Bar
@@ -485,6 +508,89 @@ window.closeStoragePage = () => {
     window.nav('dashboardPage');
 };
 
+// ======================================================
+// 7. PROFILE PAGE LOGIC (NEW FEATURE)
+// ======================================================
+
+window.openProfilePage = async () => {
+    if (!currentUser) return;
+    
+    // Tutup menu lain
+    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+    window.closeModal('storageModal');
+
+    // Populate data user ke form
+    el('profName').value = currentUser.name;
+    el('profEmail').value = currentUser.email;
+    el('profPhone').value = currentUser.phone || ''; // Menangani jika phone kosong
+    
+    // Reset password fields
+    el('profNewPass').value = '';
+    el('profOldPass').value = '';
+
+    window.nav('profilePage');
+};
+
+window.closeProfilePage = () => {
+    window.nav('dashboardPage');
+};
+
+window.saveProfileChanges = async () => {
+    const newName = el('profName').value.trim();
+    const newPhone = el('profPhone').value.trim();
+    const newPass = el('profNewPass').value;
+    const oldPass = el('profOldPass').value;
+    const fileInput = el('profilePicInput');
+
+    if (!oldPass) {
+        alert("Harap masukkan password lama untuk konfirmasi.");
+        return;
+    }
+
+    toggleLoading(true, "Menyimpan profil...");
+
+    try {
+        // 1. Upload Foto Baru (jika ada)
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const uploaded = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+            const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, uploaded.$id).href;
+            
+            // Simpan URL avatar di User Preferences
+            await account.updatePrefs({ avatar: viewUrl });
+        }
+
+        // 2. Update Nama
+        if (newName !== currentUser.name) {
+            await account.updateName(newName);
+        }
+
+        // 3. Update Phone (Jika didukung & berubah)
+        // Perhatian: updatePhone memerlukan password di parameter kedua
+        if (newPhone !== currentUser.phone) {
+            await account.updatePhone(newPhone, oldPass);
+        }
+
+        // 4. Update Password (Jika diisi)
+        if (newPass) {
+            await account.updatePassword(newPass, oldPass);
+        }
+
+        // Refresh data user lokal
+        currentUser = await account.get();
+        updateAvatarDisplay(); // Refresh tampilan avatar
+        
+        alert("Profil berhasil diperbarui!");
+        window.closeProfilePage();
+
+    } catch (error) {
+        console.error(error);
+        alert("Gagal memperbarui profil: " + error.message);
+    } finally {
+        toggleLoading(false);
+    }
+};
+
 window.openStorageModal = async () => {
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
@@ -497,6 +603,10 @@ window.openStorageModal = async () => {
 
     const formattedTotal = formatSize(totalBytes);
     el('storageBigText').innerText = formattedTotal;
+
+    // Hitung Persentase
+    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+    el('modalStorageTitle').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
 
     const pctImages = (storageDetail.images / limitBytes) * 100;
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
@@ -526,6 +636,7 @@ window.openStorageModal = async () => {
     el('valVideos').innerText = formatSize(storageDetail.videos);
     el('valDocs').innerText = formatSize(storageDetail.docs);
     el('valOthers').innerText = formatSize(storageDetail.others);
+    el('valFree').innerText = formatSize(limitBytes - totalBytes);
 
     const modalBox = el('storageModal').querySelector('.modal-box');
     modalBox.classList.remove('animate-open');
