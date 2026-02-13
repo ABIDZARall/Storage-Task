@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
+    initStorageTooltip(); // Inisialisasi Tooltip
 });
 
 // ======================================================
@@ -368,8 +369,57 @@ function renderItem(doc) {
 }
 
 // ======================================================
-// 6. STORAGE LOGIC & MODAL POPUP
+// 6. STORAGE LOGIC & MODAL POPUP & TOOLTIP
 // ======================================================
+
+// Helper untuk format bytes
+function formatSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Inisialisasi Tooltip Events
+function initStorageTooltip() {
+    const segments = document.querySelectorAll('.bar-segment');
+    const tooltip = el('customTooltip');
+    const ttHeader = el('ttHeader');
+    const ttSize = el('ttSize');
+    const ttDesc = el('ttDesc');
+
+    segments.forEach(seg => {
+        seg.addEventListener('mouseenter', (e) => {
+            const cat = e.target.getAttribute('data-category');
+            const size = e.target.getAttribute('data-size');
+            const formattedSize = formatSize(parseInt(size || 0));
+
+            // Set Content
+            ttHeader.innerText = cat || "LAINNYA";
+            ttSize.innerText = formattedSize;
+            
+            // Set Deskripsi sesuai kategori
+            if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
+            else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman.";
+            else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
+            else ttDesc.innerText = "File lain yang tidak dikategorikan.";
+
+            tooltip.classList.remove('hidden');
+        });
+
+        seg.addEventListener('mousemove', (e) => {
+            // Posisikan tooltip mengikuti mouse (sedikit di atas)
+            tooltip.style.left = `${e.clientX}px`;
+            tooltip.style.top = `${e.clientY - 10}px`;
+        });
+
+        seg.addEventListener('mouseleave', () => {
+            tooltip.classList.add('hidden');
+        });
+    });
+}
+
 window.openStorageModal = async () => {
     // 1. Tutup menu konteks lain agar bersih
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
@@ -384,7 +434,7 @@ window.openStorageModal = async () => {
     const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB dalam bytes
 
     // Format Text Utama (misal: "1.2 MB")
-    const formattedTotal = (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
+    const formattedTotal = formatSize(totalBytes);
     el('storageBigText').innerText = formattedTotal;
 
     // Hitung Persentase Lebar Bar
@@ -394,16 +444,34 @@ window.openStorageModal = async () => {
     const pctOthers = (storageDetail.others / limitBytes) * 100;
 
     // Apply Lebar ke Bar (CSS transition akan membuatnya animasi halus)
-    el('barImages').style.width = `${pctImages}%`;
-    el('barVideos').style.width = `${pctVideos}%`;
-    el('barDocs').style.width = `${pctDocs}%`;
-    el('barOthers').style.width = `${pctOthers}%`;
+    const barImg = el('barImages');
+    const barVid = el('barVideos');
+    const barDoc = el('barDocs');
+    const barOth = el('barOthers');
+
+    barImg.style.width = `${pctImages}%`;
+    barVid.style.width = `${pctVideos}%`;
+    barDoc.style.width = `${pctDocs}%`;
+    barOth.style.width = `${pctOthers}%`;
+
+    // Inject Data ke Atribut untuk Tooltip
+    barImg.setAttribute('data-category', 'GAMBAR');
+    barImg.setAttribute('data-size', storageDetail.images);
+
+    barVid.setAttribute('data-category', 'VIDEO');
+    barVid.setAttribute('data-size', storageDetail.videos);
+
+    barDoc.setAttribute('data-category', 'DOKUMEN');
+    barDoc.setAttribute('data-size', storageDetail.docs);
+
+    barOth.setAttribute('data-category', 'LAINNYA');
+    barOth.setAttribute('data-size', storageDetail.others);
 
     // Update Text di Legenda (Daftar rincian)
-    el('valImages').innerText = (storageDetail.images / (1024*1024)).toFixed(2) + " MB";
-    el('valVideos').innerText = (storageDetail.videos / (1024*1024)).toFixed(2) + " MB";
-    el('valDocs').innerText = (storageDetail.docs / (1024*1024)).toFixed(2) + " MB";
-    el('valOthers').innerText = (storageDetail.others / (1024*1024)).toFixed(2) + " MB";
+    el('valImages').innerText = formatSize(storageDetail.images);
+    el('valVideos').innerText = formatSize(storageDetail.videos);
+    el('valDocs').innerText = formatSize(storageDetail.docs);
+    el('valOthers').innerText = formatSize(storageDetail.others);
 
     // 4. Reset Animasi Class supaya "Smooth" tiap kali dibuka
     const modalBox = el('storageModal').querySelector('.modal-box');
@@ -446,8 +514,8 @@ async function calculateStorage() {
         });
 
         // Update Widget Sidebar (Bar kecil)
-        const mb = (storageDetail.total / (1024 * 1024)).toFixed(2);
-        el('storageUsed').innerText = `${mb} MB`;
+        const mb = formatSize(storageDetail.total);
+        el('storageUsed').innerText = mb;
         
         // Persentase total untuk widget sidebar
         const totalPct = Math.min((storageDetail.total / limit) * 100, 100);

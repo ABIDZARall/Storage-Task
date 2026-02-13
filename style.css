@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: PERFECT ALIGNMENT) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP & TOOLTIP === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -199,30 +199,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .close-icon-simple:hover { color: white; background: rgba(255,255,255,0.1); }
 
-/* Layout Flex untuk Isi Popup (Kiri - Kanan) */
+/* Layout Flex untuk Isi Popup */
 .storage-flex-container {
     display: flex;
-    gap: 40px; /* Jarak yang lebih lebar agar tidak sesak */
+    gap: 40px; 
     width: 100%;
-    align-items: stretch; /* PENTING: Agar kedua kolom tingginya sama */
+    align-items: stretch;
 }
 
-/* Kolom Kiri: Angka Besar & Progress Bar & Tombol Kiri */
 .storage-col-left {
     flex: 1;
     display: flex;
     flex-direction: column;
-    /* Kita gunakan margin-top: auto pada tombol untuk mendorongnya ke bawah */
+    justify-content: flex-start;
 }
 
-/* Kolom Kanan: List & Tombol Kanan */
 .storage-col-right {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Hero Text (Angka Besar) */
+/* Hero Text */
 .storage-hero { margin-bottom: 20px; }
 .storage-hero h1 { 
     font-size: 2.8rem; 
@@ -237,23 +235,90 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-size: 0.95rem; 
 }
 
-/* Progress Bar (Dibulatkan ujungnya) */
+/* Progress Bar (Interactive) */
 .multi-color-progress {
     width: 100%;
-    height: 8px; /* Sedikit lebih tipis elegan */
+    height: 10px; /* Sedikit lebih tebal agar mudah di hover */
     background: #334155;
     border-radius: 10px;
     overflow: hidden;
     margin-top: 10px;
     display: flex;
 }
-.bar-segment { height: 100%; }
+
+/* Style Segmen Bar */
+.bar-segment { 
+    height: 100%; 
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    /* Memberikan celah putih antar segmen seperti Google Drive */
+    border-right: 2px solid #1e293b; 
+}
+
+/* Efek Hover Segmen */
+.bar-segment:hover {
+    filter: brightness(1.2); /* Lebih terang saat di hover */
+    transform: scaleY(1.2); /* Sedikit membesar vertikal */
+}
+
 .bar-images { background-color: var(--clr-blue); }
 .bar-videos { background-color: var(--clr-yellow); }
 .bar-docs { background-color: var(--clr-red); }
 .bar-others { background-color: var(--clr-grey); }
 
-/* Legend List (Rincian) */
+/* === CUSTOM TOOLTIP STYLE (GOOGLE DRIVE) === */
+.custom-tooltip {
+    position: fixed;
+    z-index: 20000;
+    background: #e2e8f0; /* Warna putih/terang */
+    color: #1e293b;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    width: 200px;
+    pointer-events: none; /* Agar tidak mengganggu mouse */
+    font-family: 'Inter', sans-serif;
+    transform: translate(-50%, -115%); /* Posisi di atas kursor */
+    transition: opacity 0.2s;
+    text-align: center;
+}
+
+/* Segitiga kecil di bawah tooltip */
+.custom-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: #e2e8f0 transparent transparent transparent;
+}
+
+.tooltip-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.tooltip-size {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 5px;
+}
+
+.tooltip-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.2;
+}
+
+/* Legend List */
 .storage-legend {
     display: flex;
     flex-direction: column;
@@ -287,22 +352,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Container Tombol Individual agar rapi & SEJAJAR */
-/* Dengan menggunakan margin-top: auto pada kedua tombol, 
-   mereka akan selalu terdorong ke posisi paling bawah 
-   dari kolom induknya yang tingginya sudah disamakan (stretch) */
+/* Tombol */
+.storage-btn-left-container { margin-top: auto; width: 100%; }
+.storage-btn-right-container { margin-top: auto; width: 100%; }
 
-.storage-btn-left-container {
-    margin-top: auto; 
-    width: 100%;
-}
-
-.storage-btn-right-container {
-    margin-top: auto;
-    width: 100%;
-}
-
-/* Style Tombol Seragam */
 .btn-rect {
     width: 100%;
     padding: 12px;
@@ -318,51 +371,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     text-overflow: ellipsis;
 }
 
-.secondary-dark {
-    background: #334155;
-    color: white;
-    border: 1px solid transparent;
-}
+.secondary-dark { background: #334155; color: white; border: 1px solid transparent; }
 .secondary-dark:hover { background: #475569; }
 
-.primary-dark {
-    background: rgba(66, 133, 244, 0.15); /* Tint blue halus */
-    color: var(--clr-blue);
-    border: 1px solid transparent;
-}
+.primary-dark { background: rgba(66, 133, 244, 0.15); color: var(--clr-blue); border: 1px solid transparent; }
 .primary-dark:hover { background: rgba(66, 133, 244, 0.25); }
 
-/* RESPONSIVE MEDIA QUERIES */
+/* RESPONSIVE */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
-    
-    .sidebar-left { 
-        width: 100%; 
-        border-right: none; 
-        border-bottom: 1px solid rgba(255,255,255,0.1); 
-        padding-bottom: 10px;
-        order: 2; 
-        display: none; 
-    }
-
-    /* Agar Modal Responsif di HP */
-    .storage-detail-box-wide {
-        width: 90%;
-        padding: 20px;
-    }
-    .storage-flex-container {
-        flex-direction: column;
-        gap: 25px;
-    }
+    .sidebar-left { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; order: 2; display: none; }
+    .storage-detail-box-wide { width: 90%; padding: 20px; }
+    .storage-flex-container { flex-direction: column; gap: 25px; }
     .storage-hero h1 { font-size: 2.2rem; }
-    .storage-col-right {
-        gap: 20px;
-    }
-    
-    /* Di HP, margin auto tidak perlu karena stack vertikal */
-    .storage-btn-left-container,
-    .storage-btn-right-container {
-        margin-top: 15px;
-    }
+    .storage-col-right { gap: 20px; }
+    .storage-btn-left-container, .storage-btn-right-container { margin-top: 15px; }
 }
