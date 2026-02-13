@@ -164,8 +164,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Container Box - Wide Landscape */
-.storage-detail-box-wide { 
+/* === UPDATED STORAGE POPUP (NEW DESIGN) === */
+.storage-detail-box-new { 
     width: 650px; 
     max-width: 95%;
     padding: 30px; 
@@ -175,69 +175,74 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
+    position: relative; /* Untuk close icon */
 }
 
-/* Header Simple */
-.storage-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
+/* Header Centered */
+.storage-modal-header-centered {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.storage-modal-header h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
+.storage-modal-header-centered h3 {
+    font-size: 1.5rem;
+    font-weight: 500;
     color: white;
-    letter-spacing: 0.5px;
+    margin-bottom: 8px;
 }
 
-.close-icon-simple {
+.modal-subtitle-centered {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin: 0 auto;
+    max-width: 80%;
+}
+
+.close-icon-absolute {
     position: absolute;
-    top: 0; right: 0;
+    top: 20px; right: 20px;
     color: #64748b;
     cursor: pointer;
     font-size: 1.2rem;
     transition: 0.2s;
     padding: 5px;
-    border-radius: 50%;
 }
-.close-icon-simple:hover { color: white; background: rgba(255,255,255,0.1); }
+.close-icon-absolute:hover { color: white; }
 
-/* Layout Flex untuk Isi Popup */
-.storage-flex-container {
+/* Usage Row */
+.storage-usage-row {
     display: flex;
-    gap: 40px; 
-    width: 100%;
-    align-items: stretch;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+.usage-value { color: #94a3b8; }
+
+/* Progress Bar */
+.multi-color-progress.modal-bar {
+    margin-bottom: 30px;
 }
 
-.storage-col-left {
+/* Grid Layout untuk Legend (2 Kolom) */
+.storage-legend-grid {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+.legend-col {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
 }
 
-.storage-col-right {
-    flex: 1;
+.detail-item-compact {
     display: flex;
-    flex-direction: column;
-}
-
-/* Hero Text */
-.storage-hero { margin-bottom: 20px; }
-.storage-hero h1 { 
-    font-size: 2.8rem; 
-    font-weight: 700; 
-    color: white; 
-    margin-bottom: 5px; 
-    letter-spacing: -1px;
-    line-height: 1;
-}
-.storage-sub-hero { 
-    color: #94a3b8; 
-    font-size: 0.95rem; 
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.9rem;
 }
 
 /* Progress Bar (Interactive with Gaps) */
@@ -355,15 +360,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-others { background-color: var(--clr-grey); }
 .dot-free { background-color: var(--track-bg); border: 1px solid rgba(255,255,255,0.2); }
 
-/* Tombol */
-.storage-btn-left-container { margin-top: auto; width: 100%; }
-.storage-btn-right-container { margin-top: auto; width: 100%; }
-
-.storage-actions-row {
+/* Tombol Modal Baru (Sejajar Kanan) */
+.storage-actions-row-new {
     display: flex;
-    flex-direction: row; 
-    gap: 12px;
-    margin-top: auto;
+    justify-content: flex-end; /* Dorong ke kanan */
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.storage-actions-row-new .btn-rect {
+    width: auto; /* Lebar sesuai konten */
+    padding: 10px 24px;
+    border-radius: 20px; /* Lebih bulat */
+    font-size: 0.9rem;
 }
 
 .btn-rect {
@@ -563,12 +572,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .dashboard-layout { padding: 0; }
     .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
     .sidebar-left { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; order: 2; display: none; }
-    .storage-detail-box-wide { width: 90%; padding: 20px; }
-    .storage-flex-container { flex-direction: column; gap: 25px; }
-    .storage-hero h1 { font-size: 2.2rem; }
-    .storage-col-right { gap: 20px; }
-    .storage-actions-row { flex-direction: column; }
     
+    .storage-detail-box-new { width: 90%; padding: 20px; }
+    .storage-legend-grid { flex-direction: column; gap: 0; }
+    .storage-actions-row-new { justify-content: center; flex-direction: column; }
+    .storage-actions-row-new .btn-rect { width: 100%; border-radius: 8px; }
+
     .storage-manager-card { padding: 20px; }
     .card-header-text h1 { font-size: 1.5rem; }
 }
