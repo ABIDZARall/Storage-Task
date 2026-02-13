@@ -170,50 +170,56 @@
     </div>
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
-        <div class="glass-card modal-box storage-detail-box">
+        <div class="glass-card modal-box storage-detail-box-wide">
+            
             <div class="storage-modal-header">
                 <h3>Penyimpanan</h3>
                 <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
             </div>
             
-            <div class="modal-body">
-                <div class="storage-hero">
-                    <h1 id="storageBigText">0 MB</h1>
-                    <p class="storage-sub-hero">dari 2 GB digunakan</p>
-                </div>
+            <div class="storage-flex-container">
+                
+                <div class="storage-col-left">
+                    <div class="storage-hero">
+                        <h1 id="storageBigText">0 MB</h1>
+                        <p class="storage-sub-hero">dari 2 GB digunakan</p>
+                    </div>
 
-                <div class="multi-color-progress">
-                    <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
-                    <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
-                    <div id="barDocs" class="bar-segment bar-docs" style="width: 0%"></div>
-                    <div id="barOthers" class="bar-segment bar-others" style="width: 0%"></div>
-                </div>
-
-                <div class="storage-legend">
-                    <div class="legend-row">
-                        <div class="legend-label"><span class="dot dot-images"></span> Gambar</div>
-                        <span id="valImages" class="legend-val">0 MB</span>
-                    </div>
-                    <div class="legend-row">
-                        <div class="legend-label"><span class="dot dot-videos"></span> Video</div>
-                        <span id="valVideos" class="legend-val">0 MB</span>
-                    </div>
-                    <div class="legend-row">
-                        <div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div>
-                        <span id="valDocs" class="legend-val">0 MB</span>
-                    </div>
-                    <div class="legend-row">
-                        <div class="legend-label"><span class="dot dot-others"></span> Lainnya</div>
-                        <span id="valOthers" class="legend-val">0 MB</span>
+                    <div class="multi-color-progress">
+                        <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
+                        <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
+                        <div id="barDocs" class="bar-segment bar-docs" style="width: 0%"></div>
+                        <div id="barOthers" class="bar-segment bar-others" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div class="storage-actions-vertical">
-                    <button class="btn-rect secondary-dark" onclick="alert('Fitur ini akan segera hadir')">Kosongkan ruang penyimpanan</button>
-                    <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
+                <div class="storage-col-right">
+                    <div class="storage-legend">
+                        <div class="legend-row">
+                            <div class="legend-label"><span class="dot dot-images"></span> Gambar</div>
+                            <span id="valImages" class="legend-val">0 MB</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-label"><span class="dot dot-videos"></span> Video</div>
+                            <span id="valVideos" class="legend-val">0 MB</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div>
+                            <span id="valDocs" class="legend-val">0 MB</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-label"><span class="dot dot-others"></span> Lainnya</div>
+                            <span id="valOthers" class="legend-val">0 MB</span>
+                        </div>
+                    </div>
+
+                    <div class="storage-actions-vertical">
+                        <button class="btn-rect secondary-dark" onclick="alert('Fitur ini akan segera hadir')">Kosongkan ruang</button>
+                        <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan ekstra</button>
+                    </div>
                 </div>
-            </div>
-        </div>
+                
+            </div> </div>
     </div>
 
     <div id="fileContextMenu" class="context-menu-modern hidden">

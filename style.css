@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (WIDE LANDSCAPE) === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -161,14 +161,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Container Box - Rectangular & Modern */
-.storage-detail-box { 
-    width: 400px; /* Ukuran pas sesuai screenshot */
-    max-width: 90%;
+/* Container Box - Wide Landscape */
+.storage-detail-box-wide { 
+    width: 650px; /* Lebar ditambah */
+    max-width: 95%;
     padding: 24px; 
-    background-color: #1e293b; /* Warna solid gelap */
+    background-color: #1e293b; 
     border: 1px solid var(--popup-border);
-    border-radius: 12px; /* Sudut tidak terlalu bulat (Rectangular feel) */
+    border-radius: 12px; 
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
@@ -196,8 +196,29 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .close-icon-simple:hover { color: white; }
 
+/* Layout Flex untuk Isi Popup (Kiri - Kanan) */
+.storage-flex-container {
+    display: flex;
+    gap: 30px; /* Jarak antara kolom kiri dan kanan */
+    width: 100%;
+}
+
+.storage-col-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.storage-col-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Agar tombol selalu di bawah */
+}
+
 /* Hero Text */
-.storage-hero { margin-bottom: 20px; }
+.storage-hero { margin-bottom: 15px; }
 .storage-hero h1 { font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px; letter-spacing: -1px; }
 .storage-sub-hero { color: #94a3b8; font-size: 0.9rem; }
 
@@ -208,7 +229,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     background: #334155;
     border-radius: 6px;
     overflow: hidden;
-    margin-bottom: 25px;
+    margin-bottom: 15px; /* Margin dikurangi dikit krn ada di kolom sendiri */
     display: flex;
 }
 .bar-segment { height: 100%; }
@@ -217,12 +238,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .bar-docs { background-color: var(--clr-red); }
 .bar-others { background-color: var(--clr-grey); }
 
-/* Legend List - Bersih dan Rapi */
+/* Legend List */
 .storage-legend {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .legend-row {
@@ -240,20 +261,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Tombol Aksi - Full Width & Modern */
+/* Tombol Aksi */
 .storage-actions-vertical {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .btn-rect {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
     border: none;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
@@ -278,20 +299,23 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .dashboard-layout { padding: 0; }
     .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
     
-    /* Sidebar jadi navigasi bawah atau drawer (Simpelnya kita sembunyikan atau kecilkan di mobile, tapi sesuai request kita buat responsif layoutnya) */
     .sidebar-left { 
         width: 100%; 
         border-right: none; 
         border-bottom: 1px solid rgba(255,255,255,0.1); 
         padding-bottom: 10px;
-        order: 2; /* Pindah ke bawah kalau mau, atau tetap di atas */
-        display: none; /* Sembunyikan sidebar di mobile untuk fokus konten (optional) - tapi user minta responsif popup */
+        order: 2; 
+        display: none; 
     }
 
-    /* Agar Modal Responsif di HP */
-    .storage-detail-box {
+    /* Agar Modal Responsif di HP (Kembali jadi stack vertikal jika layar kecil) */
+    .storage-detail-box-wide {
         width: 90%;
         padding: 20px;
+    }
+    .storage-flex-container {
+        flex-direction: column;
+        gap: 20px;
     }
     .storage-hero h1 { font-size: 2rem; }
 }
