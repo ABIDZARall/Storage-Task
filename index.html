@@ -80,7 +80,7 @@
                 <img src="logo.png" alt="Logo" style="height: 40px;">
             </div>
             <div class="profile-area">
-                <img src="user.jpg" alt="User" class="avatar">
+                <img src="user.jpg" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()" title="Edit Profil">
                 <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
@@ -135,12 +135,60 @@
         </div>
     </section>
 
+    <section id="profilePage" class="full-screen-center hidden">
+        <div class="glass-card profile-card">
+            <div class="profile-header">
+                <h3><i class="fa-solid fa-arrow-left" style="cursor:pointer; margin-right:10px;" onclick="nav('dashboardPage')"></i> Edit Profil</h3>
+            </div>
+            
+            <div class="profile-avatar-container">
+                <div class="profile-avatar-wrapper" onclick="document.getElementById('profileUploadInput').click()">
+                    <img src="user.jpg" id="editProfileImg" alt="Profile" class="profile-img-lg">
+                    <div class="avatar-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                </div>
+                <p class="profile-hint">Ketuk untuk mengganti foto</p>
+                <input type="file" id="profileUploadInput" hidden accept="image/*">
+            </div>
+
+            <form id="profileForm" onsubmit="return false;">
+                <div class="pill-input">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="editName" placeholder="Nama Lengkap">
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="editEmail" placeholder="Email">
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" id="editPhone" placeholder="Nomor HP">
+                </div>
+                
+                <div class="separator-line"></div>
+                <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:5px;">Ubah Password (Opsional)</p>
+                
+                <div class="pill-input">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="editPass" placeholder="Password Baru">
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('editPass', this)"></i>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn-pill secondary" style="width:100px;" onclick="nav('dashboardPage')">Batal</button>
+                    <button class="btn-pill primary" style="flex:1;" onclick="saveProfile()">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
     <section id="storagePage" class="full-screen-layout hidden">
         <header class="storage-page-header">
             <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
             <h2>Pengelola Penyimpanan</h2>
             <div style="flex:1"></div>
-            <img src="user.jpg" alt="User" class="avatar">
+            <img src="user.jpg" alt="User" class="avatar" id="storagePageAvatar">
         </header>
 
         <div class="storage-page-content">
