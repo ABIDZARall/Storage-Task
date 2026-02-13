@@ -29,7 +29,6 @@ let selectedItem = null;
 let selectedUploadFile = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
-let selectedProfileImage = null; // State untuk gambar profil baru
 
 // Helper
 const el = (id) => document.getElementById(id);
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
-    initStorageTooltip();
+    initStorageTooltip(); // Inisialisasi Tooltip Interaktif
 });
 
 // ======================================================
@@ -178,7 +177,7 @@ async function checkSession() {
 }
 
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage'].forEach(id => {
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage'].forEach(id => {
         const element = el(id);
         if(element) element.classList.add('hidden');
     });
@@ -373,6 +372,7 @@ function renderItem(doc) {
 // 6. STORAGE LOGIC & MODAL POPUP & TOOLTIP
 // ======================================================
 
+// Helper untuk format bytes
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -381,6 +381,7 @@ function formatSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// Inisialisasi Tooltip Events
 function initStorageTooltip() {
     const segments = document.querySelectorAll('.bar-segment');
     const tooltip = el('customTooltip');
@@ -394,9 +395,11 @@ function initStorageTooltip() {
             const size = e.target.getAttribute('data-size');
             const formattedSize = formatSize(parseInt(size || 0));
 
+            // Set Content
             ttHeader.innerText = cat || "LAINNYA";
             ttSize.innerText = formattedSize;
             
+            // Set Deskripsi sesuai kategori
             if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
             else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
             else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
@@ -407,6 +410,7 @@ function initStorageTooltip() {
         });
 
         seg.addEventListener('mousemove', (e) => {
+            // Posisikan tooltip mengikuti mouse (sedikit di atas)
             tooltip.style.left = `${e.clientX}px`;
             tooltip.style.top = `${e.clientY - 15}px`;
         });
@@ -494,9 +498,6 @@ window.openStorageModal = async () => {
     const formattedTotal = formatSize(totalBytes);
     el('storageBigText').innerText = formattedTotal;
 
-    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    el('modalStorageTitle').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-
     const pctImages = (storageDetail.images / limitBytes) * 100;
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
     const pctDocs = (storageDetail.docs / limitBytes) * 100;
@@ -525,7 +526,6 @@ window.openStorageModal = async () => {
     el('valVideos').innerText = formatSize(storageDetail.videos);
     el('valDocs').innerText = formatSize(storageDetail.docs);
     el('valOthers').innerText = formatSize(storageDetail.others);
-    el('valFree').innerText = formatSize(limitBytes - totalBytes);
 
     const modalBox = el('storageModal').querySelector('.modal-box');
     modalBox.classList.remove('animate-open');
@@ -575,116 +575,6 @@ async function calculateStorage() {
         console.error("Gagal hitung storage:", e);
     }
 }
-
-// ======================================================
-// 7. PROFILE EDITING LOGIC
-// ======================================================
-
-window.openProfilePage = async () => {
-    // Tutup menu lain jika terbuka
-    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-    
-    toggleLoading(true, "Memuat Profil...");
-    
-    try {
-        // Ambil data user terbaru dari Auth
-        const user = await account.get();
-        
-        // Ambil data tambahan (Phone) dari Database (jika ada)
-        let phone = "";
-        try {
-            const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
-            phone = userDB.phone || "";
-        } catch(e) { console.log("User DB fetch error:", e); }
-
-        // Isi Form
-        el('editName').value = user.name;
-        el('editEmail').value = user.email;
-        el('editPhone').value = phone;
-        el('editPass').value = ""; // Reset password field
-        el('editProfilePreview').src = "user.jpg"; // Default atau load dari storage jika ada (optional logic)
-
-        // Tampilkan Halaman
-        window.nav('profilePage');
-    } catch(e) {
-        alert("Gagal memuat profil: " + e.message);
-    } finally {
-        toggleLoading(false);
-    }
-};
-
-window.closeProfilePage = () => {
-    window.nav('dashboardPage');
-};
-
-window.handleProfileImageSelect = (input) => {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        selectedProfileImage = file;
-        
-        // Preview lokal
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            el('editProfilePreview').src = e.target.result;
-        }
-        reader.readAsDataURL(file);
-    }
-};
-
-window.submitUpdateProfile = async (e) => {
-    e.preventDefault();
-    toggleLoading(true, "Menyimpan...");
-
-    const newName = el('editName').value.trim();
-    const newPhone = el('editPhone').value.trim();
-    const newPass = el('editPass').value;
-
-    try {
-        // 1. Update Nama (Auth)
-        if (newName !== currentUser.name) {
-            await account.updateName(newName);
-        }
-
-        // 2. Update Password (Auth) - Jika diisi
-        if (newPass) {
-            await account.updatePassword(newPass);
-        }
-
-        // 3. Update Phone (Database)
-        try {
-            await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, {
-                phone: newPhone
-            });
-        } catch(err) {
-            // Jika dokumen belum ada (kasus lama), buat baru
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, {
-                name: newName,
-                email: currentUser.email,
-                phone: newPhone
-            });
-        }
-
-        // 4. Update Foto (Storage) - Placeholder logic
-        // Di sini Anda bisa menambahkan logika upload ke bucket 'profile-pics' jika sudah dibuat di Appwrite
-        // if (selectedProfileImage) { ... upload logic ... }
-
-        alert("Profil berhasil diperbarui!");
-        
-        // Refresh session data
-        currentUser = await account.get();
-        // Update tampilan nama di UI jika perlu (belum ada elemen spesifik nama di dashboard selain avatar)
-        
-        window.closeProfilePage();
-
-    } catch (error) {
-        alert("Gagal memperbarui profil: " + error.message);
-    } finally {
-        toggleLoading(false);
-    }
-};
-
 
 // Utils (Modal, CRUD, Excel)
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
