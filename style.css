@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (WIDE LANDSCAPE) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: GOOGLE DRIVE LAYOUT) === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -163,13 +163,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* Container Box - Wide Landscape */
 .storage-detail-box-wide { 
-    width: 650px; /* Lebar ditambah */
+    width: 650px; 
     max-width: 95%;
-    padding: 24px; 
+    padding: 30px; 
     background-color: #1e293b; 
     border: 1px solid var(--popup-border);
-    border-radius: 12px; 
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border-radius: 16px; 
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
 }
@@ -179,30 +179,34 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .storage-modal-header h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: white;
+    letter-spacing: 0.5px;
 }
 
 .close-icon-simple {
     color: #64748b;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1rem;
     transition: 0.2s;
+    padding: 5px;
+    border-radius: 50%;
 }
-.close-icon-simple:hover { color: white; }
+.close-icon-simple:hover { color: white; background: rgba(255,255,255,0.1); }
 
 /* Layout Flex untuk Isi Popup (Kiri - Kanan) */
 .storage-flex-container {
     display: flex;
-    gap: 30px; /* Jarak antara kolom kiri dan kanan */
+    gap: 40px; /* Jarak yang lebih lebar agar tidak sesak */
     width: 100%;
 }
 
+/* Kolom Kiri: Angka Besar & Progress Bar */
 .storage-col-left {
     flex: 1;
     display: flex;
@@ -210,6 +214,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     justify-content: flex-start;
 }
 
+/* Kolom Kanan: List & Tombol */
 .storage-col-right {
     flex: 1;
     display: flex;
@@ -217,19 +222,29 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     justify-content: space-between; /* Agar tombol selalu di bawah */
 }
 
-/* Hero Text */
-.storage-hero { margin-bottom: 15px; }
-.storage-hero h1 { font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px; letter-spacing: -1px; }
-.storage-sub-hero { color: #94a3b8; font-size: 0.9rem; }
+/* Hero Text (Angka Besar) */
+.storage-hero { margin-bottom: 20px; }
+.storage-hero h1 { 
+    font-size: 2.8rem; 
+    font-weight: 700; 
+    color: white; 
+    margin-bottom: 5px; 
+    letter-spacing: -1px;
+    line-height: 1;
+}
+.storage-sub-hero { 
+    color: #94a3b8; 
+    font-size: 0.95rem; 
+}
 
-/* Progress Bar */
+/* Progress Bar (Dibulatkan ujungnya) */
 .multi-color-progress {
     width: 100%;
-    height: 10px;
+    height: 8px; /* Sedikit lebih tipis elegan */
     background: #334155;
-    border-radius: 6px;
+    border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 15px; /* Margin dikurangi dikit krn ada di kolom sendiri */
+    margin-top: 10px;
     display: flex;
 }
 .bar-segment { height: 100%; }
@@ -238,43 +253,54 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .bar-docs { background-color: var(--clr-red); }
 .bar-others { background-color: var(--clr-grey); }
 
-/* Legend List */
+/* Legend List (Rincian) */
 .storage-legend {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .legend-row {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
+    align-items: center;
 }
 
-.legend-label { display: flex; align-items: center; gap: 10px; color: #cbd5e1; }
-.legend-val { color: #94a3b8; font-family: monospace; }
+.legend-label { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    color: #e2e8f0; 
+    font-weight: 500;
+}
+.legend-val { 
+    color: #94a3b8; 
+    font-family: 'Consolas', monospace; 
+    font-size: 0.85rem;
+}
 
-.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot-images { background-color: var(--clr-blue); }
 .dot-videos { background-color: var(--clr-yellow); }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Tombol Aksi */
+/* Tombol Aksi (Google Drive Style) */
 .storage-actions-vertical {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .btn-rect {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     border: none;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
@@ -315,7 +341,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .storage-flex-container {
         flex-direction: column;
+        gap: 25px;
+    }
+    .storage-hero h1 { font-size: 2.2rem; }
+    .storage-col-right {
         gap: 20px;
     }
-    .storage-hero h1 { font-size: 2rem; }
 }
