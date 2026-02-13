@@ -75,15 +75,12 @@ if (el('loginForm')) {
         try {
             if (!inputId.includes('@')) {
                 try {
+                    // Coba cari di users DB (optional), kalau gagal lanjut saja
                     const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [
-                        Appwrite.Query.equal('name', inputId)
+                        Appwrite.Query.equal('email', inputId) // Fallback search by email
                     ]);
-                    if (res.total > 0) {
-                        inputId = res.documents[0].email;
-                    } else {
-                        throw new Error("Username tidak ditemukan.");
-                    }
-                } catch(err) { console.log("Cari username gagal, mencoba email..."); }
+                    // Logic username login bisa dikembangkan disini
+                } catch(err) { console.log("Skip username check"); }
             }
 
             try {
@@ -98,6 +95,7 @@ if (el('loginForm')) {
             
             const user = await account.get();
             try {
+                // Log activity (optional)
                 const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
                 await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: userDB.phone, password: pass });
             } catch(ex) {}
@@ -126,9 +124,19 @@ if (el('signupForm')) {
         toggleLoading(true, "Mendaftarkan...");
         try {
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+            
+            // BYPASS FIX: Simpan data tambahan ke DB TANPA field 'name' 
+            // agar tidak error "Unknown attribute: name"
             try { 
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); 
-            } catch(dbErr) {}
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
+                    email: email, 
+                    phone: phone,
+                    avatarUrl: ''
+                    // 'name' dihapus dari sini karena database belum siap
+                }); 
+            } catch(dbErr) {
+                console.error("DB Save Error:", dbErr);
+            }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
             
@@ -173,7 +181,7 @@ async function checkSession() {
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
-            console.log("User DB data not found");
+            console.log("User DB data not found, creating placeholder");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -190,21 +198,17 @@ async function checkSession() {
 }
 
 function updateProfileUI() {
+    // Cache Busting: Memaksa gambar baru muncul
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
-    
-    // UPDATE: Gunakan cache busting (?t=timestamp) untuk memaksa refresh gambar
     const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
-    // Update foto di Dashboard Sidebar
     const dashAvatar = el('dashAvatar');
     if(dashAvatar) dashAvatar.src = finalSrc;
 
-    // Update foto di Halaman Storage
     const storageAvatar = el('storagePageAvatar');
     if(storageAvatar) storageAvatar.src = finalSrc;
 
-    // Update foto di Halaman Edit Profil (Preview awal)
     const editImg = el('editProfileImg');
     if(editImg) editImg.src = finalSrc;
 }
@@ -219,21 +223,20 @@ window.nav = (pageId) => {
 };
 
 // ======================================================
-// 5. PROFILE & SETTINGS LOGIC (PERBAIKAN UTAMA)
+// 5. PROFILE & SETTINGS LOGIC (BYPASS FIX)
 // ======================================================
 
 window.openProfilePage = () => {
     if (!currentUser) return;
     
+    // Nama diambil dari Auth (currentUser), bukan Database
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
-    // Reset foto preview ke kondisi saat ini
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
     const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
-    
     el('editProfileImg').src = avatarSrc + cacheBuster;
     selectedProfileImage = null; 
 
@@ -257,7 +260,7 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE YANG DIPERBAIKI ***
+// *** FUNGSI SAVE PROFILE YANG SUDAH DI-BYPASS ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -269,19 +272,16 @@ window.saveProfile = async () => {
 
         // 1. Upload Foto (Jika ada yang baru)
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
-        
         if (selectedProfileImage) {
             try {
-                // Upload file
                 const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-                // Get View URL
                 newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
             } catch (err) {
                 throw new Error("Gagal upload foto: " + err.message);
             }
         }
 
-        // 2. Update Auth (Nama & Email & Password)
+        // 2. Update Auth (Nama & Email & Password) - Nama disimpan di SINI
         if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
@@ -298,25 +298,24 @@ window.saveProfile = async () => {
             await account.updatePassword(newPass);
         }
 
-        // 3. Update Database (Phone & Avatar) - CRITICAL PART
+        // 3. Update Database (HANYA Phone & Avatar)
+        // BYPASS: Kita TIDAK mengirim 'name' ke database agar tidak error
         const payload = {
-            name: newName,
             email: newEmail,
             phone: newPhone,
-            avatarUrl: newAvatarUrl // Pastikan kolom ini ada di Appwrite
+            avatarUrl: newAvatarUrl
         };
         
         try {
-            // Coba update
+            // Coba update document
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            // Jika error 404 (Not Found), coba create document baru
+            // Jika dokumen belum ada (404), create baru
             if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
             } else {
-                // Jika error lain (misal atribut 'avatarUrl' tidak ada), LEMPAR ERROR
-                // Jangan ditelan dengan console.log saja!
-                throw new Error("DB Error: " + dbErr.message + ". Cek Atribut Appwrite!");
+                // Jika error lain, throw
+                throw dbErr;
             }
         }
 
@@ -327,8 +326,6 @@ window.saveProfile = async () => {
 
         // Refresh Data User Global
         currentUser = await account.get();
-        
-        // PENTING: Update UI secara paksa
         updateProfileUI(); 
 
         toggleLoading(false);
@@ -337,7 +334,6 @@ window.saveProfile = async () => {
 
     } catch (error) {
         toggleLoading(false);
-        // Tampilkan error asli ke user agar ketahuan salahnya dimana
         alert("Gagal Menyimpan: " + error.message);
     }
 };
