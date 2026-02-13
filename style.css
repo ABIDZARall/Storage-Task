@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: SPLIT BUTTONS) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: PERFECT ALIGNMENT) === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -204,6 +204,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     display: flex;
     gap: 40px; /* Jarak yang lebih lebar agar tidak sesak */
     width: 100%;
+    align-items: stretch; /* PENTING: Agar kedua kolom tingginya sama */
 }
 
 /* Kolom Kiri: Angka Besar & Progress Bar & Tombol Kiri */
@@ -211,7 +212,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    /* Kita gunakan margin-top: auto pada tombol untuk mendorongnya ke bawah */
 }
 
 /* Kolom Kanan: List & Tombol Kanan */
@@ -219,7 +220,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; 
 }
 
 /* Hero Text (Angka Besar) */
@@ -287,13 +287,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Container Tombol Individual agar rapi */
+/* Container Tombol Individual agar rapi & SEJAJAR */
+/* Dengan menggunakan margin-top: auto pada kedua tombol, 
+   mereka akan selalu terdorong ke posisi paling bawah 
+   dari kolom induknya yang tingginya sudah disamakan (stretch) */
+
 .storage-btn-left-container {
-    margin-top: 20px; /* Jarak dari progress bar */
+    margin-top: auto; 
+    width: 100%;
 }
 
 .storage-btn-right-container {
-    margin-top: auto; /* Dorong ke paling bawah kolom kanan */
+    margin-top: auto;
+    width: 100%;
 }
 
 /* Style Tombol Seragam */
@@ -354,8 +360,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         gap: 20px;
     }
     
-    /* Di HP, margin auto tidak perlu, cukup gap */
+    /* Di HP, margin auto tidak perlu karena stack vertikal */
+    .storage-btn-left-container,
     .storage-btn-right-container {
-        margin-top: 0;
+        margin-top: 15px;
     }
 }
