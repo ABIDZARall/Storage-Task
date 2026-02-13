@@ -83,7 +83,6 @@
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> Baru</button>
-                    
                     <div id="dropdownNewMenu" class="dropdown-content extended-menu">
                         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
                         <hr class="menu-divider">
@@ -180,37 +179,31 @@
                 <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
                 <p id="storageSubText" class="storage-sub-text">dari 2 GB digunakan</p>
                 
-                <div class="multi-color-progress-interactive">
-                    <div id="barImages" class="bar-segment bar-images" data-type="Gambar"></div>
-                    <div id="barVideos" class="bar-segment bar-videos" data-type="Video"></div>
-                    <div id="barDocs" class="bar-segment bar-docs" data-type="Dokumen"></div>
-                    <div id="barOthers" class="bar-segment bar-others" data-type="Lainnya"></div>
-                    <div id="barFree" class="bar-segment bar-free" data-type="Kosong"></div>
-                    
+                <div class="storage-bar-wrapper">
                     <div id="storageTooltip" class="storage-tooltip hidden">
-                        <span id="tooltipType">Jenis</span>: <span id="tooltipSize">0 MB</span>
+                        <span id="tooltipType"></span>: <span id="tooltipSize"></span>
+                    </div>
+
+                    <div class="google-style-bar">
+                        <div id="segImage" class="bar-seg seg-blue" onmousemove="showTooltip(event, 'Gambar')" onmouseleave="hideTooltip()"></div>
+                        <div id="segVideo" class="bar-seg seg-red" onmousemove="showTooltip(event, 'Video')" onmouseleave="hideTooltip()"></div>
+                        <div id="segDoc" class="bar-seg seg-cyan" onmousemove="showTooltip(event, 'Dokumen')" onmouseleave="hideTooltip()"></div>
+                        <div id="segOther" class="bar-seg seg-grey" onmousemove="showTooltip(event, 'Lainnya')" onmouseleave="hideTooltip()"></div>
+                        <div id="segFree" class="bar-seg seg-empty" onmousemove="showTooltip(event, 'Kosong')" onmouseleave="hideTooltip()"></div>
                     </div>
                 </div>
 
                 <div class="storage-legend">
-                    <div class="legend-item">
-                        <span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="dot dot-docs"></span> Dokumen <span id="valDocs" class="val-text">0 MB</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="dot dot-others"></span> Lainnya <span id="valOthers" class="val-text">0 MB</span>
-                    </div>
+                    <div class="legend-row"><div class="dot dot-blue"></div><span>Gambar</span><span id="valImages" class="legend-val">0 MB</span></div>
+                    <div class="legend-row"><div class="dot dot-red"></div><span>Video</span><span id="valVideos" class="legend-val">0 MB</span></div>
+                    <div class="legend-row"><div class="dot dot-cyan"></div><span>Dokumen</span><span id="valDocs" class="legend-val">0 MB</span></div>
+                    <div class="legend-row"><div class="dot dot-grey"></div><span>Lainnya</span><span id="valOthers" class="legend-val">0 MB</span></div>
                 </div>
-
+                
                 <hr class="modal-divider">
-
-                <button class="btn-pill secondary full-width btn-manager" onclick="alert('Membuka Pengelola Penyimpanan Lengkap...')">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Pengelola Penyimpanan
+                
+                <button class="btn-pill secondary full-width btn-manager" onclick="alert('Membuka halaman Pengelola Penyimpanan...')">
+                    Pengelola Penyimpanan <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.8rem; margin-left:5px;"></i>
                 </button>
             </div>
         </div>

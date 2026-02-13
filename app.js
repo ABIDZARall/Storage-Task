@@ -27,7 +27,7 @@ let currentFolderName = "Drive";
 let currentViewMode = 'root';
 let selectedItem = null; 
 let selectedUploadFile = null; 
-// Storage Detail dengan struktur data lengkap
+// Struktur Data Storage Detail
 let storageDetail = { 
     images: { size: 0, count: 0 }, 
     videos: { size: 0, count: 0 }, 
@@ -50,7 +50,6 @@ const toggleLoading = (show, msg = "Memproses...") => {
     }
 };
 
-// Helper Format Bytes ke MB/GB
 const formatBytes = (bytes, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
     const k = 1024;
@@ -74,49 +73,34 @@ document.addEventListener('DOMContentLoaded', () => {
 // ======================================================
 // 3. LOGIKA OTENTIKASI
 // ======================================================
-
-// LOGIN
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         let inputId = el('loginEmail').value.trim();
         const pass = el('loginPass').value;
-        
         toggleLoading(true, "Sedang Masuk...");
-        
         try {
             if (!inputId.includes('@')) {
                 try {
                     const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [
                         Appwrite.Query.equal('name', inputId)
                     ]);
-                    if (res.total > 0) {
-                        inputId = res.documents[0].email;
-                    } else {
-                        throw new Error("Username tidak ditemukan.");
-                    }
+                    if (res.total > 0) inputId = res.documents[0].email;
+                    else throw new Error("Username tidak ditemukan.");
                 } catch(err) { console.log("Cari username gagal, mencoba email..."); }
             }
-
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                if (authError.code === 401 || authError.message.includes('session is active')) {
-                    console.log("Sesi aktif, lanjut ke dashboard...");
-                } else {
-                    throw authError; 
-                }
+                if (authError.code === 401 || authError.message.includes('session is active')) console.log("Sesi aktif...");
+                else throw authError; 
             }
-            
             const user = await account.get();
             try {
                 const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
                 await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: userDB.phone, password: pass });
             } catch(ex) {}
-
             checkSession(); 
-
         } catch (error) { 
             toggleLoading(false);
             alert("Login Gagal: " + (error.message || "Periksa data Anda."));
@@ -124,7 +108,6 @@ if (el('loginForm')) {
     });
 }
 
-// SIGN UP
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -133,18 +116,12 @@ if (el('signupForm')) {
         const phone = el('regPhone').value.trim();
         const pass = el('regPass').value;
         const verify = el('regVerify').value;
-
         if (pass !== verify) return alert("Konfirmasi password salah!");
-        
         toggleLoading(true, "Mendaftarkan...");
         try {
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-            try { 
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); 
-            } catch(dbErr) {}
-            
+            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone }); } catch(dbErr) {}
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
-            
             toggleLoading(false);
             alert("Berhasil! Silakan Login."); 
             window.nav('loginPage');
@@ -156,7 +133,6 @@ if (el('signupForm')) {
     });
 }
 
-// LOGOUT
 function initLogout() {
     const btn = el('logoutBtn');
     if (btn) {
@@ -165,10 +141,7 @@ function initLogout() {
         newBtn.addEventListener('click', async () => {
             if (confirm("Keluar dari aplikasi?")) {
                 toggleLoading(true, "Keluar...");
-                try {
-                    await account.deleteSession('current');
-                    window.location.reload(); 
-                } catch (error) { window.location.reload(); }
+                try { await account.deleteSession('current'); window.location.reload(); } catch (error) { window.location.reload(); }
             }
         });
     }
@@ -179,17 +152,12 @@ function initLogout() {
 // ======================================================
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) toggleLoading(true, "Memuat Data...");
-
     try {
         currentUser = await account.get();
         window.nav('dashboardPage'); 
         loadFiles('root');  
         calculateStorage();
-    } catch (e) { 
-        window.nav('loginPage'); 
-    } finally { 
-        toggleLoading(false); 
-    }
+    } catch (e) { window.nav('loginPage'); } finally { toggleLoading(false); }
 }
 
 window.nav = (pageId) => {
@@ -229,7 +197,6 @@ window.openFolder = (id, name) => {
     loadFiles(id);
 };
 
-// Search Engine
 function initSearchBar() {
     const input = el('searchInput');
     if (!input) return;
@@ -282,7 +249,7 @@ function initAllContextMenus() {
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
         if(el('storageModal')) el('storageModal').classList.add('hidden');
-        el('storageTooltip').classList.remove('visible'); // Sembunyikan tooltip storage
+        hideTooltip(); 
     };
 
     if (newBtn) {
@@ -319,7 +286,6 @@ function initAllContextMenus() {
     window.onclick = () => closeAll();
 }
 
-// Render Item
 function renderItem(doc) {
     const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
@@ -370,113 +336,96 @@ function renderItem(doc) {
 }
 
 // ======================================================
-// 8. LOGIKA STORAGE & POPUP INTERAKTIF (PERBAIKAN UTAMA)
+// 8. STORAGE & TOOLTIP LOGIC (DIAGRAM INTERAKTIF)
 // ======================================================
+
 window.openStorageModal = () => {
-    // Tutup menu lain
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
     
-    // Total kapasitas 2GB dalam bytes (2 * 1024 * 1024 * 1024)
+    // Konstanta 2GB
     const MAX_STORAGE = 2147483648; 
-    const totalUsed = storageDetail.total || 0;
+    const used = storageDetail.total || 0;
     
-    // Hitung Persentase
-    const pctImages = (storageDetail.images.size / MAX_STORAGE) * 100;
-    const pctVideos = (storageDetail.videos.size / MAX_STORAGE) * 100;
-    const pctDocs = (storageDetail.docs.size / MAX_STORAGE) * 100;
-    const pctOthers = (storageDetail.others.size / MAX_STORAGE) * 100;
+    // Hitung Persentase Width
+    let pImg = (storageDetail.images.size / MAX_STORAGE) * 100;
+    let pVid = (storageDetail.videos.size / MAX_STORAGE) * 100;
+    let pDoc = (storageDetail.docs.size / MAX_STORAGE) * 100;
+    let pOth = (storageDetail.others.size / MAX_STORAGE) * 100;
+    
+    // Set Width
+    el('segImage').style.width = `${pImg}%`;
+    el('segVideo').style.width = `${pVid}%`;
+    el('segDoc').style.width = `${pDoc}%`;
+    el('segOther').style.width = `${pOth}%`;
+    // Sisanya kosong
+    const remainingBytes = MAX_STORAGE - used;
+    el('segFree').style.width = `${(remainingBytes / MAX_STORAGE) * 100}%`;
 
-    // Update Lebar Bar
-    el('barImages').style.width = `${pctImages}%`;
-    el('barVideos').style.width = `${pctVideos}%`;
-    el('barDocs').style.width = `${pctDocs}%`;
-    el('barOthers').style.width = `${pctOthers}%`;
-    el('barFree').style.width = `${100 - (pctImages + pctVideos + pctDocs + pctOthers)}%`;
-
-    // Update Teks Utama
-    el('storageBigText').innerText = formatBytes(totalUsed);
+    // Update Text
+    el('storageBigText').innerText = formatBytes(used);
     el('storageSubText').innerText = `dari 2 GB digunakan`;
-
-    // Update List Legend
     el('valImages').innerText = formatBytes(storageDetail.images.size);
     el('valVideos').innerText = formatBytes(storageDetail.videos.size);
     el('valDocs').innerText = formatBytes(storageDetail.docs.size);
     el('valOthers').innerText = formatBytes(storageDetail.others.size);
 
-    // Setup Tooltip Events pada Segmen Bar
-    setupTooltip('barImages', 'Gambar', storageDetail.images.size);
-    setupTooltip('barVideos', 'Video', storageDetail.videos.size);
-    setupTooltip('barDocs', 'Dokumen', storageDetail.docs.size);
-    setupTooltip('barOthers', 'Lainnya', storageDetail.others.size);
-    setupTooltip('barFree', 'Kosong', MAX_STORAGE - totalUsed);
-
     window.openModal('storageModal');
 };
 
-function setupTooltip(elementId, label, sizeBytes) {
-    const segment = el(elementId);
+// Fungsi Tampilkan Tooltip saat Hover Diagram
+window.showTooltip = (event, type) => {
     const tooltip = el('storageTooltip');
     const typeLabel = el('tooltipType');
     const sizeLabel = el('tooltipSize');
+    let sizeBytes = 0;
 
-    if(!segment) return;
+    // Tentukan size berdasarkan tipe
+    if(type === 'Gambar') sizeBytes = storageDetail.images.size;
+    else if(type === 'Video') sizeBytes = storageDetail.videos.size;
+    else if(type === 'Dokumen') sizeBytes = storageDetail.docs.size;
+    else if(type === 'Lainnya') sizeBytes = storageDetail.others.size;
+    else if(type === 'Kosong') sizeBytes = (2147483648 - storageDetail.total); // 2GB - used
 
-    // Bersihkan listener lama (clone node)
-    const newSegment = segment.cloneNode(true);
-    segment.parentNode.replaceChild(newSegment, segment);
+    typeLabel.innerText = type;
+    sizeLabel.innerText = formatBytes(sizeBytes);
+    
+    tooltip.classList.add('visible');
+    // Posisi mengikuti mouse
+    tooltip.style.left = `${event.clientX}px`; 
+    tooltip.style.top = `${event.clientY - 45}px`; 
+};
 
-    newSegment.addEventListener('mousemove', (e) => {
-        tooltip.classList.add('visible');
-        tooltip.style.left = `${e.offsetX}px`; // Ikuti mouse horizontal di dalam container
-        typeLabel.innerText = label;
-        sizeLabel.innerText = formatBytes(sizeBytes);
-    });
-
-    newSegment.addEventListener('mouseleave', () => {
-        tooltip.classList.remove('visible');
-    });
-}
+window.hideTooltip = () => {
+    el('storageTooltip').classList.remove('visible');
+};
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')]);
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
+            Appwrite.Query.equal('owner', currentUser.$id),
+            Appwrite.Query.equal('type', 'file')
+        ]);
         
-        // Reset Hitungan
-        storageDetail = { 
-            images: { size: 0, count: 0 }, 
-            videos: { size: 0, count: 0 }, 
-            docs: { size: 0, count: 0 }, 
-            others: { size: 0, count: 0 }, 
-            total: 0 
-        };
+        // Reset
+        storageDetail = { images: {size:0}, videos: {size:0}, docs: {size:0}, others: {size:0}, total: 0 };
 
         res.documents.forEach(doc => {
             const size = doc.size || 0; 
-            const name = doc.name.toLowerCase(); 
+            const name = doc.name.toLowerCase();
             storageDetail.total += size;
 
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg)$/)) {
-                storageDetail.images.size += size;
-                storageDetail.images.count++;
-            } else if (name.match(/\.(mp4|mkv|mov|avi|webm)$/)) {
-                storageDetail.videos.size += size;
-                storageDetail.videos.count++;
-            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) {
-                storageDetail.docs.size += size;
-                storageDetail.docs.count++;
-            } else {
-                storageDetail.others.size += size;
-                storageDetail.others.count++;
-            }
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) storageDetail.images.size += size;
+            else if (name.match(/\.(mp4|mkv|mov|avi|webm)$/)) storageDetail.videos.size += size;
+            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) storageDetail.docs.size += size;
+            else storageDetail.others.size += size;
         });
-        
-        // Update Sidebar Widget
+
         const mb = (storageDetail.total / 1048576).toFixed(2);
         el('storageUsed').innerText = `${mb} MB / 2 GB`;
         el('storageBar').style.width = `${Math.min((storageDetail.total / 2147483648) * 100, 100)}%`;
-        
-    } catch (e) { console.error("Gagal hitung storage", e); }
+
+    } catch (e) { console.error("Storage Err", e); }
 }
 
 // Utils (Modal, CRUD, Excel)
