@@ -383,7 +383,7 @@ window.openStorageModal = async () => {
     const totalBytes = storageDetail.total || 0;
     const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB dalam bytes
 
-    // Format Text Utama (misal: "1.2 GB")
+    // Format Text Utama (misal: "1.2 MB")
     const formattedTotal = (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
     el('storageBigText').innerText = formattedTotal;
 
@@ -405,7 +405,13 @@ window.openStorageModal = async () => {
     el('valDocs').innerText = (storageDetail.docs / (1024*1024)).toFixed(2) + " MB";
     el('valOthers').innerText = (storageDetail.others / (1024*1024)).toFixed(2) + " MB";
 
-    // 4. Tampilkan Modal
+    // 4. Reset Animasi Class supaya "Smooth" tiap kali dibuka
+    const modalBox = el('storageModal').querySelector('.modal-box');
+    modalBox.classList.remove('animate-open');
+    void modalBox.offsetWidth; // Trigger reflow
+    modalBox.classList.add('animate-open');
+
+    // 5. Tampilkan Modal
     window.openModal('storageModal');
 };
 

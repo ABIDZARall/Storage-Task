@@ -14,6 +14,10 @@
     --clr-yellow: #fbbc04;
     --clr-green: #34a853;
     --clr-grey: #5f6368;
+    
+    /* Storage Popup Specific */
+    --popup-bg: #1e293b; 
+    --popup-border: #334155;
 }
 body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; height: 100vh; }
 .liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #134e4a, #0f172a); z-index: -1; }
@@ -114,7 +118,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
+.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
 .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .modal-header h3 { font-size: 1.1rem; color: white; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
@@ -132,7 +136,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-/* Context Menu Global (Fixed Position di kursor) */
+/* Context Menu Global */
 .context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
 .context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
 .show { display: flex !important; }
@@ -145,77 +149,149 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (GOOGLE DRIVE STYLE) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED) === */
+
+/* Animasi Masuk yang Mulus */
+@keyframes modalPopSmooth {
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-box.animate-open {
+    animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Container Box - Rectangular & Modern */
 .storage-detail-box { 
-    width: 420px; 
-    padding: 25px; 
-}
-
-.storage-summary { 
-    text-align: left; 
-    margin-bottom: 20px; 
-}
-
-.storage-big-text { 
-    font-size: 2.2rem; 
-    font-weight: 400; 
-    color: white; 
-    margin-bottom: 2px;
-}
-
-.storage-sub-text { 
-    font-size: 0.9rem; 
-    color: #94a3b8; 
-}
-
-/* Multi-colored Progress Bar */
-.multi-color-progress {
+    width: 400px; /* Ukuran pas sesuai screenshot */
+    max-width: 90%;
+    padding: 24px; 
+    background-color: #1e293b; /* Warna solid gelap */
+    border: 1px solid var(--popup-border);
+    border-radius: 12px; /* Sudut tidak terlalu bulat (Rectangular feel) */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     display: flex;
+    flex-direction: column;
+}
+
+/* Header Simple */
+.storage-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.storage-modal-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.close-icon-simple {
+    color: #64748b;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+.close-icon-simple:hover { color: white; }
+
+/* Hero Text */
+.storage-hero { margin-bottom: 20px; }
+.storage-hero h1 { font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px; letter-spacing: -1px; }
+.storage-sub-hero { color: #94a3b8; font-size: 0.9rem; }
+
+/* Progress Bar */
+.multi-color-progress {
     width: 100%;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
+    height: 10px;
+    background: #334155;
     border-radius: 6px;
     overflow: hidden;
     margin-bottom: 25px;
+    display: flex;
 }
+.bar-segment { height: 100%; }
+.bar-images { background-color: var(--clr-blue); }
+.bar-videos { background-color: var(--clr-yellow); }
+.bar-docs { background-color: var(--clr-red); }
+.bar-others { background-color: var(--clr-grey); }
 
-.bar-segment { height: 100%; transition: width 0.5s ease; }
-.bar-images { background-color: var(--clr-blue); }  /* Images/Drive */
-.bar-videos { background-color: var(--clr-yellow); } /* Videos/Photos */
-.bar-docs { background-color: var(--clr-red); }    /* Docs/Mail */
-.bar-others { background-color: var(--clr-grey); }   /* Others */
-
-/* Legend List */
+/* Legend List - Bersih dan Rapi */
 .storage-legend {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
-.legend-item {
+.legend-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
-.legend-info { display: flex; align-items: center; gap: 10px; color: #e2e8f0; }
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.legend-label { display: flex; align-items: center; gap: 10px; color: #cbd5e1; }
+.legend-val { color: #94a3b8; font-family: monospace; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot-images { background-color: var(--clr-blue); }
 .dot-videos { background-color: var(--clr-yellow); }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
-.val-text { color: #94a3b8; font-weight: 500; font-family: monospace; }
 
-/* Call to Action Buttons */
-.storage-cta {
+/* Tombol Aksi - Full Width & Modern */
+.storage-actions-vertical {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-.storage-cta button {
-    justify-content: center;
+.btn-rect {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
     font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.secondary-dark {
+    background: #334155;
+    color: white;
+    border: 1px solid transparent;
+}
+.secondary-dark:hover { background: #475569; }
+
+.primary-dark {
+    background: rgba(66, 133, 244, 0.15); /* Tint blue halus */
+    color: var(--clr-blue);
+    border: 1px solid transparent;
+}
+.primary-dark:hover { background: rgba(66, 133, 244, 0.25); }
+
+/* RESPONSIVE MEDIA QUERIES */
+@media screen and (max-width: 768px) {
+    .dashboard-layout { padding: 0; }
+    .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
+    
+    /* Sidebar jadi navigasi bawah atau drawer (Simpelnya kita sembunyikan atau kecilkan di mobile, tapi sesuai request kita buat responsif layoutnya) */
+    .sidebar-left { 
+        width: 100%; 
+        border-right: none; 
+        border-bottom: 1px solid rgba(255,255,255,0.1); 
+        padding-bottom: 10px;
+        order: 2; /* Pindah ke bawah kalau mau, atau tetap di atas */
+        display: none; /* Sembunyikan sidebar di mobile untuk fokus konten (optional) - tapi user minta responsif popup */
+    }
+
+    /* Agar Modal Responsif di HP */
+    .storage-detail-box {
+        width: 90%;
+        padding: 20px;
+    }
+    .storage-hero h1 { font-size: 2rem; }
 }
