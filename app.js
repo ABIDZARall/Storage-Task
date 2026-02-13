@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
-    initStorageTooltip();
+    initStorageTooltip(); // Inisialisasi Tooltip Interaktif
 });
 
 // ======================================================
@@ -434,9 +434,14 @@ window.openStoragePage = async () => {
     const totalBytes = storageDetail.total || 0;
     const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
     
-    // Update Teks Persentase
+    // ===== UPDATE TULISAN PERSENTASE DI JUDUL =====
+    // Menghitung persentase dari Total File / Limit
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+    
+    // Terapkan ke Judul
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
+    
+    // Terapkan ke Sub-judul
     el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
 
     // Update Progress Bar
