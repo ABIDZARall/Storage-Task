@@ -130,9 +130,62 @@
                 </div>
                 
                 <div class="breadcrumb-area"><h2 id="headerTitle">Welcome In Drive</h2></div>
-                
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
+        </div>
+    </section>
+
+    <section id="storagePage" class="full-screen-layout hidden">
+        <header class="storage-page-header">
+            <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h2>Pengelola Penyimpanan</h2>
+            <div style="flex:1"></div>
+            <img src="user.jpg" alt="User" class="avatar">
+        </header>
+
+        <div class="storage-page-content">
+            <div class="storage-manager-card">
+                <div class="card-header-text">
+                    <h1 id="pageStoragePercent">Ruang penyimpanan 0% penuh</h1>
+                    <p>Penyimpanan Anda digunakan bersama di Google Drive, Foto, dan lainnya.</p>
+                </div>
+
+                <div class="storage-summary-row">
+                    <span>Penyimpanan yang digunakan</span>
+                    <span class="highlight-text" id="pageStorageUsedText">0 MB dari 2 GB</span>
+                </div>
+
+                <div class="multi-color-progress page-progress">
+                    <div id="pageBarImages" class="bar-segment bar-images" style="width: 0%"></div>
+                    <div id="pageBarVideos" class="bar-segment bar-videos" style="width: 0%"></div>
+                    <div id="pageBarDocs" class="bar-segment bar-docs" style="width: 0%"></div>
+                    <div id="pageBarOthers" class="bar-segment bar-others" style="width: 0%"></div>
+                    <div id="pageBarFree" class="bar-segment bar-free" style="width: 100%"></div> 
+                </div>
+
+                <div class="storage-detail-list">
+                    <div class="detail-item">
+                        <div class="dt-left"><span class="dot dot-images"></span> Gambar</div>
+                        <div class="dt-right" id="pageValImages">0 MB</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="dt-left"><span class="dot dot-videos"></span> Video</div>
+                        <div class="dt-right" id="pageValVideos">0 MB</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="dt-left"><span class="dot dot-docs"></span> Dokumen</div>
+                        <div class="dt-right" id="pageValDocs">0 MB</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="dt-left"><span class="dot dot-others"></span> Lainnya</div>
+                        <div class="dt-right" id="pageValOthers">0 MB</div>
+                    </div>
+                    <div class="detail-item item-free">
+                        <div class="dt-left"><span class="dot dot-free"></span> Tersedia</div>
+                        <div class="dt-right" id="pageValFree">2 GB</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -184,14 +237,12 @@
             </div>
             
             <div class="storage-flex-container">
-                
                 <div class="storage-col-left">
                     <div class="storage-content-wrapper">
                         <div class="storage-hero">
                             <h1 id="storageBigText">0 MB</h1>
                             <p class="storage-sub-hero">dari 2 GB digunakan</p>
                         </div>
-
                         <div class="multi-color-progress">
                             <div id="barImages" class="bar-segment bar-images" style="width: 0%"></div>
                             <div id="barVideos" class="bar-segment bar-videos" style="width: 0%"></div>
@@ -200,39 +251,22 @@
                             <div id="barFree" class="bar-segment bar-free" style="width: 100%"></div> 
                         </div>
                     </div>
-
                     <div class="storage-btn-left-container">
-                        <button class="btn-rect secondary-dark" onclick="alert('Fitur ini akan segera hadir')">Kosongkan ruang penyimpanan</button>
+                        <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
                     </div>
                 </div>
 
                 <div class="storage-col-right">
-                    
                     <div class="storage-legend">
-                        <div class="legend-row">
-                            <div class="legend-label"><span class="dot dot-images"></span> Gambar</div>
-                            <span id="valImages" class="legend-val">0 MB</span>
-                        </div>
-                        <div class="legend-row">
-                            <div class="legend-label"><span class="dot dot-videos"></span> Video</div>
-                            <span id="valVideos" class="legend-val">0 MB</span>
-                        </div>
-                        <div class="legend-row">
-                            <div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div>
-                            <span id="valDocs" class="legend-val">0 MB</span>
-                        </div>
-                        <div class="legend-row">
-                            <div class="legend-label"><span class="dot dot-others"></span> Lainnya</div>
-                            <span id="valOthers" class="legend-val">0 MB</span>
-                        </div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-images"></span> Gambar</div><span id="valImages" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-videos"></span> Video</div><span id="valVideos" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-docs"></span> Dokumen</div><span id="valDocs" class="legend-val">0 MB</span></div>
+                        <div class="legend-row"><div class="legend-label"><span class="dot dot-others"></span> Lainnya</div><span id="valOthers" class="legend-val">0 MB</span></div>
                     </div>
-
                     <div class="storage-btn-right-container">
                         <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
                     </div>
-
                 </div>
-                
             </div> 
         </div>
     </div>

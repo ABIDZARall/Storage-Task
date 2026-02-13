@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
-    initStorageTooltip(); // Inisialisasi Tooltip Interaktif
+    initStorageTooltip();
 });
 
 // ======================================================
@@ -177,7 +177,7 @@ async function checkSession() {
 }
 
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage'].forEach(id => {
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage'].forEach(id => {
         const element = el(id);
         if(element) element.classList.add('hidden');
     });
@@ -421,31 +421,84 @@ function initStorageTooltip() {
     });
 }
 
-window.openStorageModal = async () => {
-    // 1. Tutup menu konteks lain agar bersih
-    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-
-    // 2. Pastikan data terbaru sudah dihitung
+// NEW FUNCTION: OPEN FULL STORAGE PAGE
+window.openStoragePage = async () => {
+    // 1. Hitung data terbaru
     await calculateStorage();
+    
+    // 2. Tutup modal & dashboard
+    window.closeModal('storageModal');
+    window.nav('storagePage');
 
-    // 3. Update UI di dalam Modal Pop-up (Google Drive Style)
+    // 3. Populate Data ke Halaman Baru
     const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB dalam bytes
+    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+    
+    // Update Teks Persentase
+    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+    el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
+    el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
 
-    // Format Text Utama (misal: "1.2 MB")
-    const formattedTotal = formatSize(totalBytes);
-    el('storageBigText').innerText = formattedTotal;
-
-    // Hitung Persentase Lebar Bar
+    // Update Progress Bar
     const pctImages = (storageDetail.images / limitBytes) * 100;
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
     const pctDocs = (storageDetail.docs / limitBytes) * 100;
     const pctOthers = (storageDetail.others / limitBytes) * 100;
     const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
 
-    // Apply Lebar ke Bar (CSS transition akan membuatnya animasi halus)
+    const barImg = el('pageBarImages');
+    const barVid = el('pageBarVideos');
+    const barDoc = el('pageBarDocs');
+    const barOth = el('pageBarOthers');
+    const barFree = el('pageBarFree');
+
+    barImg.style.width = `${pctImages}%`;
+    barVid.style.width = `${pctVideos}%`;
+    barDoc.style.width = `${pctDocs}%`;
+    barOth.style.width = `${pctOthers}%`;
+    barFree.style.width = `${pctFree}%`;
+
+    // Inject Attributes for Tooltip on New Page
+    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
+    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
+    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
+    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
+    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
+
+    // Update Detail List
+    el('pageValImages').innerText = formatSize(storageDetail.images);
+    el('pageValVideos').innerText = formatSize(storageDetail.videos);
+    el('pageValDocs').innerText = formatSize(storageDetail.docs);
+    el('pageValOthers').innerText = formatSize(storageDetail.others);
+    el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
+
+    // Re-init Tooltip agar jalan di halaman baru
+    initStorageTooltip();
+};
+
+window.closeStoragePage = () => {
+    window.nav('dashboardPage');
+};
+
+window.openStorageModal = async () => {
+    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
+    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+
+    await calculateStorage();
+
+    const totalBytes = storageDetail.total || 0;
+    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+
+    const formattedTotal = formatSize(totalBytes);
+    el('storageBigText').innerText = formattedTotal;
+
+    const pctImages = (storageDetail.images / limitBytes) * 100;
+    const pctVideos = (storageDetail.videos / limitBytes) * 100;
+    const pctDocs = (storageDetail.docs / limitBytes) * 100;
+    const pctOthers = (storageDetail.others / limitBytes) * 100;
+    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
+
     const barImg = el('barImages');
     const barVid = el('barVideos');
     const barDoc = el('barDocs');
@@ -458,48 +511,33 @@ window.openStorageModal = async () => {
     barOth.style.width = `${pctOthers}%`;
     barFree.style.width = `${pctFree}%`;
 
-    // Inject Data ke Atribut untuk Tooltip (Agar data real-time terbaca)
-    barImg.setAttribute('data-category', 'GAMBAR');
-    barImg.setAttribute('data-size', storageDetail.images);
+    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
+    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
+    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
+    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
+    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
 
-    barVid.setAttribute('data-category', 'VIDEO');
-    barVid.setAttribute('data-size', storageDetail.videos);
-
-    barDoc.setAttribute('data-category', 'DOKUMEN');
-    barDoc.setAttribute('data-size', storageDetail.docs);
-
-    barOth.setAttribute('data-category', 'LAINNYA');
-    barOth.setAttribute('data-size', storageDetail.others);
-
-    barFree.setAttribute('data-category', 'TERSEDIA');
-    barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    // Update Text di Legenda (Daftar rincian)
     el('valImages').innerText = formatSize(storageDetail.images);
     el('valVideos').innerText = formatSize(storageDetail.videos);
     el('valDocs').innerText = formatSize(storageDetail.docs);
     el('valOthers').innerText = formatSize(storageDetail.others);
 
-    // 4. Reset Animasi Class supaya "Smooth" tiap kali dibuka
     const modalBox = el('storageModal').querySelector('.modal-box');
     modalBox.classList.remove('animate-open');
-    void modalBox.offsetWidth; // Trigger reflow
+    void modalBox.offsetWidth; 
     modalBox.classList.add('animate-open');
 
-    // 5. Tampilkan Modal
     window.openModal('storageModal');
 };
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
-        // Ambil semua file (bukan folder) milik user
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
             Appwrite.Query.equal('owner', currentUser.$id), 
             Appwrite.Query.equal('type', 'file')
         ]);
         
-        // Reset hitungan
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
         const limit = 2 * 1024 * 1024 * 1024; // 2 GB
 
@@ -508,7 +546,6 @@ async function calculateStorage() {
             const name = doc.name.toLowerCase(); 
             storageDetail.total += size;
 
-            // Kategorisasi berdasarkan ekstensi
             if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp)$/)) {
                 storageDetail.images += size;
             } else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm)$/)) {
@@ -520,15 +557,12 @@ async function calculateStorage() {
             }
         });
 
-        // Update Widget Sidebar (Bar kecil)
         const mb = formatSize(storageDetail.total);
         el('storageUsed').innerText = mb;
         
-        // Persentase total untuk widget sidebar
         const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
         el('storageBar').style.width = `${totalPct}%`;
 
-        // Ubah warna bar widget jika hampir penuh (UX tambahan)
         if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444';
         else el('storageBar').style.backgroundColor = '';
 
