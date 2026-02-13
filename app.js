@@ -27,7 +27,14 @@ let currentFolderName = "Drive";
 let currentViewMode = 'root';
 let selectedItem = null; 
 let selectedUploadFile = null; 
-let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+// Storage Detail dengan struktur data lengkap
+let storageDetail = { 
+    images: { size: 0, count: 0 }, 
+    videos: { size: 0, count: 0 }, 
+    docs: { size: 0, count: 0 }, 
+    others: { size: 0, count: 0 }, 
+    total: 0 
+};
 let searchTimeout = null;
 
 // Helper
@@ -41,6 +48,16 @@ const toggleLoading = (show, msg = "Memproses...") => {
     } else {
         if(loader) loader.classList.add('hidden');
     }
+};
+
+// Helper Format Bytes ke MB/GB
+const formatBytes = (bytes, decimals = 2) => {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 };
 
 // ======================================================
@@ -254,25 +271,23 @@ window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').
 // KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
-    const newMenu = el('dropdownNewMenu'); // Dropdown Tombol New
-    const navDrive = el('navDrive'); // Sidebar Drive Saya
-    const globalMenu = el('globalContextMenu'); // Menu Global (Klik Kanan Drive Saya/Kosong)
-    const fileMenu = el('fileContextMenu'); // Menu File/Folder
+    const newMenu = el('dropdownNewMenu'); 
+    const navDrive = el('navDrive'); 
+    const globalMenu = el('globalContextMenu');
+    const fileMenu = el('fileContextMenu');
     const mainArea = document.querySelector('.main-content-area');
 
-    // Fungsi Tutup Semua Menu
     const closeAll = () => {
         if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
         if(el('storageModal')) el('storageModal').classList.add('hidden');
+        el('storageTooltip').classList.remove('visible'); // Sembunyikan tooltip storage
     };
 
-    // 1. TOMBOL NEW (Klik Kiri & Kanan) -> Buka Dropdown
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
-        
         const toggleNewMenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); 
             const wasOpen = newMenu.classList.contains('show'); 
@@ -283,7 +298,6 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    // 2. SIDEBAR DRIVE SAYA (Klik Kanan) -> Buka Global Menu di Kursor
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAll(); 
@@ -293,7 +307,6 @@ function initAllContextMenus() {
         };
     }
 
-    // 3. AREA KOSONG (Klik Kanan) -> Buka Global Menu
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
@@ -303,8 +316,6 @@ function initAllContextMenus() {
             globalMenu.classList.add('show');
         };
     }
-    
-    // Klik sembarang -> Tutup menu
     window.onclick = () => closeAll();
 }
 
@@ -318,11 +329,7 @@ function renderItem(doc) {
         content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
     }
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
-    
-    // Klik Kiri
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-    
-    // Klik Kanan (Menu File/Folder)
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         if(el('storageModal')) el('storageModal').classList.add('hidden');
@@ -332,7 +339,6 @@ function renderItem(doc) {
         selectedItem = doc;
         const menu = el('fileContextMenu');
         
-        // Logika Tampilkan Item Menu Sesuai Tipe
         const btnOpen = el('ctxBtnOpenFolder');
         const btnPreview = el('ctxBtnPreview');
         const btnDownload = el('ctxBtnDownload');
@@ -363,40 +369,114 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// Storage Logic
+// ======================================================
+// 8. LOGIKA STORAGE & POPUP INTERAKTIF (PERBAIKAN UTAMA)
+// ======================================================
 window.openStorageModal = () => {
     // Tutup menu lain
     if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
     
-    const total = storageDetail.total || 1;
-    el('barImages').style.width = `${(storageDetail.images/total)*100}%`;
-    el('barVideos').style.width = `${(storageDetail.videos/total)*100}%`;
-    el('barDocs').style.width = `${(storageDetail.docs/total)*100}%`;
-    el('barOthers').style.width = `${(storageDetail.others/total)*100}%`;
-    el('storageBigText').innerText = (storageDetail.total / 1048576).toFixed(2) + " MB";
-    el('valImages').innerText = (storageDetail.images / 1048576).toFixed(2) + " MB";
-    el('valVideos').innerText = (storageDetail.videos / 1048576).toFixed(2) + " MB";
-    el('valDocs').innerText = (storageDetail.docs / 1048576).toFixed(2) + " MB";
-    el('valOthers').innerText = (storageDetail.others / 1048576).toFixed(2) + " MB";
+    // Total kapasitas 2GB dalam bytes (2 * 1024 * 1024 * 1024)
+    const MAX_STORAGE = 2147483648; 
+    const totalUsed = storageDetail.total || 0;
+    
+    // Hitung Persentase
+    const pctImages = (storageDetail.images.size / MAX_STORAGE) * 100;
+    const pctVideos = (storageDetail.videos.size / MAX_STORAGE) * 100;
+    const pctDocs = (storageDetail.docs.size / MAX_STORAGE) * 100;
+    const pctOthers = (storageDetail.others.size / MAX_STORAGE) * 100;
+
+    // Update Lebar Bar
+    el('barImages').style.width = `${pctImages}%`;
+    el('barVideos').style.width = `${pctVideos}%`;
+    el('barDocs').style.width = `${pctDocs}%`;
+    el('barOthers').style.width = `${pctOthers}%`;
+    el('barFree').style.width = `${100 - (pctImages + pctVideos + pctDocs + pctOthers)}%`;
+
+    // Update Teks Utama
+    el('storageBigText').innerText = formatBytes(totalUsed);
+    el('storageSubText').innerText = `dari 2 GB digunakan`;
+
+    // Update List Legend
+    el('valImages').innerText = formatBytes(storageDetail.images.size);
+    el('valVideos').innerText = formatBytes(storageDetail.videos.size);
+    el('valDocs').innerText = formatBytes(storageDetail.docs.size);
+    el('valOthers').innerText = formatBytes(storageDetail.others.size);
+
+    // Setup Tooltip Events pada Segmen Bar
+    setupTooltip('barImages', 'Gambar', storageDetail.images.size);
+    setupTooltip('barVideos', 'Video', storageDetail.videos.size);
+    setupTooltip('barDocs', 'Dokumen', storageDetail.docs.size);
+    setupTooltip('barOthers', 'Lainnya', storageDetail.others.size);
+    setupTooltip('barFree', 'Kosong', MAX_STORAGE - totalUsed);
+
     window.openModal('storageModal');
 };
+
+function setupTooltip(elementId, label, sizeBytes) {
+    const segment = el(elementId);
+    const tooltip = el('storageTooltip');
+    const typeLabel = el('tooltipType');
+    const sizeLabel = el('tooltipSize');
+
+    if(!segment) return;
+
+    // Bersihkan listener lama (clone node)
+    const newSegment = segment.cloneNode(true);
+    segment.parentNode.replaceChild(newSegment, segment);
+
+    newSegment.addEventListener('mousemove', (e) => {
+        tooltip.classList.add('visible');
+        tooltip.style.left = `${e.offsetX}px`; // Ikuti mouse horizontal di dalam container
+        typeLabel.innerText = label;
+        sizeLabel.innerText = formatBytes(sizeBytes);
+    });
+
+    newSegment.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+    });
+}
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file')]);
-        storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+        
+        // Reset Hitungan
+        storageDetail = { 
+            images: { size: 0, count: 0 }, 
+            videos: { size: 0, count: 0 }, 
+            docs: { size: 0, count: 0 }, 
+            others: { size: 0, count: 0 }, 
+            total: 0 
+        };
+
         res.documents.forEach(doc => {
-            const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif)$/)) storageDetail.images += size;
-            else if (name.match(/\.(mp4|mkv|mov|avi)$/)) storageDetail.videos += size;
-            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|txt)$/)) storageDetail.docs += size;
-            else storageDetail.others += size;
+            const size = doc.size || 0; 
+            const name = doc.name.toLowerCase(); 
+            storageDetail.total += size;
+
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg)$/)) {
+                storageDetail.images.size += size;
+                storageDetail.images.count++;
+            } else if (name.match(/\.(mp4|mkv|mov|avi|webm)$/)) {
+                storageDetail.videos.size += size;
+                storageDetail.videos.count++;
+            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$/)) {
+                storageDetail.docs.size += size;
+                storageDetail.docs.count++;
+            } else {
+                storageDetail.others.size += size;
+                storageDetail.others.count++;
+            }
         });
+        
+        // Update Sidebar Widget
         const mb = (storageDetail.total / 1048576).toFixed(2);
-        el('storageUsed').innerText = `${mb} MB`;
-        el('storageBar').style.width = `${Math.min((mb / 2048) * 100, 100)}%`;
-    } catch (e) {}
+        el('storageUsed').innerText = `${mb} MB / 2 GB`;
+        el('storageBar').style.width = `${Math.min((storageDetail.total / 2147483648) * 100, 100)}%`;
+        
+    } catch (e) { console.error("Gagal hitung storage", e); }
 }
 
 // Utils (Modal, CRUD, Excel)

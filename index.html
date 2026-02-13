@@ -109,7 +109,9 @@
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;">
                     <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
-                    <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
+                    <div class="progress-track">
+                        <div id="storageBar" class="progress-fill"></div>
+                    </div>
                     <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
                 </div>
             </aside>
@@ -170,20 +172,46 @@
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
         <div class="glass-card modal-box storage-detail-box">
-            <div class="modal-header"><h3>Penyimpanan</h3><i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i></div>
+            <div class="modal-header">
+                <h3>Penyimpanan</h3>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
+            </div>
             <div class="modal-body">
                 <h1 id="storageBigText" class="storage-big-text">0 MB</h1>
-                <p class="storage-sub-text">dari 2 GB digunakan</p>
-                <div class="multi-color-progress">
-                    <div id="barImages" class="bar-segment bar-images"></div><div id="barVideos" class="bar-segment bar-videos"></div>
-                    <div id="barDocs" class="bar-segment bar-docs"></div><div id="barOthers" class="bar-segment bar-others"></div>
+                <p id="storageSubText" class="storage-sub-text">dari 2 GB digunakan</p>
+                
+                <div class="multi-color-progress-interactive">
+                    <div id="barImages" class="bar-segment bar-images" data-type="Gambar"></div>
+                    <div id="barVideos" class="bar-segment bar-videos" data-type="Video"></div>
+                    <div id="barDocs" class="bar-segment bar-docs" data-type="Dokumen"></div>
+                    <div id="barOthers" class="bar-segment bar-others" data-type="Lainnya"></div>
+                    <div id="barFree" class="bar-segment bar-free" data-type="Kosong"></div>
+                    
+                    <div id="storageTooltip" class="storage-tooltip hidden">
+                        <span id="tooltipType">Jenis</span>: <span id="tooltipSize">0 MB</span>
+                    </div>
                 </div>
+
                 <div class="storage-legend">
-                    <div class="legend-item"><span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span></div>
-                    <div class="legend-item"><span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span></div>
-                    <div class="legend-item"><span class="dot dot-docs"></span> Dokumen <span id="valDocs" class="val-text">0 MB</span></div>
-                    <div class="legend-item"><span class="dot dot-others"></span> Lainnya <span id="valOthers" class="val-text">0 MB</span></div>
+                    <div class="legend-item">
+                        <span class="dot dot-images"></span> Gambar <span id="valImages" class="val-text">0 MB</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot dot-videos"></span> Video <span id="valVideos" class="val-text">0 MB</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot dot-docs"></span> Dokumen <span id="valDocs" class="val-text">0 MB</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot dot-others"></span> Lainnya <span id="valOthers" class="val-text">0 MB</span>
+                    </div>
                 </div>
+
+                <hr class="modal-divider">
+
+                <button class="btn-pill secondary full-width btn-manager" onclick="alert('Membuka Pengelola Penyimpanan Lengkap...')">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Pengelola Penyimpanan
+                </button>
             </div>
         </div>
     </div>
@@ -192,20 +220,14 @@
         <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
         <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
         <div class="ctx-item" id="ctxBtnOpenWith" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
-        
         <hr class="ctx-divider">
-        
         <div class="ctx-item" id="ctxBtnDownload" onclick="downloadCurrentItem()"><i class="fa-solid fa-download"></i><span>Download</span></div>
         <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span></div>
         <div class="ctx-item" onclick="alert('Fitur salin segera hadir')"><i class="fa-solid fa-copy"></i><span>Buat salinan</span></div>
-        
         <hr class="ctx-divider">
-        
         <div class="ctx-item" onclick="toggleStarItem()"><i class="fa-solid fa-star" id="ctxStarIcon"></i><span id="ctxStarText">Bintangi</span></div>
         <div class="ctx-item" onclick="alert('Info File')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
-        
         <hr class="ctx-divider">
-        
         <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span></div>
         <div class="ctx-item hidden" id="ctxRestoreBtn" onclick="restoreFromTrash()"><i class="fa-solid fa-rotate-left"></i><span>Pulihkan</span></div>
         <div class="ctx-item ctx-danger hidden" id="ctxPermDeleteBtn" onclick="deleteItemPermanently()"><i class="fa-solid fa-ban"></i><span>Hapus Permanen</span></div>
