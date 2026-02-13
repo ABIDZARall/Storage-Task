@@ -149,7 +149,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .text-yellow { color: var(--clr-yellow) !important; }
 .text-purple { color: #7248b9 !important; }
 
-/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: BUTTONS SIDE-BY-SIDE) === */
+/* === STYLES KHUSUS UNTUK STORAGE POPUP (UPDATED: SPLIT BUTTONS) === */
 
 /* Animasi Masuk yang Mulus */
 @keyframes modalPopSmooth {
@@ -206,7 +206,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     width: 100%;
 }
 
-/* Kolom Kiri: Angka Besar & Progress Bar */
+/* Kolom Kiri: Angka Besar & Progress Bar & Tombol Kiri */
 .storage-col-left {
     flex: 1;
     display: flex;
@@ -214,12 +214,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     justify-content: flex-start;
 }
 
-/* Kolom Kanan: List & Tombol */
+/* Kolom Kanan: List & Tombol Kanan */
 .storage-col-right {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Agar tombol selalu di bawah */
+    justify-content: space-between; 
 }
 
 /* Hero Text (Angka Besar) */
@@ -287,16 +287,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dot-docs { background-color: var(--clr-red); }
 .dot-others { background-color: var(--clr-grey); }
 
-/* Tombol Aksi - SIDE BY SIDE (HORIZONTAL) */
-.storage-actions-row {
-    display: flex;
-    flex-direction: row; /* Horizontal */
-    gap: 12px;
-    margin-top: auto;
+/* Container Tombol Individual agar rapi */
+.storage-btn-left-container {
+    margin-top: 20px; /* Jarak dari progress bar */
 }
 
+.storage-btn-right-container {
+    margin-top: auto; /* Dorong ke paling bawah kolom kanan */
+}
+
+/* Style Tombol Seragam */
 .btn-rect {
-    flex: 1; /* Biar ukurannya bagi dua rata (50-50) */
+    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: none;
@@ -305,7 +307,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
-    white-space: nowrap; /* Mencegah teks turun baris jika mungkin */
+    white-space: nowrap; 
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -352,8 +354,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         gap: 20px;
     }
     
-    /* Di HP, kembalikan tombol jadi atas-bawah biar teks ga kepotong */
-    .storage-actions-row {
-        flex-direction: column;
+    /* Di HP, margin auto tidak perlu, cukup gap */
+    .storage-btn-right-container {
+        margin-top: 0;
     }
 }
