@@ -403,6 +403,7 @@ function initStorageTooltip() {
             if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
             else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
             else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
+            else if (cat === 'TERSEDIA') ttDesc.innerText = "Sisa penyimpanan yang tersedia.";
             else ttDesc.innerText = "File lain yang tidak dikategorikan.";
 
             tooltip.classList.remove('hidden');
@@ -442,17 +443,20 @@ window.openStorageModal = async () => {
     const pctVideos = (storageDetail.videos / limitBytes) * 100;
     const pctDocs = (storageDetail.docs / limitBytes) * 100;
     const pctOthers = (storageDetail.others / limitBytes) * 100;
+    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
 
     // Apply Lebar ke Bar (CSS transition akan membuatnya animasi halus)
     const barImg = el('barImages');
     const barVid = el('barVideos');
     const barDoc = el('barDocs');
     const barOth = el('barOthers');
+    const barFree = el('barFree');
 
     barImg.style.width = `${pctImages}%`;
     barVid.style.width = `${pctVideos}%`;
     barDoc.style.width = `${pctDocs}%`;
     barOth.style.width = `${pctOthers}%`;
+    barFree.style.width = `${pctFree}%`;
 
     // Inject Data ke Atribut untuk Tooltip (Agar data real-time terbaca)
     barImg.setAttribute('data-category', 'GAMBAR');
@@ -466,6 +470,9 @@ window.openStorageModal = async () => {
 
     barOth.setAttribute('data-category', 'LAINNYA');
     barOth.setAttribute('data-size', storageDetail.others);
+
+    barFree.setAttribute('data-category', 'TERSEDIA');
+    barFree.setAttribute('data-size', limitBytes - totalBytes);
 
     // Update Text di Legenda (Daftar rincian)
     el('valImages').innerText = formatSize(storageDetail.images);
