@@ -235,10 +235,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-size: 0.95rem; 
 }
 
-/* Progress Bar (Interactive) */
+/* Progress Bar (Interactive with Gaps) */
 .multi-color-progress {
     width: 100%;
-    height: 10px; /* Sedikit lebih tebal agar mudah di hover */
+    height: 12px; /* Lebih tebal agar mudah di hover */
     background: #334155;
     border-radius: 10px;
     overflow: hidden;
@@ -246,20 +246,25 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     display: flex;
 }
 
-/* Style Segmen Bar */
+/* Style Segmen Bar + GAP/CELAH */
 .bar-segment { 
     height: 100%; 
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
-    /* Memberikan celah putih antar segmen seperti Google Drive */
-    border-right: 2px solid #1e293b; 
+    /* Membuat celah (gap) antar warna dengan border kanan yang warnanya sama dengan background modal */
+    border-right: 4px solid #1e293b; 
+    box-sizing: border-box;
+}
+
+/* Hapus border kanan pada elemen terakhir agar rapi */
+.bar-segment:last-child {
+    border-right: none;
 }
 
 /* Efek Hover Segmen */
 .bar-segment:hover {
     filter: brightness(1.2); /* Lebih terang saat di hover */
-    transform: scaleY(1.2); /* Sedikit membesar vertikal */
 }
 
 .bar-images { background-color: var(--clr-blue); }
@@ -271,17 +276,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .custom-tooltip {
     position: fixed;
     z-index: 20000;
-    background: #e2e8f0; /* Warna putih/terang */
+    background: #ffffff; /* Putih bersih ala Google Drive */
     color: #1e293b;
-    padding: 15px;
+    padding: 16px;
     border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    width: 200px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    width: 220px;
     pointer-events: none; /* Agar tidak mengganggu mouse */
     font-family: 'Inter', sans-serif;
-    transform: translate(-50%, -115%); /* Posisi di atas kursor */
-    transition: opacity 0.2s;
-    text-align: center;
+    transform: translate(-50%, -120%); /* Posisi di atas kursor */
+    transition: opacity 0.15s, transform 0.1s;
+    text-align: left; /* Teks rata kiri */
 }
 
 /* Segitiga kecil di bawah tooltip */
@@ -293,29 +298,29 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform: translateX(-50%);
     border-width: 6px 6px 0;
     border-style: solid;
-    border-color: #e2e8f0 transparent transparent transparent;
+    border-color: #ffffff transparent transparent transparent;
 }
 
 .tooltip-header {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     color: #64748b;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
     letter-spacing: 0.5px;
 }
 
 .tooltip-size {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 5px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #202124; /* Warna teks gelap */
+    margin-bottom: 6px;
 }
 
 .tooltip-desc {
-    font-size: 0.8rem;
-    color: #64748b;
-    line-height: 1.2;
+    font-size: 0.85rem;
+    color: #5f6368; /* Abu-abu standard Google */
+    line-height: 1.4;
 }
 
 /* Legend List */

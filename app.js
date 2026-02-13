@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLogout();
     initSearchBar();
     initAllContextMenus();
-    initStorageTooltip(); // Inisialisasi Tooltip
+    initStorageTooltip(); // Inisialisasi Tooltip Interaktif
 });
 
 // ======================================================
@@ -401,7 +401,7 @@ function initStorageTooltip() {
             
             // Set Deskripsi sesuai kategori
             if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
-            else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman.";
+            else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
             else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
             else ttDesc.innerText = "File lain yang tidak dikategorikan.";
 
@@ -411,7 +411,7 @@ function initStorageTooltip() {
         seg.addEventListener('mousemove', (e) => {
             // Posisikan tooltip mengikuti mouse (sedikit di atas)
             tooltip.style.left = `${e.clientX}px`;
-            tooltip.style.top = `${e.clientY - 10}px`;
+            tooltip.style.top = `${e.clientY - 15}px`;
         });
 
         seg.addEventListener('mouseleave', () => {
@@ -454,7 +454,7 @@ window.openStorageModal = async () => {
     barDoc.style.width = `${pctDocs}%`;
     barOth.style.width = `${pctOthers}%`;
 
-    // Inject Data ke Atribut untuk Tooltip
+    // Inject Data ke Atribut untuk Tooltip (Agar data real-time terbaca)
     barImg.setAttribute('data-category', 'GAMBAR');
     barImg.setAttribute('data-size', storageDetail.images);
 
