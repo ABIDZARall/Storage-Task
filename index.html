@@ -148,7 +148,7 @@
                         <i class="fa-solid fa-camera"></i>
                     </div>
                 </div>
-                <p class="profile-hint">Ketuk untuk mengganti foto</p>
+                <p class="profile-hint" onclick="document.getElementById('profileUploadInput').click()">Ketuk untuk mengganti foto</p>
                 <input type="file" id="profileUploadInput" hidden accept="image/*">
             </div>
 
@@ -278,12 +278,10 @@
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
         <div class="glass-card modal-box storage-detail-box-wide">
-            
             <div class="storage-modal-header">
                 <h3>Penyimpanan</h3>
                 <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
             </div>
-            
             <div class="storage-flex-container">
                 <div class="storage-col-left">
                     <div class="storage-content-wrapper">
@@ -303,7 +301,6 @@
                         <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
                     </div>
                 </div>
-
                 <div class="storage-col-right">
                     <div class="storage-legend">
                         <div class="legend-row"><div class="legend-label"><span class="dot dot-images"></span> Gambar</div><span id="valImages" class="legend-val">0 MB</span></div>

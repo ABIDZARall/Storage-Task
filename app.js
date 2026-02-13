@@ -22,13 +22,13 @@ client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
 // State Global
 let currentUser = null;
-let userDataDB = null; // Menyimpan data tambahan user (HP, Foto)
+let userDataDB = null; 
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
 let currentViewMode = 'root';
 let selectedItem = null; 
 let selectedUploadFile = null; 
-let selectedProfileImage = null; // Untuk upload foto profil
+let selectedProfileImage = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearchBar();
     initAllContextMenus();
     initStorageTooltip();
-    initProfileImageUploader(); // Init upload foto profil
+    initProfileImageUploader(); 
 });
 
 // ======================================================
@@ -170,15 +170,13 @@ async function checkSession() {
     try {
         currentUser = await account.get();
         
-        // Ambil Data Tambahan dari DB (Phone, Avatar)
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
-            console.log("User DB data not found, creating placeholder local data");
+            console.log("User DB data not found");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
-        // Update UI Profil di Dashboard & Storage Page
         updateProfileUI();
 
         window.nav('dashboardPage'); 
@@ -194,11 +192,21 @@ async function checkSession() {
 function updateProfileUI() {
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
     
-    const dashAvatar = el('dashAvatar');
-    if(dashAvatar) dashAvatar.src = avatarSrc;
+    // UPDATE: Gunakan cache busting (?t=timestamp) untuk memaksa refresh gambar
+    const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
+    const finalSrc = avatarSrc + cacheBuster;
 
+    // Update foto di Dashboard Sidebar
+    const dashAvatar = el('dashAvatar');
+    if(dashAvatar) dashAvatar.src = finalSrc;
+
+    // Update foto di Halaman Storage
     const storageAvatar = el('storagePageAvatar');
-    if(storageAvatar) storageAvatar.src = avatarSrc;
+    if(storageAvatar) storageAvatar.src = finalSrc;
+
+    // Update foto di Halaman Edit Profil (Preview awal)
+    const editImg = el('editProfileImg');
+    if(editImg) editImg.src = finalSrc;
 }
 
 window.nav = (pageId) => {
@@ -211,28 +219,27 @@ window.nav = (pageId) => {
 };
 
 // ======================================================
-// 5. PROFILE & SETTINGS LOGIC (NEW)
+// 5. PROFILE & SETTINGS LOGIC (PERBAIKAN UTAMA)
 // ======================================================
 
-// Buka Halaman Profil & Prefill Data
 window.openProfilePage = () => {
     if (!currentUser) return;
     
-    // Set Nilai Input
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
-    el('editPass').value = ''; // Reset password field
+    el('editPass').value = ''; 
     
-    // Set Gambar
+    // Reset foto preview ke kondisi saat ini
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
-    el('editProfileImg').src = avatarSrc;
-    selectedProfileImage = null; // Reset seleksi gambar baru
+    const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
+    
+    el('editProfileImg').src = avatarSrc + cacheBuster;
+    selectedProfileImage = null; 
 
     window.nav('profilePage');
 };
 
-// Init Image Uploader Listener
 function initProfileImageUploader() {
     const input = el('profileUploadInput');
     if(input) {
@@ -240,7 +247,6 @@ function initProfileImageUploader() {
             if(e.target.files.length > 0) {
                 const file = e.target.files[0];
                 selectedProfileImage = file;
-                // Preview Image
                 const reader = new FileReader();
                 reader.onload = function(evt) {
                     el('editProfileImg').src = evt.target.result;
@@ -251,84 +257,79 @@ function initProfileImageUploader() {
     }
 }
 
-// Simpan Profil
+// *** FUNGSI SAVE PROFILE YANG DIPERBAIKI ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
+    
     try {
         const newName = el('editName').value.trim();
         const newEmail = el('editEmail').value.trim();
         const newPhone = el('editPhone').value.trim();
         const newPass = el('editPass').value;
 
-        // 1. Upload Foto Baru (jika ada)
-        let newAvatarUrl = userDataDB ? userDataDB.avatarUrl : '';
+        // 1. Upload Foto (Jika ada yang baru)
+        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
+        
         if (selectedProfileImage) {
             try {
+                // Upload file
                 const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-                // Dapatkan URL View
+                // Get View URL
                 newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
             } catch (err) {
-                console.error("Gagal upload foto profil:", err);
-                alert("Gagal mengupload foto. Periksa koneksi.");
+                throw new Error("Gagal upload foto: " + err.message);
             }
         }
 
-        // 2. Update Nama di Account
-        if (newName !== currentUser.name) {
+        // 2. Update Auth (Nama & Email & Password)
+        if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
 
-        // 3. Update Email (Hati-hati: biasanya butuh password lama atau verifikasi)
-        // Note: Appwrite membutuhkan password untuk ganti email, tapi untuk simplifikasi kode UI, kita coba update.
-        // Jika gagal karena butuh password, akan masuk catch.
-        if (newEmail !== currentUser.email) {
+        if (newEmail && newEmail !== currentUser.email) {
             try {
-                // Untuk update email, Appwrite butuh (email, password). Karena UI ini tidak minta password lama, 
-                // ini mungkin gagal tergantung setting project. Kita lewati jika error.
                 await account.updateEmail(newEmail, ''); 
             } catch(e) {
-                console.log("Email update skipped/failed (requires password confirmation):", e.message);
+                console.warn("Email update butuh verifikasi pass:", e);
             }
         }
 
-        // 4. Update Password (jika diisi)
         if (newPass) {
-            try {
-                await account.updatePassword(newPass);
-            } catch(e) {
-                alert("Gagal update password: " + e.message);
-            }
+            await account.updatePassword(newPass);
         }
 
-        // 5. Update Database (Phone & Avatar & Sinkronisasi Nama/Email)
+        // 3. Update Database (Phone & Avatar) - CRITICAL PART
+        const payload = {
+            name: newName,
+            email: newEmail,
+            phone: newPhone,
+            avatarUrl: newAvatarUrl // Pastikan kolom ini ada di Appwrite
+        };
+        
         try {
-            const payload = {
-                name: newName,
-                email: newEmail,
-                phone: newPhone,
-                avatarUrl: newAvatarUrl
-            };
-            
-            // Cek apakah dokumen user sudah ada, jika tidak create, jika ya update
-            try {
-                await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-            } catch (docErr) {
-                // Jika dokumen tidak ada (kasus langka), buat baru
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-            }
-            
-            // Update variable lokal
-            if (!userDataDB) userDataDB = {};
-            userDataDB.phone = newPhone;
-            userDataDB.avatarUrl = newAvatarUrl;
-
+            // Coba update
+            await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            console.error("DB Update Error:", dbErr);
+            // Jika error 404 (Not Found), coba create document baru
+            if (dbErr.code === 404) {
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+            } else {
+                // Jika error lain (misal atribut 'avatarUrl' tidak ada), LEMPAR ERROR
+                // Jangan ditelan dengan console.log saja!
+                throw new Error("DB Error: " + dbErr.message + ". Cek Atribut Appwrite!");
+            }
         }
 
-        // Refresh Data Session
+        // Update Variable Lokal
+        if (!userDataDB) userDataDB = {};
+        userDataDB.phone = newPhone;
+        userDataDB.avatarUrl = newAvatarUrl;
+
+        // Refresh Data User Global
         currentUser = await account.get();
-        updateProfileUI(); // Update foto di dashboard
+        
+        // PENTING: Update UI secara paksa
+        updateProfileUI(); 
 
         toggleLoading(false);
         alert("Profil Berhasil Disimpan!");
@@ -336,12 +337,13 @@ window.saveProfile = async () => {
 
     } catch (error) {
         toggleLoading(false);
-        alert("Terjadi kesalahan: " + error.message);
+        // Tampilkan error asli ke user agar ketahuan salahnya dimana
+        alert("Gagal Menyimpan: " + error.message);
     }
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH
+// 6. FILE MANAGER & SEARCH (SAMA SEPERTI SEBELUMNYA)
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
