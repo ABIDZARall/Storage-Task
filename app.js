@@ -73,10 +73,9 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // LOGIC BARU: Cek apakah input adalah Username (tidak ada @)
+            // DETEKSI: Apakah user mengetik Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
-                // Jika tidak ada @, kita asumsikan ini Username.
-                // Kita harus cari Email berdasarkan Username ini di Database.
+                // Jika tidak ada @, berarti Username. Kita cari Email-nya di Database.
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
@@ -87,36 +86,42 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // Username ditemukan! Ambil emailnya.
+                        // Username DITEMUKAN! Gunakan emailnya untuk login.
+                        console.log("Login via Username: Email ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
-                        console.log("Login via Username: Email ditemukan ->", inputId);
                     } else {
-                        // Username tidak ada di database
-                        throw new Error("Username tidak ditemukan/terdaftar.");
+                        // Username TIDAK DITEMUKAN di database
+                        throw new Error("Username tidak ditemukan. Jika ini akun baru, silakan Login dengan Email dulu, lalu 'Simpan Profil' agar username terdaftar.");
                     }
                 } catch(dbErr) {
-                    // Jika error query (misal atribut 'name' belum dibuat), lempar error spesifik
-                    if(dbErr.message.includes("Username tidak ditemukan")) throw dbErr;
-                    
-                    console.error("Gagal cari username:", dbErr);
-                    throw new Error("Gagal memverifikasi Username. Pastikan atribut 'name' ada di Database atau gunakan Email.");
+                    // Tangani error spesifik
+                    if (dbErr.message.includes("Index not found")) {
+                        alert("Sistem Error: Admin belum membuat Index 'name' di Appwrite. Loginlah menggunakan Email sementara waktu.");
+                        throw new Error("Index DB belum siap.");
+                    } else if (dbErr.message.includes("Username tidak ditemukan")) {
+                        throw dbErr; // Lempar pesan asli ke catch utama
+                    } else {
+                        console.error("Error DB Search:", dbErr);
+                        // Fallback: Coba login langsung (siapa tau inputId valid di Auth tapi tidak di DB)
+                    }
                 }
             }
 
-            // Lanjut Login menggunakan Email (baik email asli maupun hasil lookup username)
+            // Eksekusi Login (menggunakan Email yang sudah ditemukan/diinput)
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
+                // Abaikan error session active, lanjut dashboard
                 if (authError.code === 401 || authError.message.includes('session is active')) {
                     console.log("Sesi aktif, lanjut ke dashboard...");
                 } else {
-                    throw authError; 
+                    throw authError; // Lempar error password salah / user tidak ada
                 }
             }
             
+            // Catat aktivitas login
             const user = await account.get();
             try {
-                // Log activity (optional)
                 const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
                 await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: userDB.phone, password: pass });
             } catch(ex) {}
@@ -125,7 +130,8 @@ if (el('loginForm')) {
 
         } catch (error) { 
             toggleLoading(false);
-            alert("Login Gagal: " + (error.message || "Periksa data Anda."));
+            // Tampilkan pesan error yang bersih
+            alert("Login Gagal: " + (error.message || "Periksa Username/Email dan Password Anda."));
         }
     });
 }
@@ -144,26 +150,31 @@ if (el('signupForm')) {
         
         toggleLoading(true, "Mendaftarkan...");
         try {
+            // 1. Buat Akun Auth
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // Simpan data tambahan ke DB dengan error handling
+            // 2. Simpan Data ke Database (PENTING untuk Login Username)
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
-                    name: name, // Wajib atribut 'name' ada di Appwrite agar Login Username bekerja
+                    name: name, // Ini yang membuat Login Username bekerja
                     avatarUrl: ''
                 }); 
             } catch(dbErr) {
-                console.error("Gagal simpan ke DB:", dbErr);
-                // Coba simpan tanpa name jika gagal (fallback agar signup tidak error total)
+                console.error("Gagal simpan ke DB Users:", dbErr);
+                // Fallback: Jika atribut 'name' belum dibuat di Appwrite, simpan data sisanya saja
+                // agar user tetap bisa login (pakai email).
                 try {
                     await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                         email: email, 
                         phone: phone,
                         avatarUrl: ''
+                        // name dihapus agar tidak error total
                     });
-                } catch(e2){}
+                } catch(e2) {
+                    console.error("Fallback DB gagal:", e2);
+                }
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
@@ -209,7 +220,7 @@ async function checkSession() {
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
-            console.log("User DB data not found, creating placeholder");
+            console.log("User DB data not found");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -226,11 +237,12 @@ async function checkSession() {
 }
 
 function updateProfileUI() {
-    // Cache Busting: Memaksa gambar baru muncul
+    // Cache Busting: Memaksa gambar baru muncul segera setelah upload
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
     const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
+    // Update foto di semua tempat
     const dashAvatar = el('dashAvatar');
     if(dashAvatar) dashAvatar.src = finalSrc;
 
@@ -257,8 +269,10 @@ window.nav = (pageId) => {
 window.openProfilePage = () => {
     if (!currentUser) return;
     
+    // Ambil nama dari Auth (currentUser) karena selalu paling update
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
+    // Ambil phone dari DB
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
@@ -287,7 +301,7 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE ***
+// *** FUNGSI SAVE PROFILE (UPDATE USER DATA) ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -308,7 +322,7 @@ window.saveProfile = async () => {
             }
         }
 
-        // 2. Update Auth (Nama & Email & Password)
+        // 2. Update Auth (Nama, Email, Password di akun inti)
         if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
@@ -325,10 +339,9 @@ window.saveProfile = async () => {
             await account.updatePassword(newPass);
         }
 
-        // 3. Update Database (Phone, Avatar, Name)
-        // Kita mencoba update 'name' juga agar Login Username bekerja
+        // 3. Update Database (PENTING: Update juga kolom 'name' di DB agar Login Username jalan)
         const payload = {
-            name: newName,
+            name: newName, // Simpan nama ke DB
             email: newEmail,
             phone: newPhone,
             avatarUrl: newAvatarUrl
@@ -338,12 +351,16 @@ window.saveProfile = async () => {
             // Coba update document
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            // Jika error karena atribut 'name' belum ada, kita coba simpan tanpa 'name'
-            // NOTE: Jika ini terjadi, Login Username TIDAK akan bisa dipakai user ini sampai atribut 'name' dibuat.
-            if (dbErr.message && dbErr.message.includes('Unknown attribute')) {
+            // Jika dokumen belum ada, buat baru
+            if (dbErr.code === 404) {
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+            } 
+            // Jika error karena kolom 'name' belum ada di Appwrite, coba simpan tanpa name
+            else if (dbErr.message && dbErr.message.includes('Unknown attribute')) {
                 delete payload.name;
                 try {
                      await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+                     alert("Info: Foto berhasil disimpan. Namun database 'name' belum siap, login username mungkin belum aktif.");
                 } catch (retryErr) {
                     if (retryErr.code === 404) {
                          await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
@@ -351,8 +368,6 @@ window.saveProfile = async () => {
                         throw retryErr;
                     }
                 }
-            } else if (dbErr.code === 404) {
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
             } else {
                 throw dbErr;
             }
@@ -378,7 +393,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH
+// 6. FILE MANAGER & SEARCH (Fungsi Standar)
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -447,20 +462,18 @@ window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').
 // KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
-    const newMenu = el('dropdownNewMenu'); // Dropdown Tombol New
-    const navDrive = el('navDrive'); // Sidebar Drive Saya
-    const globalMenu = el('globalContextMenu'); // Menu Global (Klik Kanan Drive Saya/Kosong)
-    const fileMenu = el('fileContextMenu'); // Menu File/Folder
+    const newMenu = el('dropdownNewMenu'); 
+    const navDrive = el('navDrive'); 
+    const globalMenu = el('globalContextMenu'); 
+    const fileMenu = el('fileContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
-    // Fungsi Tutup Semua Menu
     const closeAll = () => {
         if(newMenu) newMenu.classList.remove('show');
         if(globalMenu) globalMenu.classList.remove('show');
         if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
     };
 
-    // 1. TOMBOL NEW
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
@@ -474,7 +487,6 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    // 2. SIDEBAR DRIVE SAYA
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAll(); 
@@ -484,7 +496,6 @@ function initAllContextMenus() {
         };
     }
 
-    // 3. AREA KOSONG
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
@@ -495,7 +506,6 @@ function initAllContextMenus() {
         };
     }
     
-    // Klik sembarang -> Tutup menu
     window.onclick = (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
         closeAll();
@@ -513,10 +523,8 @@ function renderItem(doc) {
     }
     div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
     
-    // Klik Kiri
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
-    // Klik Kanan
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         if(el('storageModal')) el('storageModal').classList.add('hidden');
