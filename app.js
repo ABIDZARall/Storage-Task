@@ -73,16 +73,37 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
+            // LOGIC BARU: Cek apakah input adalah Username (tidak ada @)
             if (!inputId.includes('@')) {
+                // Jika tidak ada @, kita asumsikan ini Username.
+                // Kita harus cari Email berdasarkan Username ini di Database.
                 try {
-                    // Coba cari di users DB (optional), kalau gagal lanjut saja
-                    const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [
-                        Appwrite.Query.equal('email', inputId) // Fallback search by email
-                    ]);
-                    // Logic username login bisa dikembangkan disini
-                } catch(err) { console.log("Skip username check"); }
+                    const res = await databases.listDocuments(
+                        CONFIG.DB_ID, 
+                        CONFIG.COLLECTION_USERS, 
+                        [
+                            Appwrite.Query.equal('name', inputId)
+                        ]
+                    );
+
+                    if (res.documents.length > 0) {
+                        // Username ditemukan! Ambil emailnya.
+                        inputId = res.documents[0].email;
+                        console.log("Login via Username: Email ditemukan ->", inputId);
+                    } else {
+                        // Username tidak ada di database
+                        throw new Error("Username tidak ditemukan/terdaftar.");
+                    }
+                } catch(dbErr) {
+                    // Jika error query (misal atribut 'name' belum dibuat), lempar error spesifik
+                    if(dbErr.message.includes("Username tidak ditemukan")) throw dbErr;
+                    
+                    console.error("Gagal cari username:", dbErr);
+                    throw new Error("Gagal memverifikasi Username. Pastikan atribut 'name' ada di Database atau gunakan Email.");
+                }
             }
 
+            // Lanjut Login menggunakan Email (baik email asli maupun hasil lookup username)
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
@@ -125,17 +146,24 @@ if (el('signupForm')) {
         try {
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // BYPASS FIX: Simpan data tambahan ke DB TANPA field 'name' 
-            // agar tidak error "Unknown attribute: name"
+            // Simpan data tambahan ke DB dengan error handling
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
+                    name: name, // Wajib atribut 'name' ada di Appwrite agar Login Username bekerja
                     avatarUrl: ''
-                    // 'name' dihapus dari sini karena database belum siap
                 }); 
             } catch(dbErr) {
-                console.error("DB Save Error:", dbErr);
+                console.error("Gagal simpan ke DB:", dbErr);
+                // Coba simpan tanpa name jika gagal (fallback agar signup tidak error total)
+                try {
+                    await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
+                        email: email, 
+                        phone: phone,
+                        avatarUrl: ''
+                    });
+                } catch(e2){}
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
@@ -223,13 +251,12 @@ window.nav = (pageId) => {
 };
 
 // ======================================================
-// 5. PROFILE & SETTINGS LOGIC (BYPASS FIX)
+// 5. PROFILE & SETTINGS LOGIC
 // ======================================================
 
 window.openProfilePage = () => {
     if (!currentUser) return;
     
-    // Nama diambil dari Auth (currentUser), bukan Database
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
@@ -260,7 +287,7 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE YANG SUDAH DI-BYPASS ***
+// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -281,7 +308,7 @@ window.saveProfile = async () => {
             }
         }
 
-        // 2. Update Auth (Nama & Email & Password) - Nama disimpan di SINI
+        // 2. Update Auth (Nama & Email & Password)
         if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
@@ -298,9 +325,10 @@ window.saveProfile = async () => {
             await account.updatePassword(newPass);
         }
 
-        // 3. Update Database (HANYA Phone & Avatar)
-        // BYPASS: Kita TIDAK mengirim 'name' ke database agar tidak error
+        // 3. Update Database (Phone, Avatar, Name)
+        // Kita mencoba update 'name' juga agar Login Username bekerja
         const payload = {
+            name: newName,
             email: newEmail,
             phone: newPhone,
             avatarUrl: newAvatarUrl
@@ -310,11 +338,22 @@ window.saveProfile = async () => {
             // Coba update document
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            // Jika dokumen belum ada (404), create baru
-            if (dbErr.code === 404) {
+            // Jika error karena atribut 'name' belum ada, kita coba simpan tanpa 'name'
+            // NOTE: Jika ini terjadi, Login Username TIDAK akan bisa dipakai user ini sampai atribut 'name' dibuat.
+            if (dbErr.message && dbErr.message.includes('Unknown attribute')) {
+                delete payload.name;
+                try {
+                     await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+                } catch (retryErr) {
+                    if (retryErr.code === 404) {
+                         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+                    } else {
+                        throw retryErr;
+                    }
+                }
+            } else if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
             } else {
-                // Jika error lain, throw
                 throw dbErr;
             }
         }
@@ -339,7 +378,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH (SAMA SEPERTI SEBELUMNYA)
+// 6. FILE MANAGER & SEARCH
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
