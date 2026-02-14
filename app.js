@@ -136,7 +136,7 @@ if (el('loginForm')) {
                 } catch(dbErr) {
                     if (dbErr.message === "AUTO_SYNC_NEEDED") {
                         // Pesan khusus yang diminta
-                        alert(`Halo! Username "${inputId}" terdeteksi, namun perlu aktivasi database.\n\nSilakan Login menggunakan EMAIL Anda sekali ini saja. Sistem akan otomatis menghubungkan username tersebut agar bisa dipakai selanjutnya.`);
+                        alert(`Halo! "${inputId}" adalah username yang valid. Namun, data pengguna belum sepenuhnya siap. Mohon masuk menggunakan email Anda.`);
                         toggleLoading(false);
                         return; // Stop proses, biarkan user ganti ke email
                     } else {
