@@ -91,19 +91,16 @@ if (el('loginForm')) {
                         inputId = res.documents[0].email;
                     } else {
                         // Username TIDAK DITEMUKAN di database
-                        throw new Error("Username tidak ditemukan. Jika ini akun baru, silakan Login dengan Email dulu, lalu 'Simpan Profil' agar username terdaftar.");
+                        // Sesuai permintaan, kita tampilkan pesan umum, bukan detail menakutkan
+                        throw new Error("Kombinasi Username/Email atau Password salah.");
                     }
                 } catch(dbErr) {
-                    // Tangani error spesifik
-                    if (dbErr.message.includes("Index not found")) {
-                        alert("Sistem Error: Admin belum membuat Index 'name' di Appwrite. Loginlah menggunakan Email sementara waktu.");
-                        throw new Error("Index DB belum siap.");
-                    } else if (dbErr.message.includes("Username tidak ditemukan")) {
-                        throw dbErr; // Lempar pesan asli ke catch utama
-                    } else {
-                        console.error("Error DB Search:", dbErr);
-                        // Fallback: Coba login langsung (siapa tau inputId valid di Auth tapi tidak di DB)
-                    }
+                    // Jika error database (misal index belum siap atau data kosong)
+                    // Kita lempar error umum agar user mencoba pakai email
+                    console.warn("DB Lookup failed:", dbErr);
+                    // Jika gagal lookup username, kita paksa error auth agar masuk catch bawah
+                    // Pesan ini akan ditimpa oleh catch utama
+                    throw new Error("Gagal verifikasi Username. Silakan coba gunakan Email.");
                 }
             }
 
@@ -119,19 +116,27 @@ if (el('loginForm')) {
                 }
             }
             
-            // Catat aktivitas login
+            // Catat aktivitas login (Opsional)
             const user = await account.get();
             try {
-                const userDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
-                await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: userDB.phone, password: pass });
+                // PENTING: Trigger sinkronisasi data (memperbaiki nama NULL di DB)
+                syncUserData(user);
+                
+                await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
             } catch(ex) {}
 
             checkSession(); 
 
         } catch (error) { 
             toggleLoading(false);
-            // Tampilkan pesan error yang bersih
-            alert("Login Gagal: " + (error.message || "Periksa Username/Email dan Password Anda."));
+            // Tampilkan pesan error yang ramah dan tidak mencurigakan
+            let msg = "Login Gagal: Periksa kembali data Anda.";
+            if(error.message.includes("Password")) msg = "Password salah.";
+            if(error.message.includes("User not found")) msg = "Akun tidak ditemukan.";
+            // Pesan khusus jika username lookup gagal
+            if(error.message.includes("Username")) msg = "Username tidak ditemukan atau belum terhubung. Silakan login dengan Email.";
+            
+            alert(msg);
         }
     });
 }
@@ -164,17 +169,13 @@ if (el('signupForm')) {
             } catch(dbErr) {
                 console.error("Gagal simpan ke DB Users:", dbErr);
                 // Fallback: Jika atribut 'name' belum dibuat di Appwrite, simpan data sisanya saja
-                // agar user tetap bisa login (pakai email).
                 try {
                     await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                         email: email, 
                         phone: phone,
                         avatarUrl: ''
-                        // name dihapus agar tidak error total
                     });
-                } catch(e2) {
-                    console.error("Fallback DB gagal:", e2);
-                }
+                } catch(e2) {}
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
@@ -219,6 +220,13 @@ async function checkSession() {
         
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
+            
+            // AUTOMATIC SYNC: Jika nama di DB kosong, isi dengan nama dari Auth
+            if (!userDataDB.name || userDataDB.name === 'NULL') {
+                console.log("Mendeteksi nama kosong di DB. Melakukan sinkronisasi...");
+                syncUserData(currentUser);
+            }
+
         } catch (e) {
             console.log("User DB data not found");
             userDataDB = { phone: '', avatarUrl: '' };
@@ -236,13 +244,25 @@ async function checkSession() {
     }
 }
 
+// FUNGSI BARU: SINKRONISASI DATA USER (AUTH -> DB)
+async function syncUserData(authUser) {
+    if (!authUser) return;
+    try {
+        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
+            name: authUser.name,
+            email: authUser.email
+        });
+        console.log("Data User berhasil disinkronkan ke Database.");
+    } catch (err) {
+        console.warn("Gagal sinkronisasi user:", err);
+    }
+}
+
 function updateProfileUI() {
-    // Cache Busting: Memaksa gambar baru muncul segera setelah upload
     const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
     const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
-    // Update foto di semua tempat
     const dashAvatar = el('dashAvatar');
     if(dashAvatar) dashAvatar.src = finalSrc;
 
@@ -269,10 +289,8 @@ window.nav = (pageId) => {
 window.openProfilePage = () => {
     if (!currentUser) return;
     
-    // Ambil nama dari Auth (currentUser) karena selalu paling update
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
-    // Ambil phone dari DB
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
@@ -301,7 +319,7 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE (UPDATE USER DATA) ***
+// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -311,7 +329,6 @@ window.saveProfile = async () => {
         const newPhone = el('editPhone').value.trim();
         const newPass = el('editPass').value;
 
-        // 1. Upload Foto (Jika ada yang baru)
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
         if (selectedProfileImage) {
             try {
@@ -322,7 +339,6 @@ window.saveProfile = async () => {
             }
         }
 
-        // 2. Update Auth (Nama, Email, Password di akun inti)
         if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
@@ -339,28 +355,24 @@ window.saveProfile = async () => {
             await account.updatePassword(newPass);
         }
 
-        // 3. Update Database (PENTING: Update juga kolom 'name' di DB agar Login Username jalan)
         const payload = {
-            name: newName, // Simpan nama ke DB
+            name: newName, 
             email: newEmail,
             phone: newPhone,
             avatarUrl: newAvatarUrl
         };
         
         try {
-            // Coba update document
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            // Jika dokumen belum ada, buat baru
             if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
             } 
-            // Jika error karena kolom 'name' belum ada di Appwrite, coba simpan tanpa name
             else if (dbErr.message && dbErr.message.includes('Unknown attribute')) {
+                // Fallback jika atribut name belum ada (sangat jarang terjadi sekarang)
                 delete payload.name;
                 try {
                      await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-                     alert("Info: Foto berhasil disimpan. Namun database 'name' belum siap, login username mungkin belum aktif.");
                 } catch (retryErr) {
                     if (retryErr.code === 404) {
                          await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
@@ -373,12 +385,10 @@ window.saveProfile = async () => {
             }
         }
 
-        // Update Variable Lokal
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone;
         userDataDB.avatarUrl = newAvatarUrl;
 
-        // Refresh Data User Global
         currentUser = await account.get();
         updateProfileUI(); 
 
@@ -393,7 +403,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH (Fungsi Standar)
+// 6. FILE MANAGER & SEARCH
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
