@@ -92,18 +92,14 @@ if (el('loginForm')) {
                         console.log("Login via Username: Email ditemukan ->", inputId);
                     } else {
                         // Username tidak ada di database
-                        throw new Error("Username tidak ditemukan. Pastikan Anda sudah mendaftar dengan username ini.");
+                        throw new Error("Username tidak ditemukan/terdaftar.");
                     }
                 } catch(dbErr) {
-                    // Cek spesifik jika errornya adalah Index Missing
-                    if (dbErr.message.includes('Index not found')) {
-                        throw new Error("Sistem Error: Index 'name' belum dibuat di Appwrite. Silakan hubungi admin.");
-                    } else if (dbErr.message.includes("Username tidak ditemukan")) {
-                        throw dbErr; // Lempar error "Tidak ditemukan" ke catch luar
-                    } else {
-                        console.error("Gagal cari username:", dbErr);
-                        throw new Error("Gagal mencari Username. Gunakan Email untuk login.");
-                    }
+                    // Jika error query (misal atribut 'name' belum dibuat), lempar error spesifik
+                    if(dbErr.message.includes("Username tidak ditemukan")) throw dbErr;
+                    
+                    console.error("Gagal cari username:", dbErr);
+                    throw new Error("Gagal memverifikasi Username. Pastikan atribut 'name' ada di Database atau gunakan Email.");
                 }
             }
 
