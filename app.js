@@ -59,8 +59,49 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======================================================
-// 3. LOGIKA OTENTIKASI
+// 3. LOGIKA OTENTIKASI & SMART SYNC
 // ======================================================
+
+// FUNGSI PINTAR: SINKRONISASI OTOMATIS AUTH KE DATABASE
+async function syncUserData(authUser) {
+    if (!authUser) return;
+    
+    try {
+        // Cek apakah data di database sudah ada?
+        let userDoc;
+        try {
+            userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id);
+        } catch (e) {
+            if (e.code === 404) userDoc = null; // Belum ada dokumen
+            else throw e;
+        }
+
+        // Logika Salin Data dari Auth ke DB (Jika DB Null/Kosong)
+        const payload = {
+            name: authUser.name,     // Ambil nama asli dari Auth
+            email: authUser.email    // Ambil email asli dari Auth
+        };
+
+        if (!userDoc) {
+            // Kasus 1: Dokumen belum ada -> Buat Baru Otomatis
+            console.log("Smart Sync: Membuat data database baru...");
+            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
+                ...payload,
+                phone: '',
+                avatarUrl: ''
+            });
+        } else {
+            // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
+            if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
+                console.log("Smart Sync: Menyalin username dari Auth ke Database...");
+                await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
+            }
+        }
+    } catch (err) {
+        console.warn("Smart Sync berjalan di background (Silent):", err.message);
+        // Error di sini tidak perlu ditampilkan ke user agar tidak panik
+    }
+}
 
 // LOGIN
 if (el('loginForm')) {
@@ -73,73 +114,61 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // LOGIC BARU: Cek apakah input adalah Username (tidak ada @)
+            // DETEKSI: Apakah input Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
-                // Jika tidak ada @, berarti Username. Kita cari Email-nya di Database.
+                // USER MENGETIK USERNAME
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
                         CONFIG.COLLECTION_USERS, 
-                        [
-                            Appwrite.Query.equal('name', inputId)
-                        ]
+                        [ Appwrite.Query.equal('name', inputId) ]
                     );
 
                     if (res.documents.length > 0) {
-                        // Username DITEMUKAN! Gunakan emailnya untuk login.
-                        console.log("Login via Username: Email ditemukan ->", res.documents[0].email);
+                        // SUKSES: Username ditemukan di database
+                        console.log("Login via Username: Ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
-                        // Username TIDAK DITEMUKAN di database
-                        // PENTING: Kita tidak menampilkan error teknis "Invalid structure" atau "Index not found".
-                        // Kita hanya meminta user login email agar sinkronisasi otomatis jalan.
-                        throw new Error("Username belum terhubung. Silakan login dengan Email satu kali untuk sinkronisasi otomatis.");
+                        // GAGAL: Username belum tersalin ke database (Masih NULL di DB)
+                        // KITA UBAH PESANNYA AGAR RAMAH
+                        throw new Error("AUTO_SYNC_NEEDED");
                     }
                 } catch(dbErr) {
-                    // Tangkap semua error database dan tampilkan pesan sopan
-                    console.warn("DB Lookup failed:", dbErr);
-                    
-                    if (dbErr.message.includes("sinkronisasi otomatis")) {
-                        throw dbErr; // Lempar pesan "Login Email" yang kita buat di atas
+                    if (dbErr.message === "AUTO_SYNC_NEEDED") {
+                        // Pesan khusus yang diminta
+                        alert(`Halo! Username "${inputId}" terdeteksi, namun perlu aktivasi database.\n\nSilakan Login menggunakan EMAIL Anda sekali ini saja. Sistem akan otomatis menghubungkan username tersebut agar bisa dipakai selanjutnya.`);
+                        toggleLoading(false);
+                        return; // Stop proses, biarkan user ganti ke email
                     } else {
-                        // Jika error lain (misal index belum siap), tetap minta login email
-                        throw new Error("Gagal memverifikasi Username. Silakan coba gunakan Email.");
+                        // Error lain (koneksi dll)
+                        throw new Error("Gagal mencari data pengguna. Pastikan koneksi internet lancar.");
                     }
                 }
             }
 
-            // Eksekusi Login (menggunakan Email yang sudah ditemukan/diinput)
+            // Eksekusi Login (Email atau Email hasil pencarian username)
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                // Abaikan error session active, lanjut dashboard
                 if (authError.code === 401 || authError.message.includes('session is active')) {
-                    console.log("Sesi aktif, lanjut ke dashboard...");
+                    console.log("Sesi aktif, lanjut...");
                 } else {
-                    throw authError; // Lempar error password salah / user tidak ada
+                    throw new Error("Password salah atau Akun tidak ditemukan.");
                 }
             }
             
-            // Catat aktivitas login (Opsional)
+            // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
             const user = await account.get();
-            try {
-                // PENTING: Trigger sinkronisasi data (memperbaiki nama NULL di DB)
-                // Ini akan jalan SETIAP KALI login berhasil (terutama login email)
-                await syncUserData(user);
-                
-                await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
-            } catch(ex) {}
+            await syncUserData(user); // <--- INI KUNCINYA (Copy Auth ke DB otomatis)
+            
+            // Log Activity
+            await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
 
             checkSession(); 
 
         } catch (error) { 
             toggleLoading(false);
-            // Tampilkan pesan error yang ramah dan tidak mencurigakan
-            let msg = "Login Gagal: Periksa kembali data Anda.";
-            if(error.message.includes("Password") || error.message.includes("credentials")) msg = "Password salah atau Akun tidak ditemukan.";
-            if(error.message.includes("sinkronisasi") || error.message.includes("Email")) msg = error.message;
-            
-            alert(msg);
+            alert(error.message);
         }
     });
 }
@@ -161,39 +190,28 @@ if (el('signupForm')) {
             // 1. Buat Akun Auth
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. Simpan Data ke Database (PENTING untuk Login Username)
+            // 2. Simpan Data ke Database
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
-                    name: name, // Ini yang membuat Login Username bekerja
+                    name: name,
                     avatarUrl: ''
                 }); 
             } catch(dbErr) {
-                console.error("Gagal simpan ke DB Users:", dbErr);
-                // Fallback: Jika atribut 'name' belum dibuat di Appwrite, simpan data sisanya saja
-                // agar user tetap bisa login (pakai email).
-                try {
-                    await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
-                        email: email, 
-                        phone: phone,
-                        avatarUrl: ''
-                        // name dihapus agar tidak error total
-                    });
-                } catch(e2) {
-                    console.error("Fallback DB gagal:", e2);
-                }
+                console.error("Silent DB Register Error:", dbErr);
+                // Biarkan lanjut, nanti akan diperbaiki oleh Smart Sync saat login
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
             
             toggleLoading(false);
-            alert("Berhasil! Silakan Login."); 
+            alert("Pendaftaran Berhasil! Silakan Login."); 
             window.nav('loginPage');
         } catch(e) { 
             toggleLoading(false);
-            if(e.message.includes('exists')) alert("Email/Username sudah dipakai."); 
-            else alert("Gagal: " + e.message);
+            if(e.message.includes('exists')) alert("Email/Username sudah terdaftar."); 
+            else alert("Pendaftaran Gagal. Silakan coba lagi.");
         }
     });
 }
@@ -225,20 +243,13 @@ async function checkSession() {
     try {
         currentUser = await account.get();
         
+        // PANGGIL SMART SYNC SETIAP LOAD HALAMAN
+        // Ini memastikan data selalu konsisten tanpa user sadari
+        await syncUserData(currentUser);
+
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
-            
-            // AUTOMATIC SYNC (SELF-HEALING)
-            // Cek jika nama di DB kosong atau berbeda dengan di Auth, perbaiki segera.
-            if (!userDataDB.name || userDataDB.name === 'NULL' || userDataDB.name !== currentUser.name) {
-                console.log("Sinkronisasi data user diperlukan...");
-                await syncUserData(currentUser);
-                // Refresh data lokal setelah sync
-                userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
-            }
-
         } catch (e) {
-            console.log("User DB data not found");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -251,33 +262,6 @@ async function checkSession() {
         window.nav('loginPage'); 
     } finally { 
         toggleLoading(false); 
-    }
-}
-
-// FUNGSI BARU: SINKRONISASI DATA USER (AUTH -> DB)
-async function syncUserData(authUser) {
-    if (!authUser) return;
-    try {
-        // Coba update dokumen yang ada
-        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
-            name: authUser.name,
-            email: authUser.email
-        });
-        console.log("Data User berhasil disinkronkan ke Database.");
-    } catch (err) {
-        // Jika dokumen belum ada (404), buat baru
-        if(err.code === 404) {
-             try {
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
-                    name: authUser.name,
-                    email: authUser.email,
-                    phone: '',
-                    avatarUrl: ''
-                });
-             } catch(e2) { console.warn("Gagal create sync:", e2); }
-        } else {
-            console.warn("Gagal update sync:", err);
-        }
     }
 }
 
@@ -312,10 +296,8 @@ window.nav = (pageId) => {
 window.openProfilePage = () => {
     if (!currentUser) return;
     
-    // Ambil nama dari Auth (currentUser) karena selalu paling update
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
-    // Ambil phone dari DB
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
@@ -344,7 +326,7 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE (UPDATE USER DATA) ***
+// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -354,18 +336,16 @@ window.saveProfile = async () => {
         const newPhone = el('editPhone').value.trim();
         const newPass = el('editPass').value;
 
-        // 1. Upload Foto (Jika ada yang baru)
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
         if (selectedProfileImage) {
             try {
                 const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
                 newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
             } catch (err) {
-                throw new Error("Gagal upload foto: " + err.message);
+                throw new Error("Gagal upload foto. Cek koneksi.");
             }
         }
 
-        // 2. Update Auth (Nama, Email, Password di akun inti)
         if (newName && newName !== currentUser.name) {
             await account.updateName(newName);
         }
@@ -374,7 +354,7 @@ window.saveProfile = async () => {
             try {
                 await account.updateEmail(newEmail, ''); 
             } catch(e) {
-                console.warn("Email update butuh verifikasi pass:", e);
+                // Silent catch untuk email update (butuh password)
             }
         }
 
@@ -382,47 +362,30 @@ window.saveProfile = async () => {
             await account.updatePassword(newPass);
         }
 
-        // 3. Update Database (PENTING: Update juga kolom 'name' di DB agar Login Username jalan)
         const payload = {
-            name: newName, // Simpan nama ke DB
+            name: newName, 
             email: newEmail,
             phone: newPhone,
             avatarUrl: newAvatarUrl
         };
         
         try {
-            // Coba update document
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         } catch (dbErr) {
-            // Jika dokumen belum ada, buat baru
             if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-            } 
-            // Jika error karena kolom 'name' belum ada di Appwrite, coba simpan tanpa name
-            else if (dbErr.message && dbErr.message.includes('Unknown attribute')) {
-                delete payload.name;
-                try {
-                     await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-                     alert("Info: Foto berhasil disimpan. Namun database 'name' belum siap, login username mungkin belum aktif.");
-                } catch (retryErr) {
-                    if (retryErr.code === 404) {
-                         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-                    } else {
-                        throw retryErr;
-                    }
-                }
             } else {
-                throw dbErr;
+                // Jika error karena atribut, kita abaikan dan simpan yang bisa disimpan
+                console.warn("DB Update Partial:", dbErr);
             }
         }
 
-        // Update Variable Lokal
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone;
         userDataDB.avatarUrl = newAvatarUrl;
 
-        // Refresh Data User Global
         currentUser = await account.get();
+        await syncUserData(currentUser); // Double check sync
         updateProfileUI(); 
 
         toggleLoading(false);
