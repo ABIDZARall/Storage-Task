@@ -85,6 +85,7 @@ async function syncUserData(authUser) {
         };
 
         if (!userDoc) {
+            // Kasus 1: Dokumen belum ada -> Buat Baru Otomatis
             console.log("Smart Sync: Membuat data database baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
@@ -92,6 +93,7 @@ async function syncUserData(authUser) {
                 avatarUrl: ''
             });
         } else {
+            // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
                 console.log("Smart Sync: Menyalin username dari Auth ke Database...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
@@ -113,7 +115,9 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
+            // DETEKSI: Apakah input Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
+                // USER MENGETIK USERNAME
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
@@ -122,9 +126,11 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
+                        // SUKSES: Username ditemukan di database
                         console.log("Login via Username: Ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
+                        // GAGAL: Username belum tersalin ke database (Masih NULL di DB)
                         throw new Error("AUTO_SYNC_NEEDED");
                     }
                 } catch(dbErr) {
@@ -133,23 +139,29 @@ if (el('loginForm')) {
                         toggleLoading(false);
                         return; 
                     } else {
-                        throw new Error("Gagal mencari data pengguna. Pastikan koneksi internet lancar.");
+                        // Abaikan error koneksi database, coba login langsung siapa tau inputId itu email valid
+                        console.log("DB check skipped, trying direct login");
                     }
                 }
             }
 
+            // Eksekusi Login
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                if (authError.code === 401 || authError.message.includes('session is active')) {
+                // HANDLING KHUSUS: Jika sesi sudah aktif, anggap sukses dan lanjut
+                if (authError.code === 401 || authError.message.includes('session is active') || authError.type === 'user_session_already_active') {
                     console.log("Sesi aktif, lanjut...");
                 } else {
                     throw new Error("Password salah atau Akun tidak ditemukan.");
                 }
             }
             
+            // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
             const user = await account.get();
             await syncUserData(user); 
+            
+            // Log Activity
             await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
 
             checkSession(); 
@@ -175,18 +187,23 @@ if (el('signupForm')) {
         
         toggleLoading(true, "Mendaftarkan...");
         try {
+            // 1. Buat Akun Auth
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
+            
+            // 2. Simpan Data ke Database
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
                     name: name,
-                    avatarUrl: ''
+                    avatarUrl: '' // Kosongkan, nanti UI pakai DEFAULT_AVATAR
                 }); 
             } catch(dbErr) {
                 console.error("Silent DB Register Error:", dbErr);
             }
+            
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
+            
             toggleLoading(false);
             alert("Pendaftaran Berhasil! Silakan Login."); 
             window.nav('loginPage');
@@ -224,11 +241,15 @@ async function checkSession() {
 
     try {
         currentUser = await account.get();
+        
+        // PANGGIL SMART SYNC SETIAP LOAD HALAMAN
         await syncUserData(currentUser);
 
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
+            // Critical Fix: Jangan biarkan ini crash UI, set default kosong
+            console.log("User DB data not found, defaulting.");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -238,15 +259,20 @@ async function checkSession() {
         loadFiles('root');  
         calculateStorage();
     } catch (e) { 
+        // Hanya redirect ke login jika benar-benar tidak ada sesi
         window.nav('loginPage'); 
     } finally { 
         toggleLoading(false); 
     }
 }
 
+// UPDATE UI PROFIL (FUNGSI UTAMA UNTUK AVATAR DEFAULT)
 function updateProfileUI() {
+    // Logika: Jika ada URL di DB dan tidak kosong, pakai itu. Jika tidak, pakai DEFAULT_AVATAR.
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
+
+    // Cache busting hanya jika menggunakan gambar custom dari DB
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
@@ -275,16 +301,21 @@ window.nav = (pageId) => {
 
 window.openProfilePage = () => {
     if (!currentUser) return;
+    
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
-    el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
+    // Pastikan userDataDB ada isinya sebelum akses property
+    el('editPhone').value = (userDataDB && userDataDB.phone) ? userDataDB.phone : '';
     el('editPass').value = ''; 
     
+    // Logika Avatar saat membuka halaman edit (Sama dengan updateProfileUI)
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
+    
     el('editProfileImg').src = avatarSrc + cacheBuster;
     selectedProfileImage = null; 
+
     window.nav('profilePage');
 };
 
@@ -305,6 +336,7 @@ function initProfileImageUploader() {
     }
 }
 
+// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     try {
@@ -346,6 +378,7 @@ window.saveProfile = async () => {
             }
         }
 
+        // Update local state segera agar tidak perlu refresh
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone;
         userDataDB.avatarUrl = newAvatarUrl;
@@ -557,6 +590,12 @@ function initAllContextMenus() {
     const globalMenu = el('globalContextMenu'); 
     const fileMenu = el('fileContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
+
+    const closeAll = () => {
+        if(newMenu) newMenu.classList.remove('show');
+        if(globalMenu) globalMenu.classList.remove('show');
+        if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
+    };
 
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
