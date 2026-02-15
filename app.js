@@ -6,8 +6,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default (Jika user belum upload foto)
-// Menggunakan ikon pengguna generik online agar selalu muncul.
+// URL Foto Profil Default
 const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT
@@ -66,10 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. LOGIKA OTENTIKASI & SMART SYNC
 // ======================================================
 
-// FUNGSI PINTAR: SINKRONISASI OTOMATIS AUTH KE DATABASE
 async function syncUserData(authUser) {
     if (!authUser) return;
-    
     try {
         let userDoc;
         try {
@@ -85,17 +82,13 @@ async function syncUserData(authUser) {
         };
 
         if (!userDoc) {
-            // Kasus 1: Dokumen belum ada -> Buat Baru Otomatis
-            console.log("Smart Sync: Membuat data database baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '',
-                avatarUrl: '' // Biarkan kosong, nanti UI pakai DEFAULT_AVATAR
+                avatarUrl: '' 
             });
         } else {
-            // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
-                console.log("Smart Sync: Menyalin username dari Auth ke Database...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
         }
@@ -115,9 +108,7 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // DETEKSI: Apakah input Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
-                // USER MENGETIK USERNAME
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
@@ -126,11 +117,8 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // SUKSES: Username ditemukan di database
-                        console.log("Login via Username: Ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
-                        // GAGAL: Username belum tersalin ke database (Masih NULL di DB)
                         throw new Error("AUTO_SYNC_NEEDED");
                     }
                 } catch(dbErr) {
@@ -144,7 +132,6 @@ if (el('loginForm')) {
                 }
             }
 
-            // Eksekusi Login
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
@@ -155,11 +142,8 @@ if (el('loginForm')) {
                 }
             }
             
-            // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
             const user = await account.get();
             await syncUserData(user); 
-            
-            // Log Activity
             await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
 
             checkSession(); 
@@ -185,16 +169,13 @@ if (el('signupForm')) {
         
         toggleLoading(true, "Mendaftarkan...");
         try {
-            // 1. Buat Akun Auth
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-            
-            // 2. Simpan Data ke Database
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
                     name: name,
-                    avatarUrl: '' // Kosongkan, nanti UI pakai DEFAULT_AVATAR
+                    avatarUrl: ''
                 }); 
             } catch(dbErr) {
                 console.error("Silent DB Register Error:", dbErr);
@@ -239,8 +220,6 @@ async function checkSession() {
 
     try {
         currentUser = await account.get();
-        
-        // PANGGIL SMART SYNC SETIAP LOAD HALAMAN
         await syncUserData(currentUser);
 
         try {
@@ -261,13 +240,9 @@ async function checkSession() {
     }
 }
 
-// UPDATE UI PROFIL (FUNGSI UTAMA UNTUK AVATAR DEFAULT)
 function updateProfileUI() {
-    // Logika: Jika ada URL di DB dan tidak kosong, pakai itu. Jika tidak, pakai DEFAULT_AVATAR.
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
-
-    // Cache busting hanya jika menggunakan gambar custom dari DB
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
@@ -302,7 +277,6 @@ window.openProfilePage = () => {
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
-    // Logika Avatar saat membuka halaman edit (Sama dengan updateProfileUI)
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
@@ -330,7 +304,6 @@ function initProfileImageUploader() {
     }
 }
 
-// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -358,7 +331,6 @@ window.saveProfile = async () => {
             try {
                 await account.updateEmail(newEmail, ''); 
             } catch(e) {
-                // Silent catch
             }
         }
 
@@ -402,7 +374,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH
+// 6. FILE MANAGER & SEARCH & THUMBNAILS
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -468,7 +440,6 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     const newMenu = el('dropdownNewMenu'); 
@@ -521,16 +492,59 @@ function initAllContextMenus() {
     };
 }
 
-// Render Item
+// RENDER ITEM (UPDATED FOR THUMBNAILS)
 function renderItem(doc) {
-    const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
+    const grid = el('fileGrid'); 
+    const div = document.createElement('div'); 
+    div.className = 'item-card';
+    
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;"></i>` : '';
-    let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
-    if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
-        content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;right:10px;color:#ffd700;z-index:10;font-size:1rem;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></i>` : '';
+    
+    let content = '';
+    const fileExt = doc.name.split('.').pop().toLowerCase();
+
+    if (isFolder) {
+        // Folder tetap pakai ikon
+        content = `<i class="icon fa-solid fa-folder"></i>`;
+    } else {
+        // IMAGE THUMBNAIL
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tif', 'tiff'].includes(fileExt)) {
+             // Pakai getFilePreview agar ringan, crop center 300x300
+             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 100).href;
+             content = `<div class="thumb-box img-type"><img src="${previewUrl}" loading="lazy" alt="${doc.name}"></div>`;
+        }
+        // VIDEO THUMBNAIL (Simulasi)
+        else if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(fileExt)) {
+             const videoUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href;
+             content = `<div class="thumb-box video-type">
+                          <video src="${videoUrl}#t=1.0" preload="metadata" muted></video>
+                          <div class="video-overlay"><i class="fa-solid fa-play"></i></div>
+                        </div>`;
+        }
+        // PDF THUMBNAIL
+        else if (['pdf'].includes(fileExt)) {
+             content = `<div class="thumb-box doc-type pdf-style"><i class="fa-solid fa-file-pdf"></i></div>`;
+        }
+        // WORD THUMBNAIL
+        else if (['doc', 'docx'].includes(fileExt)) {
+             content = `<div class="thumb-box doc-type word-style"><i class="fa-solid fa-file-word"></i></div>`;
+        }
+        // EXCEL THUMBNAIL
+        else if (['xls', 'xlsx', 'csv'].includes(fileExt)) {
+             content = `<div class="thumb-box doc-type excel-style"><i class="fa-solid fa-file-excel"></i></div>`;
+        }
+        // PPT THUMBNAIL
+        else if (['ppt', 'pptx'].includes(fileExt)) {
+             content = `<div class="thumb-box doc-type ppt-style"><i class="fa-solid fa-file-powerpoint"></i></div>`;
+        }
+        // GENERIC FILE
+        else {
+             content = `<div class="thumb-box doc-type generic-style"><i class="fa-solid fa-file"></i></div>`;
+        }
     }
-    div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
+    
+    div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
