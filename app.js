@@ -1,10 +1,14 @@
 // ======================================================
-// 1. KONFIGURASI APPWRITE
+// 1. KONFIGURASI APPWRITE & GLOBAL
 // ======================================================
 const client = new Appwrite.Client();
 const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
+
+// URL Foto Profil Default (Jika user belum upload foto)
+// Menggunakan ikon pengguna generik online agar selalu muncul.
+const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT
 const CONFIG = {
@@ -67,19 +71,17 @@ async function syncUserData(authUser) {
     if (!authUser) return;
     
     try {
-        // Cek apakah data di database sudah ada?
         let userDoc;
         try {
             userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id);
         } catch (e) {
-            if (e.code === 404) userDoc = null; // Belum ada dokumen
+            if (e.code === 404) userDoc = null; 
             else throw e;
         }
 
-        // Logika Salin Data dari Auth ke DB (Jika DB Null/Kosong)
         const payload = {
-            name: authUser.name,     // Ambil nama asli dari Auth
-            email: authUser.email    // Ambil email asli dari Auth
+            name: authUser.name,     
+            email: authUser.email    
         };
 
         if (!userDoc) {
@@ -88,7 +90,7 @@ async function syncUserData(authUser) {
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '',
-                avatarUrl: ''
+                avatarUrl: '' // Biarkan kosong, nanti UI pakai DEFAULT_AVATAR
             });
         } else {
             // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
@@ -99,7 +101,6 @@ async function syncUserData(authUser) {
         }
     } catch (err) {
         console.warn("Smart Sync berjalan di background (Silent):", err.message);
-        // Error di sini tidak perlu ditampilkan ke user agar tidak panik
     }
 }
 
@@ -130,23 +131,20 @@ if (el('loginForm')) {
                         inputId = res.documents[0].email;
                     } else {
                         // GAGAL: Username belum tersalin ke database (Masih NULL di DB)
-                        // KITA UBAH PESANNYA AGAR RAMAH
                         throw new Error("AUTO_SYNC_NEEDED");
                     }
                 } catch(dbErr) {
                     if (dbErr.message === "AUTO_SYNC_NEEDED") {
-                        // Pesan khusus yang diminta
-                        alert(`Halo! "${inputId}" adalah username yang valid. Namun, data pengguna belum sepenuhnya siap. Mohon masuk menggunakan email Anda.`);
+                        alert(`Halo! Username "${inputId}" terdeteksi, namun perlu aktivasi database.\n\nSilakan Login menggunakan EMAIL Anda sekali ini saja. Sistem akan otomatis menghubungkan username tersebut agar bisa dipakai selanjutnya.`);
                         toggleLoading(false);
-                        return; // Stop proses, biarkan user ganti ke email
+                        return; 
                     } else {
-                        // Error lain (koneksi dll)
                         throw new Error("Gagal mencari data pengguna. Pastikan koneksi internet lancar.");
                     }
                 }
             }
 
-            // Eksekusi Login (Email atau Email hasil pencarian username)
+            // Eksekusi Login
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
@@ -159,7 +157,7 @@ if (el('loginForm')) {
             
             // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
             const user = await account.get();
-            await syncUserData(user); // <--- INI KUNCINYA (Copy Auth ke DB otomatis)
+            await syncUserData(user); 
             
             // Log Activity
             await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
@@ -196,11 +194,10 @@ if (el('signupForm')) {
                     email: email, 
                     phone: phone,
                     name: name,
-                    avatarUrl: ''
+                    avatarUrl: '' // Kosongkan, nanti UI pakai DEFAULT_AVATAR
                 }); 
             } catch(dbErr) {
                 console.error("Silent DB Register Error:", dbErr);
-                // Biarkan lanjut, nanti akan diperbaiki oleh Smart Sync saat login
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
@@ -244,7 +241,6 @@ async function checkSession() {
         currentUser = await account.get();
         
         // PANGGIL SMART SYNC SETIAP LOAD HALAMAN
-        // Ini memastikan data selalu konsisten tanpa user sadari
         await syncUserData(currentUser);
 
         try {
@@ -265,9 +261,14 @@ async function checkSession() {
     }
 }
 
+// UPDATE UI PROFIL (FUNGSI UTAMA UNTUK AVATAR DEFAULT)
 function updateProfileUI() {
-    const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
-    const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
+    // Logika: Jika ada URL di DB dan tidak kosong, pakai itu. Jika tidak, pakai DEFAULT_AVATAR.
+    const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
+    const avatarSrc = dbUrl || DEFAULT_AVATAR;
+
+    // Cache busting hanya jika menggunakan gambar custom dari DB
+    const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
     const dashAvatar = el('dashAvatar');
@@ -301,8 +302,11 @@ window.openProfilePage = () => {
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
-    const avatarSrc = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : 'user.jpg';
-    const cacheBuster = (avatarSrc !== 'user.jpg') ? `&t=${new Date().getTime()}` : '';
+    // Logika Avatar saat membuka halaman edit (Sama dengan updateProfileUI)
+    const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
+    const avatarSrc = dbUrl || DEFAULT_AVATAR;
+    const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
+    
     el('editProfileImg').src = avatarSrc + cacheBuster;
     selectedProfileImage = null; 
 
@@ -354,7 +358,7 @@ window.saveProfile = async () => {
             try {
                 await account.updateEmail(newEmail, ''); 
             } catch(e) {
-                // Silent catch untuk email update (butuh password)
+                // Silent catch
             }
         }
 
@@ -375,7 +379,6 @@ window.saveProfile = async () => {
             if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
             } else {
-                // Jika error karena atribut, kita abaikan dan simpan yang bisa disimpan
                 console.warn("DB Update Partial:", dbErr);
             }
         }
@@ -385,7 +388,7 @@ window.saveProfile = async () => {
         userDataDB.avatarUrl = newAvatarUrl;
 
         currentUser = await account.get();
-        await syncUserData(currentUser); // Double check sync
+        await syncUserData(currentUser); 
         updateProfileUI(); 
 
         toggleLoading(false);
