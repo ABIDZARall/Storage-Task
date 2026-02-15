@@ -6,7 +6,8 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default
+// URL Foto Profil Default (Jika user belum upload foto)
+// Menggunakan ikon pengguna generik online agar selalu muncul.
 const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT
@@ -65,8 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // 3. LOGIKA OTENTIKASI & SMART SYNC
 // ======================================================
 
+// FUNGSI PINTAR: SINKRONISASI OTOMATIS AUTH KE DATABASE
 async function syncUserData(authUser) {
     if (!authUser) return;
+    
     try {
         let userDoc;
         try {
@@ -82,13 +85,15 @@ async function syncUserData(authUser) {
         };
 
         if (!userDoc) {
+            console.log("Smart Sync: Membuat data database baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '',
-                avatarUrl: '' 
+                avatarUrl: ''
             });
         } else {
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
+                console.log("Smart Sync: Menyalin username dari Auth ke Database...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
         }
@@ -117,6 +122,7 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
+                        console.log("Login via Username: Ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
                         throw new Error("AUTO_SYNC_NEEDED");
@@ -180,9 +186,7 @@ if (el('signupForm')) {
             } catch(dbErr) {
                 console.error("Silent DB Register Error:", dbErr);
             }
-            
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
-            
             toggleLoading(false);
             alert("Pendaftaran Berhasil! Silakan Login."); 
             window.nav('loginPage');
@@ -271,7 +275,6 @@ window.nav = (pageId) => {
 
 window.openProfilePage = () => {
     if (!currentUser) return;
-    
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
@@ -280,10 +283,8 @@ window.openProfilePage = () => {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
-    
     el('editProfileImg').src = avatarSrc + cacheBuster;
     selectedProfileImage = null; 
-
     window.nav('profilePage');
 };
 
@@ -306,7 +307,6 @@ function initProfileImageUploader() {
 
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
-    
     try {
         const newName = el('editName').value.trim();
         const newEmail = el('editEmail').value.trim();
@@ -323,20 +323,11 @@ window.saveProfile = async () => {
             }
         }
 
-        if (newName && newName !== currentUser.name) {
-            await account.updateName(newName);
-        }
-
+        if (newName && newName !== currentUser.name) await account.updateName(newName);
         if (newEmail && newEmail !== currentUser.email) {
-            try {
-                await account.updateEmail(newEmail, ''); 
-            } catch(e) {
-            }
+            try { await account.updateEmail(newEmail, ''); } catch(e) {}
         }
-
-        if (newPass) {
-            await account.updatePassword(newPass);
-        }
+        if (newPass) await account.updatePassword(newPass);
 
         const payload = {
             name: newName, 
@@ -374,8 +365,126 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER & SEARCH & THUMBNAILS
+// 6. FILE MANAGER (UPDATED RENDER ITEM & THUMBNAILS)
 // ======================================================
+
+// Helper untuk mendapatkan ikon berdasarkan ekstensi
+function getIconByExtension(extension) {
+    switch(extension) {
+        // Video
+        case 'mp4': case 'mkv': case 'mov': case 'avi': case 'webm':
+            return { icon: 'fa-file-video', type: 'video' };
+        // Audio
+        case 'mp3': case 'wav': case 'aac': case 'flac':
+            return { icon: 'fa-file-audio', type: 'audio' };
+        // Dokumen
+        case 'pdf':
+            return { icon: 'fa-file-pdf', type: 'pdf' };
+        case 'doc': case 'docx':
+            return { icon: 'fa-file-word', type: 'word' };
+        case 'xls': case 'xlsx': case 'csv':
+            return { icon: 'fa-file-excel', type: 'excel' };
+        case 'ppt': case 'pptx':
+            return { icon: 'fa-file-powerpoint', type: 'ppt' };
+        // Kode & Arsip
+        case 'zip': case 'rar': case '7z':
+            return { icon: 'fa-file-zipper', type: 'zip' };
+        case 'html': case 'css': case 'js': case 'json': case 'php':
+            return { icon: 'fa-file-code', type: 'code' };
+        default:
+            return { icon: 'fa-file', type: 'default' };
+    }
+}
+
+// Render Item dengan Thumbnail Google Drive Style
+function renderItem(doc) {
+    const grid = el('fileGrid'); 
+    const div = document.createElement('div'); 
+    div.className = 'item-card';
+
+    const isFolder = doc.type === 'folder';
+    const isImage = !isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif|gif|svg)$/i);
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700; z-index:5;"></i>` : '';
+    
+    let contentHTML = '';
+
+    if (isFolder) {
+        // Folder Icon (Kuning Standar)
+        contentHTML = `<i class="icon fa-solid fa-folder" style="font-size:3rem;"></i>`;
+    } else if (isImage) {
+        // Thumbnail Gambar Asli
+        const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId);
+        contentHTML = `
+            <div class="thumb-box">
+                <img src="${previewUrl}" alt="${doc.name}" loading="lazy">
+            </div>
+        `;
+    } else {
+        // Thumbnail Ikon Besar Berwarna (Style Google Drive)
+        const ext = doc.name.split('.').pop().toLowerCase();
+        const iconData = getIconByExtension(ext);
+        contentHTML = `
+            <div class="thumb-box">
+                <div class="thumb-icon ${iconData.type}">
+                    <i class="fa-solid ${iconData.icon}"></i>
+                </div>
+            </div>
+        `;
+    }
+
+    div.innerHTML = `${starHTML}${contentHTML}<div class="item-name">${doc.name}</div>`;
+    
+    // Event Listeners (Tetap Sama)
+    div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
+    
+    div.oncontextmenu = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        closeAllMenus(); // Tutup menu lain sebelum buka yang baru
+
+        selectedItem = doc;
+        const menu = el('fileContextMenu');
+        
+        const btnOpen = el('ctxBtnOpenFolder');
+        const btnPreview = el('ctxBtnPreview');
+        const btnDownload = el('ctxBtnDownload');
+        const btnOpenWith = el('ctxBtnOpenWith');
+
+        // Logic display menu item
+        if (isFolder) {
+            if(btnOpen) btnOpen.style.display = 'flex';
+            if(btnPreview) btnPreview.style.display = 'none';
+            if(btnDownload) btnDownload.style.display = 'none';
+            if(btnOpenWith) btnOpenWith.style.display = 'none';
+        } else {
+            if(btnOpen) btnOpen.style.display = 'none';
+            if(btnPreview) btnPreview.style.display = 'flex';
+            if(btnDownload) btnDownload.style.display = 'flex';
+            if(btnOpenWith) btnOpenWith.style.display = 'flex';
+        }
+
+        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
+        
+        const isTrash = doc.trashed;
+        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
+        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
+        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+
+        menu.classList.remove('hidden'); menu.classList.add('show');
+    };
+    grid.appendChild(div);
+}
+
+function closeAllMenus() {
+    if(el('storageModal')) el('storageModal').classList.add('hidden');
+    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+    if(el('fileContextMenu')) {
+        el('fileContextMenu').classList.remove('show');
+        el('fileContextMenu').classList.add('hidden');
+    }
+}
+
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
@@ -440,6 +549,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
+// KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     const newMenu = el('dropdownNewMenu'); 
@@ -448,19 +558,13 @@ function initAllContextMenus() {
     const fileMenu = el('fileContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
-    const closeAll = () => {
-        if(newMenu) newMenu.classList.remove('show');
-        if(globalMenu) globalMenu.classList.remove('show');
-        if(fileMenu) { fileMenu.classList.add('hidden'); fileMenu.classList.remove('show'); }
-    };
-
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         const toggleNewMenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); 
             const wasOpen = newMenu.classList.contains('show'); 
-            closeAll(); 
+            closeAllMenus();
             if (!wasOpen) newMenu.classList.add('show'); 
         };
         newBtnClean.onclick = toggleNewMenu;
@@ -469,7 +573,7 @@ function initAllContextMenus() {
 
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
-            e.preventDefault(); e.stopPropagation(); closeAll(); 
+            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
             globalMenu.style.top = `${e.clientY}px`; 
             globalMenu.style.left = `${e.clientX}px`; 
             globalMenu.classList.add('show');
@@ -479,7 +583,7 @@ function initAllContextMenus() {
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAll();
+            e.preventDefault(); closeAllMenus();
             globalMenu.style.top = `${e.clientY}px`; 
             globalMenu.style.left = `${e.clientX}px`; 
             globalMenu.classList.add('show');
@@ -488,332 +592,8 @@ function initAllContextMenus() {
     
     window.onclick = (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
-        closeAll();
+        closeAllMenus();
     };
-}
-
-// RENDER ITEM (UPDATED FOR THUMBNAILS)
-function renderItem(doc) {
-    const grid = el('fileGrid'); 
-    const div = document.createElement('div'); 
-    div.className = 'item-card';
-    
-    const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;right:10px;color:#ffd700;z-index:10;font-size:1rem;text-shadow:0 1px 3px rgba(0,0,0,0.5);"></i>` : '';
-    
-    let content = '';
-    const fileExt = doc.name.split('.').pop().toLowerCase();
-
-    if (isFolder) {
-        // Folder tetap pakai ikon
-        content = `<i class="icon fa-solid fa-folder"></i>`;
-    } else {
-        // IMAGE THUMBNAIL
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tif', 'tiff'].includes(fileExt)) {
-             // Pakai getFilePreview agar ringan, crop center 300x300
-             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 100).href;
-             content = `<div class="thumb-box img-type"><img src="${previewUrl}" loading="lazy" alt="${doc.name}"></div>`;
-        }
-        // VIDEO THUMBNAIL (Simulasi)
-        else if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(fileExt)) {
-             const videoUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href;
-             content = `<div class="thumb-box video-type">
-                          <video src="${videoUrl}#t=1.0" preload="metadata" muted></video>
-                          <div class="video-overlay"><i class="fa-solid fa-play"></i></div>
-                        </div>`;
-        }
-        // PDF THUMBNAIL
-        else if (['pdf'].includes(fileExt)) {
-             content = `<div class="thumb-box doc-type pdf-style"><i class="fa-solid fa-file-pdf"></i></div>`;
-        }
-        // WORD THUMBNAIL
-        else if (['doc', 'docx'].includes(fileExt)) {
-             content = `<div class="thumb-box doc-type word-style"><i class="fa-solid fa-file-word"></i></div>`;
-        }
-        // EXCEL THUMBNAIL
-        else if (['xls', 'xlsx', 'csv'].includes(fileExt)) {
-             content = `<div class="thumb-box doc-type excel-style"><i class="fa-solid fa-file-excel"></i></div>`;
-        }
-        // PPT THUMBNAIL
-        else if (['ppt', 'pptx'].includes(fileExt)) {
-             content = `<div class="thumb-box doc-type ppt-style"><i class="fa-solid fa-file-powerpoint"></i></div>`;
-        }
-        // GENERIC FILE
-        else {
-             content = `<div class="thumb-box doc-type generic-style"><i class="fa-solid fa-file"></i></div>`;
-        }
-    }
-    
-    div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
-    
-    div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-    
-    div.oncontextmenu = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        if(el('storageModal')) el('storageModal').classList.add('hidden');
-        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-        if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-
-        selectedItem = doc;
-        const menu = el('fileContextMenu');
-        
-        const btnOpen = el('ctxBtnOpenFolder');
-        const btnPreview = el('ctxBtnPreview');
-        const btnDownload = el('ctxBtnDownload');
-        const btnOpenWith = el('ctxBtnOpenWith');
-
-        if (isFolder) {
-            if(btnOpen) btnOpen.style.display = 'flex';
-            if(btnPreview) btnPreview.style.display = 'none';
-            if(btnDownload) btnDownload.style.display = 'none';
-            if(btnOpenWith) btnOpenWith.style.display = 'none';
-        } else {
-            if(btnOpen) btnOpen.style.display = 'none';
-            if(btnPreview) btnPreview.style.display = 'flex';
-            if(btnDownload) btnDownload.style.display = 'flex';
-            if(btnOpenWith) btnOpenWith.style.display = 'flex';
-        }
-
-        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
-        
-        const isTrash = doc.trashed;
-        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-
-        menu.classList.remove('hidden'); menu.classList.add('show');
-    };
-    grid.appendChild(div);
-}
-
-// ======================================================
-// 7. STORAGE LOGIC & MODAL POPUP & TOOLTIP
-// ======================================================
-
-function formatSize(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function initStorageTooltip() {
-    const segments = document.querySelectorAll('.bar-segment');
-    const tooltip = el('customTooltip');
-    const ttHeader = el('ttHeader');
-    const ttSize = el('ttSize');
-    const ttDesc = el('ttDesc');
-
-    segments.forEach(seg => {
-        seg.addEventListener('mouseenter', (e) => {
-            const cat = e.target.getAttribute('data-category');
-            const size = e.target.getAttribute('data-size');
-            const formattedSize = formatSize(parseInt(size || 0));
-
-            ttHeader.innerText = cat || "LAINNYA";
-            ttSize.innerText = formattedSize;
-            
-            if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
-            else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
-            else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
-            else if (cat === 'TERSEDIA') ttDesc.innerText = "Sisa penyimpanan yang tersedia.";
-            else ttDesc.innerText = "File lain yang tidak dikategorikan.";
-
-            tooltip.classList.remove('hidden');
-        });
-
-        seg.addEventListener('mousemove', (e) => {
-            tooltip.style.left = `${e.clientX}px`;
-            tooltip.style.top = `${e.clientY - 15}px`;
-        });
-
-        seg.addEventListener('mouseleave', () => {
-            tooltip.classList.add('hidden');
-        });
-    });
-}
-
-window.openStoragePage = async () => {
-    await calculateStorage();
-    window.closeModal('storageModal');
-    window.nav('storagePage');
-
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-    
-    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    
-    el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-    el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
-
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('pageBarImages');
-    const barVid = el('pageBarVideos');
-    const barDoc = el('pageBarDocs');
-    const barOth = el('pageBarOthers');
-    const barFree = el('pageBarFree');
-
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('pageValImages').innerText = formatSize(storageDetail.images);
-    el('pageValVideos').innerText = formatSize(storageDetail.videos);
-    el('pageValDocs').innerText = formatSize(storageDetail.docs);
-    el('pageValOthers').innerText = formatSize(storageDetail.others);
-    el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
-
-    initStorageTooltip();
-};
-
-window.closeStoragePage = () => {
-    window.nav('dashboardPage');
-};
-
-window.openStorageModal = async () => {
-    if(el('fileContextMenu')) el('fileContextMenu').classList.remove('show');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-
-    await calculateStorage();
-
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-
-    const formattedTotal = formatSize(totalBytes);
-    el('storageBigText').innerText = formattedTotal;
-
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('barImages');
-    const barVid = el('barVideos');
-    const barDoc = el('barDocs');
-    const barOth = el('barOthers');
-    const barFree = el('barFree');
-
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('valImages').innerText = formatSize(storageDetail.images);
-    el('valVideos').innerText = formatSize(storageDetail.videos);
-    el('valDocs').innerText = formatSize(storageDetail.docs);
-    el('valOthers').innerText = formatSize(storageDetail.others);
-
-    const modalBox = el('storageModal').querySelector('.modal-box');
-    modalBox.classList.remove('animate-open');
-    void modalBox.offsetWidth; 
-    modalBox.classList.add('animate-open');
-
-    window.openModal('storageModal');
-};
-
-async function calculateStorage() {
-    if (!currentUser) return;
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id), 
-            Appwrite.Query.equal('type', 'file')
-        ]);
-        
-        storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
-        const limit = 2 * 1024 * 1024 * 1024; // 2 GB
-
-        res.documents.forEach(doc => {
-            const size = doc.size || 0; 
-            const name = doc.name.toLowerCase(); 
-            storageDetail.total += size;
-
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp)$/)) {
-                storageDetail.images += size;
-            } else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm)$/)) {
-                storageDetail.videos += size;
-            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv)$/)) {
-                storageDetail.docs += size;
-            } else {
-                storageDetail.others += size;
-            }
-        });
-
-        const mb = formatSize(storageDetail.total);
-        el('storageUsed').innerText = mb;
-        
-        const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
-        el('storageBar').style.width = `${totalPct}%`;
-
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444';
-        else el('storageBar').style.backgroundColor = '';
-
-    } catch (e) {
-        console.error("Gagal hitung storage:", e);
-    }
-}
-
-// Utils (Modal, CRUD, Excel)
-window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
-window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
-window.createFolder = () => window.openModal('folderModal');
-
-window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
-    try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
-};
-
-window.submitUploadFile = async () => {
-    if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true);
-    try {
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false });
-        resetUploadUI(); loadFiles(currentFolderId); calculateStorage();
-    } catch (e) { alert(e.message); } finally { toggleLoading(false); }
-};
-
-window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
-window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
-window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
-window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
-window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
-window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); };
-
-function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
-function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').innerText = `Terpilih: ${file.name}`; el('fileInfoContainer').classList.remove('hidden'); }
-function initDragAndDrop() {
-    const zone = el('dropZone');
-    const input = el('fileInputHidden');
-    if (!zone) return;
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('active')); 
-    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('active'); if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
-    if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
 }
 
 async function loadFiles(param) { 
