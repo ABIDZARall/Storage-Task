@@ -154,11 +154,19 @@ if (el('loginForm')) {
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                // Abaikan jika sesi sudah aktif, jika tidak, lempar error
-                if (authError.code === 401 || authError.message.includes('session is active')) {
-                    console.log("Sesi aktif, melanjutkan...");
+                // === FIX UTAMA DISINI ===
+                // Jangan sembarang menangkap error 401 sebagai "sukses/session active".
+                // Kita harus membedakan antara "Password Salah" dan "Sesi Sudah Aktif".
+                
+                const msg = authError.message ? authError.message.toLowerCase() : "";
+                const isSessionActive = authError.type === 'user_session_already_active' || msg.includes('active') || msg.includes('session');
+
+                if (isSessionActive) {
+                    console.log("Sesi sudah aktif, melanjutkan...");
                 } else {
-                    throw new Error("Password salah atau Akun tidak ditemukan.");
+                    // Jika BUKAN sesi aktif, berarti ini error Login asli (Invalid Credentials, User Missing, dll)
+                    // Lempar error ini agar ditangkap oleh catch di bawah dan menampilkan alert yang benar.
+                    throw authError;
                 }
             }
             
@@ -175,8 +183,16 @@ if (el('loginForm')) {
             toggleLoading(false);
             // Tampilkan pesan error yang bersih (tanpa kode teknis)
             let cleanMsg = error.message;
-            if(cleanMsg.includes('Invalid credentials')) cleanMsg = "Email atau Password salah.";
-            if(cleanMsg.includes('Rate limit')) cleanMsg = "Terlalu banyak percobaan. Tunggu beberapa saat.";
+            
+            // Translate error Appwrite yang umum
+            if(cleanMsg.includes('Invalid credentials') || cleanMsg.includes('user_invalid_credentials')) {
+                cleanMsg = "Email atau Password salah.";
+            } else if(cleanMsg.includes('Rate limit')) {
+                cleanMsg = "Terlalu banyak percobaan. Tunggu beberapa saat.";
+            } else if(cleanMsg.includes('not found')) {
+                 cleanMsg = "Akun tidak ditemukan.";
+            }
+
             alert(cleanMsg);
         }
     });
