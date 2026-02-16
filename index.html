@@ -80,7 +80,7 @@
                 <img src="logo.png" alt="Logo" style="height: 40px;">
             </div>
             <div class="profile-area">
-                <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()" title="Edit Profil" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+                <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()" title="Edit Profil">
                 <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
@@ -143,7 +143,7 @@
             
             <div class="profile-avatar-container">
                 <div class="profile-avatar-wrapper" onclick="document.getElementById('profileUploadInput').click()">
-                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" id="editProfileImg" alt="Profile" class="profile-img-lg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" id="editProfileImg" alt="Profile" class="profile-img-lg">
                     <div class="avatar-overlay">
                         <i class="fa-solid fa-camera"></i>
                     </div>
@@ -188,7 +188,7 @@
             <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
             <h2>Pengelola Penyimpanan</h2>
             <div style="flex:1"></div>
-            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User" class="avatar" id="storagePageAvatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/847/847969.png'">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User" class="avatar" id="storagePageAvatar">
         </header>
 
         <div class="storage-page-content">
@@ -278,12 +278,10 @@
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
         <div class="glass-card modal-box storage-detail-box-wide">
-            
             <div class="storage-modal-header">
                 <h3>Penyimpanan</h3>
                 <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
             </div>
-            
             <div class="storage-flex-container">
                 <div class="storage-col-left">
                     <div class="storage-content-wrapper">
@@ -303,7 +301,6 @@
                         <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
                     </div>
                 </div>
-
                 <div class="storage-col-right">
                     <div class="storage-legend">
                         <div class="legend-row"><div class="legend-label"><span class="dot dot-images"></span> Gambar</div><span id="valImages" class="legend-val">0 MB</span></div>
