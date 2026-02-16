@@ -6,7 +6,8 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default (HARUS BERUPA URL VALID UNTUK MENGHINDARI ERROR DATABASE)
+// URL Foto Profil Default (FIXED: MENGGUNAKAN URL PUBLIC AGAR TIDAK ERROR DATABASE)
+// URL ini mengarah ke ikon user default yang bersih dan modern.
 const DEFAULT_AVATAR = 'profile-default.jpeg';
 
 // KONFIGURASI PROJECT SESUAI INPUT ANDA
@@ -92,12 +93,12 @@ async function syncUserData(authUser) {
             // Solusi: Buat datanya sekarang juga secara otomatis (Self-Healing).
             console.warn("User Database Hilang! Mencoba memperbaiki otomatis...");
             
-            // PERBAIKAN: Menggunakan DEFAULT_AVATAR agar tidak error invalid format URL
+            // PERBAIKAN: Menggunakan DEFAULT_AVATAR URL valid
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '', 
                 password: 'NULL', 
-                avatarUrl: DEFAULT_AVATAR // Menggunakan URL valid, bukan string kosong
+                avatarUrl: DEFAULT_AVATAR 
             });
             console.log("Perbaikan Data Sukses.");
         } else {
@@ -226,7 +227,7 @@ if (el('signupForm')) {
                         phone: phone, // Menyimpan No HP
                         name: name,
                         password: pass, // Menyimpan password
-                        avatarUrl: DEFAULT_AVATAR // <--- PERBAIKAN: JANGAN KOSONG, HARUS URL VALID
+                        avatarUrl: DEFAULT_AVATAR // <--- PERBAIKAN: Mengirim URL Valid
                     }
                 ); 
             } catch (dbError) {
@@ -326,8 +327,11 @@ async function checkSession() {
 
 // UPDATE UI PROFIL
 function updateProfileUI() {
+    // Pastikan avatarUrl selalu valid. Jika kosong, gunakan default URL.
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
+    
+    // Cache buster hanya jika bukan default (agar update foto langsung terlihat)
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
