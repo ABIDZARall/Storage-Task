@@ -41,6 +41,11 @@
                     <input type="password" id="loginPass" placeholder="Password" required autocomplete="current-password">
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('loginPass', this)"></i>
                 </div>
+                
+                <div class="forgot-pass-container">
+                    <span class="link-text small-link" onclick="nav('resetPage')">Lupa Password?</span>
+                </div>
+
                 <button type="submit" class="btn-pill primary">Masuk</button>
                 <div class="auth-footer">
                     Belum punya akun? <span class="link-text" onclick="nav('signupPage')">Daftar</span>
@@ -65,10 +70,43 @@
                 </div>
                 <div class="pill-input">
                     <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Ulangi Password" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regVerify', this)"></i>
                 </div>
                 <button type="submit" class="btn-pill primary">Daftar</button>
                 <div class="auth-footer">
                     Sudah punya akun? <span class="link-text" onclick="nav('loginPage')">Login</span>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="resetPage" class="full-screen-center hidden">
+        <div class="glass-card auth-card">
+            <div class="auth-header">
+                <img src="logo.png" alt="Logo" class="auth-logo">
+                <h3>Reset Password</h3>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top:5px;">Masukkan email akun Anda untuk membuat password baru.</p>
+            </div>
+            <form id="resetForm">
+                <div class="pill-input">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="resetEmail" placeholder="Email Terdaftar" required>
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="resetNewPass" placeholder="Password Baru" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('resetNewPass', this)"></i>
+                </div>
+                <div class="pill-input">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <input type="password" id="resetVerifyPass" placeholder="Ulangi Password Baru" required>
+                    <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('resetVerifyPass', this)"></i>
+                </div>
+                
+                <button type="submit" class="btn-pill primary">Simpan Password Baru</button>
+                
+                <div class="auth-footer">
+                    Kembali ke <span class="link-text" onclick="nav('loginPage')">Login</span>
                 </div>
             </form>
         </div>

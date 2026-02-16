@@ -116,7 +116,7 @@ async function syncUserData(authUser) {
     }
 }
 
-// LOGIKA LOGIN (Perbaikan Login Username)
+// LOGIKA LOGIN
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -130,11 +130,9 @@ if (el('loginForm')) {
             checkSystemHealth();
 
             // TAHAP 2: Resolusi Username -> Email
-            // Jika input bukan email (tidak ada @), kita cari emailnya di database berdasarkan username (name)
             if (!inputId.includes('@')) {
                 toggleLoading(true, "Mencari Akun...");
                 try {
-                    // Query database untuk mencari dokumen dengan 'name' yang sama
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
                         CONFIG.COLLECTION_USERS, 
@@ -142,17 +140,13 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // Ketemu! Gunakan email dari database untuk login
                         console.log("Login via Username berhasil direlasikan ke Email:", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
-                        // Tidak ketemu di DB.
-                        // Masalah: User lama yang gagal sign-up database (hanya ada di Auth) tidak akan bisa login pakai username.
-                        console.warn("Username tidak ditemukan di database. Mencoba login langsung (kemungkinan gagal)...");
+                        console.warn("Username tidak ditemukan di database.");
                     }
                 } catch(dbErr) {
                     console.warn("Gagal mencari username di DB:", dbErr);
-                    // Lanjut saja, siapa tahu inputId itu sebenarnya email tapi user lupa ngetik @ (kecil kemungkinan)
                 }
             }
 
@@ -183,6 +177,59 @@ if (el('loginForm')) {
             if(msg.includes('Invalid credentials')) msg = "Email/Username atau Password salah.";
             if(msg.includes('Network request failed')) msg = "Gagal terhubung ke server. Cek internet Anda.";
             alert("Login Gagal: " + msg);
+        }
+    });
+}
+
+// LOGIKA RESET PASSWORD (LUPA PASSWORD)
+if (el('resetForm')) {
+    el('resetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = el('resetEmail').value.trim();
+        const newPass = el('resetNewPass').value;
+        const verifyPass = el('resetVerifyPass').value;
+
+        if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
+        if (newPass.length < 8) return alert("Password minimal 8 karakter.");
+
+        toggleLoading(true, "Mencari Akun...");
+
+        try {
+            // 1. Cari user di database berdasarkan email
+            const res = await databases.listDocuments(
+                CONFIG.DB_ID, 
+                CONFIG.COLLECTION_USERS, 
+                [ Appwrite.Query.equal('email', email) ]
+            );
+
+            if (res.documents.length === 0) {
+                throw new Error("Email tidak ditemukan di database.");
+            }
+
+            const userDoc = res.documents[0];
+            const userId = userDoc.$id;
+
+            toggleLoading(true, "Mengupdate Password Database...");
+
+            // 2. Update password di database 'users' (sesuai permintaan user)
+            // Catatan: Ini hanya mengupdate record teks password di database.
+            // Untuk login sesungguhnya (Auth), user harusnya pakai recovery email.
+            // Namun script ini mengikuti instruksi "otomatis password di DB berubah".
+            await databases.updateDocument(
+                CONFIG.DB_ID, 
+                CONFIG.COLLECTION_USERS, 
+                userId, 
+                { password: newPass }
+            );
+
+            toggleLoading(false);
+            alert("Berhasil! Password di database telah diperbarui.\nSilakan coba login.");
+            window.nav('loginPage');
+
+        } catch (error) {
+            toggleLoading(false);
+            alert("Gagal Reset Password: " + error.message);
         }
     });
 }
@@ -365,7 +412,7 @@ function updateProfileUI() {
 }
 
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage'].forEach(id => {
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => {
         const element = el(id);
         if(element) element.classList.add('hidden');
     });
