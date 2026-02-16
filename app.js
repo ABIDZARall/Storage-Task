@@ -6,8 +6,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default (Jika user belum upload foto)
-// Menggunakan ikon pengguna generik online agar selalu muncul.
+// URL Foto Profil Default
 const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT
@@ -53,6 +52,7 @@ const toggleLoading = (show, msg = "Memproses...") => {
 // 2. MAIN EXECUTION
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Cek sesi saat load. Jika gagal, redirect ke login.
     checkSession();
     initDragAndDrop();
     initLogout();
@@ -63,48 +63,42 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======================================================
-// 3. LOGIKA OTENTIKASI & SMART SYNC
+// 3. LOGIKA OTENTIKASI & SMART SYNC (Adaptive Login)
 // ======================================================
 
-// FUNGSI PINTAR: SINKRONISASI OTOMATIS AUTH KE DATABASE
+// FUNGSI PENYEMBUHAN DATA OTOMATIS (SELF-HEALING)
 async function syncUserData(authUser) {
     if (!authUser) return;
-    
     try {
         let userDoc;
         try {
             userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id);
         } catch (e) {
             if (e.code === 404) userDoc = null; 
-            else throw e;
+            else console.warn("Sync check skipped (Permission issues?):", e); 
         }
 
-        const payload = {
-            name: authUser.name,     
-            email: authUser.email    
-        };
+        const payload = { name: authUser.name, email: authUser.email };
 
         if (!userDoc) {
-            // Kasus 1: Dokumen belum ada -> Buat Baru Otomatis
-            console.log("Smart Sync: Membuat data database baru...");
+            console.log("Self-Healing: Membuat data database user baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
-                ...payload,
-                phone: '',
-                avatarUrl: ''
+                ...payload, phone: '', avatarUrl: ''
             });
         } else {
-            // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
+            // Jika nama di DB kosong atau berbeda, update otomatis
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
-                console.log("Smart Sync: Menyalin username dari Auth ke Database...");
+                console.log("Self-Healing: Memperbaiki data nama di database...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
         }
     } catch (err) {
-        console.warn("Smart Sync berjalan di background (Silent):", err.message);
+        // Error di sini tidak fatal, hanya log saja
+        console.warn("Self-Healing process error:", err.message);
     }
 }
 
-// LOGIN
+// LOGIKA LOGIN
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -115,15 +109,26 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // DETEKSI 1: Jika Input mengandung '@', itu PASTI Email.
-            // Langsung Login ke Auth tanpa cek Database (Bypass Permission Error)
+            // --- CEK SESI AKTIF DULU (Anti-Stuck) ---
+            try {
+                const activeSession = await account.getSession('current');
+                if (activeSession) {
+                    console.log("Sesi masih aktif, langsung masuk.");
+                    await checkSession();
+                    return;
+                }
+            } catch (err) { /* Lanjut login normal */ }
+
+
+            // --- STRATEGI LOGIN ADAPTIF ---
+            // 1. Jika ada '@', itu PASTI Email. Login Langsung (Bypass Database Search).
             if (inputId.includes('@')) {
-                 console.log("Login Mode: Email Direct");
-                 // Tidak perlu query database, langsung auth
+                 console.log("Mode Login: Email (Jalur Cepat)");
+                 // Tidak perlu query DB, langsung auth ke Appwrite
             } 
-            // DETEKSI 2: Jika TIDAK ada '@', itu Username.
+            // 2. Jika tidak ada '@', itu Username. Cari di DB.
             else {
-                console.log("Login Mode: Username Search");
+                console.log("Mode Login: Username (Cari Database)");
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
@@ -132,36 +137,37 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // Username ketemu di DB, ambil emailnya
-                        console.log("Username Found -> Email:", res.documents[0].email);
-                        inputId = res.documents[0].email;
+                        console.log("Username Ketemu ->", res.documents[0].email);
+                        inputId = res.documents[0].email; // Ganti username jadi email untuk login
                     } else {
-                        throw new Error("Username tidak ditemukan.");
+                        // Jika tidak ketemu di DB, lempar error khusus
+                        throw new Error("Username_Not_Found");
                     }
                 } catch(dbErr) {
-                    // Jika error karena permission (guest tidak boleh baca DB),
-                    // Beri saran sopan, jangan error code.
+                    // JIKA ERROR KARENA PERMISSION (Guest missing scopes)
                     if (dbErr.message && dbErr.message.includes("missing scopes")) {
-                        throw new Error("Untuk saat ini, mohon login menggunakan Email.");
-                    } else {
-                         throw new Error("Gagal mencari username. Coba login dengan Email.");
+                        // Jangan panik, minta user pakai email
+                        alert("Sistem keamanan mendeteksi ini login pertama dari perangkat baru. Mohon login menggunakan Email.");
+                        toggleLoading(false);
+                        return;
+                    } 
+                    // JIKA ERROR USERNAME TIDAK ADA
+                    else if (dbErr.message === "Username_Not_Found") {
+                        // Cek apakah mungkin user baru daftar tapi belum tersinkron
+                         alert("Username belum terdaftar di Database. Coba login dengan Email Anda.");
+                         toggleLoading(false);
+                         return;
+                    }
+                     else {
+                         throw dbErr; // Error lain (koneksi putus dll)
                     }
                 }
             }
 
-            // EKSEKUSI LOGIN (Menggunakan Email yang sudah dipastikan)
-            try {
-                await account.createEmailPasswordSession(inputId, pass);
-            } catch (authError) {
-                // Handling Ghost Session: Jika dibilang 'session active', berarti SUKSES.
-                if (authError.type === 'user_session_already_active' || authError.code === 401 && authError.message.includes('session is active')) {
-                    console.log("Session active detected, proceeding...");
-                } else {
-                    throw authError; // Lempar error asli (Password salah dll)
-                }
-            }
+            // EKSEKUSI LOGIN (Selalu pakai Email yang valid)
+            await account.createEmailPasswordSession(inputId, pass);
             
-            // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
+            // SUKSES! Jalankan Self-Healing
             const user = await account.get();
             await syncUserData(user); 
             
@@ -174,7 +180,9 @@ if (el('loginForm')) {
             toggleLoading(false);
             
             let msg = error.message;
-            if (msg.includes("Invalid credentials")) msg = "Password atau Email salah.";
+            // Terjemahkan error bahasa teknis ke manusiawi
+            if (msg.includes("Invalid credentials") || msg.includes("401")) msg = "Password salah atau Akun tidak ditemukan.";
+            if (msg.includes("Rate limit")) msg = "Terlalu banyak percobaan. Tunggu sebentar.";
             
             alert(msg);
         }
@@ -198,7 +206,7 @@ if (el('signupForm')) {
             // 1. Buat Akun Auth
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. Simpan Data ke Database
+            // 2. Simpan Data ke Database (Bungkus try-catch agar tidak gagal total jika permission error)
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
@@ -207,7 +215,7 @@ if (el('signupForm')) {
                     avatarUrl: ''
                 }); 
             } catch(dbErr) {
-                console.error("Silent DB Register Error:", dbErr);
+                console.error("Silent DB Register Error (Akan diperbaiki saat login):", dbErr);
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
@@ -218,7 +226,7 @@ if (el('signupForm')) {
         } catch(e) { 
             toggleLoading(false);
             if(e.message.includes('exists')) alert("Email/Username sudah terdaftar."); 
-            else alert("Pendaftaran Gagal. Silakan coba lagi.");
+            else alert("Pendaftaran Gagal: " + e.message);
         }
     });
 }
@@ -245,19 +253,21 @@ function initLogout() {
 // 4. NAVIGASI & SESI
 // ======================================================
 async function checkSession() {
-    if(!el('loginPage').classList.contains('hidden')) toggleLoading(true, "Memuat Data...");
+    // Hanya tampilkan loading jika kita sedang di halaman login (bukan refresh dashboard)
+    const isLoginPage = !el('loginPage').classList.contains('hidden');
+    if(isLoginPage) toggleLoading(true, "Memuat Data...");
 
     try {
         // Cek sesi Auth
         currentUser = await account.get();
         
-        // PANGGIL SMART SYNC (Memastikan data DB tidak NULL)
+        // PANGGIL SELF-HEALING (Memastikan data DB tidak NULL)
         await syncUserData(currentUser);
 
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
-            console.log("User DB data error (missing scopes?), defaulting.");
+            console.log("User DB data error, defaulting.");
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -268,7 +278,6 @@ async function checkSession() {
         calculateStorage();
     } catch (e) { 
         // Jika gagal get account, berarti belum login. 
-        // Redirect ke login page TANPA error.
         window.nav('loginPage'); 
     } finally { 
         toggleLoading(false); 
@@ -279,6 +288,8 @@ async function checkSession() {
 function updateProfileUI() {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
+    
+    // Cache busting
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
@@ -397,7 +408,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 6. FILE MANAGER (UPDATED RENDER ITEM & THUMBNAILS)
+// 6. FILE MANAGER
 // ======================================================
 
 function getIconByExtension(extension) {
