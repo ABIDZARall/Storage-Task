@@ -6,8 +6,13 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default
-const DEFAULT_AVATAR = 'default-avatar.png';
+// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
+// 1. Ini file gambar lokal untuk ditampilkan di UI jika user belum punya foto
+const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
+
+// 2. Ini URL "Dummy" yang valid untuk dikirim ke Database agar lolos validasi (karena kolom DB tipe URL)
+// Kita pakai link placeholder yang aman.
+const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT SESUAI INPUT ANDA
 const CONFIG = {
@@ -85,21 +90,23 @@ async function syncUserData(authUser) {
             else console.warn("Peringatan Database:", e);
         }
 
+        // Payload dasar untuk update/create
         const payload = {
             name: authUser.name,     
             email: authUser.email    
         };
 
         if (!userDoc) {
-            // Self Healing: Buat data DB jika hilang
+            // Self Healing: Jika data DB hilang, buat baru.
+            // Gunakan DUMMY URL agar validasi DB lolos, jangan kirim string kosong/nama file lokal.
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
-                phone: '', 
+                phone: '', // Default kosong jika recovery
                 password: 'NULL', 
-                avatarUrl: DEFAULT_AVATAR 
+                avatarUrl: DEFAULT_AVATAR_DB_URL 
             });
         } else {
-            // Update jika nama berubah
+            // Update jika nama berubah di Auth
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
@@ -109,7 +116,7 @@ async function syncUserData(authUser) {
     }
 }
 
-// LOGIKA LOGIN (SANGAT DIOPTIMALKAN)
+// LOGIKA LOGIN (Perbaikan Login Username)
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -122,10 +129,12 @@ if (el('loginForm')) {
             toggleLoading(true, "Mengecek Koneksi...");
             checkSystemHealth();
 
-            // TAHAP 2: Resolusi Username (Jika login pakai nama, bukan email)
+            // TAHAP 2: Resolusi Username -> Email
+            // Jika input bukan email (tidak ada @), kita cari emailnya di database berdasarkan username (name)
             if (!inputId.includes('@')) {
                 toggleLoading(true, "Mencari Akun...");
                 try {
+                    // Query database untuk mencari dokumen dengan 'name' yang sama
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
                         CONFIG.COLLECTION_USERS, 
@@ -133,73 +142,76 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
+                        // Ketemu! Gunakan email dari database untuk login
+                        console.log("Login via Username berhasil direlasikan ke Email:", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
-                        // Jika tidak ketemu di DB, biarkan lanjut login siapa tahu user baru register di Auth saja
-                        // tapi biasanya akan error.
-                        console.log("Username tidak ditemukan di DB lokal, mencoba Auth langsung...");
+                        // Tidak ketemu di DB.
+                        // Masalah: User lama yang gagal sign-up database (hanya ada di Auth) tidak akan bisa login pakai username.
+                        console.warn("Username tidak ditemukan di database. Mencoba login langsung (kemungkinan gagal)...");
                     }
                 } catch(dbErr) {
-                    console.warn("DB Search Skip:", dbErr);
+                    console.warn("Gagal mencari username di DB:", dbErr);
+                    // Lanjut saja, siapa tahu inputId itu sebenarnya email tapi user lupa ngetik @ (kecil kemungkinan)
                 }
             }
 
-            // TAHAP 3: Autentikasi ke Appwrite (Server Vercel/Appwrite)
+            // TAHAP 3: Autentikasi ke Appwrite
             toggleLoading(true, "Verifikasi Kredensial...");
             await account.createEmailPasswordSession(inputId, pass);
             
-            // TAHAP 4: Ambil Data User (Ringan)
+            // TAHAP 4: Ambil Data User
             toggleLoading(true, "Memuat Profil...");
             const user = await account.get();
             
-            // TAHAP 5: OPTIMASI PARALEL (Non-Blocking)
-            // Jalankan pencatatan Log & Sync di background agar UI langsung masuk
-            // Kita tidak 'await' recordActivity agar user tidak menunggu SheetDB yang lambat.
+            // TAHAP 5: Background Process (Optimasi)
             toggleLoading(true, "Menyiapkan Dashboard...");
             
-            // Jalankan Sync DB (Penting untuk data profil) - kita tunggu ini sebentar karena cepat
+            // Pastikan data DB sinkron (Self healing jika hilang)
             await syncUserData(user); 
             
-            // Jalankan Log ke SheetDB (Fire and Forget)
+            // Log ke SheetDB (Jangan ditunggu/await agar cepat)
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass })
                 .catch(err => console.log("Log activity background error:", err));
 
-            // TAHAP 6: Langsung inisialisasi Dashboard tanpa reload checkSession()
+            // TAHAP 6: Masuk Dashboard
             await initializeDashboard(user); 
 
         } catch (error) { 
             toggleLoading(false);
             let msg = error.message;
-            if(msg.includes('Invalid credentials')) msg = "Email atau Password salah.";
+            if(msg.includes('Invalid credentials')) msg = "Email/Username atau Password salah.";
             if(msg.includes('Network request failed')) msg = "Gagal terhubung ke server. Cek internet Anda.";
             alert("Login Gagal: " + msg);
         }
     });
 }
 
-// FUNGSI INISIALISASI DASHBOARD CEPAT (Bypass checkSession saat login sukses)
+// FUNGSI INISIALISASI DASHBOARD
 async function initializeDashboard(userObj) {
     currentUser = userObj;
     
-    // Coba ambil data detail DB (Avatar/Phone) secara paralel dengan load files
+    // Ambil detail profil dari Database (No HP, Avatar, dll)
     const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
         .then(doc => { userDataDB = doc; })
-        .catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR }; });
+        .catch(() => { 
+            // Fallback jika DB belum siap
+            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; 
+        });
 
-    // Load file root segera
+    // Load file & hitung storage secara paralel
     const filePromise = loadFiles('root');
     const storagePromise = calculateStorage();
 
-    // Tunggu semua data siap (biasanya < 1 detik jika koneksi bagus)
     await Promise.all([dbPromise, filePromise, storagePromise]);
 
-    updateProfileUI();
+    updateProfileUI(); // Update foto & info profil di UI
     window.nav('dashboardPage');
-    toggleLoading(false); // Selesai!
+    toggleLoading(false); 
 }
 
 // ======================================================
-// SIGN UP (DUAL WRITE)
+// SIGN UP (PERBAIKAN VALIDASI URL & NO HP)
 // ======================================================
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
@@ -216,41 +228,54 @@ if (el('signupForm')) {
         
         try {
             checkSystemHealth();
+            // 1. Generate ID Unik
             const newUserId = Appwrite.ID.unique();
 
+            // 2. Buat Akun Auth
             toggleLoading(true, "Membuat Akun Auth...");
             await account.create(newUserId, email, pass, name);
             
+            // 3. Login Otomatis (Wajib agar punya izin tulis ke DB)
             toggleLoading(true, "Login Otomatis...");
-            try { await account.createEmailPasswordSession(email, pass); } catch(e){}
+            try { await account.createEmailPasswordSession(email, pass); } catch(e){
+                console.warn("Auto-login session warning:", e);
+            }
 
-            toggleLoading(true, "Menyimpan Database...");
+            // 4. Simpan ke Database (FIXED: Avatar URL Valid)
+            toggleLoading(true, "Menyimpan Profil Database...");
             try {
                 await databases.createDocument(
                     CONFIG.DB_ID, 
                     CONFIG.COLLECTION_USERS, 
-                    newUserId, 
+                    newUserId, // ID Dokumen = User ID Auth
                     { 
                         email: email, 
-                        phone: phone, 
+                        phone: phone, // Simpan No HP di sini
                         name: name,
                         password: pass, 
-                        avatarUrl: DEFAULT_AVATAR 
+                        // SOLUSI UTAMA: Kirim URL dummy yang valid, bukan nama file lokal.
+                        // Appwrite akan menerimanya karena formatnya URL.
+                        avatarUrl: DEFAULT_AVATAR_DB_URL 
                     }
                 ); 
+                console.log("Database user berhasil dibuat.");
             } catch (dbError) {
-                console.error("DB Error:", dbError);
+                console.error("DB Write Error:", dbError);
+                // Jika gagal di sini, user tetap punya akun Auth tapi data profil kosong.
+                // Fungsi syncUserData saat login nanti akan mencoba memperbaikinya (self-healing),
+                // tapi No HP mungkin hilang jika gagal di tahap ini.
+                throw new Error("Gagal menyimpan data profil: " + dbError.message);
             }
 
-            // Log activity background
+            // 5. Log Activity (Optional)
             recordActivity('SignUp', { id: newUserId, name, email, phone, password: pass })
                 .catch(e => console.log("Log bg error"));
             
-            // Logout & Redirect
+            // 6. Logout dan Arahkan ke Login
             try { await account.deleteSession('current'); } catch (e) {}
             
             toggleLoading(false);
-            alert("Pendaftaran Berhasil! Silakan Login."); 
+            alert("Pendaftaran Berhasil Sempurna!\nData Auth & Database tersimpan.\nSilakan Login."); 
             window.nav('loginPage');
 
         } catch(e) { 
@@ -258,7 +283,7 @@ if (el('signupForm')) {
             if(e.message.includes('exists') || e.code === 409) {
                 alert("Email atau Username sudah terdaftar!"); 
             } else {
-                alert("Error: " + e.message);
+                alert("Error Pendaftaran: " + e.message);
             }
         }
     });
@@ -285,13 +310,11 @@ function initLogout() {
 // 4. NAVIGASI & SESI
 // ======================================================
 async function checkSession() {
-    // Skip jika user ada di halaman login/signup
     if(!el('loginPage').classList.contains('hidden')) return;
 
     toggleLoading(true, "Memuat Sesi...");
     try {
-        // Cek koneksi dulu
-        try { await account.get(); } catch(e) { throw e; } // Dummy check
+        try { await account.get(); } catch(e) { throw e; }
 
         currentUser = await account.get();
         await syncUserData(currentUser);
@@ -299,7 +322,7 @@ async function checkSession() {
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
-            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR };
+            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL };
         }
 
         updateProfileUI();
@@ -313,11 +336,23 @@ async function checkSession() {
     }
 }
 
+// UPDATE TAMPILAN PROFIL (Mapping URL Dummy -> File Lokal)
 function updateProfileUI() {
+    // Ambil URL dari database
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
-    const avatarSrc = dbUrl || DEFAULT_AVATAR;
-    const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
-    const finalSrc = avatarSrc + cacheBuster;
+    
+    let finalSrc;
+
+    // LOGIKA UI:
+    // Jika URL di database adalah URL dummy default (atau kosong/null),
+    // maka kita paksa tampilkan file lokal 'profile-default.jpeg'.
+    if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') {
+        finalSrc = DEFAULT_AVATAR_LOCAL;
+    } else {
+        // Jika user sudah upload foto sendiri (URL berbeda), pakai URL itu.
+        // Tambahkan cache buster agar foto baru langsung muncul.
+        finalSrc = dbUrl + `&t=${new Date().getTime()}`;
+    }
 
     const dashAvatar = el('dashAvatar');
     if(dashAvatar) dashAvatar.src = finalSrc;
@@ -345,14 +380,15 @@ window.openProfilePage = () => {
     if (!currentUser) return;
     el('editName').value = currentUser.name || '';
     el('editEmail').value = currentUser.email || '';
-    el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
+    
+    // Pastikan No HP diambil dari userDataDB yang sudah diload saat login
+    el('editPhone').value = (userDataDB && userDataDB.phone) ? userDataDB.phone : '';
+    
     el('editPass').value = ''; 
     
-    const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
-    const avatarSrc = dbUrl || DEFAULT_AVATAR;
-    const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
+    // Update gambar profil di halaman edit
+    updateProfileUI(); // Menggunakan fungsi yang sama agar logika lokal/url konsisten
     
-    el('editProfileImg').src = avatarSrc + cacheBuster;
     selectedProfileImage = null; 
     window.nav('profilePage');
 };
@@ -380,20 +416,30 @@ window.saveProfile = async () => {
         const newPhone = el('editPhone').value.trim();
         const newPass = el('editPass').value;
 
-        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR;
+        // Defaultnya gunakan URL yang ada di DB sekarang
+        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR_DB_URL;
         
+        // Jika ada upload foto baru
         if (selectedProfileImage) {
             try {
                 const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
+                // Dapatkan URL Valid dari hasil upload
                 newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
             } catch (err) { throw new Error("Gagal upload foto."); }
         }
 
+        // Update Auth
         if (newName && newName !== currentUser.name) await account.updateName(newName);
         if (newEmail && newEmail !== currentUser.email) { try { await account.updateEmail(newEmail, ''); } catch(e) {} }
         if (newPass) await account.updatePassword(newPass);
 
-        const payload = { name: newName, email: newEmail, phone: newPhone, avatarUrl: newAvatarUrl };
+        // Update Database
+        const payload = { 
+            name: newName, 
+            email: newEmail, 
+            phone: newPhone, 
+            avatarUrl: newAvatarUrl 
+        };
         if(newPass) payload.password = newPass;
 
         try {
@@ -402,6 +448,7 @@ window.saveProfile = async () => {
             if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         }
 
+        // Update cache lokal
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone;
         userDataDB.avatarUrl = newAvatarUrl;
