@@ -77,8 +77,12 @@ async function syncUserData(authUser) {
             userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id);
         } catch (e) {
             // Jika dokumen tidak ditemukan (404), kita lanjut untuk membuatnya
-            if (e.code !== 404) throw e;
-            userDoc = null; 
+            // Jika error permission (401), kita abaikan silent
+            if (e.code === 404) {
+                userDoc = null;
+            } else {
+                throw e;
+            }
         }
 
         const payload = {
@@ -101,7 +105,7 @@ async function syncUserData(authUser) {
             }
         }
     } catch (err) {
-        // Error permission diabaikan agar tidak mengganggu UX login
+        // Error permission diabaikan agar tidak mengganggu UX login (Silent Fail)
         console.warn("Smart Sync Background Info:", err.message);
     }
 }
@@ -111,8 +115,9 @@ if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Ambil input dan bersihkan spasi
         let inputId = el('loginEmail').value.trim();
-        const pass = el('loginPass').value;
+        const pass = el('loginPass').value; // Password jangan di-trim, takutnya user pakai spasi
         
         toggleLoading(true, "Sedang Masuk...");
         
@@ -128,55 +133,58 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // SUKSES: Username ditemukan
+                        // SUKSES: Username ditemukan, ambil emailnya
                         console.log("Login via Username ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
                         throw new Error("Username tidak ditemukan.");
                     }
                 } catch(dbErr) {
-                    // *** PENANGANAN ERROR SPESIFIK ***
+                    // *** PENANGANAN ERROR PERMISSION/SCOPE ***
                     // Jika errornya adalah "Missing Scopes" (401) atau Permission Denied
                     if (dbErr.code === 401 || dbErr.message.toLowerCase().includes('scope') || dbErr.message.toLowerCase().includes('permission')) {
                         toggleLoading(false);
-                        alert("Untuk alasan keamanan data, harap Login menggunakan EMAIL Anda.");
-                        return; // Hentikan proses
+                        // Jangan alert error teknis, berikan saran yang jelas
+                        alert("Sistem belum mengizinkan login Username untuk Tamu. Harap Login menggunakan EMAIL Anda.");
+                        return; 
                     } else if (dbErr.message === "Username tidak ditemukan.") {
                         throw new Error("Username tidak ditemukan. Coba gunakan Email.");
                     } else {
-                        // Error koneksi lain
+                        // Error koneksi lain, lempar ke catch utama
                         throw dbErr;
                     }
                 }
             }
 
-            // 2. EKSEKUSI LOGIN (Appwrite Butuh Email)
+            // 2. EKSEKUSI LOGIN (Appwrite Butuh Email & Password Asli)
+            // Catatan: Password di Database hanyalah TEXT, yang dipakai login adalah Password Auth Appwrite
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                // === FIX UTAMA DISINI ===
-                // Jangan sembarang menangkap error 401 sebagai "sukses/session active".
-                // Kita harus membedakan antara "Password Salah" dan "Sesi Sudah Aktif".
-                
                 const msg = authError.message ? authError.message.toLowerCase() : "";
+                // Cek apakah sebenarnya sudah login (session active)
                 const isSessionActive = authError.type === 'user_session_already_active' || msg.includes('active') || msg.includes('session');
 
                 if (isSessionActive) {
                     console.log("Sesi sudah aktif, melanjutkan...");
+                    // Jika sesi aktif tapi bukan user ini, kita paksa logout dulu (optional, tapi aman lanjut saja)
                 } else {
-                    // Jika BUKAN sesi aktif, berarti ini error Login asli (Invalid Credentials, User Missing, dll)
-                    // Lempar error ini agar ditangkap oleh catch di bawah dan menampilkan alert yang benar.
+                    // Ini error login asli (Password Salah / User Tidak Ada)
                     throw authError;
                 }
             }
             
             // 3. SETELAH LOGIN SUKSES
+            // Ambil data user resmi dari Auth
             const user = await account.get();
+            
+            // Coba sinkronisasi data ke database (update nama/email jika berubah)
             await syncUserData(user); 
             
             // Log Activity (Silent)
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: "CONFIDENTIAL" }).catch(err => console.log("Log skip"));
 
+            // Redirect ke Dashboard
             checkSession(); 
 
         } catch (error) { 
@@ -191,6 +199,8 @@ if (el('loginForm')) {
                 cleanMsg = "Terlalu banyak percobaan. Tunggu beberapa saat.";
             } else if(cleanMsg.includes('not found')) {
                  cleanMsg = "Akun tidak ditemukan.";
+            } else if(cleanMsg.includes('Network')) {
+                cleanMsg = "Gagal terhubung ke server. Cek internet Anda.";
             }
 
             alert(cleanMsg);
@@ -212,19 +222,21 @@ if (el('signupForm')) {
         
         toggleLoading(true, "Mendaftarkan...");
         try {
-            // 1. Buat Akun Auth
+            // 1. Buat Akun Auth (Sistem Keamanan Utama)
             const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
             // 2. Login Otomatis agar bisa tulis ke Database
             await account.createEmailPasswordSession(email, pass);
 
-            // 3. Simpan Data ke Database (Sekarang sudah punya izin karena sudah login)
+            // 3. Simpan Data ke Database (Untuk fitur aplikasi)
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
                     name: name,
-                    avatarUrl: ''
+                    avatarUrl: '',
+                    // Password tidak perlu disimpan di DB text biasa demi keamanan, tapi jika Anda mau untuk referensi:
+                    password: pass 
                 }); 
             } catch(dbErr) {
                 console.error("Silent DB Register Error:", dbErr);
@@ -269,14 +281,17 @@ async function checkSession(isFirstLoad = false) {
     if(!isFirstLoad && !el('loginPage').classList.contains('hidden')) toggleLoading(true, "Memuat Data...");
 
     try {
+        // Cek sesi Auth
         currentUser = await account.get();
         
-        // PANGGIL SMART SYNC
+        // PANGGIL SMART SYNC (Update data jika perlu)
         await syncUserData(currentUser);
 
+        // Ambil data tambahan dari DB (seperti No HP & Avatar)
         try {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
+            // Jika data DB tidak ada, pakai default kosong
             userDataDB = { phone: '', avatarUrl: '' };
         }
 
@@ -289,6 +304,7 @@ async function checkSession(isFirstLoad = false) {
         
     } catch (e) { 
         // Jika gagal ambil sesi (Guest), arahkan ke Login
+        // Error "Missing Scopes" dari account.get() akan masuk sini dan HANYA me-redirect, TANPA alert.
         window.nav('loginPage'); 
         if(!isFirstLoad) toggleLoading(false);
     }
