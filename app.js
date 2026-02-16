@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======================================================
-// 3. LOGIKA OTENTIKASI & SMART SYNC (DIPERBAIKI TOTAL)
+// 3. LOGIKA OTENTIKASI & SMART SYNC (DIPERBAIKI)
 // ======================================================
 
 // FUNGSI PINTAR: SINKRONISASI OTOMATIS AUTH KE DATABASE
@@ -76,13 +76,9 @@ async function syncUserData(authUser) {
         try {
             userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id);
         } catch (e) {
-            // Jika dokumen tidak ditemukan (404), biarkan userDoc null
-            if (e.code === 404) userDoc = null;
-            else {
-                // Jika error permission, abaikan saja (silent fail) agar user tetap bisa masuk
-                console.warn("Sync Read Error:", e.message);
-                return;
-            }
+            // Jika dokumen tidak ditemukan (404), kita lanjut untuk membuatnya
+            if (e.code !== 404) throw e;
+            userDoc = null; 
         }
 
         const payload = {
@@ -94,38 +90,37 @@ async function syncUserData(authUser) {
             console.log("Smart Sync: Membuat data database baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
-                phone: '', // Default kosong
-                avatarUrl: '',
-                password: 'Encrypted' // Jangan simpan password asli di DB teks demi keamanan
+                phone: '',
+                avatarUrl: ''
             });
         } else {
-            // Hanya update jika nama berbeda
-            if (userDoc.name !== authUser.name) {
+            // Hanya update jika nama berbeda/kosong
+            if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
                 console.log("Smart Sync: Sinkronisasi data...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
         }
     } catch (err) {
+        // Error permission diabaikan agar tidak mengganggu UX login
         console.warn("Smart Sync Background Info:", err.message);
     }
 }
 
-// *** LOGIKA LOGIN YANG DIPERBAIKI ***
+// *** PERBAIKAN UTAMA PADA FUNGSI LOGIN ***
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         let inputId = el('loginEmail').value.trim();
-        const pass = el('loginPass').value; // Jangan trim password
+        const pass = el('loginPass').value;
         
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // 1. CEK: Apakah User menggunakan Email atau Username?
+            // 1. DETEKSI: Apakah input Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
-                // --- JIKA INPUT ADALAH USERNAME ---
+                // USER MENGETIK USERNAME
                 try {
-                    // Coba cari username di database
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
                         CONFIG.COLLECTION_USERS, 
@@ -133,75 +128,61 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
-                        // Username ditemukan, gunakan emailnya untuk login
-                        console.log("Username found, using email:", res.documents[0].email);
+                        // SUKSES: Username ditemukan
+                        console.log("Login via Username ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
-                        // Username tidak ditemukan di DB
                         throw new Error("Username tidak ditemukan.");
                     }
                 } catch(dbErr) {
-                    // *** PENANGANAN ERROR "MISSING SCOPES" ***
-                    // Jika error adalah 401 (Unauthorized/Guest), berarti permission database dikunci.
-                    // Jangan tampilkan alert error. Langsung minta user pakai Email.
-                    if (dbErr.code === 401 || dbErr.message.toLowerCase().includes('scope')) {
+                    // *** PENANGANAN ERROR SPESIFIK ***
+                    // Jika errornya adalah "Missing Scopes" (401) atau Permission Denied
+                    if (dbErr.code === 401 || dbErr.message.toLowerCase().includes('scope') || dbErr.message.toLowerCase().includes('permission')) {
                         toggleLoading(false);
-                        alert("Keamanan Database: Harap login menggunakan EMAIL lengkap Anda.");
-                        return; // Stop proses
+                        alert("Untuk alasan keamanan data, harap Login menggunakan EMAIL Anda.");
+                        return; // Hentikan proses
                     } else if (dbErr.message === "Username tidak ditemukan.") {
                         throw new Error("Username tidak ditemukan. Coba gunakan Email.");
                     } else {
-                        // Error lain (koneksi putus dll)
+                        // Error koneksi lain
                         throw dbErr;
                     }
                 }
             }
 
-            // 2. EKSEKUSI LOGIN (Appwrite membutuhkan Email)
+            // 2. EKSEKUSI LOGIN (Appwrite Butuh Email)
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                // Analisa Error Login
-                const msg = authError.message ? authError.message.toLowerCase() : "";
-                
-                // Jika error "Session Active", anggap sukses dan lanjut
-                if (authError.type === 'user_session_already_active' || msg.includes('active') || msg.includes('session')) {
-                    console.log("Sesi sudah aktif, melanjutkan...");
-                } 
-                // Jika error "Invalid Credentials" (Password/Email Salah)
-                else if (msg.includes('invalid credentials') || msg.includes('user_invalid_credentials')) {
-                     throw new Error("Email atau Password salah. Periksa kembali atau coba Daftar Baru.");
-                }
-                // Jika error "Rate Limit" (Terlalu banyak percobaan)
-                else if (msg.includes('rate limit')) {
-                    throw new Error("Terlalu banyak percobaan gagal. Demi keamanan, harap tunggu 15-30 menit sebelum mencoba lagi.");
-                }
-                else {
-                    throw authError; // Lempar error lain apa adanya
+                // Abaikan jika sesi sudah aktif, jika tidak, lempar error
+                if (authError.code === 401 || authError.message.includes('session is active')) {
+                    console.log("Sesi aktif, melanjutkan...");
+                } else {
+                    throw new Error("Password salah atau Akun tidak ditemukan.");
                 }
             }
             
             // 3. SETELAH LOGIN SUKSES
             const user = await account.get();
-            
-            // Jalankan Sync untuk memastikan data DB ada
             await syncUserData(user); 
             
             // Log Activity (Silent)
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: "CONFIDENTIAL" }).catch(err => console.log("Log skip"));
 
-            // Masuk Dashboard
             checkSession(); 
 
         } catch (error) { 
             toggleLoading(false);
-            // Tampilkan Alert yang Bersih
-            alert(error.message);
+            // Tampilkan pesan error yang bersih (tanpa kode teknis)
+            let cleanMsg = error.message;
+            if(cleanMsg.includes('Invalid credentials')) cleanMsg = "Email atau Password salah.";
+            if(cleanMsg.includes('Rate limit')) cleanMsg = "Terlalu banyak percobaan. Tunggu beberapa saat.";
+            alert(cleanMsg);
         }
     });
 }
 
-// *** LOGIKA SIGN UP (DAFTAR) DENGAN AUTO-RECOVERY ***
+// SIGN UP
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -214,57 +195,34 @@ if (el('signupForm')) {
         if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
         
         toggleLoading(true, "Mendaftarkan...");
-        
         try {
-            // 1. Coba Buat Akun Auth Baru
-            let auth;
-            try {
-                auth = await account.create(Appwrite.ID.unique(), email, pass, name);
-            } catch (createErr) {
-                // Jika error "User already exists", berarti email sudah ada di Auth tapi mungkin password beda
-                if (createErr.message.toLowerCase().includes('exists')) {
-                     toggleLoading(false);
-                     alert("Email ini sudah terdaftar. Silakan Login. Jika lupa password, fitur reset belum tersedia.");
-                     window.nav('loginPage');
-                     return;
-                }
-                throw createErr;
-            }
+            // 1. Buat Akun Auth
+            const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. Login Otomatis setelah daftar
+            // 2. Login Otomatis agar bisa tulis ke Database
             await account.createEmailPasswordSession(email, pass);
 
-            // 3. Simpan Data ke Database
-            // Jika ID di DB sudah ada (karena Anda buat manual), kita update. Jika belum, create.
+            // 3. Simpan Data ke Database (Sekarang sudah punya izin karena sudah login)
             try { 
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
                     email: email, 
                     phone: phone,
                     name: name,
-                    avatarUrl: '',
-                    password: 'Encrypted' // Jangan simpan pass asli
+                    avatarUrl: ''
                 }); 
             } catch(dbErr) {
-                // Jika dokumen sudah ada (409 conflict), kita update saja isinya
-                if(dbErr.code === 409) {
-                     await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, {
-                         phone: phone,
-                         name: name
-                     });
-                } else {
-                    console.error("Silent DB Register Error:", dbErr);
-                }
+                console.error("Silent DB Register Error:", dbErr);
             }
             
             await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: "CONFIDENTIAL" });
             
             toggleLoading(false);
-            alert("Pendaftaran Berhasil! Anda telah masuk."); 
-            checkSession(); 
-
+            alert("Pendaftaran Berhasil!"); 
+            checkSession(); // Langsung masuk dashboard
         } catch(e) { 
             toggleLoading(false);
-            alert("Pendaftaran Gagal: " + e.message);
+            if(e.message.includes('exists')) alert("Email atau Username sudah terdaftar."); 
+            else alert("Pendaftaran Gagal: " + e.message);
         }
     });
 }
@@ -314,8 +272,7 @@ async function checkSession(isFirstLoad = false) {
         if(!isFirstLoad) toggleLoading(false);
         
     } catch (e) { 
-        // Jika gagal ambil sesi (Guest) atau Missing Scopes
-        // Langsung arahkan ke login tanpa error popup
+        // Jika gagal ambil sesi (Guest), arahkan ke Login
         window.nav('loginPage'); 
         if(!isFirstLoad) toggleLoading(false);
     }
