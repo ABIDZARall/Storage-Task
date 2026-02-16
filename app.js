@@ -6,7 +6,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default
+// URL Foto Profil Default (HARUS BERUPA URL VALID UNTUK MENGHINDARI ERROR DATABASE)
 const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT SESUAI INPUT ANDA
@@ -92,11 +92,12 @@ async function syncUserData(authUser) {
             // Solusi: Buat datanya sekarang juga secara otomatis (Self-Healing).
             console.warn("User Database Hilang! Mencoba memperbaiki otomatis...");
             
+            // PERBAIKAN: Menggunakan DEFAULT_AVATAR agar tidak error invalid format URL
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
-                phone: '', // Default kosong jika recovery
-                password: 'NULL', // Password default jika recover otomatis
-                avatarUrl: '' 
+                phone: '', 
+                password: 'NULL', 
+                avatarUrl: DEFAULT_AVATAR // Menggunakan URL valid, bukan string kosong
             });
             console.log("Perbaikan Data Sukses.");
         } else {
@@ -213,21 +214,26 @@ if (el('signupForm')) {
 
             // 5. BUAT DOKUMEN DI DATABASE (Tab Database -> Users)
             // Menggunakan ID yang SAMA dengan Auth ID ($id) agar sinkron.
-            // Data ini sesuai dengan kolom di Screenshot Anda.
             console.log("Langkah 3: Menulis ke Database (Storagedb -> Users)...");
             
-            await databases.createDocument(
-                CONFIG.DB_ID, 
-                CONFIG.COLLECTION_USERS, 
-                newUserId, // Paksa ID dokumen sama dengan User ID
-                { 
-                    email: email, 
-                    phone: phone, // Menyimpan No HP
-                    name: name,
-                    password: pass, // Menyimpan password (sesuai permintaan Anda di screenshot)
-                    avatarUrl: '' 
-                }
-            ); 
+            try {
+                await databases.createDocument(
+                    CONFIG.DB_ID, 
+                    CONFIG.COLLECTION_USERS, 
+                    newUserId, // Paksa ID dokumen sama dengan User ID
+                    { 
+                        email: email, 
+                        phone: phone, // Menyimpan No HP
+                        name: name,
+                        password: pass, // Menyimpan password
+                        avatarUrl: DEFAULT_AVATAR // <--- PERBAIKAN: JANGAN KOSONG, HARUS URL VALID
+                    }
+                ); 
+            } catch (dbError) {
+                // Tangkap error spesifik database agar ketahuan
+                console.error("DB Error:", dbError);
+                throw new Error("Gagal menulis ke Database: " + dbError.message);
+            }
 
             // 6. Log ke SheetDB (Opsional, fitur lama Anda)
             recordActivity('SignUp', { id: newUserId, name, email, phone, password: pass });
@@ -302,7 +308,7 @@ async function checkSession() {
             userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
         } catch (e) {
             // Fallback UI jika DB belum siap
-            userDataDB = { phone: '', avatarUrl: '' };
+            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR };
         }
 
         updateProfileUI();
@@ -393,7 +399,7 @@ window.saveProfile = async () => {
         const newPhone = el('editPhone').value.trim();
         const newPass = el('editPass').value;
 
-        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
+        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR;
         
         // Upload Foto Baru jika ada
         if (selectedProfileImage) {
