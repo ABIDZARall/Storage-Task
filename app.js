@@ -8,7 +8,7 @@ const storage = new Appwrite.Storage(client);
 
 // URL Foto Profil Default (Jika user belum upload foto)
 // Menggunakan ikon pengguna generik online agar selalu muncul.
-const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+const DEFAULT_AVATAR = 'profile-default.jpeg';
 
 // KONFIGURASI PROJECT
 const CONFIG = {
