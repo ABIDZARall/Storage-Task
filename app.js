@@ -7,7 +7,7 @@ const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
 // URL Foto Profil Default
-const DEFAULT_AVATAR = 'storage/default-avatar.png';
+const DEFAULT_AVATAR = 'default-avatar.png';
 
 // KONFIGURASI PROJECT SESUAI INPUT ANDA
 const CONFIG = {
