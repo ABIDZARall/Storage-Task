@@ -551,7 +551,7 @@ function renderItem(doc) {
 
     // === LOGIKA PENENTUAN TIPE FILE UNTUK THUMBNAIL ===
     if (isFolder) {
-        content = `<div style="flex:1;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div>`;
+        content = `<div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div>`;
     } else {
         // Ambil ekstensi file (lowercase)
         const ext = doc.name.split('.').pop().toLowerCase();
@@ -559,67 +559,68 @@ function renderItem(doc) {
         // URL untuk melihat file (Raw)
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // 1. DAFTAR FORMAT GAMBAR LENGKAP (Termasuk jfif, webp, heic)
-        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heif', 'heic', 'jfif', 'pjp', 'pjpeg', 'avif'];
+        // 1. DAFTAR FORMAT GAMBAR & DESAIN LENGKAP
+        // Kita masukkan PSD, AI, EPS, PDF disini agar mencoba render PREVIEW dari Appwrite.
+        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heif', 'heic', 'jfif', 'pjp', 'pjpeg', 'avif', 'psd', 'ai', 'eps', 'indd', 'pdf', 'raw'];
         
         // 2. DAFTAR FORMAT VIDEO
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
 
-        // 3. DAFTAR FORMAT DOKUMEN & LAINNYA
+        // 3. DAFTAR FORMAT DOKUMEN OFFICE & LAINNYA (Untuk fallback icon)
         const wordExts = ['doc', 'docx', 'odt', 'rtf', 'txt'];
         const excelExts = ['xls', 'xlsx', 'csv', 'ods'];
         const pptExts = ['ppt', 'pptx', 'odp'];
-        const pdfExts = ['pdf'];
-        const designExts = ['psd', 'ai', 'eps', 'indd', 'raw'];
         const codeExts = ['html', 'css', 'js', 'json', 'php', 'py', 'java', 'cpp', 'xml', 'sql'];
         const zipExts = ['zip', 'rar', '7z', 'tar', 'gz'];
 
         // === RENDER THUMBNAIL BERDASARKAN TIPE ===
 
         if (imgExts.includes(ext)) {
-            // -- TIPE GAMBAR --
-            // Menggunakan getFilePreview. Jika error loading, fallback ke icon gambar
+            // -- TIPE VISUAL (GAMBAR, PDF, DESAIN) --
+            // Menggunakan getFilePreview. Jika error loading (misal file AI korup/terlalu berat), 
+            // fallback ke icon spesifik menggunakan handler onerror yang cerdas.
+            
             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 80);
+            
+            // Tentukan icon fallback jika gambar gagal dimuat
+            let fallbackIcon = "fa-image"; 
+            let fallbackColor = "icon-purple";
+            if (ext === 'pdf') { fallbackIcon = "fa-file-pdf"; fallbackColor = "icon-red"; }
+            else if (['psd', 'indd'].includes(ext)) { fallbackIcon = "fa-file-image"; fallbackColor = "icon-blue"; }
+            else if (['ai', 'eps'].includes(ext)) { fallbackIcon = "fa-pen-nib"; fallbackColor = "icon-orange"; }
+
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-image huge-icon icon-purple\\' style=\\'font-size:3rem!important\\'></i>'">
+                         onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\\'flex:1;width:100%;display:flex;align-items:center;justify-content:center;\\'><i class=\\'icon fa-solid ${fallbackIcon} huge-icon ${fallbackColor}\\' style=\\'font-size:3.5rem!important\\'></i></div>'">
                 </div>
             `;
 
         } else if (vidExts.includes(ext)) {
             // -- TIPE VIDEO --
-            // Video dibuat cover agar tidak gepeng
             content = `
                 <div class="thumb-box" style="background:#000;">
                     <video src="${fileViewUrl}#t=0.5" class="thumb-video" preload="metadata" muted loop 
-                        style="width:100%; height:100%; object-fit:cover;"
                         onmouseover="this.play()" 
                         onmouseout="this.pause();"
-                        onerror="this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-film huge-icon icon-red\\' style=\\'font-size:3rem!important\\'></i>'">
+                        onerror="this.parentElement.innerHTML='<div style=\\'flex:1;width:100%;display:flex;align-items:center;justify-content:center;\\'><i class=\\'icon fa-solid fa-film huge-icon icon-red\\' style=\\'font-size:3.5rem!important\\'></i></div>'">
                     </video>
                     <i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i>
                 </div>
             `;
 
         } else {
-            // -- TIPE FILE NON-MEDIA (ICON) --
+            // -- TIPE FILE NON-MEDIA (ICON STANDAR) --
             let iconClass = "fa-file-lines";
             let colorClass = "icon-grey";
 
-            if (pdfExts.includes(ext)) { iconClass = "fa-file-pdf"; colorClass = "icon-red"; }
-            else if (wordExts.includes(ext)) { iconClass = "fa-file-word"; colorClass = "icon-blue"; }
+            if (wordExts.includes(ext)) { iconClass = "fa-file-word"; colorClass = "icon-blue"; }
             else if (excelExts.includes(ext)) { iconClass = "fa-file-excel"; colorClass = "icon-green"; }
             else if (pptExts.includes(ext)) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; }
-            else if (designExts.includes(ext)) {
-                if(ext === 'psd') { iconClass = "fa-file-image"; colorClass = "icon-blue"; }
-                else if(ext === 'ai') { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; }
-                else { iconClass = "fa-bezier-curve"; colorClass = "icon-purple"; }
-            }
             else if (codeExts.includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-white"; }
             else if (zipExts.includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
 
-            content = `<div style="flex:1;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}" style="font-size:3.5rem;"></i></div>`;
+            content = `<div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}" style="font-size:3.5rem;"></i></div>`;
         }
     }
 

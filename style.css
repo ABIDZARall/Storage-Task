@@ -146,7 +146,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     gap: 15px; 
     padding: 40px 10px 40px 10px; 
     align-content: start; 
-    /* Memastikan semua item mulai dari garis atas yang sama */
     align-items: start; 
 }
 
@@ -164,13 +163,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transition: 0.2s; 
     border: 1px solid transparent; 
     overflow: hidden; 
-    padding: 12px; /* Padding seragam */
+    padding: 12px; 
 }
 
 .item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
 
 /* Icon Folder */
-.item-card i.icon { font-size: 3rem; margin: auto; } /* Auto margin memastikan icon folder di tengah vertikal */
+.item-card i.icon { font-size: 3rem; margin: auto; }
 .fa-folder { color: #facc15; } 
 
 /* Thumbnail Containers - Memaksa ukuran penuh */
@@ -187,8 +186,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     position: relative; 
 }
 
-.thumb-image { width: 100%; height: 100%; object-fit: cover; }
-.thumb-video { width: 100%; height: 100%; object-fit: cover; }
+/* KUNCI: object-fit: cover agar gambar penuh di kotak seperti video */
+.thumb-image { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
 /* Large Icon Styles for Non-Image Files */
 .huge-icon { font-size: 3.5rem !important; margin: 0 !important; }
