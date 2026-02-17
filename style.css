@@ -58,7 +58,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     opacity: 1;
 }
 
-/* === PROFILE PAGE STYLES (NEW) === */
+/* === PROFILE PAGE STYLES === */
 .profile-card { width: 100%; max-width: 420px; padding: 25px; display: flex; flex-direction: column; align-items: center; }
 .profile-header { width: 100%; text-align: center; margin-bottom: 25px; position: relative; }
 .profile-header h3 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
@@ -137,19 +137,42 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
-/* GRID ITEM STYLING (UPDATED FOR THUMBNAILS) */
+/* GRID ITEM STYLING (PERBAIKAN UTAMA UNTUK THUMBNAIL) */
 .file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding: 40px 10px 40px 10px; align-content: start; }
 .item-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; overflow: hidden; }
 .item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3rem; margin-bottom: 8px; }
 .fa-folder { color: #facc15; } 
 
-/* Thumbnail Containers */
-.thumb-box { width: 100%; height: 100px; overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 8px; margin-bottom: 8px; background: rgba(0,0,0,0.2); position: relative; }
-.thumb-image { width: 100%; height: 100%; object-fit: cover; }
-.thumb-video { width: 100%; height: 100%; object-fit: cover; }
+/* Thumbnail Containers (BARU) */
+.thumb-box { 
+    width: 100%; 
+    height: 100px; /* Ukuran area gambar */
+    overflow: hidden; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 8px; 
+    margin-bottom: 8px; 
+    background: rgba(0,0,0,0.2); /* Background gelap jika gambar transparan */
+    position: relative;
+}
 
-/* Large Icon Styles for Non-Image Files */
+/* Gambar mengisi penuh kotak dengan rapi */
+.thumb-image { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
+
+/* Video mengisi penuh kotak */
+.thumb-video { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
+
+/* Ikon Besar untuk File non-media (PDF, DOCX, dll) */
 .huge-icon { font-size: 3.5rem !important; margin-bottom: 0 !important; }
 .icon-blue { color: var(--clr-blue); }
 .icon-red { color: var(--clr-red); }
@@ -159,6 +182,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .icon-purple { color: #8b5cf6; }
 .icon-white { color: #f1f5f9; }
 
+/* Teks nama file di bawah thumbnail */
 .item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0; margin-top: auto; margin-bottom: 10px; padding: 0 5px; }
 
 /* MODALS */

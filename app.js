@@ -579,6 +579,7 @@ function renderItem(doc) {
         if (imgExts.includes(ext)) {
             // -- TIPE GAMBAR --
             // Gunakan getFilePreview untuk performa lebih cepat & resize otomatis
+            // width=300, height=300, quality=80 agar grid tidak berat
             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 80);
             content = `
                 <div class="thumb-box" style="background:transparent;">
@@ -589,7 +590,7 @@ function renderItem(doc) {
         } else if (vidExts.includes(ext)) {
             // -- TIPE VIDEO --
             // Gunakan tag <video> dengan #t=0.5 untuk mengambil frame awal
-            // Tambahkan event listener untuk Auto-Play saat Hover
+            // Tambahkan event listener untuk Auto-Play saat Hover (Keren!)
             content = `
                 <div class="thumb-box" style="background:#000;">
                     <video src="${fileViewUrl}#t=0.5" class="thumb-video" preload="metadata" muted loop 
@@ -619,8 +620,7 @@ function renderItem(doc) {
 
         } else if (designExts.includes(ext)) {
             // -- DESAIN (PSD, AI) --
-            // Coba tampilkan preview jika server mendukung, jika tidak fallback ke icon
-            // Kita gunakan icon spesifik agar terlihat profesional
+            // Ikon spesifik agar terlihat profesional
             if(ext === 'psd') content = `<i class="icon fa-solid fa-file-image huge-icon icon-blue"></i>`;
             else if(ext === 'ai') content = `<i class="icon fa-solid fa-pen-nib huge-icon icon-orange"></i>`;
             else content = `<i class="icon fa-solid fa-bezier-curve huge-icon icon-purple"></i>`;
