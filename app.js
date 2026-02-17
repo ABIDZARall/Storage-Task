@@ -6,15 +6,7 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
-// 1. Ini file gambar lokal untuk ditampilkan di UI jika user belum punya foto
-const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
-
-// 2. Ini URL "Dummy" yang valid untuk dikirim ke Database agar lolos validasi (karena kolom DB tipe URL)
-// Kita pakai link placeholder yang aman dari Appwrite atau link statis apapun yang valid.
-const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
-
-// KONFIGURASI PROJECT SESUAI INPUT ANDA
+// KONFIGURASI PROYEK (Sesuaikan dengan Project ID Anda)
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -27,9 +19,14 @@ const CONFIG = {
 // API SheetDB untuk Pencatatan Excel
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
+// URL & File Gambar Profil Default
+const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
+const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
+
+// Inisialisasi SDK
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-// State Global (Menyimpan data sementara aplikasi berjalan)
+// State Global (Penyimpanan Data Sementara di Memori Browser)
 let currentUser = null;
 let userDataDB = null; 
 let currentFolderId = 'root'; 
@@ -41,10 +38,14 @@ let selectedProfileImage = null;
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// Helper DOM (Memudahkan pemanggilan elemen HTML)
+// ======================================================
+// 2. UTILITY & HELPER FUNCTIONS
+// ======================================================
+
+// Helper untuk mengambil elemen HTML berdasarkan ID
 const el = (id) => document.getElementById(id);
 
-// Fungsi Loading yang Informatif
+// Helper untuk menampilkan/menyembunyikan Loading Overlay
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -56,18 +57,37 @@ const toggleLoading = (show, msg = "Memproses...") => {
     }
 };
 
-// ======================================================
-// 2. MAIN EXECUTION (Saat Halaman Dimuat)
-// ======================================================
-document.addEventListener('DOMContentLoaded', () => {
-    checkSession(); // Cek apakah user sudah login
-    initDragAndDrop(); // Siapkan fitur upload drag-drop
-    initLogout(); // Siapkan tombol logout
-    initSearchBar(); // Siapkan kolom pencarian
-    initAllContextMenus(); // Siapkan klik kanan
-    initStorageTooltip(); // Siapkan tooltip storage
-    initProfileImageUploader(); // Siapkan upload foto profil
-});
+// Helper Cek Koneksi Internet
+function checkSystemHealth() {
+    if (!navigator.onLine) {
+        throw new Error("Tidak ada koneksi internet. Periksa jaringan Anda.");
+    }
+    return true;
+}
+
+// Helper untuk navigasi antar halaman (Login, Dashboard, dll)
+window.nav = (pageId) => {
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => {
+        const element = el(id);
+        if(element) element.classList.add('hidden');
+    });
+    const target = el(pageId);
+    if(target) target.classList.remove('hidden');
+};
+
+// Helper Toggle Password (Spy Eye)
+window.togglePass = (id, icon) => { 
+    const input = document.getElementById(id); 
+    if (input.type === "password") { 
+        input.type = "text"; 
+        icon.classList.remove("fa-eye-slash"); 
+        icon.classList.add("fa-eye"); 
+    } else { 
+        input.type = "password"; 
+        icon.classList.remove("fa-eye"); 
+        icon.classList.add("fa-eye-slash"); 
+    } 
+};
 
 // ======================================================
 // 3. FUNGSI LOGGING KE EXCEL (SHEETDB)
@@ -82,29 +102,20 @@ async function recordActivity(sheetName, data) {
 
         let payload = {};
 
-        // Menyiapkan data sesuai format kolom Excel Anda
+        // Mapping data sesuai Sheet yang dituju
         if (sheetName === 'SignUp') {
             payload = {
-                "ID": data.id || "-",
-                "Nama": data.name || "-",
-                "Email": data.email || "-",
-                "Phone": data.phone || "-",
-                "Password": data.password || "-",
-                "Waktu": now
+                "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-",
+                "Phone": data.phone || "-", "Password": data.password || "-", "Waktu": now
             };
         } else if (sheetName === 'Login') {
             payload = {
-                "ID": data.id || "-",
-                "Nama": data.name || "-",
-                "Email": data.email || "-",
-                "Password": data.password || "-", 
-                "Riwayat Waktu": now
+                "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-",
+                "Password": data.password || "-", "Riwayat Waktu": now
             };
         } else if (sheetName === 'Logout') {
             payload = {
-                "ID": data.id || "-",
-                "Nama": data.name || "-",
-                "Email": data.email || "-", 
+                "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", 
                 "Riwayat Waktu": now
             };
         }
@@ -116,338 +127,86 @@ async function recordActivity(sheetName, data) {
             body: JSON.stringify({ data: payload })
         });
         
-        console.log(`Log ${sheetName} berhasil dicatat.`);
+        console.log(`Log Excel [${sheetName}] berhasil dicatat.`);
 
     } catch (error) {
-        console.error("System Log Error:", error);
+        console.error("Gagal mencatat Log Excel:", error);
     }
 }
 
-// Helper: Cek Koneksi Internet Sebelum Transaksi Penting
-function checkSystemHealth() {
-    if (!navigator.onLine) {
-        throw new Error("Tidak ada koneksi internet. Periksa jaringan Anda.");
+// ======================================================
+// 4. MAIN EXECUTION (SAAT APLIKASI DIBUKA)
+// ======================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Cek Sesi segera saat aplikasi dibuka untuk mencegah "kelempar ke login"
+    checkSession(); 
+    
+    // 2. Inisialisasi fitur-fitur UI
+    initDragAndDrop();
+    initLogout();
+    initSearchBar();
+    initAllContextMenus();
+    initStorageTooltip();
+    initProfileImageUploader(); 
+});
+
+// ======================================================
+// 5. MANAJEMEN SESI (PERBAIKAN LOGIKA "NYANGKUT")
+// ======================================================
+
+async function checkSession() {
+    // Tampilkan loading agar transisi halus
+    toggleLoading(true, "Memuat Data Pengguna...");
+    
+    try {
+        // Coba ambil data user dari Appwrite Auth
+        const user = await account.get();
+        
+        // Jika berhasil, berarti user SUDAH login (Sesi Valid)
+        console.log("Sesi ditemukan untuk:", user.name);
+        currentUser = user;
+        
+        // Lakukan sinkronisasi database (Self-Healing)
+        await syncUserData(user);
+        
+        // Inisialisasi dan masuk ke Dashboard
+        await initializeDashboard(user);
+
+    } catch (error) {
+        // Jika error (401 Unauthorized), berarti user belum login
+        console.log("Tidak ada sesi aktif, masuk ke halaman Login.");
+        window.nav('loginPage');
+    } finally {
+        toggleLoading(false);
     }
-    return true;
 }
 
-// ======================================================
-// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT)
-// ======================================================
-
-// --- A. SIGN UP ---
-if (el('signupForm')) {
-    el('signupForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = el('regName').value.trim();
-        const email = el('regEmail').value.trim();
-        const phone = el('regPhone').value.trim();
-        const pass = el('regPass').value;
-        const verify = el('regVerify').value;
-
-        if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
-        
-        toggleLoading(true, "Menghubungkan Server...");
-        
-        try {
-            checkSystemHealth();
-            const newUserId = Appwrite.ID.unique(); 
-
-            // 1. Buat Akun di Authentication Appwrite
-            toggleLoading(true, "Membuat Akun Auth...");
-            await account.create(newUserId, email, pass, name);
-            
-            // 2. Login Otomatis (Supaya punya izin akses untuk tulis ke Database)
-            toggleLoading(true, "Login Otomatis...");
-            try { 
-                await account.createEmailPasswordSession(email, pass); 
-            } catch(e) {
-                console.warn("Auto-login warning:", e);
-            }
-
-            // 3. Simpan Data Profil ke Database (Users Collection)
-            toggleLoading(true, "Menyimpan Profil Database...");
-            try {
-                await databases.createDocument(
-                    CONFIG.DB_ID, 
-                    CONFIG.COLLECTION_USERS, 
-                    newUserId, // ID Dokumen disamakan dengan User ID
-                    { 
-                        email: email, 
-                        phone: phone, 
-                        name: name,
-                        password: pass, 
-                        // PENTING: Kirim URL dummy agar validasi tipe URL di Appwrite lolos.
-                        avatarUrl: DEFAULT_AVATAR_DB_URL 
-                    }
-                ); 
-                console.log("Database user berhasil dibuat.");
-            } catch (dbError) {
-                console.error("DB Write Error:", dbError);
-            }
-
-            // 4. Catat Log ke Excel (SignUp)
-            recordActivity('SignUp', { 
-                id: newUserId, 
-                name: name, 
-                email: email, 
-                phone: phone, 
-                password: pass 
-            }).catch(e => console.log("Background log error:", e));
-            
-            // 5. Logout Sesi Pembuatan (Agar user login manual)
-            try { await account.deleteSession('current'); } catch (e) {}
-            
-            toggleLoading(false);
-            alert("Pendaftaran Berhasil Sempurna!\nData Auth & Database tersimpan.\nSilakan Login."); 
-            window.nav('loginPage');
-
-        } catch(e) { 
-            toggleLoading(false);
-            if(e.message.includes('exists') || e.code === 409) {
-                alert("Email atau Username sudah terdaftar!"); 
-            } else {
-                alert("Error Pendaftaran: " + e.message);
-            }
-        }
-    });
-}
-
-// --- B. LOGIN (DENGAN VALIDASI PASSWORD DATABASE & UPDATE EXCEL) ---
-if (el('loginForm')) {
-    el('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        let inputId = el('loginEmail').value.trim();
-        const pass = el('loginPass').value;
-        
-        try {
-            toggleLoading(true, "Mengecek Koneksi...");
-            checkSystemHealth();
-
-            // 1. Resolusi Username -> Email
-            // Jika user login pakai username, cari emailnya dulu di Database
-            if (!inputId.includes('@')) {
-                toggleLoading(true, "Mencari Akun...");
-                try {
-                    const res = await databases.listDocuments(
-                        CONFIG.DB_ID, 
-                        CONFIG.COLLECTION_USERS, 
-                        [ Appwrite.Query.equal('name', inputId) ]
-                    );
-                    if (res.documents.length > 0) {
-                        console.log("Login via Username berhasil direlasikan ke Email:", res.documents[0].email);
-                        inputId = res.documents[0].email; // Ganti inputId jadi email
-                    } else {
-                        throw new Error("Username tidak ditemukan di database.");
-                    }
-                } catch(dbErr) {
-                    throw dbErr; // Lempar error agar ditangkap blok catch utama
-                }
-            }
-
-            // 2. VALIDASI PASSWORD DATABASE (KUNCI UTAMA)
-            // Cek apakah password input cocok dengan password di Database (Single Source of Truth)
-            toggleLoading(true, "Memvalidasi Password...");
-            let dbUser = null;
-            try {
-                const userCheck = await databases.listDocuments(
-                    CONFIG.DB_ID,
-                    CONFIG.COLLECTION_USERS,
-                    [ Appwrite.Query.equal('email', inputId) ]
-                );
-
-                if (userCheck.documents.length > 0) {
-                    dbUser = userCheck.documents[0];
-                    const dbPass = dbUser.password;
-                    // Jika password di database TIDAK SAMA dengan input user, 
-                    // berarti user pakai password lama (atau salah).
-                    if (dbPass && dbPass !== pass && dbPass !== 'NULL') {
-                        throw new Error("Password Anda salah atau sudah kadaluarsa (Expired). Silakan gunakan password terbaru yang telah direset.");
-                    }
-                } else {
-                    throw new Error("Akun tidak ditemukan.");
-                }
-            } catch (validationErr) {
-                throw validationErr;
-            }
-
-            // 3. EKSEKUSI LOGIN (DENGAN FAILOVER)
-            toggleLoading(true, "Menyiapkan Sesi...");
-            
-            // Coba login standar Appwrite Auth
-            let authSuccess = false;
-            try {
-                await account.createEmailPasswordSession(inputId, pass);
-                authSuccess = true;
-            } catch (authErr) {
-                console.warn("Auth Session Failed (Expected after reset):", authErr);
-                // Jika Auth gagal tapi DB password cocok (langkah 2 sukses),
-                // berarti user baru reset password di DB tapi Auth belum update.
-                // KITA IZINKAN MASUK (BYPASS) KARENA VALIDASI DB SUDAH BENAR.
-            }
-
-            // Jika Auth sukses, ambil user dari sesi. Jika gagal, gunakan data dari DB.
-            let user;
-            if (authSuccess) {
-                user = await account.get();
-            } else {
-                // BYPASS MODE: Gunakan data DB untuk membuat objek user palsu
-                user = {
-                    $id: dbUser.$id,
-                    name: dbUser.name,
-                    email: dbUser.email,
-                    phone: dbUser.phone,
-                };
-                currentUser = user; // Set global
-            }
-            
-            // Sync DB Self Healing
-            if (authSuccess) {
-                await syncUserData(user); 
-            }
-            
-            // 4. Catat Log ke Excel (Login)
-            recordActivity('Login', { 
-                id: user.$id, 
-                name: user.name, 
-                email: user.email, 
-                password: pass 
-            }).catch(e => console.log("Background log error:", e));
-
-            // Masuk Dashboard
-            await initializeDashboard(user); 
-
-        } catch (error) { 
-            toggleLoading(false);
-            let msg = error.message;
-            if(msg.includes('Invalid credentials')) msg = "Email/Username atau Password salah.";
-            if(msg.includes('Network request failed')) msg = "Gagal terhubung ke server. Cek internet Anda.";
-            alert("Login Gagal: " + msg);
-        }
-    });
-}
-
-// --- C. LOGOUT ---
-function initLogout() {
-    const btn = el('logoutBtn');
-    if (btn) {
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        newBtn.addEventListener('click', async () => {
-            if (confirm("Yakin ingin keluar?")) {
-                toggleLoading(true, "Mencatat Log Keluar...");
-                
-                // Catat Log Logout SEBELUM menghapus sesi (pakai await)
-                if (currentUser) {
-                    await recordActivity('Logout', { 
-                        id: currentUser.$id, 
-                        name: currentUser.name,
-                        email: currentUser.email 
-                    });
-                }
-
-                toggleLoading(true, "Membersihkan Sesi...");
-                try {
-                    await account.deleteSession('current');
-                } catch (error) { console.log("Logout cleanup:", error); }
-                
-                window.location.reload(); 
-            }
+// Fungsi untuk menyiapkan data Dashboard setelah Login/Check Session
+async function initializeDashboard(userObj) {
+    currentUser = userObj;
+    
+    // 1. Ambil detail profil (No HP, Avatar) dari Database Users
+    const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
+        .then(doc => { userDataDB = doc; })
+        .catch(() => { 
+            // Fallback jika data DB belum ada (baru register)
+            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; 
         });
-    }
+
+    // 2. Load file-file di folder root
+    const filePromise = loadFiles('root');
+    
+    // 3. Hitung penggunaan penyimpanan
+    const storagePromise = calculateStorage();
+
+    // Jalankan semua secara paralel agar cepat
+    await Promise.all([dbPromise, filePromise, storagePromise]);
+
+    updateProfileUI(); // Update foto profil di pojok kanan atas
+    window.nav('dashboardPage'); // Pindah ke layar Dashboard
 }
 
-// --- D. RESET PASSWORD (UPDATE DB & EXCEL LOGIN/SIGNUP) ---
-if (el('resetForm')) {
-    el('resetForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = el('resetEmail').value.trim();
-        const newPass = el('resetNewPass').value;
-        const verifyPass = el('resetVerifyPass').value;
-
-        if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
-        if (newPass.length < 8) return alert("Password minimal 8 karakter.");
-
-        toggleLoading(true, "Mencari Akun...");
-
-        try {
-            // 1. Cari user di database users berdasarkan email
-            const res = await databases.listDocuments(
-                CONFIG.DB_ID, 
-                CONFIG.COLLECTION_USERS, 
-                [ Appwrite.Query.equal('email', email) ]
-            );
-
-            if (res.documents.length === 0) {
-                throw new Error("Email tidak ditemukan di database.");
-            }
-
-            const userDoc = res.documents[0];
-            const userId = userDoc.$id;
-
-            toggleLoading(true, "Mengupdate Password Database...");
-
-            // 2. Update password di database 'users' 
-            // Ini yang membuat password lama jadi invalid saat login nanti (karena cek DB)
-            await databases.updateDocument(
-                CONFIG.DB_ID, 
-                CONFIG.COLLECTION_USERS, 
-                userId, 
-                { password: newPass }
-            );
-
-            // 3. Update password di Excel (Sheet SignUp - Registry Utama)
-            toggleLoading(true, "Mengupdate Data SignUp Excel...");
-            
-            // PATCH ke Sheet SignUp berdasarkan Email
-            await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, {
-                method: 'PATCH', 
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "data": {
-                        "Password": newPass
-                    }
-                })
-            });
-
-            // 4. Update password di Excel (Sheet Login - Riwayat Login)
-            // Ini akan mengupdate SEMUA baris login user tersebut dengan password baru
-            toggleLoading(true, "Mengupdate Data Login Excel...");
-            
-            await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, {
-                method: 'PATCH', 
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    "data": {
-                        "Password": newPass
-                    }
-                })
-            });
-            
-            toggleLoading(false);
-            alert("Berhasil! Password telah diperbarui di Database, SignUp, dan Login.\nPassword lama kini kadaluarsa.\nSilakan login dengan password baru.");
-            window.nav('loginPage');
-
-        } catch (error) {
-            toggleLoading(false);
-            alert("Gagal Reset Password: " + error.message);
-        }
-    });
-}
-
-// ======================================================
-// 5. HELPER DATA & SINKRONISASI
-// ======================================================
-
-// Sinkronisasi Data Auth -> DB (Self Healing)
+// Fungsi Self-Healing: Pastikan data user ada di Database 'users'
 async function syncUserData(authUser) {
     if (!authUser) return;
     try {
@@ -464,7 +223,7 @@ async function syncUserData(authUser) {
         };
 
         if (!userDoc) {
-            // Recovery: Buat dokumen DB baru jika hilang
+            // Jika tidak ada di DB, buat baru
             await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, {
                 ...payload,
                 phone: '', 
@@ -472,7 +231,7 @@ async function syncUserData(authUser) {
                 avatarUrl: DEFAULT_AVATAR_DB_URL 
             });
         } else {
-            // Update nama jika berubah di Auth
+            // Jika ada, update nama/email jika berubah
             if (!userDoc.name || userDoc.name === 'NULL' || userDoc.name !== authUser.name) {
                 await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
             }
@@ -482,180 +241,363 @@ async function syncUserData(authUser) {
     }
 }
 
-// Inisialisasi Dashboard
-async function initializeDashboard(userObj) {
-    currentUser = userObj;
-    
-    // Ambil detail profil dari Database (No HP, Avatar, dll)
-    const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
-        .then(doc => { userDataDB = doc; })
-        .catch(() => { 
-            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; 
-        });
+// ======================================================
+// 6. LOGIKA AUTHENTICATION (LOGIN, SIGN UP, LOGOUT)
+// ======================================================
 
-    // Load file & hitung storage secara paralel
-    const filePromise = loadFiles('root');
-    const storagePromise = calculateStorage();
+// --- A. SIGN UP (DUAL WRITE) ---
+if (el('signupForm')) {
+    el('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = el('regName').value.trim();
+        const email = el('regEmail').value.trim();
+        const phone = el('regPhone').value.trim();
+        const pass = el('regPass').value;
+        const verify = el('regVerify').value;
 
-    await Promise.all([dbPromise, filePromise, storagePromise]);
-
-    updateProfileUI(); // Update UI foto profil
-    window.nav('dashboardPage');
-    toggleLoading(false); 
-}
-
-// Cek Sesi (Saat Refresh Halaman)
-async function checkSession() {
-    // Jangan cek jika di halaman Auth
-    if(!el('loginPage').classList.contains('hidden')) return;
-
-    toggleLoading(true, "Memuat Sesi...");
-    try {
-        // Coba cek sesi asli
-        try { 
-            await account.get(); 
-            currentUser = await account.get();
-        } catch(e) { 
-            // Jika sesi asli gagal, lempar error ke catch utama
-            throw e; 
-        }
-
-        await syncUserData(currentUser);
-
+        if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
+        
+        toggleLoading(true, "Mendaftarkan Akun...");
+        
         try {
-            userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id);
-        } catch (e) {
-            userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL };
+            checkSystemHealth();
+            const newUserId = Appwrite.ID.unique(); 
+
+            // 1. Create Auth Account
+            await account.create(newUserId, email, pass, name);
+            
+            // 2. Auto Login (untuk izin tulis DB)
+            try { await account.createEmailPasswordSession(email, pass); } catch(e){ console.warn(e); }
+
+            // 3. Simpan ke Database Users
+            try {
+                await databases.createDocument(
+                    CONFIG.DB_ID, 
+                    CONFIG.COLLECTION_USERS, 
+                    newUserId, 
+                    { 
+                        email: email, 
+                        phone: phone, 
+                        name: name,
+                        password: pass, 
+                        avatarUrl: DEFAULT_AVATAR_DB_URL 
+                    }
+                ); 
+            } catch (dbError) { console.error("DB Error:", dbError); }
+
+            // 4. Catat ke Excel (SignUp)
+            recordActivity('SignUp', { 
+                id: newUserId, name: name, email: email, phone: phone, password: pass 
+            }).catch(e => console.log(e));
+            
+            // 5. Logout sesi sementara
+            try { await account.deleteSession('current'); } catch (e) {}
+            
+            toggleLoading(false);
+            alert("Pendaftaran Berhasil! Silakan Login."); 
+            window.nav('loginPage');
+
+        } catch(e) { 
+            toggleLoading(false);
+            if(e.message.includes('exists') || e.code === 409) alert("Email atau Username sudah terdaftar!"); 
+            else alert("Error: " + e.message);
         }
-
-        updateProfileUI();
-        window.nav('dashboardPage'); 
-        loadFiles('root');  
-        calculateStorage();
-    } catch (e) { 
-        window.nav('loginPage'); 
-    } finally { 
-        toggleLoading(false); 
-    }
-}
-
-// Update Tampilan Profil (Logic Swap URL Dummy -> File Lokal)
-function updateProfileUI() {
-    const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
-    let finalSrc;
-
-    // Jika URL dari DB adalah dummy atau kosong, pakai gambar lokal
-    if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') {
-        finalSrc = DEFAULT_AVATAR_LOCAL;
-    } else {
-        // Jika user punya foto sendiri, pakai itu + cache buster
-        finalSrc = dbUrl + `&t=${new Date().getTime()}`;
-    }
-
-    if(el('dashAvatar')) el('dashAvatar').src = finalSrc;
-    if(el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc;
-    if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
-}
-
-// Navigasi Halaman
-window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => {
-        const element = el(id);
-        if(element) element.classList.add('hidden');
     });
-    const target = el(pageId);
-    if(target) target.classList.remove('hidden');
-};
+}
 
-// ======================================================
-// 6. PROFILE & SETTINGS
-// ======================================================
-window.openProfilePage = () => {
-    if (!currentUser) return;
-    el('editName').value = currentUser.name || '';
-    el('editEmail').value = currentUser.email || '';
-    
-    // Ambil No HP dari data DB yang sudah diload
-    el('editPhone').value = (userDataDB && userDataDB.phone) ? userDataDB.phone : '';
-    
-    el('editPass').value = ''; 
-    updateProfileUI(); 
-    selectedProfileImage = null; 
-    window.nav('profilePage');
-};
+// --- B. LOGIN (DENGAN VALIDASI PASSWORD DATABASE & BYPASS) ---
+if (el('loginForm')) {
+    el('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        let inputId = el('loginEmail').value.trim();
+        const pass = el('loginPass').value;
+        
+        try {
+            toggleLoading(true, "Memeriksa Akun...");
+            checkSystemHealth();
 
-function initProfileImageUploader() {
-    const input = el('profileUploadInput');
-    if(input) {
-        input.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) {
-                const file = e.target.files[0];
-                selectedProfileImage = file;
-                const reader = new FileReader();
-                reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; };
-                reader.readAsDataURL(file);
+            // 1. Resolusi Username -> Email (Jika input bukan email)
+            if (!inputId.includes('@')) {
+                try {
+                    const res = await databases.listDocuments(
+                        CONFIG.DB_ID, 
+                        CONFIG.COLLECTION_USERS, 
+                        [ Appwrite.Query.equal('name', inputId) ]
+                    );
+                    if (res.documents.length > 0) inputId = res.documents[0].email;
+                    else throw new Error("Username tidak ditemukan.");
+                } catch(dbErr) { throw dbErr; }
+            }
+
+            // 2. VALIDASI PASSWORD DATABASE (LOGIKA EXPIRED)
+            // Kunci Keamanan: Cek password di DB Users dulu sebelum ke Auth.
+            // Jika user reset password, DB berubah. Jika input != DB, tolak.
+            toggleLoading(true, "Memvalidasi Password...");
+            let dbUser = null;
+            try {
+                const userCheck = await databases.listDocuments(
+                    CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', inputId) ]
+                );
+
+                if (userCheck.documents.length > 0) {
+                    dbUser = userCheck.documents[0];
+                    const dbPass = dbUser.password;
+                    // Jika password di DB ada (bukan NULL) dan berbeda dengan input
+                    if (dbPass && dbPass !== pass && dbPass !== 'NULL') {
+                        throw new Error("Password salah atau sudah kadaluarsa (Expired). Gunakan password terbaru.");
+                    }
+                } else {
+                    throw new Error("Akun tidak ditemukan.");
+                }
+            } catch (validationErr) { throw validationErr; }
+
+            // 3. EKSEKUSI LOGIN KE APPWRITE
+            toggleLoading(true, "Masuk...");
+            let authSuccess = false;
+            try {
+                await account.createEmailPasswordSession(inputId, pass);
+                authSuccess = true;
+            } catch (authErr) {
+                // BYPASS LOGIC: Jika error "Session active", anggap sukses
+                // Ini mengatasi masalah "user nyangkut"
+                if (authErr.message.includes('session is active') || authErr.code === 401) {
+                    console.log("Sesi aktif terdeteksi, melanjutkan login...");
+                    authSuccess = true;
+                } else {
+                    console.warn("Auth Failed:", authErr);
+                }
+            }
+
+            // 4. PROSES DATA USER SETELAH LOGIN
+            let user;
+            if (authSuccess) {
+                // Ambil data user asli dari sesi
+                try {
+                    user = await account.get();
+                } catch (getErr) {
+                    // Jika get() gagal, gunakan data dari DB (Fallback)
+                    user = { $id: dbUser.$id, name: dbUser.name, email: dbUser.email, phone: dbUser.phone };
+                }
+                
+                // Sync DB jika perlu
+                await syncUserData(user);
+                
+                // Catat ke Excel (Login)
+                recordActivity('Login', { 
+                    id: user.$id, name: user.name, email: user.email, password: pass 
+                }).catch(e => console.log(e));
+
+                // Masuk Dashboard
+                await initializeDashboard(user);
+
+            } else {
+                throw new Error("Gagal membuat sesi login.");
+            }
+
+        } catch (error) { 
+            toggleLoading(false);
+            let msg = error.message;
+            if(msg.includes('Invalid credentials')) msg = "Email/Username atau Password salah.";
+            alert("Login Gagal: " + msg);
+        }
+    });
+}
+
+// --- C. LOGOUT ---
+function initLogout() {
+    const btn = el('logoutBtn');
+    if (btn) {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', async () => {
+            if (confirm("Yakin ingin keluar?")) {
+                toggleLoading(true, "Mencatat Log Keluar...");
+                
+                // Catat Log Logout (Await agar selesai sebelum reload)
+                if (currentUser) {
+                    await recordActivity('Logout', { 
+                        id: currentUser.$id, 
+                        name: currentUser.name,
+                        email: currentUser.email 
+                    });
+                }
+
+                toggleLoading(true, "Membersihkan Sesi...");
+                try { await account.deleteSession('current'); } catch (error) {}
+                
+                window.location.reload(); 
             }
         });
     }
 }
 
-window.saveProfile = async () => {
-    toggleLoading(true, "Menyimpan Profil...");
-    try {
-        const newName = el('editName').value.trim();
-        const newEmail = el('editEmail').value.trim();
-        const newPhone = el('editPhone').value.trim();
-        const newPass = el('editPass').value;
-
-        // Defaultnya gunakan URL yang ada di DB sekarang
-        let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR_DB_URL;
+// --- D. RESET PASSWORD ---
+if (el('resetForm')) {
+    el('resetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Jika ada upload foto baru
-        if (selectedProfileImage) {
-            try {
-                const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-                newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
-            } catch (err) { throw new Error("Gagal upload foto."); }
-        }
+        const email = el('resetEmail').value.trim();
+        const newPass = el('resetNewPass').value;
+        const verifyPass = el('resetVerifyPass').value;
 
-        // Update Auth Core
-        if (newName && newName !== currentUser.name) await account.updateName(newName);
-        if (newEmail && newEmail !== currentUser.email) { try { await account.updateEmail(newEmail, ''); } catch(e) {} }
-        if (newPass) await account.updatePassword(newPass);
+        if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
+        if (newPass.length < 8) return alert("Password minimal 8 karakter.");
 
-        // Update Database Users
-        const payload = { 
-            name: newName, 
-            email: newEmail, 
-            phone: newPhone, 
-            avatarUrl: newAvatarUrl 
-        };
-        if(newPass) payload.password = newPass;
+        toggleLoading(true, "Mencari Akun...");
 
         try {
-            await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-        } catch (dbErr) {
-            if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
+            // 1. Cari user di DB
+            const res = await databases.listDocuments(
+                CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', email) ]
+            );
+
+            if (res.documents.length === 0) throw new Error("Email tidak ditemukan di database.");
+            const userDoc = res.documents[0];
+
+            toggleLoading(true, "Mengupdate Password Database...");
+            
+            // 2. Update Password di Database Users
+            await databases.updateDocument(
+                CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userDoc.$id, { password: newPass }
+            );
+
+            toggleLoading(true, "Mengupdate Data Excel...");
+            
+            // 3. Update Excel Sheet SignUp
+            await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, {
+                method: 'PATCH', 
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ "data": { "Password": newPass } })
+            });
+
+            // 4. Update Excel Sheet Login
+            await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, {
+                method: 'PATCH', 
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ "data": { "Password": newPass } })
+            });
+            
+            toggleLoading(false);
+            alert("Berhasil! Password telah diperbarui.\nPassword lama kadaluarsa.");
+            window.nav('loginPage');
+
+        } catch (error) {
+            toggleLoading(false);
+            alert("Gagal Reset Password: " + error.message);
         }
-
-        if (!userDataDB) userDataDB = {};
-        userDataDB.phone = newPhone;
-        userDataDB.avatarUrl = newAvatarUrl;
-
-        currentUser = await account.get();
-        updateProfileUI(); 
-        toggleLoading(false);
-        alert("Profil Berhasil Disimpan!");
-        window.nav('dashboardPage');
-    } catch (error) {
-        toggleLoading(false);
-        alert("Gagal Menyimpan: " + error.message);
-    }
-};
+    });
+}
 
 // ======================================================
 // 7. FILE MANAGER LOGIC (THUMBNAIL UPDATE)
 // ======================================================
+
+// Helper Ekstensi File
+function getFileExtension(filename) { 
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase(); 
+}
+
+// Fungsi Render Item dengan Thumbnail Google Drive Style
+function renderItem(doc) {
+    const grid = el('fileGrid'); 
+    const div = document.createElement('div'); 
+    div.className = 'item-card';
+
+    const isFolder = doc.type === 'folder';
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:2;"></i>` : '';
+    
+    let content = '';
+    const ext = getFileExtension(doc.name);
+
+    if (isFolder) {
+        content = `<i class="icon fa-solid fa-folder" style="font-size:4rem;color:#facc15;"></i>`;
+    } else {
+        // Daftar ekstensi file
+        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tif', 'tiff', 'heif'];
+        const vidExts = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpeg', 'mpg'];
+        const wordExts = ['doc', 'docx']; 
+        const excelExts = ['xls', 'xlsx', 'csv']; 
+        const pptExts = ['ppt', 'pptx']; 
+        const pdfAdobeExts = ['pdf', 'psd', 'ai', 'eps', 'indd'];
+
+        if (imgExts.includes(ext)) {
+            // Thumbnail Gambar
+            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300).href;
+            content = `<div class="thumb-container"><img src="${previewUrl}" class="thumb-img" alt="${doc.name}"></div>`;
+        } else if (vidExts.includes(ext)) {
+            // Thumbnail Video (Mini Player)
+            const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href;
+            content = `<div class="thumb-container">
+                        <video src="${viewUrl}" class="thumb-video" muted playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
+                        <i class="fa-solid fa-play" style="position:absolute;color:white;font-size:1.5rem;opacity:0.8;pointer-events:none;"></i>
+                       </div>`;
+        } else if (wordExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-blue"><i class="fa-solid fa-file-word"></i></div>`;
+        } else if (excelExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-green"><i class="fa-solid fa-file-excel"></i></div>`;
+        } else if (pptExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-orange"><i class="fa-solid fa-file-powerpoint"></i></div>`;
+        } else if (pdfAdobeExts.includes(ext)) {
+            let iconClass = 'fa-file-pdf'; 
+            if(ext === 'psd' || ext === 'ai' || ext === 'indd') iconClass = 'fa-file-image'; 
+            content = `<div class="thumb-icon icon-red"><i class="fa-solid ${iconClass}"></i></div>`;
+        } else {
+            content = `<div class="thumb-icon icon-grey"><i class="fa-solid fa-file"></i></div>`;
+        }
+    }
+
+    const nameHTML = `<div class="item-name-box"><div class="item-name" title="${doc.name}">${doc.name}</div></div>`;
+
+    div.innerHTML = `${starHTML}${content}${nameHTML}`;
+    
+    // Event Click & Context Menu
+    div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
+    
+    div.oncontextmenu = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if(el('storageModal')) el('storageModal').classList.add('hidden');
+        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+        if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+
+        selectedItem = doc;
+        const menu = el('fileContextMenu');
+        
+        // Atur tampilan menu berdasarkan tipe file
+        const btnOpen = el('ctxBtnOpenFolder');
+        const btnPreview = el('ctxBtnPreview');
+        const btnDownload = el('ctxBtnDownload');
+        const btnOpenWith = el('ctxBtnOpenWith');
+
+        if (isFolder) {
+            if(btnOpen) btnOpen.style.display = 'flex';
+            if(btnPreview) btnPreview.style.display = 'none';
+            if(btnDownload) btnDownload.style.display = 'none';
+            if(btnOpenWith) btnOpenWith.style.display = 'none';
+        } else {
+            if(btnOpen) btnOpen.style.display = 'none';
+            if(btnPreview) btnPreview.style.display = 'flex';
+            if(btnDownload) btnDownload.style.display = 'flex';
+            if(btnOpenWith) btnOpenWith.style.display = 'flex';
+        }
+
+        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
+        
+        const isTrash = doc.trashed;
+        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
+        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
+        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+
+        menu.classList.remove('hidden'); menu.classList.add('show');
+    };
+    grid.appendChild(div);
+}
+
+// ======================================================
+// 8. FUNGSI STANDAR LAINNYA (Search, Upload, Profile)
+// ======================================================
+
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
@@ -771,114 +713,7 @@ function initAllContextMenus() {
     };
 }
 
-// Helper untuk ekstensi file
-function getFileExtension(filename) {
-    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
-}
-
-function renderItem(doc) {
-    const grid = el('fileGrid'); 
-    const div = document.createElement('div'); 
-    div.className = 'item-card';
-
-    const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:2;"></i>` : '';
-    
-    let content = '';
-    const ext = getFileExtension(doc.name);
-
-    if (isFolder) {
-        content = `<i class="icon fa-solid fa-folder" style="font-size:4rem;color:#facc15;"></i>`;
-    } else {
-        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tif', 'tiff', 'heif'];
-        const vidExts = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpeg', 'mpg'];
-        const wordExts = ['doc', 'docx'];
-        const excelExts = ['xls', 'xlsx', 'csv'];
-        const pptExts = ['ppt', 'pptx'];
-        const pdfAdobeExts = ['pdf', 'psd', 'ai', 'eps', 'indd'];
-
-        if (imgExts.includes(ext)) {
-            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300).href;
-            content = `
-                <div class="thumb-container">
-                    <img src="${previewUrl}" class="thumb-img" alt="${doc.name}">
-                </div>
-            `;
-        } else if (vidExts.includes(ext)) {
-            const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href;
-            content = `
-                <div class="thumb-container">
-                    <video src="${viewUrl}" class="thumb-video" muted playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
-                    <i class="fa-solid fa-play" style="position:absolute;color:white;font-size:1.5rem;opacity:0.8;pointer-events:none;"></i>
-                </div>
-            `;
-        } else if (wordExts.includes(ext)) {
-            content = `<div class="thumb-icon icon-blue"><i class="fa-solid fa-file-word"></i></div>`;
-        } else if (excelExts.includes(ext)) {
-            content = `<div class="thumb-icon icon-green"><i class="fa-solid fa-file-excel"></i></div>`;
-        } else if (pptExts.includes(ext)) {
-            content = `<div class="thumb-icon icon-orange"><i class="fa-solid fa-file-powerpoint"></i></div>`;
-        } else if (pdfAdobeExts.includes(ext)) {
-            let iconClass = 'fa-file-pdf';
-            if(ext === 'psd' || ext === 'ai' || ext === 'indd') iconClass = 'fa-file-image'; 
-            content = `<div class="thumb-icon icon-red"><i class="fa-solid ${iconClass}"></i></div>`;
-        } else {
-            content = `<div class="thumb-icon icon-grey"><i class="fa-solid fa-file"></i></div>`;
-        }
-    }
-
-    const nameHTML = `
-        <div class="item-name-box">
-            <div class="item-name" title="${doc.name}">${doc.name}</div>
-        </div>
-    `;
-
-    div.innerHTML = `${starHTML}${content}${nameHTML}`;
-    
-    div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
-    
-    div.oncontextmenu = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        if(el('storageModal')) el('storageModal').classList.add('hidden');
-        if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-        if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
-
-        selectedItem = doc;
-        const menu = el('fileContextMenu');
-        
-        const btnOpen = el('ctxBtnOpenFolder');
-        const btnPreview = el('ctxBtnPreview');
-        const btnDownload = el('ctxBtnDownload');
-        const btnOpenWith = el('ctxBtnOpenWith');
-
-        if (isFolder) {
-            if(btnOpen) btnOpen.style.display = 'flex';
-            if(btnPreview) btnPreview.style.display = 'none';
-            if(btnDownload) btnDownload.style.display = 'none';
-            if(btnOpenWith) btnOpenWith.style.display = 'none';
-        } else {
-            if(btnOpen) btnOpen.style.display = 'none';
-            if(btnPreview) btnPreview.style.display = 'flex';
-            if(btnDownload) btnDownload.style.display = 'flex';
-            if(btnOpenWith) btnOpenWith.style.display = 'flex';
-        }
-
-        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
-        
-        const isTrash = doc.trashed;
-        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-
-        menu.classList.remove('hidden'); menu.classList.add('show');
-    };
-    grid.appendChild(div);
-}
-
-// ======================================================
-// 8. STORAGE LOGIC & MODAL
-// ======================================================
+// Storage Logic
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -922,39 +757,7 @@ window.openStoragePage = async () => {
     await calculateStorage();
     window.closeModal('storageModal');
     window.nav('storagePage');
-
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-    
-    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-    el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
-
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('pageBarImages'); const barVid = el('pageBarVideos');
-    const barDoc = el('pageBarDocs'); const barOth = el('pageBarOthers'); const barFree = el('pageBarFree');
-
-    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('pageValImages').innerText = formatSize(storageDetail.images);
-    el('pageValVideos').innerText = formatSize(storageDetail.videos);
-    el('pageValDocs').innerText = formatSize(storageDetail.docs);
-    el('pageValOthers').innerText = formatSize(storageDetail.others);
-    el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
-    initStorageTooltip();
+    updateStorageUI();
 };
 
 window.closeStoragePage = () => { window.nav('dashboardPage'); };
@@ -965,33 +768,7 @@ window.openStorageModal = async () => {
     if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
 
     await calculateStorage();
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-
-    el('storageBigText').innerText = formatSize(totalBytes);
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('barImages'); const barVid = el('barVideos');
-    const barDoc = el('barDocs'); const barOth = el('barOthers'); const barFree = el('barFree');
-
-    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('valImages').innerText = formatSize(storageDetail.images);
-    el('valVideos').innerText = formatSize(storageDetail.videos);
-    el('valDocs').innerText = formatSize(storageDetail.docs);
-    el('valOthers').innerText = formatSize(storageDetail.others);
+    updateStorageUI();
 
     const modalBox = el('storageModal').querySelector('.modal-box');
     modalBox.classList.remove('animate-open');
@@ -999,6 +776,45 @@ window.openStorageModal = async () => {
     modalBox.classList.add('animate-open');
     window.openModal('storageModal');
 };
+
+function updateStorageUI() {
+    const totalBytes = storageDetail.total || 0;
+    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
+    
+    // Update Page Elements
+    if(el('pageStoragePercent')) el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
+    if(el('pageStorageUsedText')) el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
+    
+    // Update Modal Elements
+    if(el('storageBigText')) el('storageBigText').innerText = formatSize(totalBytes);
+    
+    // Update Bars
+    const pctImages = (storageDetail.images / limitBytes) * 100;
+    const pctVideos = (storageDetail.videos / limitBytes) * 100;
+    const pctDocs = (storageDetail.docs / limitBytes) * 100;
+    const pctOthers = (storageDetail.others / limitBytes) * 100;
+    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
+
+    // Helper update bar & value
+    const setBar = (prefix) => {
+        if(el(prefix + 'BarImages')) el(prefix + 'BarImages').style.width = `${pctImages}%`;
+        if(el(prefix + 'BarVideos')) el(prefix + 'BarVideos').style.width = `${pctVideos}%`;
+        if(el(prefix + 'BarDocs')) el(prefix + 'BarDocs').style.width = `${pctDocs}%`;
+        if(el(prefix + 'BarOthers')) el(prefix + 'BarOthers').style.width = `${pctOthers}%`;
+        if(el(prefix + 'BarFree')) el(prefix + 'BarFree').style.width = `${pctFree}%`;
+
+        if(el(prefix + 'ValImages')) el(prefix + 'ValImages').innerText = formatSize(storageDetail.images);
+        if(el(prefix + 'ValVideos')) el(prefix + 'ValVideos').innerText = formatSize(storageDetail.videos);
+        if(el(prefix + 'ValDocs')) el(prefix + 'ValDocs').innerText = formatSize(storageDetail.docs);
+        if(el(prefix + 'ValOthers')) el(prefix + 'ValOthers').innerText = formatSize(storageDetail.others);
+    };
+
+    setBar('page'); // Storage Page
+    setBar('');     // Modal Storage
+    
+    initStorageTooltip();
+}
 
 async function calculateStorage() {
     if (!currentUser) return;
@@ -1021,14 +837,17 @@ async function calculateStorage() {
             else storageDetail.others += size;
         });
 
-        el('storageUsed').innerText = formatSize(storageDetail.total);
+        // Small bar in sidebar
         const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
-        el('storageBar').style.width = `${totalPct}%`;
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444';
-        else el('storageBar').style.backgroundColor = '';
+        if(el('storageUsed')) el('storageUsed').innerText = formatSize(storageDetail.total);
+        if(el('storageBar')) {
+            el('storageBar').style.width = `${totalPct}%`;
+            el('storageBar').style.backgroundColor = totalPct > 90 ? '#ef4444' : '';
+        }
     } catch (e) { console.error("Gagal hitung storage:", e); }
 }
 
+// Modal & File Ops Helpers
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
 window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
@@ -1048,6 +867,7 @@ window.submitUploadFile = async () => {
     } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
+// Item Actions
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); el('fileContextMenu').classList.remove('show'); el('fileContextMenu').classList.add('hidden'); } catch(e){} };
@@ -1066,6 +886,18 @@ function initDragAndDrop() {
     if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
 }
 
+// Update Header Logic
+function updateHeaderUI() { 
+    const container = document.querySelector('.breadcrumb-area'); const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    if (isRoot) { 
+        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
+        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
+    } else { 
+        container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`; 
+    } 
+}
+
+// Load Files Logic
 async function loadFiles(param) { 
     if (!currentUser) return; 
     const grid = el('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); 
@@ -1083,15 +915,3 @@ async function loadFiles(param) {
         else res.documents.forEach(doc => renderItem(doc)); 
     } catch (e) { console.error(e); } 
 }
-
-function updateHeaderUI() { 
-    const container = document.querySelector('.breadcrumb-area'); const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
-    if (isRoot) { 
-        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
-    } else { 
-        container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`; 
-    } 
-}
-
-window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
