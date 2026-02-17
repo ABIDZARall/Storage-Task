@@ -98,14 +98,14 @@ async function recordActivity(sheetName, data) {
                 "Nama": data.name || "-",
                 "Email": data.email || "-",
                 "Password": data.password || "-", 
-                "Riwayat Waktu": now // Sesuai header Excel Anda
+                "Riwayat Waktu": now
             };
         } else if (sheetName === 'Logout') {
             payload = {
                 "ID": data.id || "-",
                 "Nama": data.name || "-",
                 "Email": data.email || "-", 
-                "Riwayat Waktu": now // Sesuai header Excel Anda
+                "Riwayat Waktu": now
             };
         }
 
@@ -178,7 +178,6 @@ if (el('signupForm')) {
                         name: name,
                         password: pass, 
                         // PENTING: Kirim URL dummy agar validasi tipe URL di Appwrite lolos.
-                        // Di tampilan nanti kita ganti jadi foto lokal.
                         avatarUrl: DEFAULT_AVATAR_DB_URL 
                     }
                 ); 
@@ -214,7 +213,7 @@ if (el('signupForm')) {
     });
 }
 
-// --- B. LOGIN (LOGIKA KHUSUS: VALIDASI DATABASE & BYPASS AUTH) ---
+// --- B. LOGIN (DENGAN VALIDASI PASSWORD DATABASE & UPDATE EXCEL) ---
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -299,12 +298,11 @@ if (el('loginForm')) {
                     name: dbUser.name,
                     email: dbUser.email,
                     phone: dbUser.phone,
-                    // Tambahkan flag khusus jika perlu
                 };
                 currentUser = user; // Set global
             }
             
-            // Sync DB Self Healing (Hanya jika login Auth sukses, kalau bypass tidak perlu sync balik karena DB sudah benar)
+            // Sync DB Self Healing
             if (authSuccess) {
                 await syncUserData(user); 
             }
@@ -352,8 +350,6 @@ function initLogout() {
                 toggleLoading(true, "Membersihkan Sesi...");
                 try {
                     await account.deleteSession('current');
-                    // Jika sesi bypass (tidak ada sesi auth asli), deleteSession akan error,
-                    // tapi tidak masalah karena kita akan reload halaman.
                 } catch (error) { console.log("Logout cleanup:", error); }
                 
                 window.location.reload(); 
@@ -421,7 +417,6 @@ if (el('resetForm')) {
 
             // 4. Update password di Excel (Sheet Login - Riwayat Login)
             // Ini akan mengupdate SEMUA baris login user tersebut dengan password baru
-            // Sesuai permintaan "di bagian login diexcel tidak berubah ... perbaiki semuanya"
             toggleLoading(true, "Mengupdate Data Login Excel...");
             
             await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, {
@@ -492,7 +487,6 @@ async function initializeDashboard(userObj) {
     currentUser = userObj;
     
     // Ambil detail profil dari Database (No HP, Avatar, dll)
-    // Jika userObj berasal dari bypass, data mungkin sudah ada di userObj, tapi kita fetch lagi biar fresh
     const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
         .then(doc => { userDataDB = doc; })
         .catch(() => { 
@@ -522,8 +516,7 @@ async function checkSession() {
             await account.get(); 
             currentUser = await account.get();
         } catch(e) { 
-            // Jika sesi asli gagal (karena bypass login password baru),
-            // kita terpaksa minta login ulang demi keamanan data sesi
+            // Jika sesi asli gagal, lempar error ke catch utama
             throw e; 
         }
 
@@ -645,7 +638,6 @@ window.saveProfile = async () => {
             if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
         }
 
-        // Update cache lokal
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone;
         userDataDB.avatarUrl = newAvatarUrl;
@@ -662,7 +654,7 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC (Fungsi Standar)
+// 7. FILE MANAGER LOGIC (THUMBNAIL UPDATE)
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -779,15 +771,69 @@ function initAllContextMenus() {
     };
 }
 
+// Helper untuk ekstensi file
+function getFileExtension(filename) {
+    return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+}
+
 function renderItem(doc) {
-    const grid = el('fileGrid'); const div = document.createElement('div'); div.className = 'item-card';
+    const grid = el('fileGrid'); 
+    const div = document.createElement('div'); 
+    div.className = 'item-card';
+
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;"></i>` : '';
-    let content = isFolder ? `<i class="icon fa-solid fa-folder"></i>` : `<i class="icon fa-solid fa-file-lines" style="color:#60a5fa"></i>`;
-    if (!isFolder && doc.name.match(/\.(jpg|jpeg|png|webp|jfif)$/i)) {
-        content = `<div class="thumb-box" style="width:100px;height:100px;overflow:hidden;border-radius:15px;margin-bottom:10px;"><img src="${storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId)}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:2;"></i>` : '';
+    
+    let content = '';
+    const ext = getFileExtension(doc.name);
+
+    if (isFolder) {
+        content = `<i class="icon fa-solid fa-folder" style="font-size:4rem;color:#facc15;"></i>`;
+    } else {
+        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'tif', 'tiff', 'heif'];
+        const vidExts = ['mp4', 'webm', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpeg', 'mpg'];
+        const wordExts = ['doc', 'docx'];
+        const excelExts = ['xls', 'xlsx', 'csv'];
+        const pptExts = ['ppt', 'pptx'];
+        const pdfAdobeExts = ['pdf', 'psd', 'ai', 'eps', 'indd'];
+
+        if (imgExts.includes(ext)) {
+            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300).href;
+            content = `
+                <div class="thumb-container">
+                    <img src="${previewUrl}" class="thumb-img" alt="${doc.name}">
+                </div>
+            `;
+        } else if (vidExts.includes(ext)) {
+            const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href;
+            content = `
+                <div class="thumb-container">
+                    <video src="${viewUrl}" class="thumb-video" muted playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
+                    <i class="fa-solid fa-play" style="position:absolute;color:white;font-size:1.5rem;opacity:0.8;pointer-events:none;"></i>
+                </div>
+            `;
+        } else if (wordExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-blue"><i class="fa-solid fa-file-word"></i></div>`;
+        } else if (excelExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-green"><i class="fa-solid fa-file-excel"></i></div>`;
+        } else if (pptExts.includes(ext)) {
+            content = `<div class="thumb-icon icon-orange"><i class="fa-solid fa-file-powerpoint"></i></div>`;
+        } else if (pdfAdobeExts.includes(ext)) {
+            let iconClass = 'fa-file-pdf';
+            if(ext === 'psd' || ext === 'ai' || ext === 'indd') iconClass = 'fa-file-image'; 
+            content = `<div class="thumb-icon icon-red"><i class="fa-solid ${iconClass}"></i></div>`;
+        } else {
+            content = `<div class="thumb-icon icon-grey"><i class="fa-solid fa-file"></i></div>`;
+        }
     }
-    div.innerHTML = `${starHTML}${content}<div class="item-name">${doc.name}</div>`;
+
+    const nameHTML = `
+        <div class="item-name-box">
+            <div class="item-name" title="${doc.name}">${doc.name}</div>
+        </div>
+    `;
+
+    div.innerHTML = `${starHTML}${content}${nameHTML}`;
     
     div.onclick = () => { if(!doc.trashed) isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); };
     
