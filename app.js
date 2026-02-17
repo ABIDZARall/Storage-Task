@@ -83,6 +83,7 @@ async function recordActivity(sheetName, data) {
         let payload = {};
 
         // Menyiapkan data sesuai format kolom Excel Anda
+        // PERHATIKAN NAMA KEY (HARUS SAMA PERSIS DENGAN HEADER DI EXCEL)
         if (sheetName === 'SignUp') {
             payload = {
                 "ID": data.id || "-",
@@ -97,25 +98,27 @@ async function recordActivity(sheetName, data) {
                 "ID": data.id || "-",
                 "Nama": data.name || "-",
                 "Email": data.email || "-",
-                "Password": data.password || "-", // Mencatat password login (sesuai permintaan)
-                "Waktu": now
+                "Password": data.password || "-", 
+                "Riwayat Waktu": now // PERBAIKAN: Sesuai header Excel Anda
             };
         } else if (sheetName === 'Logout') {
             payload = {
                 "ID": data.id || "-",
                 "Nama": data.name || "-",
-                "Waktu": now
+                "Email": data.email || "-", // TAMBAHAN: Data Email untuk Logout
+                "Riwayat Waktu": now // PERBAIKAN: Menggunakan nama kolom yang konsisten
             };
         }
 
         // Kirim ke SheetDB
-        // Kita tidak menggunakan 'await' di pemanggilan utama agar user tidak perlu menunggu proses ini selesai
-        fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
+        // Menggunakan await agar kita bisa menunggu proses ini selesai sebelum reload halaman (khusus Logout)
+        await fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: payload })
-        }).then(() => console.log(`Log ${sheetName} tercatat.`))
-          .catch(err => console.error(`Gagal mencatat log ${sheetName}:`, err));
+        });
+        
+        console.log(`Log ${sheetName} berhasil dicatat.`);
 
     } catch (error) {
         console.error("System Log Error:", error);
@@ -188,13 +191,14 @@ if (el('signupForm')) {
             }
 
             // 4. Catat Log ke Excel (SignUp)
+            // Tidak perlu await di sini agar user experience lebih cepat
             recordActivity('SignUp', { 
                 id: newUserId, 
                 name: name, 
                 email: email, 
                 phone: phone, 
                 password: pass 
-            });
+            }).catch(e => console.log("Background log error:", e));
             
             // 5. Logout Sesi Pembuatan (Agar user login manual)
             try { await account.deleteSession('current'); } catch (e) {}
@@ -259,12 +263,13 @@ if (el('loginForm')) {
             await syncUserData(user); 
             
             // 4. Catat Log ke Excel (Login)
+            // Kita tidak pakai 'await' agar UI langsung jalan ke Dashboard
             recordActivity('Login', { 
                 id: user.$id, 
                 name: user.name, 
                 email: user.email, 
                 password: pass 
-            });
+            }).catch(e => console.log("Background log error:", e));
 
             // Masuk Dashboard
             await initializeDashboard(user); 
@@ -287,16 +292,19 @@ function initLogout() {
         btn.parentNode.replaceChild(newBtn, btn);
         newBtn.addEventListener('click', async () => {
             if (confirm("Yakin ingin keluar?")) {
-                toggleLoading(true, "Keluar...");
+                toggleLoading(true, "Mencatat Log Keluar...");
                 
                 // Catat Log Logout SEBELUM menghapus sesi
+                // WAJIB pakai 'await' di sini agar data terkirim sebelum halaman reload
                 if (currentUser) {
                     await recordActivity('Logout', { 
                         id: currentUser.$id, 
-                        name: currentUser.name 
+                        name: currentUser.name,
+                        email: currentUser.email // Mengirim email juga untuk kelengkapan
                     });
                 }
 
+                toggleLoading(true, "Membersihkan Sesi...");
                 try {
                     await account.deleteSession('current');
                     window.location.reload(); 
@@ -345,10 +353,6 @@ if (el('resetForm')) {
                 { password: newPass }
             );
             
-            // Catatan: Ini hanya mengupdate record teks password di database collection Anda.
-            // Password asli akun Auth Appwrite tidak berubah lewat metode ini (butuh recovery API).
-            // Tapi kode ini memenuhi permintaan "otomatis password yang lama didatabase storagedb users berubah".
-
             toggleLoading(false);
             alert("Berhasil! Password di database telah diperbarui.\nSilakan coba login.");
             window.nav('loginPage');
