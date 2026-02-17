@@ -31,7 +31,7 @@ let currentUser = null;
 let userDataDB = null; 
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
-let currentViewMode = 'root'; // 'root', 'recent', 'starred', 'trash', 'search'
+let currentViewMode = 'root'; 
 let selectedItem = null; 
 let selectedUploadFile = null; 
 let selectedProfileImage = null; 
@@ -537,7 +537,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI UTAMA RENDER ITEM & THUMBNAIL CERDAS ---
+// --- FUNGSI UTAMA RENDER ITEM & THUMBNAIL CERDAS (DIPERBAIKI) ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); 
@@ -551,7 +551,7 @@ function renderItem(doc) {
 
     // === LOGIKA PENENTUAN TIPE FILE UNTUK THUMBNAIL ===
     if (isFolder) {
-        content = `<i class="icon fa-solid fa-folder"></i>`;
+        content = `<div style="flex:1;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div>`;
     } else {
         // Ambil ekstensi file (lowercase)
         const ext = doc.name.split('.').pop().toLowerCase();
@@ -559,8 +559,8 @@ function renderItem(doc) {
         // URL untuk melihat file (Raw)
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // 1. DAFTAR FORMAT GAMBAR
-        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heif', 'heic'];
+        // 1. DAFTAR FORMAT GAMBAR LENGKAP (Termasuk jfif, webp, heic)
+        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heif', 'heic', 'jfif', 'pjp', 'pjpeg', 'avif'];
         
         // 2. DAFTAR FORMAT VIDEO
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
@@ -571,92 +571,75 @@ function renderItem(doc) {
         const pptExts = ['ppt', 'pptx', 'odp'];
         const pdfExts = ['pdf'];
         const designExts = ['psd', 'ai', 'eps', 'indd', 'raw'];
-        const codeExts = ['html', 'css', 'js', 'json', 'php', 'py', 'java', 'cpp', 'xml'];
+        const codeExts = ['html', 'css', 'js', 'json', 'php', 'py', 'java', 'cpp', 'xml', 'sql'];
         const zipExts = ['zip', 'rar', '7z', 'tar', 'gz'];
 
         // === RENDER THUMBNAIL BERDASARKAN TIPE ===
 
         if (imgExts.includes(ext)) {
             // -- TIPE GAMBAR --
-            // Gunakan getFilePreview untuk performa lebih cepat & resize otomatis
-            // width=300, height=300, quality=80 agar grid tidak berat
+            // Menggunakan getFilePreview. Jika error loading, fallback ke icon gambar
             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 80);
             content = `
                 <div class="thumb-box" style="background:transparent;">
-                    <img src="${previewUrl}" class="thumb-image" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-image huge-icon icon-purple\\'></i>'">
+                    <img src="${previewUrl}" class="thumb-image" loading="lazy" 
+                         onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-image huge-icon icon-purple\\' style=\\'font-size:3rem!important\\'></i>'">
                 </div>
             `;
 
         } else if (vidExts.includes(ext)) {
             // -- TIPE VIDEO --
-            // Gunakan tag <video> dengan #t=0.5 untuk mengambil frame awal
-            // Tambahkan event listener untuk Auto-Play saat Hover (Keren!)
+            // Video dibuat cover agar tidak gepeng
             content = `
                 <div class="thumb-box" style="background:#000;">
                     <video src="${fileViewUrl}#t=0.5" class="thumb-video" preload="metadata" muted loop 
+                        style="width:100%; height:100%; object-fit:cover;"
                         onmouseover="this.play()" 
                         onmouseout="this.pause();"
-                        onerror="this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-film huge-icon icon-red\\'></i>'">
+                        onerror="this.parentElement.innerHTML='<i class=\\'icon fa-solid fa-film huge-icon icon-red\\' style=\\'font-size:3rem!important\\'></i>'">
                     </video>
                     <i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i>
                 </div>
             `;
 
-        } else if (pdfExts.includes(ext)) {
-            // -- PDF --
-            content = `<i class="icon fa-solid fa-file-pdf huge-icon icon-red"></i>`;
-
-        } else if (wordExts.includes(ext)) {
-            // -- WORD --
-            content = `<i class="icon fa-solid fa-file-word huge-icon icon-blue"></i>`;
-
-        } else if (excelExts.includes(ext)) {
-            // -- EXCEL --
-            content = `<i class="icon fa-solid fa-file-excel huge-icon icon-green"></i>`;
-
-        } else if (pptExts.includes(ext)) {
-            // -- POWERPOINT --
-            content = `<i class="icon fa-solid fa-file-powerpoint huge-icon icon-orange"></i>`;
-
-        } else if (designExts.includes(ext)) {
-            // -- DESAIN (PSD, AI) --
-            // Ikon spesifik agar terlihat profesional
-            if(ext === 'psd') content = `<i class="icon fa-solid fa-file-image huge-icon icon-blue"></i>`;
-            else if(ext === 'ai') content = `<i class="icon fa-solid fa-pen-nib huge-icon icon-orange"></i>`;
-            else content = `<i class="icon fa-solid fa-bezier-curve huge-icon icon-purple"></i>`;
-
-        } else if (codeExts.includes(ext)) {
-            // -- KODING --
-            content = `<i class="icon fa-solid fa-file-code huge-icon icon-white"></i>`;
-
-        } else if (zipExts.includes(ext)) {
-            // -- ARSIP ZIP/RAR --
-            content = `<i class="icon fa-solid fa-file-zipper huge-icon icon-yellow"></i>`;
-
         } else {
-            // -- FALLBACK (File Lain) --
-            content = `<i class="icon fa-solid fa-file-lines huge-icon" style="color:#94a3b8"></i>`;
+            // -- TIPE FILE NON-MEDIA (ICON) --
+            let iconClass = "fa-file-lines";
+            let colorClass = "icon-grey";
+
+            if (pdfExts.includes(ext)) { iconClass = "fa-file-pdf"; colorClass = "icon-red"; }
+            else if (wordExts.includes(ext)) { iconClass = "fa-file-word"; colorClass = "icon-blue"; }
+            else if (excelExts.includes(ext)) { iconClass = "fa-file-excel"; colorClass = "icon-green"; }
+            else if (pptExts.includes(ext)) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; }
+            else if (designExts.includes(ext)) {
+                if(ext === 'psd') { iconClass = "fa-file-image"; colorClass = "icon-blue"; }
+                else if(ext === 'ai') { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; }
+                else { iconClass = "fa-bezier-curve"; colorClass = "icon-purple"; }
+            }
+            else if (codeExts.includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-white"; }
+            else if (zipExts.includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
+
+            content = `<div style="flex:1;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}" style="font-size:3.5rem;"></i></div>`;
         }
     }
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
-    // Event Handler Click (Buka Folder / Buka File)
+    // Event Handler Click
     div.onclick = () => { 
         if(!doc.trashed) {
             isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); 
         }
     };
     
-    // Event Handler Context Menu (Klik Kanan)
+    // Event Handler Context Menu
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
-        closeAllMenus(); // Tutup menu lain
+        closeAllMenus(); 
 
         selectedItem = doc;
         const menu = el('fileContextMenu');
         
-        // Atur tombol yang terlihat berdasarkan tipe
         const btnOpen = el('ctxBtnOpenFolder');
         const btnPreview = el('ctxBtnPreview');
         const btnDownload = el('ctxBtnDownload');
@@ -674,17 +657,14 @@ function renderItem(doc) {
             if(btnOpenWith) btnOpenWith.style.display = 'flex';
         }
 
-        // Posisi Menu
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`;
         
-        // Konfigurasi Trash/Restore
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         
-        // Teks Bintang
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
         menu.classList.remove('hidden'); 
