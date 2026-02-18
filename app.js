@@ -537,7 +537,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI UTAMA RENDER ITEM & THUMBNAIL CERDAS (SUPER ROBUST) ---
+// --- FUNGSI UTAMA RENDER ITEM & THUMBNAIL CERDAS (DIPERBAIKI) ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); 
@@ -549,112 +549,86 @@ function renderItem(doc) {
     let content = '';
 
     if (isFolder) {
-        content = `<div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div>`;
+        // Tampilan Folder (Ikon Kuning)
+        content = `
+            <div class="thumb-box" style="background:transparent;">
+                <div style="flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <i class="icon fa-solid fa-folder"></i>
+                </div>
+            </div>`;
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
         
-        // URL RAW: Untuk browser yang bisa render langsung (SVG, BMP, ICO) atau Video
+        // URL untuk melihat file asli (digunakan untuk video player & gambar native)
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // KATEGORISASI FORMAT
+        // 1. DAFTAR FORMAT GAMBAR FAMILIAR
+        // Format yang didukung luas oleh browser dan bisa dipreview
+        const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp'];
         
-        // 1. Gambar Web Standar (Bisa Preview via Appwrite)
-        const webImages = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'jfif', 'pjp', 'pjpeg'];
-        
-        // 2. Gambar Vektor/Lainnya (Bisa Render di Browser via URL Langsung)
-        const nativeBrowserImages = ['svg', 'bmp', 'ico'];
-
-        // 3. Format Profesional/Berat (Butuh Server-Side Convert, sering gagal di Free Tier)
-        // Kita akan mencoba memuatnya, tapi jika gagal, akan fallback ke tampilan kartu.
-        const proImages = ['psd', 'ai', 'eps', 'indd', 'tif', 'tiff', 'raw', 'heif', 'heic', 'cr2', 'nef'];
-
-        // 4. Video
+        // 2. DAFTAR FORMAT VIDEO
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
 
-        // 5. Dokumen
-        const pdfExts = ['pdf']; // Appwrite bisa preview PDF halaman pertama
-        const officeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odp'];
-        const codeExts = ['html', 'css', 'js', 'json', 'php', 'py', 'java', 'cpp', 'xml', 'sql', 'txt', 'rtf'];
-        const zipExts = ['zip', 'rar', '7z', 'tar', 'gz'];
-
-        // --- HELPER UNTUK MEMBUAT FALLBACK CARD ---
-        // Ini menciptakan tampilan "kartu" berwarna jika gambar gagal dimuat
+        // --- HELPER UNTUK MEMBUAT KARTU FALLBACK (JIKA ERROR) ---
+        // Jika file bukan gambar familiar, atau jika gambar gagal dimuat (broken link),
+        // fungsi ini akan merender kartu cantik berwarna (bukan broken image).
         const createFallback = (ext) => {
             let iconClass = "fa-file";
             let colorClass = "icon-grey";
             let bgClass = "bg-grey";
 
-            if (['psd', 'indd', 'tiff', 'tif'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; bgClass = "bg-blue"; }
-            else if (['ai', 'eps'].includes(ext)) { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; bgClass = "bg-orange"; }
-            else if (['raw', 'heic', 'heif'].includes(ext)) { iconClass = "fa-camera"; colorClass = "icon-purple"; bgClass = "bg-purple"; }
-            else if (pdfExts.includes(ext)) { iconClass = "fa-file-pdf"; colorClass = "icon-red"; bgClass = "bg-red"; }
-            else if (officeExts.includes(ext)) { 
-                if(ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; bgClass = "bg-blue"; }
-                else if(ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; bgClass = "bg-green"; }
-                else { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; bgClass = "bg-orange"; }
+            if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) {
+                if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; bgClass = "bg-red"; }
+                else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; bgClass = "bg-blue"; }
+                else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; bgClass = "bg-orange"; }
             }
-            else if (codeExts.includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; bgClass = "bg-grey"; }
-            else if (zipExts.includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; bgClass = "bg-yellow"; }
+            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; bgClass = "bg-blue"; }
+            else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; bgClass = "bg-green"; }
+            else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; bgClass = "bg-orange"; }
+            else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; bgClass = "bg-grey"; }
+            else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; bgClass = "bg-yellow"; }
 
-            // Kita escape string untuk dimasukkan ke innerHTML
+            // Escape string untuk penggunaan di dalam onclick/onerror
             return `<div class="thumb-fallback-card ${bgClass}">
                         <i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i>
                         <span class="fallback-ext">${ext.toUpperCase()}</span>
-                    </div>`;
+                    </div>`.replace(/"/g, "'"); // Escape quotes
         };
 
         // === LOGIKA RENDER ===
 
-        if (webImages.includes(ext) || pdfExts.includes(ext)) {
-            // Gunakan Preview API. Tambah output=jpg agar format aneh dikonversi server jika bisa.
+        if (familiarImages.includes(ext)) {
+            // -- GAMBAR FAMILIAR --
+            // Menggunakan getFilePreview dari Appwrite.
+            // PENTING: onerror akan memanggil createFallback jika gambar gagal diload (broken).
             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 400, 400, 'center', 80, '000000', 'jpg');
             
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext).replace(/'/g, "\\'")}'">
-                </div>
-            `;
-
-        } else if (nativeBrowserImages.includes(ext)) {
-            // Gunakan View URL (Browser native)
-            content = `
-                <div class="thumb-box" style="background:transparent;">
-                    <img src="${fileViewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext).replace(/'/g, "\\'")}'">
-                </div>
-            `;
-
-        } else if (proImages.includes(ext)) {
-            // COBA Preview. Jika server Appwrite gagal (418/404), fallback ke kartu cantik.
-            // Kita coba minta output jpg.
-            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 400, 400, 'center', 60, '000000', 'jpg');
-
-            content = `
-                <div class="thumb-box" style="background:transparent;">
-                    <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext).replace(/'/g, "\\'")}'">
+                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
 
         } else if (vidExts.includes(ext)) {
-            // Video Player
+            // -- VIDEO --
             content = `
                 <div class="thumb-box" style="background:#000;">
                     <video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop 
                         onmouseover="this.play()" 
-                        onmouseout="this.pause();"
-                        onerror="this.parentElement.innerHTML='${createFallback(ext).replace(/'/g, "\\'")}'">
+                        onmouseout="this.pause()"
+                        onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                     </video>
                     <i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i>
                 </div>
             `;
 
         } else {
-            // Default Fallback untuk file lain
+            // -- FORMAT LAIN (PSD, AI, PDF, DOCX, DLL) --
+            // Langsung render Fallback Card agar desain rapi dan tidak broken
             content = `
                 <div class="thumb-box" style="background:transparent;">
-                    ${createFallback(ext)}
+                    ${createFallback(ext).replace(/'/g, '"')} 
                 </div>
             `;
         }
@@ -662,14 +636,14 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
-    // Event Handler Click
+    // Event Handler Click (Buka File/Folder)
     div.onclick = () => { 
         if(!doc.trashed) {
             isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); 
         }
     };
     
-    // Event Handler Context Menu
+    // Event Handler Context Menu (Klik Kanan)
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         closeAllMenus(); 
