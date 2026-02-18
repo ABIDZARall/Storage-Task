@@ -137,7 +137,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
-/* GRID ITEM STYLING (PERBAIKAN ALIGNMENT & THUMBNAILS) */
+/* GRID ITEM STYLING (REVISI TOTAL UNTUK KESERAGAMAN) */
 .file-grid-area { 
     flex: 1; 
     overflow-y: auto; 
@@ -152,8 +152,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .item-card { 
     background: rgba(255, 255, 255, 0.03); 
     border-radius: 12px; 
-    /* Mengunci aspek rasio agar semua kotak sama besar */
-    aspect-ratio: 1/1; 
+    aspect-ratio: 1/1; /* Memastikan kotak selalu persegi */
     display: flex; 
     flex-direction: column; 
     align-items: center; 
@@ -172,10 +171,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .item-card i.icon { font-size: 3rem; margin: auto; }
 .fa-folder { color: #facc15; } 
 
-/* Thumbnail Containers - Memaksa ukuran penuh */
+/* Thumbnail Containers - FULL SIZE */
 .thumb-box { 
     width: 100%; 
-    flex: 1; /* Mengambil sisa ruang selain teks */
+    flex: 1; /* Mengisi sisa ruang vertikal di atas teks */
     overflow: hidden; 
     display: flex; 
     justify-content: center; 
@@ -186,9 +185,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     position: relative; 
 }
 
-/* KUNCI: object-fit: cover agar gambar penuh di kotak seperti video */
-.thumb-image { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-.thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+/* Gambar & Video Thumbnail - OBJECT FIT COVER */
+.thumb-image, .thumb-video { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; /* KUNCI: Memotong gambar agar penuh */
+    border-radius: 6px;
+    display: block;
+}
 
 /* Large Icon Styles for Non-Image Files */
 .huge-icon { font-size: 3.5rem !important; margin: 0 !important; }
@@ -200,7 +204,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .icon-purple { color: #8b5cf6; }
 .icon-white { color: #f1f5f9; }
 
-/* Nama Item: Fixed height untuk mencegah item loncat */
+/* Nama Item */
 .item-name { 
     font-size: 0.8rem; 
     font-weight: 500; 
@@ -211,7 +215,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     text-overflow: ellipsis; 
     color: #e2e8f0; 
     margin-top: auto; 
-    height: 20px; /* Tinggi pasti untuk teks */
+    height: 20px; 
 }
 
 /* MODALS */

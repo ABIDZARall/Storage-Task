@@ -544,24 +544,25 @@ function renderItem(doc) {
     div.className = 'item-card';
 
     const isFolder = doc.type === 'folder';
-    // Ikon bintang kecil di pojok
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:5;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
     
     let content = '';
 
-    // === LOGIKA PENENTUAN TIPE FILE UNTUK THUMBNAIL ===
     if (isFolder) {
         content = `<div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div>`;
     } else {
-        // Ambil ekstensi file (lowercase)
         const ext = doc.name.split('.').pop().toLowerCase();
         
-        // URL untuk melihat file (Raw)
+        // URL untuk melihat file asli (digunakan untuk video player)
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // 1. DAFTAR FORMAT GAMBAR & DESAIN LENGKAP
-        // Kita masukkan PSD, AI, EPS, PDF disini agar mencoba render PREVIEW dari Appwrite.
-        const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 'heif', 'heic', 'jfif', 'pjp', 'pjpeg', 'avif', 'psd', 'ai', 'eps', 'indd', 'pdf', 'raw'];
+        // 1. DAFTAR FORMAT GAMBAR & DESAIN LENGKAP 
+        // (Termasuk file berat, kita akan mencoba merender preview-nya)
+        const imgExts = [
+            'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'tiff', 'tif', 'ico', 
+            'heif', 'heic', 'jfif', 'pjp', 'pjpeg', 'avif', 
+            'psd', 'ai', 'eps', 'indd', 'pdf', 'raw'
+        ];
         
         // 2. DAFTAR FORMAT VIDEO
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
@@ -577,22 +578,22 @@ function renderItem(doc) {
 
         if (imgExts.includes(ext)) {
             // -- TIPE VISUAL (GAMBAR, PDF, DESAIN) --
-            // Menggunakan getFilePreview. Jika error loading (misal file AI korup/terlalu berat), 
-            // fallback ke icon spesifik menggunakan handler onerror yang cerdas.
-            
+            // Menggunakan getFilePreview dari Appwrite.
+            // CATATAN: Pastikan Permission Read diaktifkan di Appwrite Console untuk user/any.
             const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 300, 300, 'center', 80);
             
-            // Tentukan icon fallback jika gambar gagal dimuat
+            // Siapkan icon fallback jika server gagal membuat preview (misal file AI korup)
             let fallbackIcon = "fa-image"; 
             let fallbackColor = "icon-purple";
             if (ext === 'pdf') { fallbackIcon = "fa-file-pdf"; fallbackColor = "icon-red"; }
             else if (['psd', 'indd'].includes(ext)) { fallbackIcon = "fa-file-image"; fallbackColor = "icon-blue"; }
             else if (['ai', 'eps'].includes(ext)) { fallbackIcon = "fa-pen-nib"; fallbackColor = "icon-orange"; }
 
+            // Gunakan event handler 'onerror' untuk mengganti gambar rusak dengan icon
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\\'flex:1;width:100%;display:flex;align-items:center;justify-content:center;\\'><i class=\\'icon fa-solid ${fallbackIcon} huge-icon ${fallbackColor}\\' style=\\'font-size:3.5rem!important\\'></i></div>'">
+                         onerror="this.parentElement.innerHTML='<div style=\\'flex:1;width:100%;display:flex;align-items:center;justify-content:center;\\'><i class=\\'icon fa-solid ${fallbackIcon} huge-icon ${fallbackColor}\\' style=\\'font-size:3.5rem!important\\'></i></div>'">
                 </div>
             `;
 
