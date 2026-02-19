@@ -599,9 +599,8 @@ function renderItem(doc) {
 
         if (familiarImages.includes(ext)) {
             // -- GAMBAR FAMILIAR --
-            // Menggunakan getFilePreview dari Appwrite.
-            // PENTING: onerror akan memanggil createFallback jika gambar gagal diload (broken).
-            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 400, 400, 'center', 80, '000000', 'jpg');
+            // PERBAIKAN: Parameter string yang salah telah dihapus agar sesuai dengan SDK Appwrite
+            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 400, 400, 'center', 80);
             
             content = `
                 <div class="thumb-box" style="background:transparent;">
