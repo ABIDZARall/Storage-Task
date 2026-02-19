@@ -8,10 +8,10 @@ const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
-// URL Dummy untuk validasi database Appwrite
+// URL Dummy untuk validasi database Appwrite jika user belum punya foto
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
+// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT APPWRITE ANDA)
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -26,7 +26,7 @@ const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-// State Global
+// State Global Aplikasi
 let currentUser = null;
 let userDataDB = null; 
 let currentFolderId = 'root'; 
@@ -38,10 +38,10 @@ let selectedProfileImage = null;
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// Helper DOM
+// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
-// Fungsi Loading
+// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -127,37 +127,34 @@ if (el('signupForm')) {
 
         if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
         
-        toggleLoading(true, "Menghubungkan Server...");
+        toggleLoading(true, "Mendaftarkan Akun Anda...");
         
         try {
             checkSystemHealth();
             const newUserId = Appwrite.ID.unique(); 
 
             // 1. Buat Akun Auth
-            toggleLoading(true, "Membuat Akun Auth...");
             await account.create(newUserId, email, pass, name);
             
-            // 2. Login Otomatis
-            toggleLoading(true, "Login Otomatis...");
+            // 2. Login Otomatis sementara untuk menulis ke DB
             try { await account.createEmailPasswordSession(email, pass); } catch(e) {}
 
-            // 3. Simpan Profil ke Database
-            toggleLoading(true, "Menyimpan Profil Database...");
+            // 3. Simpan Profil ke Database Appwrite
             try {
                 await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { 
                     email: email, phone: phone, name: name, password: pass, avatarUrl: DEFAULT_AVATAR_DB_URL 
                 }); 
             } catch (dbError) { console.error("DB Write Error:", dbError); }
 
-            // 4. Catat Log
+            // 4. Catat Log ke Excel
             recordActivity('SignUp', { id: newUserId, name: name, email: email, phone: phone, password: pass })
                 .catch(e => console.log("Background log error:", e));
             
-            // 5. Bersihkan sesi agar user login manual
+            // 5. Bersihkan sesi agar user login manual dengan rapi
             try { await account.deleteSession('current'); } catch (e) {}
             
             toggleLoading(false);
-            alert("Pendaftaran Berhasil Sempurna!\nSilakan Login."); 
+            alert("Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda."); 
             window.nav('loginPage');
 
         } catch(e) { 
@@ -177,33 +174,31 @@ if (el('loginForm')) {
         const pass = el('loginPass').value;
         
         try {
-            toggleLoading(true, "Mengecek Koneksi...");
+            toggleLoading(true, "Mengecek Kredensial...");
             checkSystemHealth();
 
-            // 1. Cek jika login pakai Username (bukan email)
+            // 1. Cek jika user login pakai Username (bukan email)
             if (!inputId.includes('@')) {
-                toggleLoading(true, "Mencari Akun...");
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('name', inputId) ]);
                 if (res.documents.length > 0) inputId = res.documents[0].email;
                 else throw new Error("Username tidak ditemukan di database.");
             }
 
-            // 2. Validasi Password Database (Single Source of Truth)
-            toggleLoading(true, "Memvalidasi Password...");
+            // 2. Validasi Password dari Database Appwrite
             let dbUser = null;
             const userCheck = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', inputId) ]);
 
             if (userCheck.documents.length > 0) {
                 dbUser = userCheck.documents[0];
                 if (dbUser.password && dbUser.password !== pass && dbUser.password !== 'NULL') {
-                    throw new Error("Password Anda salah atau sudah kadaluarsa (Expired).");
+                    throw new Error("Password Anda salah.");
                 }
             } else {
                 throw new Error("Akun tidak ditemukan.");
             }
 
-            // 3. Eksekusi Login
-            toggleLoading(true, "Menyiapkan Sesi...");
+            // 3. Eksekusi Auth Session
+            toggleLoading(true, "Menyiapkan Sesi Dashboard...");
             let authSuccess = false;
             try {
                 await account.createEmailPasswordSession(inputId, pass);
@@ -213,13 +208,11 @@ if (el('loginForm')) {
             let user;
             if (authSuccess) {
                 user = await account.get();
+                await syncUserData(user); 
             } else {
-                // Bypass Mode jika Auth gagal tapi DB benar
+                // Bypass Mode jika Auth native gagal tapi data DB valid
                 user = { $id: dbUser.$id, name: dbUser.name, email: dbUser.email, phone: dbUser.phone };
-                currentUser = user;
             }
-            
-            if (authSuccess) await syncUserData(user); 
             
             // 4. Catat Log Login
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass })
@@ -241,15 +234,12 @@ function initLogout() {
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         newBtn.addEventListener('click', async () => {
-            if (confirm("Yakin ingin keluar?")) {
-                toggleLoading(true, "Mencatat Log Keluar...");
+            if (confirm("Yakin ingin keluar dari Drive?")) {
+                toggleLoading(true, "Mengakhiri Sesi...");
                 if (currentUser) {
                     await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email });
                 }
-
-                toggleLoading(true, "Membersihkan Sesi...");
                 try { await account.deleteSession('current'); } catch (error) {}
-                
                 window.location.reload(); 
             }
         });
@@ -330,11 +320,12 @@ async function syncUserData(authUser) {
 async function initializeDashboard(userObj) {
     currentUser = userObj;
     
-    // Ambil detail profil
+    // Ambil detail profil pengguna dari Database
     const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
         .then(doc => { userDataDB = doc; })
         .catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; });
 
+    // Load file dan storage bar secara paralel agar lebih cepat
     const filePromise = loadFiles('root');
     const storagePromise = calculateStorage();
 
@@ -345,16 +336,13 @@ async function initializeDashboard(userObj) {
     toggleLoading(false); 
 }
 
-// Cek Sesi (Saat Refresh)
+// Cek Sesi (Saat Refresh / Reload)
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
 
-    toggleLoading(true, "Memuat Sesi...");
+    toggleLoading(true, "Memuat Sesi Terakhir...");
     try {
-        try { 
-            currentUser = await account.get();
-        } catch(e) { throw e; }
-
+        currentUser = await account.get();
         await syncUserData(currentUser);
 
         try {
@@ -379,6 +367,7 @@ function updateProfileUI() {
     if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') {
         finalSrc = DEFAULT_AVATAR_LOCAL;
     } else {
+        // Bypass cache browser untuk avatar
         finalSrc = dbUrl + `&t=${new Date().getTime()}`;
     }
 
@@ -387,7 +376,7 @@ function updateProfileUI() {
     if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
 }
 
-// Navigasi Halaman
+// Switch Navigasi Antar Halaman
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => {
         const element = el(id);
@@ -427,7 +416,7 @@ function initProfileImageUploader() {
 }
 
 window.saveProfile = async () => {
-    toggleLoading(true, "Menyimpan Profil...");
+    toggleLoading(true, "Menyimpan Perubahan Profil...");
     try {
         const newName = el('editName').value.trim();
         const newEmail = el('editEmail').value.trim();
@@ -436,11 +425,12 @@ window.saveProfile = async () => {
 
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR_DB_URL;
         
+        // Handle upload avatar baru
         if (selectedProfileImage) {
             try {
                 const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
                 newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
-            } catch (err) { throw new Error("Gagal upload foto."); }
+            } catch (err) { throw new Error("Gagal mengupload foto profil baru."); }
         }
 
         if (newName && newName !== currentUser.name) await account.updateName(newName);
@@ -472,12 +462,13 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC & SMART THUMBNAILS
+// 7. FILE MANAGER LOGIC & SMART THUMBNAILS (DIPERBAIKI)
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
     currentFolderId = 'root'; 
+    currentViewMode = mode;
     if(mode === 'root') currentFolderName = "Drive";
     else if(mode === 'recent') currentFolderName = "Terbaru";
     else if(mode === 'starred') currentFolderName = "Berbintang";
@@ -487,7 +478,7 @@ window.handleMenuClick = (element, mode) => {
 };
 
 window.goBack = () => {
-    currentFolderId = 'root'; currentFolderName = "Drive"; 
+    currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.nav-item')[0].classList.add('active');
     loadFiles('root');
@@ -537,7 +528,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI UTAMA RENDER ITEM & THUMBNAIL CERDAS (DIPERBAIKI) ---
+// --- FUNGSI RENDER KARTU FILE/FOLDER (DENGAN DOUBLE FALLBACK & WEBP FIX) ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); 
@@ -549,7 +540,6 @@ function renderItem(doc) {
     let content = '';
 
     if (isFolder) {
-        // Tampilan Folder (Ikon Kuning)
         content = `
             <div class="thumb-box" style="background:transparent;">
                 <div style="flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
@@ -559,23 +549,15 @@ function renderItem(doc) {
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
         
-        // URL untuk melihat file asli (digunakan untuk video player & gambar native)
+        // URL asli file tanpa modifikasi/kompresi
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // 1. DAFTAR FORMAT GAMBAR FAMILIAR
-        // Format yang didukung luas oleh browser dan bisa dipreview
+        // Ekstensi yang didukung secara luas
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp'];
-        
-        // 2. DAFTAR FORMAT VIDEO
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
 
-        // --- HELPER UNTUK MEMBUAT KARTU FALLBACK (JIKA ERROR) ---
-        // Jika file bukan gambar familiar, atau jika gambar gagal dimuat (broken link),
-        // fungsi ini akan merender kartu cantik berwarna (bukan broken image).
         const createFallback = (ext) => {
-            let iconClass = "fa-file";
-            let colorClass = "icon-grey";
-            let bgClass = "bg-grey";
+            let iconClass = "fa-file"; let colorClass = "icon-grey"; let bgClass = "bg-grey";
 
             if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) {
                 if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; bgClass = "bg-red"; }
@@ -588,29 +570,37 @@ function renderItem(doc) {
             else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; bgClass = "bg-grey"; }
             else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; bgClass = "bg-yellow"; }
 
-            // Escape string untuk penggunaan di dalam onclick/onerror
             return `<div class="thumb-fallback-card ${bgClass}">
                         <i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i>
                         <span class="fallback-ext">${ext.toUpperCase()}</span>
-                    </div>`.replace(/"/g, "'"); // Escape quotes
+                    </div>`.replace(/"/g, "'"); 
         };
 
-        // === LOGIKA RENDER ===
-
         if (familiarImages.includes(ext)) {
-            // -- GAMBAR FAMILIAR --
-            // PERBAIKAN: Parameter string yang salah telah dihapus agar sesuai dengan SDK Appwrite
-            const previewUrl = storage.getFilePreview(CONFIG.BUCKET_ID, doc.fileId, 400, 400, 'center', 80);
+            // FIX TERBAIK: Paksa render format menjadi 'webp' dengan parameter lengkap Appwrite v14. 
+            // Urutan Parameter getFilePreview: bucketId, fileId, width, height, gravity, quality, borderWidth, borderColor, borderRadius, opacity, rotation, background, output
+            const previewUrl = storage.getFilePreview(
+                CONFIG.BUCKET_ID, doc.fileId, 
+                400, 400, 'center', 80, 0, '', 0, 1, 0, '', 'webp'
+            );
             
+            // DOUBLE SAFETY: Jika preview webp gagal, otomatis retried menggunakan URL file mentahnya.
+            // Jika masih gagal (misal karena hak akses ditutup), baru gunakan ikon fallback.
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
+                         onerror="
+                            if(this.getAttribute('data-retried') !== 'true') {
+                                this.setAttribute('data-retried', 'true');
+                                this.src = '${fileViewUrl}';
+                            } else {
+                                this.parentElement.innerHTML='${createFallback(ext)}';
+                            }
+                         ">
                 </div>
             `;
 
         } else if (vidExts.includes(ext)) {
-            // -- VIDEO --
             content = `
                 <div class="thumb-box" style="background:#000;">
                     <video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop 
@@ -621,10 +611,7 @@ function renderItem(doc) {
                     <i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i>
                 </div>
             `;
-
         } else {
-            // -- FORMAT LAIN (PSD, AI, PDF, DOCX, DLL) --
-            // Langsung render Fallback Card agar desain rapi dan tidak broken
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     ${createFallback(ext).replace(/'/g, '"')} 
@@ -635,14 +622,11 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
-    // Event Handler Click (Buka File/Folder)
     div.onclick = () => { 
-        if(!doc.trashed) {
-            isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); 
-        }
+        if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); }
     };
     
-    // Event Handler Context Menu (Klik Kanan)
+    // Klik Kanan Handler
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         closeAllMenus(); 
@@ -650,22 +634,16 @@ function renderItem(doc) {
         selectedItem = doc;
         const menu = el('fileContextMenu');
         
-        const btnOpen = el('ctxBtnOpenFolder');
-        const btnPreview = el('ctxBtnPreview');
-        const btnDownload = el('ctxBtnDownload');
-        const btnOpenWith = el('ctxBtnOpenWith');
-
-        if (isFolder) {
-            if(btnOpen) btnOpen.style.display = 'flex';
-            if(btnPreview) btnPreview.style.display = 'none';
-            if(btnDownload) btnDownload.style.display = 'none';
-            if(btnOpenWith) btnOpenWith.style.display = 'none';
-        } else {
-            if(btnOpen) btnOpen.style.display = 'none';
-            if(btnPreview) btnPreview.style.display = 'flex';
-            if(btnDownload) btnDownload.style.display = 'flex';
-            if(btnOpenWith) btnOpenWith.style.display = 'flex';
-        }
+        ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
+            const btn = el(id);
+            if (btn) {
+                if ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+        });
 
         menu.style.top = `${e.clientY}px`; 
         menu.style.left = `${e.clientX}px`;
@@ -674,7 +652,6 @@ function renderItem(doc) {
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
         menu.classList.remove('hidden'); 
@@ -684,7 +661,7 @@ function renderItem(doc) {
     grid.appendChild(div);
 }
 
-// Helper untuk menutup semua menu
+// Menutup Semua Context Menu Modal
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
@@ -788,7 +765,7 @@ window.openStoragePage = async () => {
     window.nav('storagePage');
 
     const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+    const limitBytes = 2 * 1024 * 1024 * 1024; // Limit 2 GB
     
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
@@ -901,7 +878,7 @@ window.submitCreateFolder = async () => {
 };
 
 window.submitUploadFile = async () => {
-    if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true);
+    if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true, "Mengunggah...");
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false });
@@ -912,7 +889,7 @@ window.submitUploadFile = async () => {
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); closeAllMenus(); } catch(e){} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen?")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa kembali!")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); closeAllMenus(); };
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
