@@ -577,26 +577,15 @@ function renderItem(doc) {
         };
 
         if (familiarImages.includes(ext)) {
-            // FIX TERBAIK: Paksa render format menjadi 'webp' dengan parameter lengkap Appwrite v14. 
-            // Urutan Parameter getFilePreview: bucketId, fileId, width, height, gravity, quality, borderWidth, borderColor, borderRadius, opacity, rotation, background, output
-            const previewUrl = storage.getFilePreview(
-                CONFIG.BUCKET_ID, doc.fileId, 
-                400, 400, 'center', 80, 0, '', 0, 1, 0, '', 'webp'
-            );
+            // SOLUSI BYPASS: Kita matikan getFilePreview()
+            // Kita langsung gunakan rawImageUrl dari getFileView() 
+            // Ini akan memaksa browser merender gambar asli tanpa campur tangan server Appwrite
+            const rawImageUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
             
-            // DOUBLE SAFETY: Jika preview webp gagal, otomatis retried menggunakan URL file mentahnya.
-            // Jika masih gagal (misal karena hak akses ditutup), baru gunakan ikon fallback.
             content = `
                 <div class="thumb-box" style="background:transparent;">
-                    <img src="${previewUrl}" class="thumb-image" loading="lazy" 
-                         onerror="
-                            if(this.getAttribute('data-retried') !== 'true') {
-                                this.setAttribute('data-retried', 'true');
-                                this.src = '${fileViewUrl}';
-                            } else {
-                                this.parentElement.innerHTML='${createFallback(ext)}';
-                            }
-                         ">
+                    <img src="${rawImageUrl}" class="thumb-image" loading="lazy" 
+                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
 
