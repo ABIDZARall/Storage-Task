@@ -8,6 +8,7 @@ const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
+// URL Dummy untuk validasi database Appwrite jika user belum punya foto
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
@@ -20,7 +21,7 @@ const CONFIG = {
     BUCKET_ID: 'taskfiles'
 };
 
-// API SheetDB untuk Pencatatan Log Excel
+// API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -118,14 +119,19 @@ if (el('signupForm')) {
         try {
             checkSystemHealth();
             const newUserId = Appwrite.ID.unique(); 
+            // 1. Buat Akun Auth
             await account.create(newUserId, email, pass, name);
             
+            // 2. Login Otomatis sementara untuk menulis ke DB
             try { await account.createEmailPasswordSession(email, pass); } catch(e) {}
 
+            // 3. Simpan Profil ke Database Appwrite
             try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { email: email, phone: phone, name: name, password: pass, avatarUrl: DEFAULT_AVATAR_DB_URL }); } catch (dbError) { console.error("DB Write Error:", dbError); }
 
+            // 4. Catat Log ke Excel
             recordActivity('SignUp', { id: newUserId, name: name, email: email, phone: phone, password: pass }).catch(e => console.log("Background log error:", e));
             
+            // 5. Bersihkan sesi agar user login manual dengan rapi
             try { await account.deleteSession('current'); } catch (e) {}
             
             toggleLoading(false); alert("Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda."); window.nav('loginPage');
@@ -144,11 +150,13 @@ if (el('loginForm')) {
         try {
             toggleLoading(true, "Mengecek Kredensial..."); checkSystemHealth();
 
+            // 1. Cek jika user login pakai Username (bukan email)
             if (!inputId.includes('@')) {
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('name', inputId) ]);
                 if (res.documents.length > 0) inputId = res.documents[0].email; else throw new Error("Username tidak ditemukan di database.");
             }
 
+            // 2. Validasi Password dari Database Appwrite
             let dbUser = null;
             const userCheck = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', inputId) ]);
 
@@ -157,6 +165,7 @@ if (el('loginForm')) {
                 if (dbUser.password && dbUser.password !== pass && dbUser.password !== 'NULL') throw new Error("Password Anda salah.");
             } else { throw new Error("Akun tidak ditemukan."); }
 
+            // 3. Eksekusi Auth Session
             toggleLoading(true, "Menyiapkan Sesi Dashboard...");
             let authSuccess = false;
             try { await account.createEmailPasswordSession(inputId, pass); authSuccess = true; } catch (authErr) { console.warn("Auth Session Failed (Bypass Active):", authErr); }
@@ -164,7 +173,9 @@ if (el('loginForm')) {
             let user = authSuccess ? await account.get() : { $id: dbUser.$id, name: dbUser.name, email: dbUser.email, phone: dbUser.phone };
             if (authSuccess) await syncUserData(user); 
             
+            // 4. Catat Log Login
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(e => console.log("Background log error:", e));
+            
             await initializeDashboard(user); 
 
         } catch (error) { toggleLoading(false); alert("Login Gagal: " + error.message); }
@@ -290,9 +301,7 @@ function initProfileImageUploader() {
         input.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
                 const file = e.target.files[0]; selectedProfileImage = file;
-                const reader = new FileReader();
-                reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; };
-                reader.readAsDataURL(file);
+                const reader = new FileReader(); reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; }; reader.readAsDataURL(file);
             }
         });
     }
@@ -380,7 +389,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI RENDER ITEM (TERMASUK PRATINJAU DOKUMEN IFRAME) ---
+// --- FUNGSI RENDER ITEM (TERMASUK PRATINJAU DOKUMEN GOOGLE DOCS API) ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); div.className = 'item-card';
@@ -400,7 +409,7 @@ function renderItem(doc) {
         const ext = doc.name.split('.').pop().toLowerCase();
         
         // URL asli file tanpa modifikasi/kompresi (Menghindari CORS Vercel)
-        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
+        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
         // Kategori Ekstensi
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp'];
@@ -416,11 +425,10 @@ function renderItem(doc) {
         };
 
         if (familiarImages.includes(ext)) {
-            // SOLUSI BYPASS: Kita langsung gunakan rawImageUrl dari getFileView() 
-            const rawImageUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
+            // SOLUSI BYPASS GAMBAR: Kita langsung gunakan rawImageUrl dari getFileView() 
             content = `
                 <div class="thumb-box" style="background:transparent;">
-                    <img src="${rawImageUrl}" class="thumb-image" loading="lazy" 
+                    <img src="${fileViewUrl}" class="thumb-image" loading="lazy" 
                          onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
@@ -437,26 +445,27 @@ function renderItem(doc) {
                 </div>
             `;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            // FITUR BARU: PRATINJAU DOKUMEN ALA GOOGLE DRIVE MENGGUNAKAN IFRAME SCALE
+            
+            // FITUR BARU: PRATINJAU DOKUMEN MENGGUNAKAN GOOGLE DOCS API (GVIEW)
             let iframeSrc = '';
             if (pdfExt.includes(ext)) {
                 iframeSrc = `${fileViewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`; // Mode PDF Native
             } else {
-                iframeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`; // MS Office Viewer untuk Word/Excel/PPT
+                iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`; // Google Docs API untuk Word/Excel/PPT
             }
 
             // Atur Ikon Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
-            if (ext.includes('pdf')) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
+            if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
             else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
             else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34a853"; }
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
-            // Trik CSS Skala iFrame (Besarkan 400%, Perkecil 0.25)
+            // Trik CSS Skala iFrame (Besarkan 250%, Perkecil 0.4)
             content = `
                 <div class="thumb-box" style="background:#f8f9fa; position: relative; overflow: hidden;">
-                    <div style="width: 400%; height: 400%; transform: scale(0.25); transform-origin: top left; display: flex; justify-content: center; background: white;">
-                        <iframe src="${iframeSrc}" style="width: 100%; height: 100%; border: none; pointer-events: none;" loading="lazy"></iframe>
+                    <div style="width: 250%; height: 250%; transform: scale(0.4); transform-origin: top left; display: block; background: white;">
+                        <iframe src="${iframeSrc}" style="width: 100%; height: 100%; border: none; pointer-events: none;" scrolling="no" loading="lazy" onerror="this.parentElement.parentElement.innerHTML='${createFallback(ext)}'"></iframe>
                     </div>
                     <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:10; background: transparent;"></div>
                     
