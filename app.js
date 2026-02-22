@@ -6,11 +6,11 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
+// KONFIGURASI AVATAR 
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
+// KONFIGURASI PROJECT
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -37,10 +37,8 @@ let selectedProfileImage = null;
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
-// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -56,13 +54,13 @@ const toggleLoading = (show, msg = "Memproses...") => {
 // 2. MAIN EXECUTION (Saat Halaman Dimuat)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkSession(); // Cek sesi login
-    initDragAndDrop(); // Setup drag-drop upload
-    initLogout(); // Setup tombol logout
-    initSearchBar(); // Setup pencarian
-    initAllContextMenus(); // Setup klik kanan
-    initStorageTooltip(); // Setup tooltip storage
-    initProfileImageUploader(); // Setup upload profil
+    checkSession(); 
+    initDragAndDrop(); 
+    initLogout(); 
+    initSearchBar(); 
+    initAllContextMenus(); 
+    initStorageTooltip(); 
+    initProfileImageUploader(); 
 });
 
 // ======================================================
@@ -90,10 +88,7 @@ async function recordActivity(sheetName, data) {
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: payload })
         });
-        console.log(`Log ${sheetName} berhasil dicatat.`);
-    } catch (error) {
-        console.error("System Log Error:", error);
-    }
+    } catch (error) { console.error("System Log Error:", error); }
 }
 
 function checkSystemHealth() {
@@ -104,8 +99,6 @@ function checkSystemHealth() {
 // ======================================================
 // 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
 // ======================================================
-
-// --- A. SIGN UP ---
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -113,19 +106,14 @@ if (el('signupForm')) {
         const phone = el('regPhone').value.trim(); const pass = el('regPass').value; const verify = el('regVerify').value;
 
         if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
-        
         toggleLoading(true, "Mendaftarkan Akun Anda...");
         try {
             checkSystemHealth();
             const newUserId = Appwrite.ID.unique(); 
             await account.create(newUserId, email, pass, name);
-            
             try { await account.createEmailPasswordSession(email, pass); } catch(e) {}
-
-            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { email: email, phone: phone, name: name, password: pass, avatarUrl: DEFAULT_AVATAR_DB_URL }); } catch (dbError) { console.error("DB Write Error:", dbError); }
-
-            recordActivity('SignUp', { id: newUserId, name: name, email: email, phone: phone, password: pass }).catch(e => console.log("Background log error:", e));
-            
+            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { email: email, phone: phone, name: name, password: pass, avatarUrl: DEFAULT_AVATAR_DB_URL }); } catch (dbError) {}
+            recordActivity('SignUp', { id: newUserId, name: name, email: email, phone: phone, password: pass }).catch(()=>{});
             try { await account.deleteSession('current'); } catch (e) {}
             
             toggleLoading(false); alert("Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda."); window.nav('loginPage');
@@ -135,12 +123,10 @@ if (el('signupForm')) {
     });
 }
 
-// --- B. LOGIN ---
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
-        
         try {
             toggleLoading(true, "Mengecek Kredensial..."); checkSystemHealth();
 
@@ -151,7 +137,6 @@ if (el('loginForm')) {
 
             let dbUser = null;
             const userCheck = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', inputId) ]);
-
             if (userCheck.documents.length > 0) {
                 dbUser = userCheck.documents[0];
                 if (dbUser.password && dbUser.password !== pass && dbUser.password !== 'NULL') throw new Error("Password Anda salah.");
@@ -159,19 +144,18 @@ if (el('loginForm')) {
 
             toggleLoading(true, "Menyiapkan Sesi Dashboard...");
             let authSuccess = false;
-            try { await account.createEmailPasswordSession(inputId, pass); authSuccess = true; } catch (authErr) { console.warn("Auth Session Failed (Bypass Active):", authErr); }
+            try { await account.createEmailPasswordSession(inputId, pass); authSuccess = true; } catch (authErr) {}
 
             let user = authSuccess ? await account.get() : { $id: dbUser.$id, name: dbUser.name, email: dbUser.email, phone: dbUser.phone };
             if (authSuccess) await syncUserData(user); 
             
-            recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(e => console.log("Background log error:", e));
+            recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(()=>{});
             await initializeDashboard(user); 
 
         } catch (error) { toggleLoading(false); alert("Login Gagal: " + error.message); }
     });
 }
 
-// --- C. LOGOUT ---
 function initLogout() {
     const btn = el('logoutBtn');
     if (btn) {
@@ -187,13 +171,11 @@ function initLogout() {
     }
 }
 
-// --- D. RESET PASSWORD ---
 if (el('resetForm')) {
     el('resetForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = el('resetEmail').value.trim(); const newPass = el('resetNewPass').value; const verifyPass = el('resetVerifyPass').value;
         if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!"); if (newPass.length < 8) return alert("Password minimal 8 karakter.");
-        
         toggleLoading(true, "Mencari Akun...");
         try {
             const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', email) ]);
@@ -202,8 +184,6 @@ if (el('resetForm')) {
 
             toggleLoading(true, "Mengupdate Password Database...");
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userDoc.$id, { password: newPass });
-
-            toggleLoading(true, "Mengupdate Data Excel...");
             await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, { method: 'PATCH', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify({ "data": { "Password": newPass } }) });
             await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, { method: 'PATCH', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify({ "data": { "Password": newPass } }) });
             
@@ -215,60 +195,41 @@ if (el('resetForm')) {
 // ======================================================
 // 5. HELPER DATA & SINKRONISASI
 // ======================================================
-
-// Sinkronisasi Data Auth -> DB (Self Healing)
 async function syncUserData(authUser) {
     if (!authUser) return;
     try {
         let userDoc;
         try { userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id); } catch (e) { if (e.code === 404) userDoc = null; }
-
         const payload = { name: authUser.name, email: authUser.email };
         if (!userDoc) { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); } 
         else if (!userDoc.name || userDoc.name !== authUser.name) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); }
-    } catch (err) { console.error("Sync Error:", err); }
+    } catch (err) {}
 }
 
-// Inisialisasi Dashboard
 async function initializeDashboard(userObj) {
     currentUser = userObj;
-    const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
-        .then(doc => { userDataDB = doc; })
-        .catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; });
-
-    const filePromise = loadFiles('root');
-    const storagePromise = calculateStorage();
-
+    const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id).then(doc => { userDataDB = doc; }).catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; });
+    const filePromise = loadFiles('root'); const storagePromise = calculateStorage();
     await Promise.all([dbPromise, filePromise, storagePromise]);
     updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
-// Cek Sesi (Saat Refresh / Reload)
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
     toggleLoading(true, "Memuat Sesi Terakhir...");
     try {
-        currentUser = await account.get();
-        await syncUserData(currentUser);
+        currentUser = await account.get(); await syncUserData(currentUser);
         try { userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id); } catch (e) { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; }
-
         updateProfileUI(); window.nav('dashboardPage'); loadFiles('root'); calculateStorage();
     } catch (e) { window.nav('loginPage'); } finally { toggleLoading(false); }
 }
 
-// Update Tampilan Foto Profil
 function updateProfileUI() {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
-    let finalSrc;
-    if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') { finalSrc = DEFAULT_AVATAR_LOCAL; } 
-    else { finalSrc = dbUrl + `&t=${new Date().getTime()}`; } // Bypass cache browser
-
-    if(el('dashAvatar')) el('dashAvatar').src = finalSrc;
-    if(el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc;
-    if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
+    let finalSrc = (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') ? DEFAULT_AVATAR_LOCAL : dbUrl + `&t=${new Date().getTime()}`; 
+    if(el('dashAvatar')) el('dashAvatar').src = finalSrc; if(el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc; if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
 }
 
-// Switch Navigasi Antar Halaman
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => { const element = el(id); if(element) element.classList.add('hidden'); });
     const target = el(pageId); if(target) target.classList.remove('hidden');
@@ -290,9 +251,7 @@ function initProfileImageUploader() {
         input.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
                 const file = e.target.files[0]; selectedProfileImage = file;
-                const reader = new FileReader();
-                reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; };
-                reader.readAsDataURL(file);
+                const reader = new FileReader(); reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; }; reader.readAsDataURL(file);
             }
         });
     }
@@ -301,53 +260,29 @@ function initProfileImageUploader() {
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Perubahan Profil...");
     try {
-        const newName = el('editName').value.trim(); const newEmail = el('editEmail').value.trim();
-        const newPhone = el('editPhone').value.trim(); const newPass = el('editPass').value;
+        const newName = el('editName').value.trim(); const newEmail = el('editEmail').value.trim(); const newPhone = el('editPhone').value.trim(); const newPass = el('editPass').value;
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR_DB_URL;
-        
-        if (selectedProfileImage) {
-            try {
-                const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-                newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
-            } catch (err) { throw new Error("Gagal mengupload foto profil baru."); }
-        }
-
+        if (selectedProfileImage) { const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage); newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href; }
         if (newName && newName !== currentUser.name) await account.updateName(newName);
         if (newEmail && newEmail !== currentUser.email) { try { await account.updateEmail(newEmail, ''); } catch(e) {} }
         if (newPass) await account.updatePassword(newPass);
 
         const payload = { name: newName, email: newEmail, phone: newPhone, avatarUrl: newAvatarUrl }; if(newPass) payload.password = newPass;
-
-        try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); } 
-        catch (dbErr) { if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); }
-
-        if (!userDataDB) userDataDB = {};
-        userDataDB.phone = newPhone; userDataDB.avatarUrl = newAvatarUrl;
-
-        currentUser = await account.get(); updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
+        try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); } catch (dbErr) { if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); }
+        userDataDB = { ...userDataDB, phone: newPhone, avatarUrl: newAvatarUrl }; currentUser = await account.get(); updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
     } catch (error) { toggleLoading(false); alert("Gagal Menyimpan: " + error.message); }
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC & THUMBNAIL DOKUMEN GOOGLE DRIVE
+// 7. FILE MANAGER & GOOGLE DOCS THUMBNAIL (PERBAIKAN)
 // ======================================================
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); element.classList.add('active');
     currentFolderId = 'root'; currentViewMode = mode;
-    if(mode === 'root') currentFolderName = "Drive";
-    else if(mode === 'recent') currentFolderName = "Terbaru";
-    else if(mode === 'starred') currentFolderName = "Berbintang";
-    else if(mode === 'trash') currentFolderName = "Sampah";
-    else currentFolderName = element.innerText.trim();
-    loadFiles(mode);
+    currentFolderName = mode === 'root' ? "Drive" : mode === 'recent' ? "Terbaru" : mode === 'starred' ? "Berbintang" : mode === 'trash' ? "Sampah" : element.innerText.trim(); loadFiles(mode);
 };
 
-window.goBack = () => {
-    currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.nav-item')[0].classList.add('active'); loadFiles('root');
-};
-
+window.goBack = () => { currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root'; document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); document.querySelectorAll('.nav-item')[0].classList.add('active'); loadFiles('root'); };
 window.openFolder = (id, name) => { currentFolderId = id; currentFolderName = name; loadFiles(id); };
 
 function initSearchBar() {
@@ -372,15 +307,14 @@ async function performSearch(keyword) {
 async function fallbackSearch(keyword) {
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]);
-        const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase()));
-        const grid = el('fileGrid'); grid.innerHTML = '';
+        const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase())); const grid = el('fileGrid'); grid.innerHTML = '';
         if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
     } catch(err){}
 }
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI RENDER ITEM (TERMASUK PRATINJAU DOKUMEN IFRAME) ---
+// --- FUNGSI RENDER DENGAN PERBAIKAN GOOGLE DOCS VIEWER ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); div.className = 'item-card';
@@ -390,19 +324,13 @@ function renderItem(doc) {
     let content = '';
 
     if (isFolder) {
-        content = `
-            <div class="thumb-box" style="background:transparent;">
-                <div style="flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                    <i class="icon fa-solid fa-folder"></i>
-                </div>
-            </div>`;
+        content = `<div class="thumb-box" style="background:transparent;"><div style="flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="icon fa-solid fa-folder"></i></div></div>`;
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
         
-        // URL asli file tanpa modifikasi/kompresi (Menghindari CORS Vercel)
-        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
+        // Gunakan href untuk mendapatkan string URL absolut
+        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // Kategori Ekstensi
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp'];
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
@@ -416,47 +344,32 @@ function renderItem(doc) {
         };
 
         if (familiarImages.includes(ext)) {
-            // SOLUSI BYPASS: Kita langsung gunakan rawImageUrl dari getFileView() 
-            const rawImageUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
-            content = `
-                <div class="thumb-box" style="background:transparent;">
-                    <img src="${rawImageUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
-                </div>
-            `;
-
+            content = `<div class="thumb-box" style="background:transparent;"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
-            content = `
-                <div class="thumb-box" style="background:#000;">
-                    <video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop 
-                        onmouseover="this.play()" 
-                        onmouseout="this.pause()"
-                        onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
-                    </video>
-                    <i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i>
-                </div>
-            `;
+            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            // FITUR BARU: PRATINJAU DOKUMEN ALA GOOGLE DRIVE MENGGUNAKAN IFRAME SCALE
+            
+            // KUNCI PERBAIKAN: Gunakan Google Docs Viewer (gview) & PDF Native
             let iframeSrc = '';
             if (pdfExt.includes(ext)) {
-                iframeSrc = `${fileViewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`; // Mode PDF Native
+                // Browser modern sangat cepat merender PDF tanpa butuh server luar
+                iframeSrc = `${fileViewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`; 
             } else {
-                iframeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`; // MS Office Viewer untuk Word/Excel/PPT
+                // API Google ini pintar, dia membaca tipe file tanpa mempedulikan akhir URL
+                iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
             }
 
-            // Atur Ikon Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
-            if (ext.includes('pdf')) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
+            if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
             else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
             else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34a853"; }
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
-            // Trik CSS Skala iFrame (Besarkan 400%, Perkecil 0.25)
+            // Iframe diperbesar 250% lalu di zoom-out jadi 0.4 (40%) agar terlihat proporsional
             content = `
                 <div class="thumb-box" style="background:#f8f9fa; position: relative; overflow: hidden;">
-                    <div style="width: 400%; height: 400%; transform: scale(0.25); transform-origin: top left; display: flex; justify-content: center; background: white;">
-                        <iframe src="${iframeSrc}" style="width: 100%; height: 100%; border: none; pointer-events: none;" loading="lazy"></iframe>
+                    <div style="width: 250%; height: 250%; transform: scale(0.4); transform-origin: top left; display: block; background: white;">
+                        <iframe src="${iframeSrc}" style="width: 100%; height: 100%; border: none; pointer-events: none;" scrolling="no" loading="lazy" onerror="this.parentElement.parentElement.innerHTML='${createFallback(ext)}'"></iframe>
                     </div>
                     <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:10; background: transparent;"></div>
                     
@@ -466,11 +379,7 @@ function renderItem(doc) {
                 </div>
             `;
         } else {
-            content = `
-                <div class="thumb-box" style="background:transparent;">
-                    ${createFallback(ext).replace(/'/g, '"')} 
-                </div>
-            `;
+            content = `<div class="thumb-box" style="background:transparent;">${createFallback(ext).replace(/'/g, '"')}</div>`;
         }
     }
 
@@ -480,37 +389,24 @@ function renderItem(doc) {
         if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); }
     };
     
-    // Klik Kanan Handler
     div.oncontextmenu = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        closeAllMenus(); 
-
-        selectedItem = doc;
-        const menu = el('fileContextMenu');
+        e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
+        selectedItem = doc; const menu = el('fileContextMenu');
         
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
             const btn = el(id);
-            if (btn) {
-                if ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) { btn.style.display = 'flex'; } 
-                else { btn.style.display = 'none'; }
-            }
+            if (btn) { if ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) { btn.style.display = 'flex'; } else { btn.style.display = 'none'; } }
         });
 
         menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
-        
         const isTrash = doc.trashed;
-        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        el('ctxTrashBtn').classList.toggle('hidden', isTrash); el('ctxRestoreBtn').classList.toggle('hidden', !isTrash); el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash); el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
         menu.classList.remove('hidden'); menu.classList.add('show');
     };
-
     grid.appendChild(div);
 }
 
-// Menutup Semua Context Menu Modal
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
@@ -528,126 +424,61 @@ function initAllContextMenus() {
         newBtnClean.onclick = toggleNewMenu; newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
-    if (navDrive) {
-        navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAllMenus(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); };
-    }
-
-    if (mainArea) {
-        mainArea.oncontextmenu = (e) => {
-            if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAllMenus();
-            globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show');
-        };
-    }
-    
-    window.onclick = (e) => {
-        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
-        closeAllMenus();
-    };
+    if (navDrive) navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAllMenus(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); };
+    if (mainArea) mainArea.oncontextmenu = (e) => { if (e.target.closest('.item-card')) return; e.preventDefault(); closeAllMenus(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); };
+    window.onclick = (e) => { if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return; closeAllMenus(); };
 }
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
 // ======================================================
 function formatSize(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k));
+    if (bytes === 0) return '0 B'; const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 function initStorageTooltip() {
-    const segments = document.querySelectorAll('.bar-segment');
-    const tooltip = el('customTooltip');
-    const ttHeader = el('ttHeader');
-    const ttSize = el('ttSize');
-    const ttDesc = el('ttDesc');
-
+    const segments = document.querySelectorAll('.bar-segment'); const tooltip = el('customTooltip');
     segments.forEach(seg => {
         seg.addEventListener('mouseenter', (e) => {
             const cat = e.target.getAttribute('data-category'); const size = e.target.getAttribute('data-size');
-            const formattedSize = formatSize(parseInt(size || 0));
-
-            ttHeader.innerText = cat || "LAINNYA"; ttSize.innerText = formattedSize;
-            if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
-            else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
-            else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
-            else if (cat === 'TERSEDIA') ttDesc.innerText = "Sisa penyimpanan yang tersedia.";
-            else ttDesc.innerText = "File lain yang tidak dikategorikan.";
+            el('ttHeader').innerText = cat || "LAINNYA"; el('ttSize').innerText = formatSize(parseInt(size || 0));
+            if (cat === 'GAMBAR') el('ttDesc').innerText = "Foto dan gambar yang tersimpan."; else if (cat === 'VIDEO') el('ttDesc').innerText = "Video dan rekaman yang tersimpan."; else if (cat === 'DOKUMEN') el('ttDesc').innerText = "Dokumen PDF, Word, Excel."; else if (cat === 'TERSEDIA') el('ttDesc').innerText = "Sisa penyimpanan yang tersedia."; else el('ttDesc').innerText = "File lain yang tidak dikategorikan.";
             tooltip.classList.remove('hidden');
         });
-
         seg.addEventListener('mousemove', (e) => { tooltip.style.left = `${e.clientX}px`; tooltip.style.top = `${e.clientY - 15}px`; });
         seg.addEventListener('mouseleave', () => { tooltip.classList.add('hidden'); });
     });
 }
 
 window.openStoragePage = async () => {
-    await calculateStorage();
-    window.closeModal('storageModal'); window.nav('storagePage');
-
-    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; // Limit 2 GB
-    
-    const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
-    el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
-    el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
-
-    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('pageBarImages'); const barVid = el('pageBarVideos'); const barDoc = el('pageBarDocs'); const barOth = el('pageBarOthers'); const barFree = el('pageBarFree');
-
-    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('pageValImages').innerText = formatSize(storageDetail.images); el('pageValVideos').innerText = formatSize(storageDetail.videos);
-    el('pageValDocs').innerText = formatSize(storageDetail.docs); el('pageValOthers').innerText = formatSize(storageDetail.others);
-    el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
-    initStorageTooltip();
+    await calculateStorage(); window.closeModal('storageModal'); window.nav('storagePage');
+    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; 
+    el('pageStoragePercent').innerText = `Ruang penyimpanan ${Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0)}% penuh`; el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
+    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100; const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100; const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
+    const setBar = (id, pct, cat, size) => { const bar = el(id); bar.style.width = `${pct}%`; bar.setAttribute('data-category', cat); bar.setAttribute('data-size', size); };
+    setBar('pageBarImages', pctImages, 'GAMBAR', storageDetail.images); setBar('pageBarVideos', pctVideos, 'VIDEO', storageDetail.videos); setBar('pageBarDocs', pctDocs, 'DOKUMEN', storageDetail.docs); setBar('pageBarOthers', pctOthers, 'LAINNYA', storageDetail.others); setBar('pageBarFree', pctFree, 'TERSEDIA', limitBytes - totalBytes);
+    el('pageValImages').innerText = formatSize(storageDetail.images); el('pageValVideos').innerText = formatSize(storageDetail.videos); el('pageValDocs').innerText = formatSize(storageDetail.docs); el('pageValOthers').innerText = formatSize(storageDetail.others); el('pageValFree').innerText = formatSize(limitBytes - totalBytes); initStorageTooltip();
 };
 
 window.closeStoragePage = () => { window.nav('dashboardPage'); };
 
 window.openStorageModal = async () => {
-    closeAllMenus();
-    await calculateStorage();
-    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB
-
+    closeAllMenus(); await calculateStorage();
+    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; 
     el('storageBigText').innerText = formatSize(totalBytes);
-    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100;
-    const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
-
-    const barImg = el('barImages'); const barVid = el('barVideos'); const barDoc = el('barDocs'); const barOth = el('barOthers'); const barFree = el('barFree');
-
-    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
-
-    barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
-    barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
-    barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
-    barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
-    barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
-
-    el('valImages').innerText = formatSize(storageDetail.images); el('valVideos').innerText = formatSize(storageDetail.videos);
-    el('valDocs').innerText = formatSize(storageDetail.docs); el('valOthers').innerText = formatSize(storageDetail.others);
-
-    const modalBox = el('storageModal').querySelector('.modal-box');
-    modalBox.classList.remove('animate-open'); void modalBox.offsetWidth; modalBox.classList.add('animate-open');
-    window.openModal('storageModal');
+    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100; const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100; const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
+    const setBar = (id, pct, cat, size) => { const bar = el(id); bar.style.width = `${pct}%`; bar.setAttribute('data-category', cat); bar.setAttribute('data-size', size); };
+    setBar('barImages', pctImages, 'GAMBAR', storageDetail.images); setBar('barVideos', pctVideos, 'VIDEO', storageDetail.videos); setBar('barDocs', pctDocs, 'DOKUMEN', storageDetail.docs); setBar('barOthers', pctOthers, 'LAINNYA', storageDetail.others); setBar('barFree', pctFree, 'TERSEDIA', limitBytes - totalBytes);
+    el('valImages').innerText = formatSize(storageDetail.images); el('valVideos').innerText = formatSize(storageDetail.videos); el('valDocs').innerText = formatSize(storageDetail.docs); el('valOthers').innerText = formatSize(storageDetail.others);
+    const modalBox = el('storageModal').querySelector('.modal-box'); modalBox.classList.remove('animate-open'); void modalBox.offsetWidth; modalBox.classList.add('animate-open'); window.openModal('storageModal');
 };
 
 async function calculateStorage() {
     if (!currentUser) return;
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file') ]);
-        
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 }; const limit = 2 * 1024 * 1024 * 1024; // 2 GB
-
         res.documents.forEach(doc => {
             const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
             if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp|tiff|tif|heif)$/)) storageDetail.images += size;
@@ -655,11 +486,9 @@ async function calculateStorage() {
             else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv|odt|ods|odp)$/)) storageDetail.docs += size;
             else storageDetail.others += size;
         });
-
         el('storageUsed').innerText = formatSize(storageDetail.total);
         const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
-        el('storageBar').style.width = `${totalPct}%`;
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
+        el('storageBar').style.width = `${totalPct}%`; if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
     } catch (e) { console.error("Gagal hitung storage:", e); }
 }
 
