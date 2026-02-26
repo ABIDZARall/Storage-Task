@@ -8,7 +8,6 @@ const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
-// URL Dummy untuk validasi database Appwrite jika user belum punya foto
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
@@ -389,7 +388,7 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// --- FUNGSI RENDER ITEM (TERMASUK PRATINJAU DOKUMEN GOOGLE DOCS API) ---
+// --- FUNGSI RENDER ITEM DENGAN KONEKSI BACKEND CUSTOM ---
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); div.className = 'item-card';
@@ -408,7 +407,7 @@ function renderItem(doc) {
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
         
-        // URL asli file tanpa modifikasi/kompresi (Menghindari CORS Vercel)
+        // URL asli file tanpa modifikasi/kompresi
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
         // Kategori Ekstensi
@@ -417,6 +416,7 @@ function renderItem(doc) {
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
 
+        // Kartu Cantik Fallback
         const createFallback = (ext) => {
             let iconClass = "fa-file"; let colorClass = "icon-grey"; let bgClass = "bg-grey";
             if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; bgClass = "bg-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; bgClass = "bg-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; bgClass = "bg-orange"; } }
@@ -425,14 +425,12 @@ function renderItem(doc) {
         };
 
         if (familiarImages.includes(ext)) {
-            // SOLUSI BYPASS GAMBAR: Kita langsung gunakan rawImageUrl dari getFileView() 
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${fileViewUrl}" class="thumb-image" loading="lazy" 
                          onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
-
         } else if (vidExts.includes(ext)) {
             content = `
                 <div class="thumb-box" style="background:#000;">
@@ -446,28 +444,24 @@ function renderItem(doc) {
             `;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             
-            // FITUR BARU: PRATINJAU DOKUMEN MENGGUNAKAN GOOGLE DOCS API (GVIEW)
-            let iframeSrc = '';
-            if (pdfExt.includes(ext)) {
-                iframeSrc = `${fileViewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`; // Mode PDF Native
-            } else {
-                iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`; // Google Docs API untuk Word/Excel/PPT
-            }
+            // ========================================================
+            // 🔗 KONEKSI KE API BACKEND CUSTOM UNTUK THUMBNAIL DOKUMEN
+            // ========================================================
+            // GANTI INI DENGAN URL HUGGING FACE ANDA YANG BARU DIBUAT (Pilihan 1)
+            // Atau ganti dengan URL IP PROXMOX Anda jika (Pilihan 2)
+            const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
 
-            // Atur Ikon Lencana (Badge)
+            // Atur Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
             if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
             else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
             else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34a853"; }
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
-            // Trik CSS Skala iFrame (Besarkan 250%, Perkecil 0.4)
             content = `
-                <div class="thumb-box" style="background:#f8f9fa; position: relative; overflow: hidden;">
-                    <div style="width: 250%; height: 250%; transform: scale(0.4); transform-origin: top left; display: block; background: white;">
-                        <iframe src="${iframeSrc}" style="width: 100%; height: 100%; border: none; pointer-events: none;" scrolling="no" loading="lazy" onerror="this.parentElement.parentElement.innerHTML='${createFallback(ext)}'"></iframe>
-                    </div>
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:10; background: transparent;"></div>
+                <div class="thumb-box" style="background:#f8f9fa; position: relative;">
+                    <img src="${backendThumbUrl}" class="thumb-image" loading="lazy" 
+                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
                     
                     <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
