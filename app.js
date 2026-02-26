@@ -425,12 +425,14 @@ function renderItem(doc) {
         };
 
         if (familiarImages.includes(ext)) {
+            // SOLUSI BYPASS GAMBAR
             content = `
                 <div class="thumb-box" style="background:transparent;">
                     <img src="${fileViewUrl}" class="thumb-image" loading="lazy" 
                          onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
+
         } else if (vidExts.includes(ext)) {
             content = `
                 <div class="thumb-box" style="background:#000;">
@@ -447,9 +449,8 @@ function renderItem(doc) {
             // ========================================================
             // 🔗 KONEKSI KE API BACKEND CUSTOM UNTUK THUMBNAIL DOKUMEN
             // ========================================================
-            // GANTI INI DENGAN URL HUGGING FACE ANDA YANG BARU DIBUAT (Pilihan 1)
-            // Atau ganti dengan URL IP PROXMOX Anda jika (Pilihan 2)
-            const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
+            // GANTI URL INI DENGAN URL HUGGING FACE SPACES ANDA YANG BARU
+            const backendThumbUrl = `https://URL_HUGGINGFACE_ANDA_DISINI.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
 
             // Atur Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -458,10 +459,12 @@ function renderItem(doc) {
             else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34a853"; }
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
+            // PERBAIKAN: object-position: top; agar mirip Google Drive (menampilkan kepala dokumen)
             content = `
-                <div class="thumb-box" style="background:#f8f9fa; position: relative;">
+                <div class="thumb-box" style="background:#ffffff; position: relative;">
                     <img src="${backendThumbUrl}" class="thumb-image" loading="lazy" 
-                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
+                         onerror="this.parentElement.innerHTML='${createFallback(ext)}'" 
+                         style="object-fit: cover; object-position: top; width: 100%; height: 100%; background: white;">
                     
                     <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
