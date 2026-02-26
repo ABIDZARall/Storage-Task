@@ -450,7 +450,7 @@ function renderItem(doc) {
             // 🔗 KONEKSI KE API BACKEND CUSTOM UNTUK THUMBNAIL DOKUMEN
             // ========================================================
             // GANTI URL INI DENGAN URL HUGGING FACE SPACES ANDA YANG BARU
-            const backendThumbUrl = `https://URL_HUGGINGFACE_ANDA_DISINI.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
+            const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
 
             // Atur Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
