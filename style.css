@@ -108,18 +108,38 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
-/* GRID ITEM STYLING */
-.file-grid-area { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding: 40px 10px 40px 10px; align-content: start; align-items: start; }
+/* ========================================================= */
+/* GRID ITEM STYLING (SUDAH DIPERBAIKI JARAK & BENTUKNYA)    */
+/* ========================================================= */
+.file-grid-area { 
+    flex: 1; overflow-y: auto; display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+    gap: 25px 20px; /* Jarak Vertikal 25px, Horizontal 20px (Mencegah Tabrakan) */
+    padding: 30px 10px 50px 10px; align-content: start; align-items: start; 
+}
 
-.item-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; position: relative; transition: 0.2s; border: 1px solid transparent; overflow: hidden; padding: 10px; }
-.item-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.1); }
+.item-card { 
+    background: rgba(255, 255, 255, 0.03); border-radius: 12px; 
+    display: flex; flex-direction: column; align-items: center; 
+    justify-content: flex-start; cursor: pointer; position: relative; 
+    transition: 0.2s; border: 1px solid transparent; overflow: hidden; 
+    padding: 12px; gap: 8px; /* Memberikan ruang rapi di dalam kotak antara gambar & teks */
+}
+.item-card:hover { 
+    background: rgba(255, 255, 255, 0.1); transform: translateY(-5px); 
+    border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
 .item-card i.icon { font-size: 3rem; margin: auto; }
 .fa-folder { color: #facc15; } 
 
-.thumb-box { width: 100%; height: calc(100% - 25px); overflow: hidden; display: flex; justify-content: center; align-items: center; border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; }
-.thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
+.thumb-box { 
+    width: 100%; aspect-ratio: 1/1; /* Gambar akan selalu presisi menjadi persegi */
+    overflow: hidden; display: flex; justify-content: center; align-items: center; 
+    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; 
+}
+.thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
 
-.thumb-fallback-card { width: 100%; height: 100%; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
+.thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 
 .bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
 .bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); }
@@ -138,7 +158,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .icon-purple { color: #8b5cf6; }
 .icon-white { color: #f1f5f9; }
 
-.item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0; margin-top: 5px; height: 20px; }
+.item-name { 
+    font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    color: #e2e8f0; height: 20px; line-height: 20px; 
+}
 
 /* MODALS */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
