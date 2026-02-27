@@ -479,8 +479,9 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
+    // Perubahan disini untuk menghubungkan fungsi Preview saat klik
     div.onclick = () => { 
-        if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : window.open(doc.url, '_blank'); }
+        if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); }
     };
     
     // Klik Kanan Handler
@@ -543,9 +544,11 @@ function initAllContextMenus() {
         };
     }
     
+    // Perbaikan agar context menu pratinjau tertutup dengan benar
     window.onclick = (e) => {
-        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget')) return;
+        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
         closeAllMenus();
+        if(el('previewContextMenu')) el('previewContextMenu').classList.add('hidden');
     };
 }
 
@@ -689,7 +692,7 @@ window.toggleStarItem = async () => { try { await databases.updateDocument(CONFI
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); closeAllMenus(); } catch(e){} };
 window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa kembali!")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
-window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : window.open(selectedItem.url, '_blank'); closeAllMenus(); };
+window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : openPreview(selectedItem); closeAllMenus(); };
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
 
@@ -732,3 +735,107 @@ function updateHeaderUI() {
 }
 
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
+
+// ======================================================
+// 9. LOGIKA PRATINJAU FILE (PREVIEW APPLE GLASS STYLE)
+// ======================================================
+let currentPreviewDoc = null;
+
+window.openPreview = (doc) => {
+    currentPreviewDoc = doc;
+    const ext = doc.name.split('.').pop().toLowerCase();
+    
+    // Ambil URL View dari Appwrite
+    const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
+
+    // Set Nama File di Top Header
+    el('previewFileName').innerText = doc.name;
+
+    // Tentukan Ikon & Warna Berdasarkan Kategori
+    let iconClass = "fa-file"; let iconColor = "#ffffff";
+    const pdfExt = ['pdf']; 
+    const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx']; 
+    const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']; 
+    const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+
+    if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
+    else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
+    else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; iconColor = "#34a853"; }
+    else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#fbbc04"; }
+    else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#2dd4bf"; }
+    else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#facc15"; }
+
+    const iconEl = el('previewFileIcon');
+    iconEl.className = `fa-solid ${iconClass}`;
+    iconEl.style.color = iconColor;
+
+    const contentArea = el('previewContent');
+    contentArea.innerHTML = '<div class="spinner"></div>'; // Tampilkan loading awal saat data ditarik
+
+    // Buka Modal Overlay
+    const overlay = el('previewModal');
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('show-preview'), 10);
+
+    // Render Injeksi Konten berdasarkan ekstensi (diberi jeda agar animasi blur mulus)
+    setTimeout(() => {
+        if (familiarImages.includes(ext)) {
+            // Preview Gambar
+            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}">`;
+        } 
+        else if (vidExts.includes(ext)) {
+            // Preview Video
+            contentArea.innerHTML = `<video src="${fileViewUrl}" controls autoplay></video>`;
+        } 
+        else if (pdfExt.includes(ext)) {
+            // Pratinjau PDF murni menggunakan engine render browser
+            contentArea.innerHTML = `<iframe src="${fileViewUrl}"></iframe>`;
+        } 
+        else if (docExts.includes(ext)) {
+            // Pratinjau file Office (Word, Excel, PPT) menggunakan Google Docs Viewer API
+            const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+            contentArea.innerHTML = `<iframe src="${googleViewerUrl}"></iframe>`;
+        } 
+        else {
+            // Jika tidak dikenali
+            contentArea.innerHTML = `
+                <div class="preview-unsupported">
+                    <i class="fa-solid ${iconClass}"></i>
+                    <p>Pratinjau langsung tidak tersedia untuk format file ini.</p>
+                    <button class="btn-pill primary" style="width:auto; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
+                </div>
+            `;
+        }
+    }, 400); 
+};
+
+window.closePreview = () => {
+    const overlay = el('previewModal');
+    overlay.classList.remove('show-preview');
+    
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        el('previewContent').innerHTML = ''; // Hentikan audio video & buang memory iframe saat ditutup
+        currentPreviewDoc = null;
+    }, 350);
+};
+
+window.downloadPreviewItem = () => {
+    if (currentPreviewDoc) {
+        window.open(storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId), '_blank');
+    }
+};
+
+window.togglePreviewMenu = () => {
+    const menu = el('previewContextMenu');
+    menu.classList.toggle('hidden');
+};
+
+window.openPreviewInNewTab = () => {
+    if (currentPreviewDoc) {
+        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId);
+        window.open(fileViewUrl, '_blank');
+        el('previewContextMenu').classList.add('hidden');
+        closePreview();
+    }
+};
