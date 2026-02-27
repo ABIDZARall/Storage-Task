@@ -354,25 +354,10 @@
         </div>
     </div>
 
-    <div id="previewModal" class="preview-overlay hidden">
-        <div class="preview-header">
-            <div class="preview-left">
-                <i class="fa-solid fa-file preview-type-icon" id="previewIcon"></i>
-                <span class="preview-title" id="previewTitle">Nama File.ext</span>
-            </div>
-            <div class="preview-right">
-                <button class="preview-action-btn" onclick="downloadPreviewItem()" title="Download File"><i class="fa-solid fa-download"></i></button>
-                <button class="preview-action-btn" onclick="closePreviewModal()" title="Tutup Pratinjau"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-        </div>
-        <div class="preview-body" id="previewContent">
-            </div>
-    </div>
-
     <div id="fileContextMenu" class="context-menu-modern hidden">
         <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
         <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
-        <div class="ctx-item" id="ctxBtnOpenWith" onclick="openRawUrl()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
+        <div class="ctx-item" id="ctxBtnOpenWith" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
         <hr class="ctx-divider">
         <div class="ctx-item" id="ctxBtnDownload" onclick="downloadCurrentItem()"><i class="fa-solid fa-download"></i><span>Download</span></div>
         <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span></div>
