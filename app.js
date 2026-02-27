@@ -411,7 +411,7 @@ function renderItem(doc) {
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
         // Kategori Ekstensi
-        const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp'];
+        const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'heic', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp', 'svg', 'ico'];
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
@@ -447,11 +447,8 @@ function renderItem(doc) {
             // ========================================================
             // 🔗 KONEKSI KE API BACKEND CUSTOM UNTUK THUMBNAIL DOKUMEN
             // ========================================================
-            // GANTI INI DENGAN URL HUGGING FACE ANDA YANG BARU DIBUAT (Pilihan 1)
-            // Atau ganti dengan URL IP PROXMOX Anda jika (Pilihan 2)
             const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
 
-            // Atur Lencana (Badge)
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
             if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
             else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
@@ -479,12 +476,10 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
-    // Perubahan disini untuk menghubungkan fungsi Preview saat klik
     div.onclick = () => { 
         if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); }
     };
     
-    // Klik Kanan Handler
     div.oncontextmenu = (e) => {
         e.preventDefault(); e.stopPropagation();
         closeAllMenus(); 
@@ -544,7 +539,6 @@ function initAllContextMenus() {
         };
     }
     
-    // Perbaikan agar context menu pratinjau tertutup dengan benar
     window.onclick = (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
         closeAllMenus();
@@ -656,7 +650,7 @@ async function calculateStorage() {
 
         res.documents.forEach(doc => {
             const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp|tiff|tif|heif)$/)) storageDetail.images += size;
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp|tiff|tif|heif|heic|raw|ico)$/)) storageDetail.images += size;
             else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm|3gp|mpg|mpeg|avchd|m2ts)$/)) storageDetail.videos += size;
             else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv|odt|ods|odp)$/)) storageDetail.docs += size;
             else storageDetail.others += size;
@@ -737,7 +731,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE (PREVIEW APPLE GLASS STYLE)
+// 9. LOGIKA PRATINJAU FILE (UPDATE DENGAN CUSTOM VIDEO & EXCEL FIX)
 // ======================================================
 let currentPreviewDoc = null;
 
@@ -745,18 +739,19 @@ window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
-    // Ambil URL View dari Appwrite
+    // Gunakan getFileDownload url khusus untuk dikirim ke MS Office / Google agar terbaca dengan sempurna (Bypass CORS blocking Appwrite Cloud)
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
+    const fileDownloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
 
-    // Set Nama File di Top Header
     el('previewFileName').innerText = doc.name;
 
-    // Tentukan Ikon & Warna Berdasarkan Kategori
+    // Perluas ekstensi di sini
     let iconClass = "fa-file"; let iconColor = "#ffffff";
     const pdfExt = ['pdf']; 
-    const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx']; 
-    const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']; 
-    const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+    const msOfficeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']; 
+    const otherDocs = ['csv', 'txt', 'rtf'];
+    const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico']; 
+    const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv'];
 
     if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
     else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
@@ -770,34 +765,51 @@ window.openPreview = (doc) => {
     iconEl.style.color = iconColor;
 
     const contentArea = el('previewContent');
-    contentArea.innerHTML = '<div class="spinner"></div>'; // Tampilkan loading awal saat data ditarik
+    contentArea.innerHTML = '<div class="spinner"></div>';
 
-    // Buka Modal Overlay
     const overlay = el('previewModal');
     overlay.classList.remove('hidden');
     setTimeout(() => overlay.classList.add('show-preview'), 10);
 
-    // Render Injeksi Konten berdasarkan ekstensi (diberi jeda agar animasi blur mulus)
     setTimeout(() => {
         if (familiarImages.includes(ext)) {
-            // Preview Gambar
-            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}">`;
+            // PERBAIKAN: Membaca gambar apapun yang didaftarkan (termasuk .jfif)
+            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // Preview Video
-            contentArea.innerHTML = `<video src="${fileViewUrl}" controls autoplay></video>`;
+            // PERBAIKAN: Kustom Video Player Elegan dengan fitur mirip Google Drive (Tanpa UI bawaan)
+            contentArea.innerHTML = `
+                <div class="custom-video-container" id="vidContainer">
+                    <video src="${fileViewUrl}" id="customVideo" autoplay playsinline></video>
+                    <div class="video-controls">
+                        <button class="vid-btn" id="vidPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                        <div class="vid-progress-container" id="vidProgressContainer">
+                            <div class="vid-progress-bar" id="vidProgressBar"></div>
+                        </div>
+                        <span class="vid-time" id="vidTime">0:00 / 0:00</span>
+                        <button class="vid-btn" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                        <button class="vid-btn" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
+                    </div>
+                </div>
+            `;
+            setTimeout(initCustomVideoPlayer, 50); // Inisiasi fungsional kontrol videonya
         } 
         else if (pdfExt.includes(ext)) {
-            // Pratinjau PDF murni menggunakan engine render browser
             contentArea.innerHTML = `<iframe src="${fileViewUrl}"></iframe>`;
         } 
-        else if (docExts.includes(ext)) {
-            // Pratinjau file Office (Word, Excel, PPT) menggunakan Google Docs Viewer API
-            const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
-            contentArea.innerHTML = `<iframe src="${googleViewerUrl}"></iframe>`;
+        else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
+            // PERBAIKAN EXCEL: Memakai Microsoft Office Viewer untuk Office formats (Sangat tahan banting untuk render Excel Appwrite)
+            let viewerUrl = '';
+            if (msOfficeExts.includes(ext)) {
+                // Microsoft Web Viewer sangat powerful membaca format office dari public URL mentah
+                viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
+            } else {
+                // Fallback pakai Google untuk format ringan CSV/txt
+                viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
+            }
+            contentArea.innerHTML = `<iframe src="${viewerUrl}"></iframe>`;
         } 
         else {
-            // Jika tidak dikenali
             contentArea.innerHTML = `
                 <div class="preview-unsupported">
                     <i class="fa-solid ${iconClass}"></i>
@@ -809,13 +821,64 @@ window.openPreview = (doc) => {
     }, 400); 
 };
 
+// Logika Pemutar Video Kustom (Liquid Glass Controls)
+window.initCustomVideoPlayer = () => {
+    const video = el('customVideo');
+    const playPauseBtn = el('vidPlayPause');
+    const progressContainer = el('vidProgressContainer');
+    const progressBar = el('vidProgressBar');
+    const timeDisplay = el('vidTime');
+    const muteBtn = el('vidMute');
+    const fullscreenBtn = el('vidFullscreen');
+    const vidContainer = el('vidContainer');
+
+    if(!video) return;
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    };
+
+    video.addEventListener('loadedmetadata', () => { timeDisplay.innerText = `0:00 / ${formatTime(video.duration)}`; });
+
+    video.addEventListener('timeupdate', () => {
+        const percent = (video.currentTime / video.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        timeDisplay.innerText = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 0)}`;
+    });
+
+    const togglePlay = () => {
+        if (video.paused) { video.play(); playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; }
+        else { video.pause(); playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>'; }
+    };
+
+    playPauseBtn.addEventListener('click', togglePlay);
+    video.addEventListener('click', togglePlay);
+
+    muteBtn.addEventListener('click', () => {
+        video.muted = !video.muted;
+        muteBtn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+    });
+
+    progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) { vidContainer.requestFullscreen().catch(err => {}); }
+        else { document.exitFullscreen(); }
+    });
+};
+
 window.closePreview = () => {
     const overlay = el('previewModal');
     overlay.classList.remove('show-preview');
     
     setTimeout(() => {
         overlay.classList.add('hidden');
-        el('previewContent').innerHTML = ''; // Hentikan audio video & buang memory iframe saat ditutup
+        el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
     }, 350);
 };

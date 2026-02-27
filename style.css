@@ -303,11 +303,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-radius: 8px; box-shadow: 0 15px 50px rgba(0,0,0,0.5);
     animation: previewZoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.preview-content-area video {
-    max-width: 100%; max-height: 100%; border-radius: 12px; outline: none;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.5); background: black;
-    animation: previewZoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
 .preview-content-area iframe {
     width: 100%; height: 100%; max-width: 1100px; border: none; border-radius: 12px;
     box-shadow: 0 15px 50px rgba(0,0,0,0.5); background: #f8f9fa;
@@ -324,3 +319,41 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     0% { opacity: 0; transform: scale(0.95); }
     100% { opacity: 1; transform: scale(1); }
 }
+
+/* ====================================================== */
+/* TAMBAHAN GAYA KUSTOM UNTUK PEMUTAR VIDEO (LIQUID GLASS)*/
+/* ====================================================== */
+.custom-video-container { 
+    position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
+    background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.5); 
+    animation: previewZoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+.custom-video-container video { 
+    width: 100%; max-height: 100%; border-radius: 12px; outline: none; 
+}
+.video-controls { 
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; 
+    background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 10px 20px; 
+    display: flex; align-items: center; gap: 15px; opacity: 0; transition: opacity 0.3s; 
+}
+.custom-video-container:hover .video-controls { opacity: 1; }
+.vid-btn { 
+    background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; 
+    display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; border-radius: 50%; 
+}
+.vid-btn:hover { background: rgba(255,255,255,0.2); }
+.vid-progress-container { 
+    flex: 1; display: flex; align-items: center; position: relative; height: 5px; background: rgba(255,255,255,0.2); 
+    border-radius: 5px; cursor: pointer; transition: height 0.2s;
+}
+.vid-progress-container:hover { height: 8px; }
+.vid-progress-bar { 
+    height: 100%; background: var(--accent); border-radius: 5px; width: 0%; pointer-events: none; position: relative;
+}
+.vid-progress-bar::after {
+    content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%);
+    width: 10px; height: 10px; background: white; border-radius: 50%; opacity: 0; transition: 0.2s;
+}
+.vid-progress-container:hover .vid-progress-bar::after { opacity: 1; }
+.vid-time { color: white; font-size: 0.85rem; font-family: 'Consolas', monospace; user-select: none; }
