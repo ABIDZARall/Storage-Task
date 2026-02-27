@@ -354,6 +354,29 @@
         </div>
     </div>
 
+    <div id="previewModal" class="preview-overlay hidden">
+        <div class="preview-header liquid-glass-panel">
+            <div class="preview-header-left">
+                <button class="icon-btn" onclick="closePreview()" title="Tutup"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="preview-file-info">
+                    <i id="previewFileIcon" class="fa-solid fa-file"></i>
+                    <span id="previewFileName">filename.ext</span>
+                </div>
+            </div>
+            <div class="preview-header-right">
+                <button class="icon-btn" onclick="downloadPreviewItem()" title="Download"><i class="fa-solid fa-download"></i></button>
+                <div style="position: relative;">
+                    <button class="icon-btn" onclick="togglePreviewMenu()" title="Tindakan lainnya"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <div id="previewContextMenu" class="dropdown-content hidden" style="top: 50px; right: 0; left: auto; min-width: 200px;">
+                        <a href="javascript:void(0)" onclick="openPreviewInNewTab()"><i class="fa-solid fa-up-right-from-square"></i> Buka di jendela baru</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="previewContent" class="preview-content-area">
+            </div>
+    </div>
+
     <div id="fileContextMenu" class="context-menu-modern hidden">
         <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
         <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
