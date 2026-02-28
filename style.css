@@ -5,22 +5,22 @@
 /* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR (LATEST APPLE DESIGN) */
 /* ============================================================ */
 
-/* 1. Mengatur area scrollbar secara global (lebar untuk vertikal, tinggi untuk horizontal) */
+/* Mengatur area scrollbar secara global */
 ::-webkit-scrollbar {
     width: 14px;  
     height: 14px; 
     background-color: transparent; 
 }
 
-/* 2. Mengatur Track (jalur scrollbar) - Dibuat sepenuhnya transparan */
+/* Mengatur Track (jalur scrollbar) - Dibuat sepenuhnya transparan */
 ::-webkit-scrollbar-track {
     background-color: transparent;
 }
 
-/* 3. Mengatur Thumb (batang scrollbar yang digeser) - Efek Pil Mengambang */
+/* Mengatur Thumb (batang scrollbar yang digeser) - Efek Pil Mengambang */
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2); /* Warna kaca semi-transparan putih */
-    border-radius: 10px; /* Membulatkan ujungnya sempurna */
+    background-color: rgba(255, 255, 255, 0.2); 
+    border-radius: 10px; 
     
     /* TRIK UTAMA: Memberikan border transparan tebal agar thumb terlihat mengecil 
        dan tidak menempel langsung ke tepi layar (floating effect) */
@@ -28,19 +28,19 @@
     background-clip: padding-box; 
 }
 
-/* 4. Efek saat Thumb di-hover / diklik - Menyala dan sedikit membesar */
+/* Efek saat Thumb di-hover / diklik - Menyala dan sedikit membesar */
 ::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:active {
     background-color: rgba(255, 255, 255, 0.4); 
-    border: 3px solid transparent; /* Border dikecilkan agar thumb terlihat membesar mulus */
+    border: 3px solid transparent; /* Border dikecilkan agar thumb membesar mulus */
 }
 
-/* 5. Sudut pojok pertemuan scrollbar vertikal & horizontal */
+/* Sudut pojok pertemuan scrollbar vertikal & horizontal */
 ::-webkit-scrollbar-corner {
     background: transparent;
 }
 
-/* 6. Trik khusus untuk browser Firefox */
+/* Trik khusus untuk browser Firefox */
 * {
     scrollbar-width: thin; 
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent; 
@@ -138,7 +138,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .auth-footer { margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
 .link-text { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
 
-/* Lupa Password */
 .forgot-pass-container { width: 100%; text-align: right; margin-top: -10px; margin-bottom: 5px; }
 .small-link { font-size: 0.8rem; opacity: 0.9; }
 .small-link:hover { text-decoration: underline; opacity: 1; }
@@ -192,7 +191,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     display: flex; gap: 20px; overflow: hidden; 
 }
 
-/* Sidebar Kiri menggunakan custom scrollbar macOS */
 .sidebar-left { 
     width: 230px; display: flex; flex-direction: column; gap: 10px; 
     border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; 
@@ -236,25 +234,23 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 /* GRID ITEM STYLING (KOTAK PRESISI, RAPIH, ELEGAN)             */
 /* ============================================================ */
-/* Area Grid - Menggunakan custom scrollbar macOS karena overflow-y */
 .file-grid-area { 
     flex: 1; 
     overflow-y: auto; 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Responsif tapi stabil */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     align-items: start; align-content: start;
-    gap: 20px; /* Jarak lega agar tidak berdesakan */
+    gap: 20px; 
     padding: 20px 15px 50px 15px; 
 }
 
-/* Card Utama - Dipaksa menjadi Kotak Sempurna */
 .item-card { 
     background: rgba(255, 255, 255, 0.04); 
     border-radius: 12px; 
     display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
     cursor: pointer; position: relative; transition: all 0.3s ease; 
     border: 1px solid rgba(255,255,255,0.05); 
-    padding: 10px; /* Jarak dari ujung card ke konten */
+    padding: 10px; 
     box-sizing: border-box; width: 100%;
     aspect-ratio: 1 / 1; /* MENCEGAH KARTU PANJANG KE BAWAH - KOTAK PRESISI */
 }
@@ -266,122 +262,73 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* ============================================================ */
 /* MAC OS LIQUID GLASS FOLDER ICON (PURE CSS)                   */
-/* Menghasilkan desain folder Apple modern berukuran Medium     */
 /* ============================================================ */
-/* 1. Mencegah ikon lama (FontAwesome) tampil jika desain baru digunakan */
 .item-card:has(.mac-folder-icon) i.fa-folder {
     display: none !important;
 }
 
-/* 2. Container untuk ikon folder CSS agar tenggelam sempurna di tengah kartu */
 .mac-folder-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* Biarkan kartu parent menangkap klik */
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; pointer-events: none; 
 }
 
-/* 3. Struktur Utama Ikon Folder (Ukuran Diperbesar - Medium/Large) */
 .mac-folder-icon {
     position: relative;
-    width: 90px;  /* UKURAN DIPERBESAR dari 3rem(~48px) ke 90px */
-    height: 68px; /* Proporsional */
+    width: 90px;  /* UKURAN MEDIUM/LARGE */
+    height: 68px; 
     margin: auto;
     transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35)); /* Bayangan premium */
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35)); 
 }
 
-/* Animasi scale saat parent kartu di-hover */
 .item-card:hover .mac-folder-icon {
     transform: scale(1.03) translateY(-2px);
 }
 
-/* 4. Bagian Belakang Folder (Native macOS Blue Gradient) */
 .mac-folder-back {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 85%;
-    background: linear-gradient(180deg, #1ea0ff, #005ce6); /* Gradasi biru Apple */
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 85%;
+    background: linear-gradient(180deg, #1ea0ff, #005ce6); 
     border-radius: 12px 16px 14px 14px;
 }
 
-/* 5. Tab Detail di Kiri Atas */
 .mac-folder-back::before {
-    content: '';
-    position: absolute;
-    top: -14px; /* Naik ke atas solid part */
-    left: 0;
-    width: 40px; /* Lebar tab diperbesar proporsional */
-    height: 18px;
+    content: ''; position: absolute; top: -14px; left: 0;
+    width: 40px; height: 18px;
     background: linear-gradient(180deg, #1ea0ff, #007aff);
     border-radius: 10px 14px 0 0;
 }
 
-/* 6. Bagian Depan Folder (Liquid Glass / Frosted Glass Effect) */
 .mac-folder-front {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 78%; /* Sedikit lebih rendah dari back untuk estetika */
-    
-    /* Efek Kaca Frosted Premium (Glassmorphism) */
-    background: rgba(220, 240, 255, 0.2); /* Warna base kaca */
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 78%; 
+    background: rgba(220, 240, 255, 0.2); 
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    
-    /* Border Kaca */
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     border-right: 1px solid rgba(255, 255, 255, 0.2);
-    
     border-radius: 16px;
-    
-    /* Pencahayaan dalam kaca */
-    box-shadow: 
-        inset 0 2px 10px rgba(255, 255, 255, 0.5), 
-        0 5px 15px rgba(0, 0, 0, 0.2);
-    
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 15px; /* Spasi untuk detail minimalis */
-    opacity: 0.95;
+    box-shadow: inset 0 2px 10px rgba(255, 255, 255, 0.5), 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 15px; opacity: 0.95;
 }
 
-/* 7. Detail Minimalis - Pill putih halus di dalam kaca */
 .mac-folder-front::after {
-    content: '';
-    width: 30px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    content: ''; width: 30px; height: 6px; background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
 /* ============================================================ */
 
-/* Wadah Thumbnail (Gambar/Ikon) di dalam Card */
 .thumb-box { 
-    width: 100%; 
-    flex: 1; /* Thumbnail mengisi ruang sisa secara fleksibel */
-    min-height: 0; /* Menghindari bug flexbox yang menembus batas */
-    overflow: hidden; display: flex; justify-content: center; align-items: center; 
-    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; 
-    margin-bottom: 8px; 
+    width: 100%; flex: 1; min-height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; 
+    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; margin-bottom: 8px; 
 }
 
-/* Override khusus untuk folder agar shadow/bayangan tidak terpotong area hidden */
 .thumb-box:has(.mac-folder-icon) {
-    overflow: visible;
-    background: transparent;
+    overflow: visible; background: transparent;
 }
 
 .thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
-
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 
 /* Warna Latar Ekstensi File */
@@ -403,11 +350,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .icon-purple { color: #8b5cf6; }
 .icon-white { color: #f1f5f9; }
 
-/* Teks Nama File */
 .item-name { 
     font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    color: #f1f5f9; line-height: 1.2; height: 16px; flex-shrink: 0; /* Tinggi teks dikunci agar tidak merusak grid */
+    color: #f1f5f9; line-height: 1.2; height: 16px; flex-shrink: 0; 
 }
 
 /* ============================================================ */
@@ -488,7 +434,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .legend-row { display: flex; justify-content: space-between; font-size: 0.9rem; align-items: center; }
 .legend-label { display: flex; align-items: center; gap: 12px; color: #e2e8f0; font-weight: 500; }
 .legend-val { color: #94a3b8; font-family: 'Consolas', monospace; font-size: 0.85rem; }
-
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot-images { background-color: var(--clr-blue); }
 .dot-videos { background-color: var(--clr-yellow); }
@@ -504,27 +449,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .primary-dark { background: rgba(66, 133, 244, 0.15); color: var(--clr-blue); border: 1px solid transparent; }
 .primary-dark:hover { background: rgba(66, 133, 244, 0.25); }
 
-/* Full Screen Layout juga otomatis pakai scrollbar mac karena * selector */
 .full-screen-layout { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 9000; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
 .storage-page-header { display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .back-icon-btn { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
 .back-icon-btn:hover { background: rgba(255,255,255,0.1); }
 .storage-page-header h2 { font-size: 1.4rem; font-weight: 500; }
 .storage-page-content { flex: 1; display: flex; justify-content: center; align-items: flex-start; }
-
 .storage-manager-card { width: 100%; max-width: 800px; background: #1e293b; border-radius: 16px; border: 1px solid var(--glass-border); padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-.card-header-text { text-align: center; margin-bottom: 30px; }
-.card-header-text h1 { font-size: 2rem; font-weight: 400; margin-bottom: 10px; }
-.card-header-text p { color: #94a3b8; font-size: 0.95rem; }
-.storage-summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; font-weight: 500; }
-.highlight-text { color: white; font-weight: 600; }
-.page-progress { height: 10px; margin-bottom: 30px; }
-.storage-detail-list { display: flex; flex-direction: column; gap: 0; }
-.detail-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.detail-item:last-child { border-bottom: none; }
-.dt-left { display: flex; align-items: center; gap: 15px; font-size: 1rem; color: #e2e8f0; }
-.dt-right { font-family: 'Consolas', monospace; color: #94a3b8; }
-.item-free { opacity: 0.7; }
 
 /* Responsive Media Queries */
 @media screen and (max-width: 768px) {
@@ -546,21 +477,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 .preview-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.7); /* Latar gelap transparan */
+    background: rgba(15, 23, 42, 0.75); /* Latar gelap transparan */
     backdrop-filter: blur(20px); /* Efek blur kaca Apple */
     -webkit-backdrop-filter: blur(20px);
-    z-index: 30000;
-    display: flex; flex-direction: column;
+    z-index: 30000; display: flex; flex-direction: column;
     opacity: 0; transition: opacity 0.3s ease;
 }
-.preview-overlay.show-preview {
-    opacity: 1; display: flex !important;
-}
+.preview-overlay.show-preview { opacity: 1; display: flex !important; }
+
 .liquid-glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
     height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
 }
 .preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
@@ -570,8 +497,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .icon-btn {
     background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.1rem; cursor: pointer;
-    width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center;
-    transition: 0.2s;
+    width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; transition: 0.2s;
 }
 .icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
 
@@ -584,15 +510,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     animation: previewZoomIn 0.3s ease-out;
 }
-.preview-content-area iframe {
-    width: 100%; height: 100%; max-width: 1000px; border: none; border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4); background: white;
-    animation: previewZoomIn 0.3s ease-out;
-}
-.preview-unsupported {
-    display: flex; flex-direction: column; align-items: center; color: white; text-align: center;
-    animation: previewZoomIn 0.3s ease-out;
-}
+
+.preview-unsupported { display: flex; flex-direction: column; align-items: center; color: white; text-align: center; animation: previewZoomIn 0.3s ease-out; }
 .preview-unsupported i { font-size: 4rem; margin-bottom: 20px; color: rgba(255,255,255,0.3); }
 .preview-unsupported p { margin-bottom: 20px; color: rgba(255,255,255,0.7); }
 
@@ -602,33 +521,92 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* ============================================================ */
-/* CUSTOM VIDEO PLAYER (LIQUID GLASS THEATER)                   */
+/* NEW: MAC OS DOCUMENT VIEWER GLASS WINDOW (EXCEL, WORD, PPT)  */
 /* ============================================================ */
-.custom-video-container { 
+.doc-glass-wrapper {
+    width: 100%; height: 100%; max-width: 1200px;
+    padding: 10px; /* Jarak antara bingkai kaca dan iframe */
+    background: rgba(255, 255, 255, 0.05); /* Kaca transparan mewah */
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    display: flex;
+    animation: previewZoomIn 0.3s ease-out;
+}
+.doc-glass-wrapper iframe {
+    flex: 1; width: 100%; height: 100%;
+    border-radius: 8px; /* Tepi dokumen sedikit membulat */
+    border: none;
+    background: #f8f9fa; /* Warna dasar dokumen Microsoft */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================ */
+/* NEW: APPLE DEFAULT LIQUID GLASS THEATER VIDEO PLAYER         */
+/* ============================================================ */
+.apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
-    background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+    background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
     animation: previewZoomIn 0.3s ease-out; 
 }
-.custom-video-container video { 
-    width: 100%; max-height: 100%; border-radius: 12px; outline: none; 
+.apple-video-wrapper video { width: 100%; max-height: 100%; outline: none; }
+
+/* Overlay gradient & control container yang akan menghilang perlahan */
+.apple-video-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.2) 100%);
+    opacity: 1; transition: opacity 0.5s ease-in-out;
 }
-.video-controls { 
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 600px; 
-    background: rgba(20, 20, 20, 0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-    border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 8px 15px; 
-    display: flex; align-items: center; gap: 10px; opacity: 0; transition: opacity 0.3s; 
+
+/* Tombol Glass Generic Apple */
+.apple-glass-btn {
+    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2); color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+    width: 55px; height: 55px; font-size: 1.3rem; position: relative;
 }
-.custom-video-container:hover .video-controls { opacity: 1; }
-.vid-btn { 
-    background: transparent; border: none; color: white; font-size: 1rem; cursor: pointer; transition: 0.2s; 
-    display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; 
+.apple-glass-btn:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.05); }
+.apple-glass-btn.small { width: 45px; height: 45px; font-size: 1.1rem; }
+
+/* Kontrol Tengah (Skip, Play/Pause) */
+.apple-center-controls {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; gap: 25px; align-items: center;
 }
-.vid-btn:hover { background: rgba(255,255,255,0.1); }
-.vid-progress-container { 
-    flex: 1; display: flex; align-items: center; position: relative; height: 4px; background: rgba(255,255,255,0.2); 
-    border-radius: 2px; cursor: pointer; 
+.apple-center-controls .play-pause-btn { width: 75px; height: 75px; font-size: 2rem; }
+
+/* Styling Angka '10' di dalam tombol skip mundur/maju */
+.skip-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 0.55rem; font-weight: 800; margin-top: 1px;
 }
-.vid-progress-bar { 
-    height: 100%; background: var(--accent); border-radius: 2px; width: 0%; pointer-events: none; 
+
+/* Kontrol Sudut Kanan Atas (Volume, Fullscreen) */
+.apple-top-controls {
+    position: absolute; top: 25px; right: 25px; display: flex; gap: 15px;
 }
-.vid-time { color: white; font-size: 0.75rem; font-family: monospace; user-select: none; }
+
+/* Floating Liquid Glass Pill di Bawah (Progress Bar & Waktu) */
+.apple-bottom-pill {
+    position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
+    width: 85%; max-width: 800px; height: 50px;
+    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex; align-items: center; padding: 0 20px; gap: 15px;
+}
+
+/* Progress bar styling (Minimalis Apple) */
+.apple-progress-container {
+    flex: 1; height: 6px; background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px; cursor: pointer; position: relative; transition: height 0.2s;
+}
+.apple-progress-container:hover { height: 10px; }
+.apple-progress-bar {
+    height: 100%; background: #ffffff; border-radius: 3px; width: 0%; pointer-events: none;
+}
+.apple-time {
+    color: white; font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 45px; text-align: center;
+}

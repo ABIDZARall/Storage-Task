@@ -394,14 +394,19 @@ function renderItem(doc) {
     const div = document.createElement('div'); div.className = 'item-card';
 
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:5;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
+    // Bintang diposisikan absolute di atas thumb-box agar tidak bersembunyi di bawah folder kaca
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:15;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
     let content = '';
 
     if (isFolder) {
+        // Implementasi Mac OS Liquid Glass Folder Icon
         content = `
-            <div class="thumb-box" style="background:transparent;">
-                <div style="flex:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                    <i class="icon fa-solid fa-folder"></i>
+            <div class="thumb-box" style="background:transparent; overflow: visible;">
+                <div class="mac-folder-container">
+                    <div class="mac-folder-icon">
+                        <div class="mac-folder-back"></div>
+                        <div class="mac-folder-front"></div>
+                    </div>
                 </div>
             </div>`;
     } else {
@@ -426,14 +431,14 @@ function renderItem(doc) {
 
         if (familiarImages.includes(ext)) {
             content = `
-                <div class="thumb-box" style="background:transparent;">
+                <div class="thumb-box thumb-box-file">
                     <img src="${fileViewUrl}" class="thumb-image" loading="lazy" 
                          onerror="this.parentElement.innerHTML='${createFallback(ext)}'">
                 </div>
             `;
         } else if (vidExts.includes(ext)) {
             content = `
-                <div class="thumb-box" style="background:#000;">
+                <div class="thumb-box thumb-box-file" style="background:#000;">
                     <video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop 
                         onmouseover="this.play()" 
                         onmouseout="this.pause()"
@@ -456,7 +461,7 @@ function renderItem(doc) {
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
             content = `
-                <div class="thumb-box" style="background:#f8f9fa; position: relative;">
+                <div class="thumb-box thumb-box-file" style="background:#f8f9fa; position: relative;">
                     <img src="${backendThumbUrl}" class="thumb-image" loading="lazy" 
                          onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
                     
@@ -467,7 +472,7 @@ function renderItem(doc) {
             `;
         } else {
             content = `
-                <div class="thumb-box" style="background:transparent;">
+                <div class="thumb-box thumb-box-file">
                     ${createFallback(ext).replace(/'/g, '"')} 
                 </div>
             `;
@@ -713,8 +718,18 @@ async function loadFiles(param) {
     } 
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        if (res.documents.length === 0) grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.5;margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:4rem;margin-bottom:20px;"></i><p>Folder Kosong</p></div>`; 
-        else res.documents.forEach(doc => renderItem(doc)); 
+        if (res.documents.length === 0) {
+            // Mengubah tampilan folder kosong agar sesuai desain macOS glass yang baru
+            grid.innerHTML = `<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
+                                <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
+                                    <div class="mac-folder-back"></div>
+                                    <div class="mac-folder-front"></div>
+                                </div>
+                                <p>Folder Kosong</p>
+                              </div>`; 
+        } else {
+            res.documents.forEach(doc => renderItem(doc)); 
+        }
     } catch (e) { console.error(e); } 
 }
 
@@ -735,11 +750,14 @@ window.togglePass = (id, icon) => { const input = document.getElementById(id); i
 // ======================================================
 let currentPreviewDoc = null;
 
+// Variabel Global untuk Timer Auto-hide UI Video
+let hideOverlayTimeout;
+
 window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
-    // Gunakan getFileDownload url khusus untuk dikirim ke MS Office / Google agar terbaca dengan sempurna (Bypass CORS blocking Appwrite Cloud)
+    // Gunakan getFileDownload URL untuk koneksi MS Office Viewer
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
     const fileDownloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
 
@@ -751,7 +769,7 @@ window.openPreview = (doc) => {
     const msOfficeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']; 
     const otherDocs = ['csv', 'txt', 'rtf'];
     const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico']; 
-    const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv'];
+    const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
 
     if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
     else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
@@ -773,41 +791,72 @@ window.openPreview = (doc) => {
 
     setTimeout(() => {
         if (familiarImages.includes(ext)) {
-            // PERBAIKAN: Membaca gambar apapun yang didaftarkan (termasuk .jfif)
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // PERBAIKAN: Kustom Video Player Elegan dengan fitur mirip Google Drive (Tanpa UI bawaan)
+            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER (Liquid Glass Overlay)
             contentArea.innerHTML = `
-                <div class="custom-video-container" id="vidContainer">
-                    <video src="${fileViewUrl}" id="customVideo" autoplay playsinline></video>
-                    <div class="video-controls">
-                        <button class="vid-btn" id="vidPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                        <div class="vid-progress-container" id="vidProgressContainer">
-                            <div class="vid-progress-bar" id="vidProgressBar"></div>
+                <div class="apple-video-wrapper" id="vidContainer">
+                    <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
+                    
+                    <div class="apple-video-overlay" id="vidOverlay">
+                        <div class="apple-top-controls">
+                            <button class="apple-glass-btn small" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                            <button class="apple-glass-btn small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                         </div>
-                        <span class="vid-time" id="vidTime">0:00 / 0:00</span>
-                        <button class="vid-btn" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
-                        <button class="vid-btn" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
+
+                        <div class="apple-center-controls">
+                            <button class="apple-glass-btn" id="vidSkipBack" title="Mundur 10 detik">
+                                <div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                    <span class="skip-text">10</span>
+                                </div>
+                            </button>
+                            <button class="apple-glass-btn play-pause-btn" id="vidPlayPause" title="Play/Pause">
+                                <i class="fa-solid fa-pause"></i>
+                            </button>
+                            <button class="apple-glass-btn" id="vidSkipForward" title="Maju 10 detik">
+                                <div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                    <span class="skip-text">10</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="apple-bottom-pill">
+                            <span class="apple-time" id="vidCurrentTime">0:00</span>
+                            <div class="apple-progress-container" id="vidProgressContainer">
+                                <div class="apple-progress-bar" id="vidProgressBar"></div>
+                            </div>
+                            <span class="apple-time" id="vidDuration">-0:00</span>
+                        </div>
                     </div>
                 </div>
             `;
-            setTimeout(initCustomVideoPlayer, 50); // Inisiasi fungsional kontrol videonya
+            setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (pdfExt.includes(ext)) {
-            contentArea.innerHTML = `<iframe src="${fileViewUrl}"></iframe>`;
+            // PDF: Tampilkan murni dengan border radius glassmorphism
+            contentArea.innerHTML = `
+                <div class="doc-glass-wrapper">
+                    <iframe src="${fileViewUrl}"></iframe>
+                </div>
+            `;
         } 
         else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-            // PERBAIKAN EXCEL: Memakai Microsoft Office Viewer untuk Office formats (Sangat tahan banting untuk render Excel Appwrite)
+            // MICROSOFT OFFICE: Dibalut Frame Glassmorphism ala Mac OS
             let viewerUrl = '';
             if (msOfficeExts.includes(ext)) {
-                // Microsoft Web Viewer sangat powerful membaca format office dari public URL mentah
+                // Koneksi langsung ke Viewer Cloud Microsoft yang kuat membaca link Appwrite
                 viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
             } else {
-                // Fallback pakai Google untuk format ringan CSV/txt
                 viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
             }
-            contentArea.innerHTML = `<iframe src="${viewerUrl}"></iframe>`;
+            contentArea.innerHTML = `
+                <div class="doc-glass-wrapper">
+                    <iframe src="${viewerUrl}"></iframe>
+                </div>
+            `;
         } 
         else {
             contentArea.innerHTML = `
@@ -821,54 +870,103 @@ window.openPreview = (doc) => {
     }, 400); 
 };
 
-// Logika Pemutar Video Kustom (Liquid Glass Controls)
+// ======================================================
+// LOGIKA PEMUTAR VIDEO KUSTOM APPLE (LIQUID GLASS THEATER)
+// ======================================================
 window.initCustomVideoPlayer = () => {
     const video = el('customVideo');
     const playPauseBtn = el('vidPlayPause');
+    const skipBackBtn = el('vidSkipBack');
+    const skipForwardBtn = el('vidSkipForward');
     const progressContainer = el('vidProgressContainer');
     const progressBar = el('vidProgressBar');
-    const timeDisplay = el('vidTime');
+    const timeDisplay = el('vidCurrentTime');
+    const durationDisplay = el('vidDuration');
     const muteBtn = el('vidMute');
     const fullscreenBtn = el('vidFullscreen');
     const vidContainer = el('vidContainer');
+    const overlayVid = el('vidOverlay');
 
     if(!video) return;
 
+    // Fungsi Format Waktu (Menit:Detik)
     const formatTime = (seconds) => {
-        const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60);
+        if(isNaN(seconds)) return "0:00";
+        const m = Math.floor(Math.abs(seconds) / 60); 
+        const s = Math.floor(Math.abs(seconds) % 60);
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    video.addEventListener('loadedmetadata', () => { timeDisplay.innerText = `0:00 / ${formatTime(video.duration)}`; });
+    video.addEventListener('loadedmetadata', () => { 
+        timeDisplay.innerText = "0:00";
+        // Gaya Apple menampilkan sisa durasi dengan minus (-)
+        durationDisplay.innerText = `-${formatTime(video.duration)}`; 
+    });
 
     video.addEventListener('timeupdate', () => {
         const percent = (video.currentTime / video.duration) * 100;
         progressBar.style.width = `${percent}%`;
-        timeDisplay.innerText = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 0)}`;
+        timeDisplay.innerText = formatTime(video.currentTime);
+        const timeRemaining = video.duration - video.currentTime;
+        durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
     });
 
+    // Toggle Play/Pause
     const togglePlay = () => {
-        if (video.paused) { video.play(); playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; }
-        else { video.pause(); playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>'; }
+        if (video.paused) { 
+            video.play(); 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; 
+        } else { 
+            video.pause(); 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>'; 
+        }
     };
-
     playPauseBtn.addEventListener('click', togglePlay);
     video.addEventListener('click', togglePlay);
 
+    // Skip +/- 10 Detik
+    skipBackBtn.addEventListener('click', () => { video.currentTime -= 10; });
+    skipForwardBtn.addEventListener('click', () => { video.currentTime += 10; });
+
+    // Toggle Mute
     muteBtn.addEventListener('click', () => {
         video.muted = !video.muted;
         muteBtn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
     });
 
+    // Seek Timeline Track
     progressContainer.addEventListener('click', (e) => {
         const rect = progressContainer.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
         video.currentTime = pos * video.duration;
     });
 
+    // Layar Penuh
     fullscreenBtn.addEventListener('click', () => {
         if (!document.fullscreenElement) { vidContainer.requestFullscreen().catch(err => {}); }
         else { document.exitFullscreen(); }
+    });
+
+    // Auto-hide Controls Overlay saat tidak ada aktivitas mouse/touch (Sangat Identik Apple UI)
+    const resetHideTimeout = () => {
+        if(!overlayVid) return;
+        overlayVid.style.opacity = '1';
+        clearTimeout(hideOverlayTimeout);
+        // Sembunyikan UI setelah 2.5 detik diam, kecuali video sedang pause
+        hideOverlayTimeout = setTimeout(() => {
+            if(!video.paused) overlayVid.style.opacity = '0';
+        }, 2500);
+    };
+
+    vidContainer.addEventListener('mousemove', resetHideTimeout);
+    vidContainer.addEventListener('touchstart', resetHideTimeout);
+    vidContainer.addEventListener('click', resetHideTimeout);
+    
+    // Tahan UI tetap muncul jika dipause
+    video.addEventListener('play', resetHideTimeout);
+    video.addEventListener('pause', () => { 
+        overlayVid.style.opacity = '1'; 
+        clearTimeout(hideOverlayTimeout); 
     });
 };
 
@@ -880,6 +978,7 @@ window.closePreview = () => {
         overlay.classList.add('hidden');
         el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
+        clearTimeout(hideOverlayTimeout);
     }, 350);
 };
 
