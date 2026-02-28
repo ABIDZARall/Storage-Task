@@ -71,7 +71,7 @@
 }
 
 body { 
-    font-family: 'Inter', 'Segoe UI', sans-serif; 
+    font-family: 'Inter', '-apple-system', 'Segoe UI', sans-serif; 
     background-color: var(--bg-color); 
     color: var(--text-main); 
     overflow: hidden; 
@@ -599,7 +599,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* ============================================================ */
-/* NEW: MAC OS DOCUMENT VIEWER GLASS WINDOW (EXCEL, WORD, PPT)  */
+/* MAC OS DOCUMENT VIEWER GLASS WINDOW (EXCEL, WORD, PPT)       */
 /* ============================================================ */
 .doc-glass-wrapper {
     width: 100%; height: 100%; max-width: 1200px;
@@ -622,12 +622,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* ============================================================ */
-/* NEW: APPLE DEFAULT LIQUID GLASS THEATER VIDEO PLAYER         */
-/* Benar-benar transparan dengan efek kaca cair melayang        */
+/* APPLE DEFAULT LIQUID GLASS THEATER VIDEO PLAYER              */
+/* Exact Replica: Floating Glass Pills, Pure White Progress Track*/
 /* ============================================================ */
+
+/* Wrapper Utama - Transparan Tanpa Background Hitam */
 .apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
-    background: transparent; /* Wrapper sepenuhnya transparan */
+    background: transparent; 
     border-radius: 16px; overflow: hidden; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1), 0 20px 60px rgba(0,0,0,0.3); /* Bayangan premium */
     animation: previewZoomIn 0.3s ease-out; 
@@ -647,81 +649,87 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     background-color: transparent; /* Pastikan video tidak memaksa background */
 }
 
-/* Overlay gradient sangat tipis di bagian bawah untuk kontras, selebihnya transparan */
+/* Overlay Hitam Halus (Bukan Gradient Kaku) hanya untuk memperjelas UI putih */
 .apple-video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 10%, transparent 40%);
+    background: rgba(0,0,0,0.15); 
     opacity: 1; transition: opacity 0.5s ease-in-out;
-    pointer-events: none; /* Biarkan klik tembus ke video secara default */
+    pointer-events: none; /* Biarkan klik tembus ke video */
 }
-/* Biarkan kontrol menerima klik */
 .apple-video-overlay * { pointer-events: auto; }
 
-/* Tombol Glass Generic Apple (True Liquid Glass) */
+/* ------------------------------------------- */
+/* Gaya Tombol Liquid Glass Umum (Lingkaran)   */
+/* ------------------------------------------- */
 .apple-glass-btn {
     /* Gradasi transparan sangat halus */
     background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-    backdrop-filter: blur(20px) saturate(180%); 
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.12); color: white; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
-    width: 55px; height: 55px; font-size: 1.3rem; position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.05);
+    backdrop-filter: blur(40px) saturate(150%); 
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.25); 
+    color: white; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
+    width: 50px; height: 50px; font-size: 1.2rem; position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.2);
 }
 .apple-glass-btn:hover { 
-    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+    background: rgba(255, 255, 255, 0.25);
     transform: scale(1.05); 
-    border-color: rgba(255,255,255,0.25);
-    color: var(--accent); /* Ikon menyala cyan */
 }
-.apple-glass-btn.small { width: 45px; height: 45px; font-size: 1.1rem; }
+.apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
-/* Kontrol Tengah (Skip, Play/Pause) */
+/* ------------------------------------------- */
+/* Kontrol Posisi (Tengah & Atas)              */
+/* ------------------------------------------- */
 .apple-center-controls {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    display: flex; gap: 25px; align-items: center;
+    display: flex; gap: 20px; align-items: center;
 }
-.apple-center-controls .play-pause-btn { width: 75px; height: 75px; font-size: 2rem; }
+.apple-center-controls .play-pause-btn { width: 65px; height: 65px; font-size: 1.8rem; }
 
-/* Styling Angka '10' di dalam tombol skip mundur/maju */
 .skip-text {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 0.55rem; font-weight: 800; margin-top: 1px;
+    font-size: 0.5rem; font-weight: 700; margin-top: 1px;
 }
 
-/* Kontrol Sudut Kanan Atas (Volume, Fullscreen) */
 .apple-top-controls {
-    position: absolute; top: 25px; right: 25px; display: flex; gap: 15px;
+    position: absolute; top: 20px; right: 20px; display: flex; gap: 12px;
 }
 
-/* Floating Liquid Glass Pill di Bawah (Progress Bar & Waktu) */
-/* Benar-benar transparan dengan efek kaca cair melayang */
+/* ------------------------------------------- */
+/* Bottom Floating Pill (Timeline & Waktu)     */
+/* ------------------------------------------- */
 .apple-bottom-pill {
-    position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
-    width: 85%; max-width: 800px; height: 50px;
-    /* Desain True Liquid Glass */
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.1);
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 700px; height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 25px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.2);
     display: flex; align-items: center; padding: 0 20px; gap: 15px;
 }
 
-/* Progress bar styling (Minimalis Apple) */
+/* Jalur Timeline (Track Transparan Putih) */
 .apple-progress-container {
-    flex: 1; height: 6px; background: rgba(255, 255, 255, 0.15);
+    flex: 1; height: 6px; background: rgba(255, 255, 255, 0.25);
     border-radius: 3px; cursor: pointer; position: relative; transition: height 0.2s;
 }
-.apple-progress-container:hover { height: 10px; }
+.apple-progress-container:hover { height: 8px; }
+
+/* Progress Terisi (Putih Solid) */
 .apple-progress-bar {
     height: 100%; 
-    background: var(--accent); /* Warna aksen cair menyala */
+    background: #ffffff; 
     border-radius: 3px; width: 0%; pointer-events: none;
-    box-shadow: 0 0 15px rgba(45, 212, 191, 0.6); /* Cahaya cair */
+    box-shadow: 0 0 5px rgba(255,255,255,0.3);
 }
+
+/* Waktu (Murni Apple style) */
 .apple-time {
-    color: white; font-size: 0.85rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 45px; text-align: center;
+    color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; 
+    user-select: none; width: 40px; text-align: center;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 /* Animasi Mengapung Cair untuk Background Wrapper */
