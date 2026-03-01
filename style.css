@@ -700,24 +700,39 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
 /* ----------------------------------------------------- */
-/* PERBAIKAN TOMBOL SKIP & TEKS 10                       */
+/* PERBAIKAN TOMBOL SKIP (APPLE ORIGINAL HOLLOW ARROW)   */
 /* ----------------------------------------------------- */
+/* Hapus icon FontAwesome yang menabrak angka */
 .apple-skip-btn i {
-    font-size: 2rem; /* Ikon diperbesar agar tidak tabrakan dengan teks */
-    font-weight: 300; 
-    color: rgba(255,255,255,0.9);
+    display: none !important; 
 }
 
+/* Gunakan SVG Panah Melingkar Asli (Kosong di tengah) sebagai Background */
+#vidSkipBack {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>');
+    background-size: 55%; 
+    background-position: center;
+    background-repeat: no-radius;
+}
+
+#vidSkipForward {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>');
+    background-size: 55%; 
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Teks angka 10 berada tepat di ruang kosong tengah SVG */
 .skip-text {
     position: absolute; 
-    top: 50%; left: 50%; 
-    transform: translate(-50%, -46%); /* Centering presisi ke dalam ruang kosong ikon FontAwesome */
-    font-size: 0.85rem; /* Ukuran dibesarkan agar sangat jelas terbaca */
-    font-weight: 700; 
+    top: 52%; left: 50%; 
+    transform: translate(-50%, -50%); 
+    font-size: 0.8rem; /* Ukuran proporsional dengan lingkaran SVG */
+    font-weight: 600; 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: white;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4); /* Bayangan kecil agar menonjol */
     letter-spacing: -0.5px;
+    pointer-events: none; /* Mencegah teks memblokir klik tombol */
 }
 
 /* ----------------------------------------------------- */
