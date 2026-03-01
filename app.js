@@ -56,13 +56,13 @@ const toggleLoading = (show, msg = "Memproses...") => {
 // 2. MAIN EXECUTION (Saat Halaman Dimuat)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkSession(); // Cek sesi login
-    initDragAndDrop(); // Setup drag-drop upload
-    initLogout(); // Setup tombol logout
-    initSearchBar(); // Setup pencarian
-    initAllContextMenus(); // Setup klik kanan
-    initStorageTooltip(); // Setup tooltip storage
-    initProfileImageUploader(); // Setup upload profil
+    checkSession(); 
+    initDragAndDrop(); 
+    initLogout(); 
+    initSearchBar(); 
+    initAllContextMenus(); 
+    initStorageTooltip(); 
+    initProfileImageUploader(); 
 });
 
 // ======================================================
@@ -794,32 +794,31 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER (Liquid Glass Overlay)
+            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER (Liquid Glass Overlay) DENGAN SLIDER VOLUME
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
                     
                     <div class="apple-video-overlay" id="vidOverlay">
                         <div class="apple-top-controls">
-                            <button class="apple-glass-btn small" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                            <div class="apple-volume-wrapper">
+                                <i class="fa-solid fa-volume-high apple-glass-icon" id="vidMuteIcon" title="Mute/Unmute"></i>
+                                <input type="range" min="0" max="1" step="0.01" value="1" class="apple-volume-slider" id="vidVolumeSlider" title="Atur Volume">
+                            </div>
                             <button class="apple-glass-btn small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                         </div>
 
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn" id="vidSkipBack" title="Mundur 10 detik">
-                                <div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i class="fa-solid fa-rotate-left"></i>
-                                    <span class="skip-text">10</span>
-                                </div>
+                            <button class="apple-glass-btn skip-btn" id="vidSkipBack" title="Mundur 10 detik">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span class="skip-text">10</span>
                             </button>
                             <button class="apple-glass-btn play-pause-btn" id="vidPlayPause" title="Play/Pause">
                                 <i class="fa-solid fa-pause"></i>
                             </button>
-                            <button class="apple-glass-btn" id="vidSkipForward" title="Maju 10 detik">
-                                <div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i class="fa-solid fa-rotate-right"></i>
-                                    <span class="skip-text">10</span>
-                                </div>
+                            <button class="apple-glass-btn skip-btn" id="vidSkipForward" title="Maju 10 detik">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span class="skip-text">10</span>
                             </button>
                         </div>
 
@@ -836,7 +835,6 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (pdfExt.includes(ext)) {
-            // PDF: Tampilkan murni dengan border radius glassmorphism
             contentArea.innerHTML = `
                 <div class="doc-glass-wrapper">
                     <iframe src="${fileViewUrl}"></iframe>
@@ -844,10 +842,8 @@ window.openPreview = (doc) => {
             `;
         } 
         else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-            // MICROSOFT OFFICE: Dibalut Frame Glassmorphism ala Mac OS
             let viewerUrl = '';
             if (msOfficeExts.includes(ext)) {
-                // Koneksi langsung ke Viewer Cloud Microsoft yang kuat membaca link Appwrite
                 viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
             } else {
                 viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
@@ -871,7 +867,7 @@ window.openPreview = (doc) => {
 };
 
 // ======================================================
-// LOGIKA PEMUTAR VIDEO KUSTOM APPLE (LIQUID GLASS THEATER)
+// LOGIKA PEMUTAR VIDEO KUSTOM APPLE (DENGAN SLIDER VOLUME)
 // ======================================================
 window.initCustomVideoPlayer = () => {
     const video = el('customVideo');
@@ -882,8 +878,12 @@ window.initCustomVideoPlayer = () => {
     const progressBar = el('vidProgressBar');
     const timeDisplay = el('vidCurrentTime');
     const durationDisplay = el('vidDuration');
-    const muteBtn = el('vidMute');
+    
+    // Elemen Volume & Layar Penuh
+    const volumeSlider = el('vidVolumeSlider');
+    const muteIcon = el('vidMuteIcon');
     const fullscreenBtn = el('vidFullscreen');
+    
     const vidContainer = el('vidContainer');
     const overlayVid = el('vidOverlay');
 
@@ -899,7 +899,6 @@ window.initCustomVideoPlayer = () => {
 
     video.addEventListener('loadedmetadata', () => { 
         timeDisplay.innerText = "0:00";
-        // Gaya Apple menampilkan sisa durasi dengan minus (-)
         durationDisplay.innerText = `-${formatTime(video.duration)}`; 
     });
 
@@ -928,11 +927,39 @@ window.initCustomVideoPlayer = () => {
     skipBackBtn.addEventListener('click', () => { video.currentTime -= 10; });
     skipForwardBtn.addEventListener('click', () => { video.currentTime += 10; });
 
-    // Toggle Mute
-    muteBtn.addEventListener('click', () => {
-        video.muted = !video.muted;
-        muteBtn.innerHTML = video.muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
-    });
+    // PENGATURAN VOLUME SLIDER SMOOTH
+    if (volumeSlider && muteIcon) {
+        // Deteksi Perubahan Geser Slider Volume
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            video.volume = vol;
+            video.muted = vol === 0;
+
+            // Ganti ikon sesuai level volume
+            if (vol === 0) {
+                muteIcon.className = 'fa-solid fa-volume-xmark apple-glass-icon';
+            } else if (vol < 0.5) {
+                muteIcon.className = 'fa-solid fa-volume-low apple-glass-icon';
+            } else {
+                muteIcon.className = 'fa-solid fa-volume-high apple-glass-icon';
+            }
+        });
+
+        // Deteksi Klik pada Ikon Mute (On/Off Cepat)
+        muteIcon.addEventListener('click', () => {
+            video.muted = !video.muted;
+            if (video.muted) {
+                volumeSlider.value = 0;
+                muteIcon.className = 'fa-solid fa-volume-xmark apple-glass-icon';
+            } else {
+                // Jika tidak di-mute, kembalikan ke volume sebelumnya atau full (1)
+                const restoreVol = video.volume > 0 ? video.volume : 1;
+                video.volume = restoreVol;
+                volumeSlider.value = restoreVol;
+                muteIcon.className = restoreVol < 0.5 ? 'fa-solid fa-volume-low apple-glass-icon' : 'fa-solid fa-volume-high apple-glass-icon';
+            }
+        });
+    }
 
     // Seek Timeline Track
     progressContainer.addEventListener('click', (e) => {
@@ -947,7 +974,7 @@ window.initCustomVideoPlayer = () => {
         else { document.exitFullscreen(); }
     });
 
-    // Auto-hide Controls Overlay saat tidak ada aktivitas mouse/touch (Sangat Identik Apple UI)
+    // Auto-hide Controls Overlay saat tidak ada aktivitas mouse/touch (Identik Apple UI)
     const resetHideTimeout = () => {
         if(!overlayVid) return;
         overlayVid.style.opacity = '1';
