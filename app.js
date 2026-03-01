@@ -791,19 +791,19 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER DENGAN VOLUME POP-UP
+            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER DENGAN PURE GLASS & VOLUME POP-UP
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
                     
                     <div class="apple-video-overlay" id="vidOverlay">
                         <div class="apple-top-controls">
-                            <button class="apple-glass-btn small" onclick="closePreview()" title="Tutup">
+                            <button class="apple-glass-btn pure-glass small" onclick="closePreview()" title="Tutup">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                             
                             <div class="top-right-group">
-                                <div class="apple-volume-container" id="vidVolumeContainer">
+                                <div class="apple-volume-container pure-glass" id="vidVolumeContainer">
                                     <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute">
                                         <i class="fa-solid fa-volume-high"></i>
                                     </button>
@@ -811,25 +811,25 @@ window.openPreview = (doc) => {
                                         <input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
                                     </div>
                                 </div>
-                                <button class="apple-glass-btn small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
+                                <button class="apple-glass-btn pure-glass small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                             </div>
                         </div>
 
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn apple-skip-btn glass-tint-blue" id="vidSkipBack" title="Mundur 10 detik">
+                            <button class="apple-glass-btn apple-skip-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik">
                                 <i class="fa-solid fa-rotate-left"></i>
                                 <span class="skip-text">10</span>
                             </button>
-                            <button class="apple-glass-btn play-pause-btn glass-tint-brown" id="vidPlayPause" title="Play/Pause">
+                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
                                 <i class="fa-solid fa-pause"></i>
                             </button>
-                            <button class="apple-glass-btn apple-skip-btn glass-tint-orange" id="vidSkipForward" title="Maju 10 detik">
+                            <button class="apple-glass-btn apple-skip-btn pure-glass" id="vidSkipForward" title="Maju 10 detik">
                                 <i class="fa-solid fa-rotate-right"></i>
                                 <span class="skip-text">10</span>
                             </button>
                         </div>
 
-                        <div class="apple-bottom-pill">
+                        <div class="apple-bottom-pill pure-glass">
                             <span class="apple-time" id="vidCurrentTime">0:00</span>
                             <div class="apple-progress-container" id="vidProgressContainer">
                                 <div class="apple-progress-bar" id="vidProgressBar"><div class="apple-progress-thumb"></div></div>
@@ -915,9 +915,16 @@ window.initCustomVideoPlayer = () => {
         durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
     });
 
+    // FITUR BARU: Auto rubah Play Icon saat video selesai & munculkan overlay
+    video.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>';
+        if (overlayVid) overlayVid.style.opacity = '1';
+        clearTimeout(hideOverlayTimeout);
+    });
+
     // Toggle Play/Pause
     const togglePlay = () => {
-        if (video.paused) { 
+        if (video.paused || video.ended) { 
             video.play(); 
             playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; 
         } else { 

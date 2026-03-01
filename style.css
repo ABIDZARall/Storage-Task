@@ -623,7 +623,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* ========================================================================= */
 /* APPLE ORIGINAL LIQUID GLASS THEATER VIDEO PLAYER (VISION PRO STYLE)       */
-/* Desain Persis Dengan Hover Popup Volume & Efek Konten Tinting             */
 /* ========================================================================= */
 
 .apple-video-wrapper { 
@@ -656,12 +655,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-video-overlay * { pointer-events: auto; }
 
 /* ----------------------------------------------------- */
-/* TINTA WARNA (COLOR TINTS) SESUAI GAMBAR DILAMPIRKAN   */
+/* FITUR BARU: PURE ADAPTIVE LIQUID GLASS (APPLE STYLE)  */
+/* Menarik dan menyaturasi warna video asli di belakang  */
 /* ----------------------------------------------------- */
-.glass-tint-blue { background: rgba(138, 154, 171, 0.7) !important; border-color: rgba(255,255,255,0.4) !important; }
-.glass-tint-brown { background: rgba(166, 138, 118, 0.7) !important; border-color: rgba(255,255,255,0.4) !important; }
-.glass-tint-orange { background: rgba(214, 137, 43, 0.7) !important; border-color: rgba(255,255,255,0.4) !important; }
-
+.pure-glass {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important;
+}
 
 /* ----------------------------------------------------- */
 /* TOMBOL TENGAH (PLAY/SKIP) - APPLE VISION PRO SMOOTH   */
@@ -672,26 +675,21 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .apple-glass-btn {
-    /* Frosted Glass Murni yang akan menyesuaikan dengan Tinta atau warna Video di baliknya */
-    background: rgba(255, 255, 255, 0.15); 
-    backdrop-filter: blur(40px) saturate(250%) brightness(110%);
-    -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(110%);
-    border: 1px solid rgba(255, 255, 255, 0.3); 
     color: white; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; cursor: pointer; 
     transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); /* Kurva smooth khas Apple */
     width: 65px; height: 65px; font-size: 1.5rem; position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.5);
 }
 
 .apple-glass-btn.play-pause-btn {
     width: 85px; height: 85px; font-size: 2.5rem;
 }
 
+/* Animasi Premium Hover */
 .apple-glass-btn:hover { 
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.3) !important;
     transform: scale(1.08); 
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important;
 }
 
 .apple-glass-btn:active {
@@ -701,9 +699,25 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
+/* ----------------------------------------------------- */
+/* PERBAIKAN TOMBOL SKIP & TEKS 10                       */
+/* ----------------------------------------------------- */
+.apple-skip-btn i {
+    font-size: 2rem; /* Ikon diperbesar agar tidak tabrakan dengan teks */
+    font-weight: 300; 
+    color: rgba(255,255,255,0.9);
+}
+
 .skip-text {
-    position: absolute; top: 51%; left: 50%; transform: translate(-50%, -50%);
-    font-size: 0.65rem; font-weight: 700; margin-top: 2px;
+    position: absolute; 
+    top: 50%; left: 50%; 
+    transform: translate(-50%, -46%); /* Centering presisi ke dalam ruang kosong ikon FontAwesome */
+    font-size: 0.85rem; /* Ukuran dibesarkan agar sangat jelas terbaca */
+    font-weight: 700; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4); /* Bayangan kecil agar menonjol */
+    letter-spacing: -0.5px;
 }
 
 /* ----------------------------------------------------- */
@@ -717,15 +731,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 .apple-volume-container {
     display: flex; align-items: center; justify-content: flex-start;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 30px; 
     height: 40px; 
     width: 40px; /* Bentuk awal lingkaran */
     padding: 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.2);
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Efek pop-up super mulus */
     overflow: hidden;
 }
@@ -733,7 +742,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* Efek Hover -> Memanjang jadi Pil dan memunculkan Slider */
 .apple-volume-container:hover {
     width: 140px; 
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.3) !important;
 }
 
 .volume-icon-btn {
@@ -775,11 +784,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-bottom-pill {
     position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
     width: 90%; max-width: 700px; height: 44px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(40px) saturate(150%);
-    -webkit-backdrop-filter: blur(40px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 25px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.2);
+    border-radius: 25px;
     display: flex; align-items: center; padding: 0 20px; gap: 15px;
 }
 
