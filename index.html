@@ -355,9 +355,12 @@
     </div>
 
     <div id="previewModal" class="preview-overlay hidden">
+        
         <div class="preview-header liquid-glass-panel">
             <div class="preview-header-left">
-                <button class="icon-btn" onclick="closePreview()" title="Tutup"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="apple-glass-btn pure-glass small" onclick="closePreview()" title="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
                 <div class="preview-file-info">
                     <i id="previewFileIcon" class="fa-solid fa-file"></i>
                     <span id="previewFileName">filename.ext</span>
@@ -373,8 +376,15 @@
                 </div>
             </div>
         </div>
-        <div id="previewContent" class="preview-content-area">
-            </div>
+
+        <button id="previewPrevBtn" class="apple-glass-btn pure-glass nav-arrow prev-arrow hidden" onclick="navigatePreview(-1)" title="File Sebelumnya">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button id="previewNextBtn" class="apple-glass-btn pure-glass nav-arrow next-arrow hidden" onclick="navigatePreview(1)" title="File Selanjutnya">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div id="previewContent" class="preview-content-area"></div>
     </div>
 
     <div id="fileContextMenu" class="context-menu-modern hidden">
