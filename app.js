@@ -292,7 +292,7 @@ window.saveProfile = async () => {
 // 7. FILE MANAGER LOGIC & THUMBNAIL GOOGLE DRIVE
 // ======================================================
 
-// UPDATE PREVIEW LIST UNTUK GALERI NAVIGASI
+// UPDATE PREVIEW LIST UNTUK GALERI NAVIGASI (Hanya File, bukan Folder)
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
@@ -330,8 +330,8 @@ function initSearchBar() {
 async function performSearch(keyword) {
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.search('name', keyword), Appwrite.Query.limit(50) ]);
-        const grid = el('fileGrid'); grid.innerHTML = '';
         updatePreviewList(res.documents); // Update untuk Gallery Mode
+        const grid = el('fileGrid'); grid.innerHTML = '';
         if (res.documents.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else res.documents.forEach(doc => renderItem(doc));
     } catch (e) { fallbackSearch(keyword); }
 }
@@ -340,8 +340,8 @@ async function fallbackSearch(keyword) {
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]);
         const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase()));
-        const grid = el('fileGrid'); grid.innerHTML = '';
         updatePreviewList(filtered); // Update untuk Gallery Mode
+        const grid = el('fileGrid'); grid.innerHTML = '';
         if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
     } catch(err){}
 }
@@ -358,10 +358,8 @@ function renderItem(doc) {
 
     if (isFolder) {
         content = `
-            <div class="thumb-box" style="background:transparent; overflow: visible;">
-                <div class="mac-folder-container">
-                    <div class="mac-folder-icon"><div class="mac-folder-back"></div><div class="mac-folder-front"></div></div>
-                </div>
+            <div class="mac-folder-container">
+                <div class="mac-folder-icon"><div class="mac-folder-back"></div><div class="mac-folder-front"></div></div>
             </div>`;
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
@@ -373,16 +371,16 @@ function renderItem(doc) {
         const pdfExt = ['pdf'];
 
         const createFallback = (ext) => {
-            let iconClass = "fa-file"; let colorClass = "icon-grey"; let bgClass = "bg-grey";
-            if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; bgClass = "bg-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; bgClass = "bg-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; bgClass = "bg-orange"; } }
-            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; bgClass = "bg-blue"; } else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; bgClass = "bg-green"; } else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; bgClass = "bg-orange"; } else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; bgClass = "bg-grey"; } else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; bgClass = "bg-yellow"; }
-            return `<div class="thumb-fallback-card ${bgClass}"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i><span class="fallback-ext">${ext.toUpperCase()}</span></div>`.replace(/"/g, "'"); 
+            let iconClass = "fa-file"; let colorClass = "icon-grey";
+            if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; } }
+            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; } else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; } else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; } else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; } else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
+            return `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`.replace(/"/g, "'"); 
         };
 
         if (familiarImages.includes(ext)) {
-            content = `<div class="thumb-box thumb-box-file"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
+            content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
-            content = `<div class="thumb-box thumb-box-file" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
+            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -392,7 +390,7 @@ function renderItem(doc) {
             else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
 
             content = `
-                <div class="thumb-box thumb-box-file" style="background:#f8f9fa; position: relative;">
+                <div class="thumb-box" style="background:#f8f9fa;">
                     <img src="${backendThumbUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
                     <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
@@ -400,7 +398,7 @@ function renderItem(doc) {
                 </div>
             `;
         } else {
-            content = `<div class="thumb-box thumb-box-file">${createFallback(ext).replace(/'/g, '"')}</div>`;
+            content = `<div class="thumb-box">${createFallback(ext).replace(/'/g, '"')}</div>`;
         }
     }
 
@@ -646,7 +644,7 @@ async function loadFiles(param) {
                                 <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
                                     <div class="mac-folder-back"></div>
                                     <div class="mac-folder-front"></div>
-                                </div>
+                                }
                                 <p>Folder Kosong</p>
                               </div>`; 
         } else {
@@ -668,7 +666,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE & NAVIGASI NEXT/PREV
+// 9. LOGIKA PRATINJAU FILE (NAVIGATION & DESIGN BARU)
 // ======================================================
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
@@ -677,20 +675,21 @@ window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
-    // Logika Navigasi Next/Prev Panah Apple Glass
+    // Logika Navigasi Galeri: Tampilkan tombol hanya jika ada file lain
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } // Fallback
 
     const prevBtn = el('previewPrevBtn');
     const nextBtn = el('previewNextBtn');
     
-    if(prevBtn && nextBtn) {
-        if(currentPreviewList.length <= 1) {
-            prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
-        } else {
-            currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
-            currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
-        }
+    if(currentPreviewList.length <= 1) {
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+    } else {
+        // Tampilkan tombol Prev jika bukan file pertama
+        currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
+        // Tampilkan tombol Next jika bukan file terakhir
+        currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
     }
 
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
@@ -728,7 +727,6 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER DENGAN SVG SKIP ORIGINAL & PURE GLASS
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
@@ -751,24 +749,16 @@ window.openPreview = (doc) => {
                         </div>
 
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
-                                </svg>
+                            <button class="apple-glass-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik">
+                                <i class="fa-solid fa-backward"></i>
+                                <span class="skip-label">10</span>
                             </button>
-                            
                             <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
                                 <i class="fa-solid fa-pause"></i>
                             </button>
-                            
-                            <button class="apple-glass-btn pure-glass" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
-                                </svg>
+                            <button class="apple-glass-btn pure-glass" id="vidSkipForward" title="Maju 10 detik">
+                                <i class="fa-solid fa-forward"></i>
+                                <span class="skip-label">10</span>
                             </button>
                         </div>
 
@@ -805,7 +795,7 @@ window.openPreview = (doc) => {
     }, 400); 
 };
 
-// Fungsi Navigasi Gallery Preview
+// Fungsi Navigasi Pratinjau
 window.navigatePreview = (direction) => {
     if (!currentPreviewDoc) return;
     const currentIndex = currentPreviewList.findIndex(d => d.$id === currentPreviewDoc.$id);
@@ -821,6 +811,7 @@ window.navigatePreview = (direction) => {
     }
 };
 
+// ... (Sisa fungsi initCustomVideoPlayer, closePreview, downloadPreviewItem, togglePreviewMenu, openPreviewInNewTab tetap sama)
 window.initCustomVideoPlayer = () => {
     const video = el('customVideo');
     const playPauseBtn = el('vidPlayPause');

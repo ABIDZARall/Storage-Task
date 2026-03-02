@@ -1,10 +1,7 @@
 /* ================= GLOBAL & RESET ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ============================================================ */
-/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR (LATEST APPLE DESIGN) */
-/* ============================================================ */
-
+/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR */
 ::-webkit-scrollbar { width: 14px; height: 14px; background-color: transparent; }
 ::-webkit-scrollbar-track { background-color: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -17,9 +14,7 @@
 ::-webkit-scrollbar-corner { background: transparent; }
 * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
 
-/* ============================================================ */
-/* VARIABEL WARNA & TEMA GLOBAL                                 */
-/* ============================================================ */
+/* VARIABEL & TEMA */
 :root {
     --bg-color: #0f172a;
     --glass-bg: rgba(255, 255, 255, 0.08);
@@ -42,7 +37,7 @@ body { font-family: 'Inter', '-apple-system', 'Segoe UI', sans-serif; background
 .hidden { display: none !important; }
 
 /* ============================================================ */
-/* AUTHENTICATION (LOGIN, REGISTER, RESET PASSWORD)             */
+/* AUTHENTICATION (LOGIN, REGISTER, RESET)                      */
 /* ============================================================ */
 .full-screen-center { height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5000; position: relative; }
 .glass-card { background: rgba(20, 25, 40, 0.7); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6); }
@@ -63,9 +58,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .forgot-pass-container { width: 100%; text-align: right; margin-top: -10px; margin-bottom: 5px; }
 .small-link { font-size: 0.8rem; opacity: 0.9; } .small-link:hover { text-decoration: underline; opacity: 1; }
 
-/* ============================================================ */
-/* PROFILE PAGE STYLES                                          */
-/* ============================================================ */
+/* PROFILE PAGE STYLES */
 .profile-card { width: 100%; max-width: 420px; padding: 25px; display: flex; flex-direction: column; align-items: center; }
 .profile-header { width: 100%; text-align: center; margin-bottom: 25px; position: relative; }
 .profile-header h3 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
@@ -113,9 +106,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; border-radius: 10px; }
 .storage-text { font-size: 0.75rem; text-align: right; color: rgba(255, 255, 255, 0.6); }
 
-/* ============================================================ */
-/* MAIN CONTENT & PENCARIAN                                     */
-/* ============================================================ */
+/* MAIN CONTENT AREA */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 .search-bar-pill { width: 100%; max-width: 600px; background: rgba(0,0,0,0.2); border-radius: 40px; height: 45px; padding: 0 20px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
@@ -130,33 +121,23 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
-/* ============================================================ */
-/* GRID ITEM STYLING (KOTAK PRESISI, RAPIH, ELEGAN)             */
-/* ============================================================ */
+/* FILE GRID AREA */
 .file-grid-area { 
     flex: 1; overflow-y: auto; display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-    align-items: start; align-content: start; gap: 20px; padding: 20px 15px 50px 15px; 
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+    align-items: start; align-content: start; gap: 20px; padding: 10px 15px; 
 }
-
 .item-card { 
-    background: rgba(255, 255, 255, 0.04); border-radius: 12px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-    cursor: pointer; position: relative; transition: all 0.3s ease; 
-    border: 1px solid rgba(255,255,255,0.05); padding: 10px; box-sizing: border-box; width: 100%;
-    aspect-ratio: 1 / 1; 
+    background: rgba(255, 255, 255, 0.03); border-radius: 12px; height: 160px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    cursor: pointer; position: relative; transition: all 0.3s ease; border: 1px solid transparent; 
 }
-.item-card:hover { 
-    background: rgba(255, 255, 255, 0.1); transform: translateY(-4px); 
-    border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
-}
-.item-card i.icon { font-size: 3rem; margin: auto; }
+.item-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
+.item-card i.icon { font-size: 3.5rem; margin-bottom: 15px; }
 
-/* ============================================================ */
-/* MAC OS LIQUID GLASS FOLDER ICON (PURE CSS)                   */
-/* ============================================================ */
+/* MAC OS FOLDER ICON */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
-.mac-folder-container { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; pointer-events: none; }
+.mac-folder-container { display: flex; align-items: center; justify-content: center; width: 100%; height: 100px; margin-bottom: 5px; pointer-events: none; }
 .mac-folder-icon { position: relative; width: 90px; height: 68px; margin: auto; transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35)); }
 .item-card:hover .mac-folder-icon { transform: scale(1.03) translateY(-2px); }
 .mac-folder-back { position: absolute; bottom: 0; left: 0; width: 100%; height: 85%; background: linear-gradient(180deg, #1ea0ff, #005ce6); border-radius: 12px 16px 14px 14px; }
@@ -170,58 +151,45 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .mac-folder-front::after { content: ''; width: 30px; height: 6px; background: rgba(255, 255, 255, 0.9); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-/* ============================================================ */
-
-.thumb-box { 
-    width: 100%; flex: 1; min-height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; 
-    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; margin-bottom: 8px; 
-}
+/* FILE THUMBNAILS */
+.thumb-box { width: 90%; height: 100px; border-radius: 8px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; margin-bottom: 5px; }
 .thumb-box:has(.mac-folder-icon) { overflow: visible; background: transparent; }
-.thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
+.thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
-.bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
-.bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); }
-.bg-green { background: rgba(52, 168, 83, 0.2); border: 1px solid rgba(52, 168, 83, 0.3); }
-.bg-yellow { background: rgba(251, 188, 4, 0.2); border: 1px solid rgba(251, 188, 4, 0.3); }
-.bg-purple { background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.3); }
-.bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); }
-.bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
-.fallback-ext { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 5px; opacity: 0.8; }
-.huge-icon { font-size: 2.5rem !important; margin: 0 !important; }
+.huge-icon { font-size: 3rem !important; margin: 0 !important; }
 .icon-blue { color: var(--clr-blue); }
 .icon-red { color: var(--clr-red); }
 .icon-green { color: var(--clr-green); }
 .icon-yellow { color: var(--clr-yellow); }
+.icon-grey { color: var(--clr-grey); }
 .icon-orange { color: #f97316; }
 .icon-purple { color: #8b5cf6; }
-.icon-white { color: #f1f5f9; }
-.item-name { font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; line-height: 1.2; height: 16px; flex-shrink: 0; }
+.item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; }
 
 /* ============================================================ */
-/* MODALS & OVERLAYS                                            */
+/* MODALS & OVERLAYS (LOADING, DEFAULTS)                        */
 /* ============================================================ */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
+.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
 .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .modal-header h3 { font-size: 1.1rem; color: white; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
 .modal-actions-grid { display: flex; gap: 15px; margin-top: 20px; width: 100%; }
 .modal-actions-grid button { flex: 1; height: 40px; border-radius: 8px; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
 .secondary { background: rgba(255,255,255,0.1); color: white; }
 .full-width { width: 100%; }
-.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.02); }
+.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(255, 255, 255, 0.02); }
 .drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.1); }
-.animate-icon { font-size: 2.5rem; color: #64748b; margin-bottom: 15px; transition: 0.3s; }
+.animate-icon { font-size: 2.5rem; color: #64748b; margin-bottom: 15px; }
 .drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 /* Context Menus */
-.context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+.context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 220px; display: none; flex-direction: column; }
 .context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
 .show { display: flex !important; }
 .ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 8px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.85rem; cursor: pointer; transition: 0.1s; }
@@ -229,9 +197,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .ctx-item i, .dropdown-content a i { width: 20px; margin-right: 10px; color: #94a3b8; }
 .menu-divider, .ctx-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; border: none; }
 .text-blue { color: var(--clr-blue) !important; } .text-green { color: var(--clr-green) !important; } .text-yellow { color: var(--clr-yellow) !important; } .text-purple { color: #7248b9 !important; }
-
-@keyframes modalPopSmooth { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-.modal-box.animate-open { animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* ============================================================ */
 /* STORAGE PAGE & MODALS                                        */
@@ -292,22 +257,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dt-right { font-family: 'Consolas', monospace; color: #94a3b8; }
 .item-free { opacity: 0.7; }
 
-@media screen and (max-width: 768px) {
-    .dashboard-layout { padding: 0; }
-    .main-glass-panel { border-radius: 0; border: none; flex-direction: column; }
-    .sidebar-left { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; order: 2; display: none; }
-    .storage-detail-box-wide { width: 90%; padding: 20px; }
-    .storage-flex-container { flex-direction: column; gap: 25px; }
-    .storage-hero h1 { font-size: 2.2rem; }
-    .storage-col-right { gap: 20px; }
-    .storage-btn-left-container, .storage-btn-right-container { margin-top: 15px; }
-    .storage-manager-card { padding: 20px; }
-    .card-header-text h1 { font-size: 1.5rem; }
-    .profile-card { padding: 20px; width: 100%; height: 100%; justify-content: flex-start; }
-}
-
 /* ============================================================ */
-/* PREVIEW MODAL APPLE LIQUID GLASS & GALLERY NAVIGATION        */
+/* PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION           */
 /* ============================================================ */
 .preview-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -335,7 +286,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
 
-/* PURE GLASS STYLE GLOBAL (Apple Liquid Glass Original) */
+/* PURE GLASS STYLE GLOBAL */
 .pure-glass {
     background: rgba(255, 255, 255, 0.15) !important;
     backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important;
@@ -344,13 +295,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important;
 }
 
-/* ============================================================ */
-/* NEW: TOMBOL NAVIGASI PREVIEW (NEXT & PREVIOUS APPLE GLASS)   */
-/* ============================================================ */
+/* NAVIGATION BUTTONS (Liquid Glass Circles) */
 .nav-arrow {
     position: absolute;
     top: 50%;
-    z-index: 30010; /* Berada di atas konten preview */
+    z-index: 30010; /* Diatas konten */
     width: 55px !important;
     height: 55px !important;
     font-size: 1.3rem !important;
@@ -369,10 +318,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .nav-arrow:active { transform: translateY(-50%) scale(0.95) !important; }
 
-/* Area Konten Diberi Ruang Kiri Kanan Agar Tidak Menabrak Navigasi */
+/* MAIN CONTENT AREA FIXED */
 .preview-content-area {
     flex: 1; display: flex; justify-content: center; align-items: center;
-    padding: 20px 90px; /* Padding extra di kiri kanan untuk tombol Next/Prev */
+    padding: 20px 90px; /* Padding extra di kiri kanan untuk tombol */
     overflow: hidden; position: relative;
 }
 
@@ -394,9 +343,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     100% { opacity: 1; transform: scale(1); }
 }
 
-/* ============================================================ */
-/* MAC OS DOCUMENT VIEWER GLASS WINDOW (EXCEL, WORD, PPT)       */
-/* ============================================================ */
+/* MAC OS DOCUMENT VIEWER GLASS WINDOW */
 .doc-glass-wrapper {
     width: 100%; height: 100%; max-width: 1200px;
     padding: 10px; background: rgba(255, 255, 255, 0.05); 
@@ -409,16 +356,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     flex: 1; width: 100%; height: 100%; border-radius: 8px; border: none; background: #f8f9fa; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* ========================================================================= */
-/* APPLE ORIGINAL LIQUID GLASS THEATER VIDEO PLAYER (VISION PRO STYLE)       */
-/* ========================================================================= */
-
+/* ============================================================ */
+/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL              */
+/* ============================================================ */
 .apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
     background: transparent; border-radius: 16px; overflow: hidden; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1), 0 20px 60px rgba(0,0,0,0.3);
     animation: previewZoomIn 0.3s ease-out; 
 }
+/* Liquid Glass Floating Effect untuk Video Player (Vision Pro style) */
 .apple-video-wrapper::before {
     content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(45, 212, 191, 0.08) 0%, rgba(45, 212, 191, 0.02) 40%, transparent 70%);
@@ -443,9 +390,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-glass-btn:active { transform: scale(0.95); transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
-/* ----------------------------------------------------- */
-/* FITUR BARU: HOVER POP-UP VOLUME APPLE                 */
-/* ----------------------------------------------------- */
+/* Fiturbaru: Hover Pop-up Volume Apple */
 .apple-top-controls { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
 .top-right-group { display: flex; gap: 12px; align-items: center; }
 .apple-volume-container { display: flex; align-items: center; justify-content: flex-start; border-radius: 30px; height: 40px; width: 40px; padding: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
@@ -458,9 +403,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s; }
 .apple-volume-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-/* ----------------------------------------------------- */
-/* BOTTOM FLOATING PILL (TIMELINE)                       */
-/* ----------------------------------------------------- */
+/* Bottom Floating Pill (Timeline) */
 .apple-bottom-pill {
     position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; height: 44px;
     border-radius: 25px; display: flex; align-items: center; padding: 0 20px; gap: 15px;
