@@ -1,7 +1,7 @@
 /* ================= GLOBAL & RESET ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR */
+/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR (LATEST APPLE DESIGN) */
 ::-webkit-scrollbar { width: 14px; height: 14px; background-color: transparent; }
 ::-webkit-scrollbar-track { background-color: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -14,7 +14,7 @@
 ::-webkit-scrollbar-corner { background: transparent; }
 * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
 
-/* VARIABEL & TEMA */
+/* VARIABEL WARNA & TEMA GLOBAL */
 :root {
     --bg-color: #0f172a;
     --glass-bg: rgba(255, 255, 255, 0.08);
@@ -127,10 +127,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
     align-items: start; align-content: start; gap: 20px; padding: 10px 15px; 
 }
+
+/* GAYA ITEM GRID (PERBAIKAN PRESISI, RAPIH, ELEGANT APPLE DESIGN) */
 .item-card { 
     background: rgba(255, 255, 255, 0.03); border-radius: 12px; height: 160px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+    display: flex; flex-direction: column; align-items: center; 
+    justify-content: space-between; /* Tempatkan thumbnail di atas, teks di bawah */
     cursor: pointer; position: relative; transition: all 0.3s ease; border: 1px solid transparent; 
+    padding: 15px; /* Jarak dalam kartu */
 }
 .item-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
 .item-card i.icon { font-size: 3.5rem; margin-bottom: 15px; }
@@ -164,7 +168,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .icon-grey { color: var(--clr-grey); }
 .icon-orange { color: #f97316; }
 .icon-purple { color: #8b5cf6; }
-.item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; }
+
+/* PERBAIKAN JUDUL FILE/FOLDER (TETAP PRESISI DI BAWAH) */
+.item-name { 
+    font-size: 0.8rem; 
+    font-weight: 500; 
+    text-align: center; 
+    width: 100%; /* Manfaatkan ruang penuh kartu */
+    white-space: nowrap; /* Teks satu baris */
+    overflow: hidden; /* Sembunyikan jika overflow */
+    text-overflow: ellipsis; /* Tambahkan titik-titik (...) */
+    color: #f1f5f9; 
+    margin-top: auto; /* Pastikan teks menempel di bagian bawah kartu */
+}
 
 /* ============================================================ */
 /* MODALS & OVERLAYS (LOADING, DEFAULTS)                        */
@@ -391,21 +407,25 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     flex: 1; width: 100%; height: 100%; border-radius: 8px; border: none; background: #f8f9fa; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================================ */
-/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL              */
-/* ============================================================ */
+/* ========================================================================= */
+/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (VISION PRO STYLE)       */
+/* ========================================================================= */
+
 .apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
     background: transparent; border-radius: 16px; overflow: hidden; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1), 0 20px 60px rgba(0,0,0,0.3);
     animation: previewZoomIn 0.3s ease-out; 
 }
-/* Liquid Glass Floating Effect untuk Video Player (Vision Pro style) */
-.apple-video-wrapper::before {
+
+/* PERBAIKAN: Efek Cahaya Latar di Video Wrapper - DIHAPUS agar tidak mengganggu pratinjau */
+/* .apple-video-wrapper::before {
     content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(45, 212, 191, 0.08) 0%, rgba(45, 212, 191, 0.02) 40%, transparent 70%);
     filter: blur(100px); z-index: -1; animation: liquidFloat 20s infinite linear;
 }
+*/
+
 .apple-video-wrapper video { width: 100%; max-height: 100%; border-radius: 16px; outline: none; background-color: transparent; }
 .apple-video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
