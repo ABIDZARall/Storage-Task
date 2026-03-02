@@ -121,98 +121,124 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
 .back-btn i { font-size: 0.9rem; }
 
-/* ============================================================ */
-/* GRID ITEM STYLING (PERBAIKAN AGAR TEKS TIDAK KEPOTONG)       */
-/* ============================================================ */
+/* FILE GRID AREA */
 .file-grid-area { 
     flex: 1; overflow-y: auto; display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Sedikit lebih lebar agar teks nyaman */
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
     align-items: start; align-content: start; gap: 20px; padding: 10px 15px; 
 }
-
 .item-card { 
-    background: rgba(255, 255, 255, 0.04); 
-    border-radius: 12px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Jangan renggangkan isi */
-    cursor: pointer; position: relative; transition: all 0.3s ease; 
-    border: 1px solid rgba(255,255,255,0.05); 
-    padding: 12px; /* Padding seragam */
-    box-sizing: border-box; width: 100%;
-    aspect-ratio: 1 / 1; /* Tetap kotak sempurna */
+    background: rgba(255, 255, 255, 0.03); border-radius: 12px; height: 160px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    cursor: pointer; position: relative; transition: all 0.3s ease; border: 1px solid transparent; 
 }
-.item-card:hover { 
-    background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); 
-    border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
-}
-
-/* Teks Nama File (Aman di bawah) */
-.item-name { 
-    font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    color: #f1f5f9; flex-shrink: 0; /* Mencegah teks mengecil/hilang */
-    height: 18px; line-height: 18px; margin-top: auto; /* Dorong ke paling bawah */
-}
+.item-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-3px); border-color: rgba(255,255,255,0.1); }
+.item-card i.icon { font-size: 3.5rem; margin-bottom: 15px; }
 
 /* ============================================================ */
-/* MODERN SOLID BLUE FOLDER ICON (SESUAI GAMBAR REFERENSI BARU) */
+/* NEW, MODERN, ELEGANT MAC OS LIQUID GLASS FOLDER ICON (PURE CSS) */
 /* ============================================================ */
-.item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
-
-.mac-folder-container { 
-    width: 100%; flex: 1; min-height: 0; /* Dinamis menyusut/melebar */
-    display: flex; align-items: center; justify-content: center; 
-    margin-bottom: 10px; pointer-events: none; 
+/* Menyembunyikan ikon FontAwesome lama jika ada */
+.item-card:has(.mac-folder-icon) i.fa-folder {
+    display: none !important;
 }
 
-.mac-folder-icon { 
-    position: relative; width: 85px; height: 65px; margin: auto; 
-    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); 
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25)); 
-}
-.item-card:hover .mac-folder-icon { transform: scale(1.05) translateY(-2px); }
-
-/* Bagian Belakang (Tab Dark Blue) */
-.mac-folder-back { 
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 85%; 
-    background: linear-gradient(180deg, #0066ff, #0052cc); 
-    border-radius: 10px 12px 12px 12px; 
-}
-.mac-folder-back::before { 
-    content: ''; position: absolute; top: -10px; left: 0; 
-    width: 35px; height: 15px; 
-    background: #0066ff; 
-    border-radius: 8px 10px 0 0; 
+/* Container untuk menempatkan ikon folder */
+.mac-folder-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100px; /* Menyesuaikan area thumbnail lama */
+    margin-bottom: 5px;
+    pointer-events: none; /* Klik tembus ke item-card parent */
 }
 
-/* Bagian Depan (Vibrant Blue + Light Blue Pill) */
+/* Struktur Ikon Folder Utama */
+.mac-folder-icon {
+    position: relative;
+    width: 90px;
+    height: 68px;
+    margin: auto;
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35)); /* Shadow untuk efek float */
+}
+
+/* Hover effect dari item-card mempengaruhi ikon */
+.item-card:hover .mac-folder-icon {
+    transform: scale(1.03) translateY(-2px);
+}
+
+/* Bagian Belakang Folder (Tab Belakang) */
+.mac-folder-back {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 85%; /* Sedikit lebih rendah untuk menampilkan tab */
+    background: linear-gradient(180deg, #1ea0ff, #005ce6); /* Gradient biru modern */
+    border-radius: 12px 16px 14px 14px;
+}
+
+/* Tab atas pada bagian belakang */
+.mac-folder-back::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 0;
+    width: 40px;
+    height: 18px;
+    background: linear-gradient(180deg, #1ea0ff, #007aff);
+    border-radius: 10px 14px 0 0;
+}
+
+/* Bagian Depan Folder (Liquid Glass Panel) */
 .mac-folder-front {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 75%; 
-    background: linear-gradient(180deg, #3399ff 0%, #1a7bff 100%);
-    border-radius: 12px; 
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0,0,0,0.1);
-    display: flex; align-items: center; justify-content: center; 
-}
-.mac-folder-front::after { 
-    content: ''; width: 28px; height: 6px; 
-    background: #e0f0ff; 
-    border-radius: 10px; 
-    margin-top: 8px; /* Slight offset downward like in the image */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 78%; /* Lebih pendek untuk efek layering */
+    /* Liquid Glass Effect */
+    background: rgba(220, 240, 255, 0.2); 
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    
+    border: 1px solid rgba(255, 255, 255, 0.6); /* Border putih tipis untuk definisi glass */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    
+    border-radius: 16px;
+    box-shadow: 
+        inset 0 2px 10px rgba(255, 255, 255, 0.5), /* Refleksi cahaya dalam */
+        0 5px 15px rgba(0, 0, 0, 0.2); /* Bayangan cast ke folder back */
+    
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 15px;
+    opacity: 0.95; /* Hampir solid, tapi masih blur */
 }
 
+/* Garis detail kecil pada panel depan untuk sentuhan elegan */
+.mac-folder-front::after {
+    content: '';
+    width: 30px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
 /* ============================================================ */
 
 /* FILE THUMBNAILS */
-.thumb-box { 
-    width: 100%; flex: 1; min-height: 0; /* Dinamis menyesuaikan ruang sisa */
-    display: flex; justify-content: center; align-items: center; 
-    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; 
-    margin-bottom: 10px; overflow: hidden; 
-}
-.thumb-box:has(.mac-folder-icon) { overflow: visible; background: transparent; box-shadow: none;}
+.thumb-box { width: 90%; height: 100px; border-radius: 8px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; margin-bottom: 5px; }
+.thumb-box:has(.mac-folder-icon) { overflow: visible; background: transparent; } /* Folder icon kustom tidak perlu thumb-box */
 .thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 .huge-icon { font-size: 3rem !important; margin: 0 !important; }
 .icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: #8b5cf6; }
+.item-name { font-size: 0.8rem; font-weight: 500; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; }
 
 /* Warna Latar Ekstensi File */
 .bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
@@ -232,7 +258,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
+.modal-box { width: 380px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); }
 .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 .modal-header h3 { font-size: 1.1rem; color: white; }
 .close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
@@ -254,9 +280,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.05); }
 .ctx-item i, .dropdown-content a i { width: 20px; margin-right: 10px; color: #94a3b8; }
 .menu-divider, .ctx-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; border: none; }
-
-@keyframes modalPopSmooth { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-.modal-box.animate-open { animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.text-blue { color: var(--clr-blue) !important; } .text-green { color: var(--clr-green) !important; } .text-yellow { color: var(--clr-yellow) !important; } .text-purple { color: #7248b9 !important; }
 
 /* ============================================================ */
 /* STORAGE PAGE & MODALS                                        */
@@ -336,7 +360,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 .preview-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.85); /* Sedikit lebih gelap untuk memfokuskan konten */
+    background: rgba(15, 23, 42, 0.75); 
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     z-index: 30000; display: flex; flex-direction: column;
     opacity: 0; transition: opacity 0.3s ease;
@@ -344,11 +368,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .preview-overlay.show-preview { opacity: 1; display: flex !important; }
 
 /* Header Glass Apple */
-.liquid-glass-panel {
+.preview-header {
     background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
     height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-    flex-shrink: 0; 
+    z-index: 30005; /* Diatas konten */
 }
 .preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
 .preview-file-info {
@@ -370,30 +394,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important;
 }
 
-/* ----------------------------------------------------- */
-/* CONTAINER BODY PREVIEW (FLEXBOX PRESISI UNTUK NAV)    */
-/* ----------------------------------------------------- */
-.preview-body-container {
-    flex: 1; 
-    display: flex; 
-    justify-content: space-between; /* Kiri, Tengah, Kanan aman terpisah */
-    align-items: center; 
-    width: 100%;
-    padding: 0 20px; 
-    overflow: hidden; 
-}
-
-/* Pembungkus Navigasi Kiri & Kanan */
-.nav-button-container {
-    flex-shrink: 0; 
-    width: 60px; 
-    display: flex;
-    justify-content: center;
-    z-index: 30010;
-}
-
 /* NAVIGATION BUTTONS (Liquid Glass Circles) */
 .nav-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 30010; /* Diatas konten */
     width: 55px !important;
     height: 55px !important;
     font-size: 1.3rem !important;
@@ -402,22 +407,23 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     color: white; cursor: pointer;
     transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
+.prev-arrow { left: 20px; transform: translateY(-50%); }
+.next-arrow { right: 20px; transform: translateY(-50%); }
+
 .nav-arrow:hover { 
     background: rgba(255, 255, 255, 0.3) !important;
-    transform: scale(1.08) !important; 
+    transform: translateY(-50%) scale(1.08) !important; 
     box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important;
 }
-.nav-arrow:active { transform: scale(0.95) !important; }
+.nav-arrow:active { transform: translateY(-50%) scale(0.95) !important; }
 
-/* Area Konten Tengah */
+/* MAIN CONTENT AREA FIXED */
 .preview-content-area {
-    flex: 1; 
-    display: flex; justify-content: center; align-items: center;
-    height: 100%;
-    padding: 20px; 
-    overflow: hidden; 
-    position: relative;
+    flex: 1; display: flex; justify-content: center; align-items: center;
+    padding: 20px 90px; /* Padding extra di kiri kanan untuk tombol */
+    overflow: hidden; position: relative;
 }
+
 .preview-content-area img {
     max-width: 100%; max-height: 100%; object-fit: contain;
     border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
@@ -438,7 +444,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* MAC OS DOCUMENT VIEWER GLASS WINDOW */
 .doc-glass-wrapper {
-    width: 100%; height: 95%; max-width: 1200px;
+    width: 100%; height: 100%; max-width: 1200px;
     padding: 10px; background: rgba(255, 255, 255, 0.05); 
     backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
@@ -450,16 +456,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* ============================================================ */
-/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (CLEAN)      */
+/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL              */
 /* ============================================================ */
 .apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
     background: transparent; border-radius: 16px; overflow: hidden; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4); /* Bayangan murni, bersih tanpa glow/cahaya palsu */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1), 0 20px 60px rgba(0,0,0,0.3);
     animation: previewZoomIn 0.3s ease-out; 
 }
-
-/* DIHAPUS: Efek Liquid Glow/Cahaya di belakang video yang mengganggu */
+/* Liquid Glass Floating Effect untuk Video Player (Vision Pro style) */
+.apple-video-wrapper::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.08) 0%, rgba(45, 212, 191, 0.02) 40%, transparent 70%);
+    filter: blur(100px); z-index: -1; animation: liquidFloat 20s infinite linear;
+}
 .apple-video-wrapper video { width: 100%; max-height: 100%; border-radius: 16px; outline: none; background-color: transparent; }
 .apple-video-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -503,3 +513,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-progress-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%) scale(0); width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-progress-container:hover .apple-progress-thumb { transform: translateY(-50%) scale(1); }
 .apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+@keyframes liquidFloat {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(10%, 10%) rotate(180deg); }
+    100% { transform: translate(0, 0) rotate(360deg); }
+}
