@@ -679,7 +679,7 @@ window.openPreview = (doc) => {
     
     // Logika Navigasi Next/Prev Panah Apple Glass
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
-    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; }
+    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } // Fallback
 
     const prevBtn = el('previewPrevBtn');
     const nextBtn = el('previewNextBtn');
