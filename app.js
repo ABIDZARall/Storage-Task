@@ -39,6 +39,7 @@ let searchTimeout = null;
 
 // STATE PREVIEW NAVIGATION (Baru untuk Media Gallery)
 let currentPreviewList = [];
+let audioInstance = null; // Global audio object
 
 // Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
@@ -357,7 +358,6 @@ function renderItem(doc) {
     let content = '';
 
     if (isFolder) {
-        // INJEKSI HTML DESAIN FOLDER BARU YANG SEMPURNA (Anti-Patah)
         content = `
             <div class="mac-folder-container">
                 <div class="mac-folder-icon">
@@ -371,13 +371,20 @@ function renderItem(doc) {
 
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'heic', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp', 'svg', 'ico'];
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
+        const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; // TAMBAHAN FORMAT AUDIO
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
 
         const createFallback = (ext) => {
             let iconClass = "fa-file"; let colorClass = "icon-grey";
             if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; } }
-            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; } else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; } else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; } else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; } else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
+            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; } 
+            else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; } 
+            else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; } 
+            else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; } 
+            else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
+            else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } // TAMPILAN ICON MUSIK
+            
             return `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`.replace(/"/g, "'"); 
         };
 
@@ -385,6 +392,9 @@ function renderItem(doc) {
             content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
             content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
+        } else if (audioExts.includes(ext)) {
+            // TAMPILAN GRID KHUSUS AUDIO
+            content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -671,7 +681,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE (NAVIGATION & DESIGN BARU)
+// 9. LOGIKA PRATINJAU FILE (NAVIGATION, VIDEO, & MUSIC)
 // ======================================================
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
@@ -680,20 +690,17 @@ window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
-    // Logika Navigasi Galeri: Tampilkan tombol hanya jika ada file lain
+    // Logika Navigasi Galeri
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
-    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } // Fallback
+    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
 
     const prevBtn = el('previewPrevBtn');
     const nextBtn = el('previewNextBtn');
     
     if(currentPreviewList.length <= 1) {
-        prevBtn.classList.add('hidden');
-        nextBtn.classList.add('hidden');
+        prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
     } else {
-        // Tampilkan tombol Prev jika bukan file pertama
         currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
-        // Tampilkan tombol Next jika bukan file terakhir
         currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
     }
 
@@ -708,6 +715,7 @@ window.openPreview = (doc) => {
     const otherDocs = ['csv', 'txt', 'rtf'];
     const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico']; 
     const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; // FORMAT AUDIO
 
     if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
     else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
@@ -715,6 +723,7 @@ window.openPreview = (doc) => {
     else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#fbbc04"; }
     else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#2dd4bf"; }
     else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#facc15"; }
+    else if (audioExts.includes(ext)) { iconClass = "fa-music"; iconColor = "#a855f7"; }
 
     const iconEl = el('previewFileIcon');
     iconEl.className = `fa-solid ${iconClass}`;
@@ -732,7 +741,6 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
-            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER DENGAN SVG SKIP ORIGINAL & PURE GLASS (TANPA GLOW)
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
@@ -788,6 +796,47 @@ window.openPreview = (doc) => {
             `;
             setTimeout(initCustomVideoPlayer, 50); 
         } 
+        else if (audioExts.includes(ext)) {
+            // INJEKSI HTML BARU UNTUK APPLE MUSIC PLAYER
+            contentArea.innerHTML = `
+                <div class="apple-audio-player">
+                    <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
+                    
+                    <div class="audio-cover-art" id="audioCoverArt">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+                    
+                    <div class="audio-info-controls">
+                        <div class="audio-title-area">
+                            <div class="audio-title" title="${doc.name}">${doc.name}</div>
+                            <div class="audio-artist">Unknown Artist</div>
+                        </div>
+
+                        <div class="audio-timeline-area">
+                            <span class="audio-time" id="audioCurrentTime">0:00</span>
+                            <div class="audio-progress-container" id="audioProgressContainer">
+                                <div class="audio-progress-bar" id="audioProgressBar"></div>
+                                <div class="audio-progress-thumb" id="audioProgressThumb"></div>
+                            </div>
+                            <span class="audio-time" id="audioDuration">-0:00</span>
+                        </div>
+
+                        <div class="audio-buttons-area">
+                            <button class="audio-btn side" onclick="navigatePreview(-1)" title="Previous Track"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                            <button class="audio-btn side" onclick="navigatePreview(1)" title="Next Track"><i class="fa-solid fa-forward-step"></i></button>
+                        </div>
+                        
+                        <div class="audio-volume-area">
+                            <i class="fa-solid fa-volume-low"></i>
+                            <input type="range" id="audioVolumeSlider" class="audio-vol-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(initCustomAudioPlayer, 50);
+        }
         else if (pdfExt.includes(ext)) {
             contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
         } 
@@ -809,19 +858,95 @@ window.openPreview = (doc) => {
     }, 400); 
 };
 
-// Fungsi Navigasi Pratinjau
 window.navigatePreview = (direction) => {
     if (!currentPreviewDoc) return;
     const currentIndex = currentPreviewList.findIndex(d => d.$id === currentPreviewDoc.$id);
     const newIndex = currentIndex + direction;
     
     if (newIndex >= 0 && newIndex < currentPreviewList.length) {
-        // Matikan video jika sedang menyala agar suara tidak bocor
         const video = el('customVideo');
         if(video) { video.pause(); video.removeAttribute('src'); video.load(); }
         
+        if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
+        
         el('previewContent').innerHTML = '<div class="spinner"></div>';
         openPreview(currentPreviewList[newIndex]);
+    }
+};
+
+// ======================================================
+// LOGIKA PEMUTAR AUDIO KUSTOM (APPLE MUSIC STYLE)
+// ======================================================
+window.initCustomAudioPlayer = () => {
+    const audio = el('customAudio');
+    audioInstance = audio; // Simpan ke global agar bisa dimatikan saat navigasi/close
+    const playPauseBtn = el('audioPlayPause');
+    const progressContainer = el('audioProgressContainer');
+    const progressBar = el('audioProgressBar');
+    const progressThumb = el('audioProgressThumb');
+    const timeDisplay = el('audioCurrentTime');
+    const durationDisplay = el('audioDuration');
+    const volumeSlider = el('audioVolumeSlider');
+    const coverArt = el('audioCoverArt');
+
+    if(!audio) return;
+
+    const formatTime = (seconds) => {
+        if(isNaN(seconds)) return "0:00";
+        const m = Math.floor(Math.abs(seconds) / 60); 
+        const s = Math.floor(Math.abs(seconds) % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    };
+
+    audio.addEventListener('loadedmetadata', () => { 
+        timeDisplay.innerText = "0:00";
+        durationDisplay.innerText = `-${formatTime(audio.duration)}`; 
+    });
+
+    audio.addEventListener('timeupdate', () => {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+        progressThumb.style.left = `calc(${percent}% - 5px)`;
+        timeDisplay.innerText = formatTime(audio.currentTime);
+        const timeRemaining = audio.duration - audio.currentTime;
+        durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
+    });
+
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        coverArt.classList.remove('playing');
+        // Otomatis lanjut lagu berikutnya jika ada
+        navigatePreview(1);
+    });
+
+    audio.addEventListener('play', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        coverArt.classList.add('playing');
+    });
+
+    audio.addEventListener('pause', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        coverArt.classList.remove('playing');
+    });
+
+    const togglePlay = () => {
+        if (audio.paused || audio.ended) { audio.play(); } 
+        else { audio.pause(); }
+    };
+    playPauseBtn.addEventListener('click', togglePlay);
+
+    progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pos * audio.duration;
+    });
+
+    if(volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            audio.volume = vol;
+            volumeSlider.style.setProperty('--vol', (vol * 100) + '%');
+        });
     }
 };
 
@@ -945,6 +1070,10 @@ window.closePreview = () => {
     const overlay = el('previewModal');
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
+    
+    // Matikan audio jika sedang main
+    if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
+
     overlay.classList.remove('show-preview');
     
     setTimeout(() => {

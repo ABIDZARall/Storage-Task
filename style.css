@@ -27,6 +27,7 @@
     --clr-yellow: #fbbc04;
     --clr-green: #34a853;
     --clr-grey: #5f6368;
+    --clr-purple: #a855f7; /* Tambahan aksen untuk file musik */
     --popup-bg: #1e293b; 
     --popup-border: #334155;
     --track-bg: #334155; 
@@ -253,14 +254,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 .huge-icon { font-size: 3rem !important; margin: 0 !important; }
-.icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: #8b5cf6; }
+
+/* Tambahan warna untuk Ikon Musik */
+.icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: var(--clr-purple); }
 
 /* Warna Latar Ekstensi File */
 .bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
 .bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); }
 .bg-green { background: rgba(52, 168, 83, 0.2); border: 1px solid rgba(52, 168, 83, 0.3); }
 .bg-yellow { background: rgba(251, 188, 4, 0.2); border: 1px solid rgba(251, 188, 4, 0.3); }
-.bg-purple { background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.3); }
+.bg-purple { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); }
 .bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); }
 .bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
 .fallback-ext { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 5px; opacity: 0.8; }
@@ -494,12 +497,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* ============================================================ */
 /* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (CLEAN)      */
-/* TANPA GLOW/BAYANGAN KOTOR DI BELAKANG VIDEO                  */
 /* ============================================================ */
 .apple-video-wrapper { 
     position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
     background: transparent; border-radius: 16px; overflow: hidden; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4); /* Bayangan murni, bersih tanpa glow/cahaya palsu */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
     animation: previewZoomIn 0.3s ease-out; 
 }
 .apple-video-wrapper video { width: 100%; max-height: 100%; border-radius: 16px; outline: none; background-color: transparent; }
@@ -521,7 +523,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-glass-btn:active { transform: scale(0.95); transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
-/* Fiturbaru: Hover Pop-up Volume Apple */
 .apple-top-controls { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
 .top-right-group { display: flex; gap: 12px; align-items: center; }
 .apple-volume-container { display: flex; align-items: center; justify-content: flex-start; border-radius: 30px; height: 40px; width: 40px; padding: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
@@ -545,3 +546,65 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-progress-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%) scale(0); width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-progress-container:hover .apple-progress-thumb { transform: translateY(-50%) scale(1); }
 .apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+/* ============================================================ */
+/* NEW: APPLE ORIGINAL AUDIO/MUSIC PLAYER (LIQUID GLASS)        */
+/* ============================================================ */
+.apple-audio-player {
+    width: 600px; max-width: 90vw;
+    background: rgba(30, 41, 59, 0.6); /* Warna base gelap Apple Music */
+    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 30px;
+    display: flex; gap: 30px; align-items: center;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2);
+    animation: previewZoomIn 0.3s ease-out;
+}
+
+.audio-cover-art {
+    width: 180px; height: 180px; flex-shrink: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6); /* Default gradient cover */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    display: flex; justify-content: center; align-items: center;
+    position: relative; overflow: hidden;
+}
+.audio-cover-art i { font-size: 5rem; color: rgba(255,255,255,0.8); }
+
+/* Animasi piringan hitam/cover membesar perlahan saat play */
+.audio-cover-art.playing { animation: pulseCover 2s infinite alternate ease-in-out; }
+@keyframes pulseCover { 0% { transform: scale(1); box-shadow: 0 15px 30px rgba(0,0,0,0.3); } 100% { transform: scale(1.03); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4); } }
+
+.audio-info-controls { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+.audio-title-area { margin-bottom: 20px; }
+.audio-title { font-size: 1.4rem; font-weight: 700; color: white; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
+.audio-artist { font-size: 1rem; color: #94a3b8; font-weight: 500; }
+
+.audio-timeline-area { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
+.audio-progress-container { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; }
+.audio-progress-bar { height: 100%; background: white; border-radius: 3px; width: 0%; pointer-events: none; }
+.audio-progress-thumb { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.audio-time { font-size: 0.75rem; color: #94a3b8; font-variant-numeric: tabular-nums; width: 35px; text-align: center; }
+
+.audio-buttons-area { display: flex; justify-content: center; align-items: center; gap: 25px; margin-bottom: 25px; }
+.audio-btn { background: transparent; border: none; color: white; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+.audio-btn:hover { color: var(--accent); transform: scale(1.1); }
+.audio-btn.play { width: 60px; height: 60px; background: white; color: #0f172a; border-radius: 50%; font-size: 1.5rem; }
+.audio-btn.play:hover { background: var(--accent); color: white; transform: scale(1.05); }
+.audio-btn.side { font-size: 1.5rem; color: rgba(255,255,255,0.8); }
+
+.audio-volume-area { display: flex; align-items: center; gap: 12px; padding: 0 10px; }
+.audio-volume-area i { font-size: 0.9rem; color: #94a3b8; }
+.audio-vol-slider { -webkit-appearance: none; appearance: none; flex: 1; height: 4px; background: linear-gradient(to right, #ffffff var(--vol), rgba(255,255,255,0.1) var(--vol)); border-radius: 2px; outline: none; cursor: pointer; }
+.audio-vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.4); cursor: pointer; transition: 0.1s; }
+.audio-vol-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* Responsive Audio Player */
+@media screen and (max-width: 600px) {
+    .apple-audio-player { flex-direction: column; padding: 20px; width: 90vw; }
+    .audio-cover-art { width: 200px; height: 200px; }
+    .audio-title-area { text-align: center; }
+    .audio-title { max-width: 100%; }
+}
