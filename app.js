@@ -357,9 +357,7 @@ function renderItem(doc) {
     let content = '';
 
     if (isFolder) {
-        // ============================================================
-        // INJEKSI HTML BARU UNTUK DESAIN FOLDER MODERN & ELEGAN (PURE CSS)
-        // ============================================================
+        // INJEKSI HTML DESAIN FOLDER BARU YANG SEMPURNA (Anti-Patah)
         content = `
             <div class="mac-folder-container">
                 <div class="mac-folder-icon">
@@ -367,7 +365,6 @@ function renderItem(doc) {
                     <div class="mac-folder-front"></div>
                 </div>
             </div>`;
-        // ============================================================
     } else {
         const ext = doc.name.split('.').pop().toLowerCase();
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
@@ -647,9 +644,6 @@ async function loadFiles(param) {
         updatePreviewList(res.documents);
 
         if (res.documents.length === 0) {
-            // ============================================================
-            // INJEKSI HTML BARU UNTUK DESAIN FOLDER KOSONG MODERN & ELEGAN (GREYSCALE)
-            // ============================================================
             grid.innerHTML = `
                 <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
                     <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
@@ -658,7 +652,6 @@ async function loadFiles(param) {
                     </div>
                     <p>Folder Kosong</p>
                 </div>`; 
-            // ============================================================
         } else {
             res.documents.forEach(doc => renderItem(doc)); 
         }
@@ -739,6 +732,7 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
         } 
         else if (vidExts.includes(ext)) {
+            // STRUKTUR HTML BARU: APPLE THEATER VIDEO PLAYER DENGAN SVG SKIP ORIGINAL & PURE GLASS (TANPA GLOW)
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
@@ -761,16 +755,24 @@ window.openPreview = (doc) => {
                         </div>
 
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik">
-                                <i class="fa-solid fa-backward"></i>
-                                <span class="skip-label">10</span>
+                            <button class="apple-glass-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
+                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
+                                </svg>
                             </button>
+                            
                             <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
                                 <i class="fa-solid fa-pause"></i>
                             </button>
-                            <button class="apple-glass-btn pure-glass" id="vidSkipForward" title="Maju 10 detik">
-                                <i class="fa-solid fa-forward"></i>
-                                <span class="skip-label">10</span>
+                            
+                            <button class="apple-glass-btn pure-glass" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
+                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
+                                </svg>
                             </button>
                         </div>
 
@@ -869,10 +871,10 @@ window.initCustomVideoPlayer = () => {
     const togglePlay = () => {
         if (video.paused || video.ended) { 
             video.play(); 
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>'; 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; 
         } else { 
             video.pause(); 
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>'; 
         }
     };
     playPauseBtn.addEventListener('click', togglePlay);
