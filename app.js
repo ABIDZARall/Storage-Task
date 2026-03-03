@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======================================================
-// 3. FUNGSI LOGGING KE EXCEL (SHEETDB)
+// 3. FUNGSI LOGGING KE EXCEL
 // ======================================================
 async function recordActivity(sheetName, data) {
     try {
@@ -674,7 +674,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE & APPLE MUSIC PLAYER FIXED
+// 9. LOGIKA PRATINJAU FILE (NAVIGATION & DESIGN BARU)
 // ======================================================
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
@@ -683,6 +683,7 @@ window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
+    // Logika Navigasi Galeri
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
 
@@ -789,7 +790,7 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // STRUKTUR HTML APPLE AUDIO PLAYER BARU 
+            // INJEKSI HTML APPLE MUSIC PLAYER DENGAN SEEKABLE SLIDER
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -806,17 +807,14 @@ window.openPreview = (doc) => {
 
                         <div class="audio-timeline-area">
                             <span class="audio-time" id="audioCurrentTime">0:00</span>
-                            <div class="audio-progress-container" id="audioProgressContainer">
-                                <div class="audio-progress-bar" id="audioProgressBar"></div>
-                                <div class="audio-progress-thumb" id="audioProgressThumb"></div>
-                            </div>
+                            <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
                             <span class="audio-time" id="audioDuration">-0:00</span>
                         </div>
 
                         <div class="audio-buttons-area">
-                            <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s | 2x Klik: Track Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10s&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                             <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s | 2x Klik: Track Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                            <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10s&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                         </div>
                         
                         <div class="audio-volume-area">
@@ -867,7 +865,7 @@ window.navigatePreview = (direction) => {
 };
 
 // ======================================================
-// LOGIKA PEMUTAR AUDIO KUSTOM
+// LOGIKA PEMUTAR AUDIO KUSTOM (APPLE MUSIC STYLE & SEEKABLE)
 // ======================================================
 window.initCustomAudioPlayer = () => {
     const audio = el('customAudio');
@@ -875,15 +873,14 @@ window.initCustomAudioPlayer = () => {
     const playPauseBtn = el('audioPlayPause');
     const prevBtn = el('audioPrevBtn');
     const nextBtn = el('audioNextBtn');
-    const progressContainer = el('audioProgressContainer');
-    const progressBar = el('audioProgressBar');
-    const progressThumb = el('audioProgressThumb');
+    const progressSlider = el('audioProgressSlider');
     const timeDisplay = el('audioCurrentTime');
     const durationDisplay = el('audioDuration');
     const volumeSlider = el('audioVolumeSlider');
     const coverArt = el('audioCoverArt');
 
     if(!audio) return;
+    let isDraggingAudio = false;
 
     const formatTime = (seconds) => {
         if(isNaN(seconds)) return "0:00";
@@ -897,19 +894,40 @@ window.initCustomAudioPlayer = () => {
         durationDisplay.innerText = `-${formatTime(audio.duration)}`; 
     });
 
+    // Update slider dan waktu berjalan otomatis
     audio.addEventListener('timeupdate', () => {
-        const percent = (audio.currentTime / audio.duration) * 100;
-        progressBar.style.width = `${percent}%`;
-        progressThumb.style.left = `calc(${percent}% - 5px)`;
-        timeDisplay.innerText = formatTime(audio.currentTime);
-        const timeRemaining = audio.duration - audio.currentTime;
-        durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
+        if (!isDraggingAudio && !isNaN(audio.duration)) {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressSlider.value = percent;
+            progressSlider.style.setProperty('--prog', percent + '%');
+            timeDisplay.innerText = formatTime(audio.currentTime);
+            const timeRemaining = audio.duration - audio.currentTime;
+            durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
+        }
+    });
+
+    // Event saat slider dimainkan/digeser (Scrubbing)
+    progressSlider.addEventListener('input', (e) => {
+        isDraggingAudio = true;
+        const percent = parseFloat(e.target.value);
+        progressSlider.style.setProperty('--prog', percent + '%');
+        if(!isNaN(audio.duration)) {
+            timeDisplay.innerText = formatTime((percent / 100) * audio.duration);
+        }
+    });
+
+    // Event saat pengguna selesai menggeser slider (Lepas klik)
+    progressSlider.addEventListener('change', (e) => {
+        if(!isNaN(audio.duration)) {
+            audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
+        }
+        isDraggingAudio = false;
     });
 
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
         coverArt.classList.remove('playing');
-        navigatePreview(1);
+        navigatePreview(1); // Auto play lagu selanjutnya
     });
 
     audio.addEventListener('play', () => {
@@ -923,86 +941,44 @@ window.initCustomAudioPlayer = () => {
     });
 
     const togglePlay = () => {
-        if (audio.paused || audio.ended) audio.play(); 
-        else audio.pause();
+        if (audio.paused || audio.ended) { audio.play(); } 
+        else { audio.pause(); }
     };
     playPauseBtn.addEventListener('click', togglePlay);
 
-    // ====================================================
-    // LOGIKA PREVIOUS & NEXT (1x Klik Skip 10s, 2x Klik Pindah Lagu)
-    // ====================================================
-    let clickTimerPrev = null;
-    prevBtn.addEventListener('click', (e) => {
-        if (e.detail === 1) {
-            clickTimerPrev = setTimeout(() => {
-                // 1x Klik: Mundur 10 detik
-                audio.currentTime = Math.max(0, audio.currentTime - 10);
-            }, 250); // Waktu tunggu untuk melihat apakah user klik 2x
-        } else if (e.detail === 2) {
-            clearTimeout(clickTimerPrev);
-            // 2x Klik: Lagu Sebelumnya
-            navigatePreview(-1);
-        }
-    });
+    // ==========================================
+    // FUNGSI SMART CLICK UNTUK NEXT/PREV AUDIO
+    // ==========================================
+    function attachSmartNav(element, skipTime, navDir) {
+        if(!element) return;
+        let timer = null;
 
-    let clickTimerNext = null;
-    nextBtn.addEventListener('click', (e) => {
-        if (e.detail === 1) {
-            clickTimerNext = setTimeout(() => {
-                // 1x Klik: Maju 10 detik
-                audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-            }, 250);
-        } else if (e.detail === 2) {
-            clearTimeout(clickTimerNext);
-            // 2x Klik: Lagu Selanjutnya
-            navigatePreview(1);
-        }
-    });
+        element.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // e.detail menghitung jumlah klik beruntun dari pengguna
+            if (e.detail === 1) {
+                timer = setTimeout(() => {
+                    // Klik 1x (Single Click): Skip lagu 10 detik
+                    if(audio && !isNaN(audio.duration)) {
+                        let newTime = audio.currentTime + skipTime;
+                        if(newTime < 0) newTime = 0;
+                        if(newTime > audio.duration) newTime = audio.duration;
+                        audio.currentTime = newTime;
+                    }
+                }, 250); // Jeda 250ms menanti jika ada klik kedua
+            } else if (e.detail === 2) {
+                // Klik 2x (Double Click): Pindah ke file sebelah
+                clearTimeout(timer); // Batalkan aksi klik 1x
+                navigatePreview(navDir);
+            }
+        });
+    }
 
-    // ====================================================
-    // LOGIKA PROGRESS BAR (CLICK & DRAG / "Bisa Dimainkan")
-    // ====================================================
-    let isDraggingAudio = false;
+    attachSmartNav(prevBtn, -10, -1); // Kiri: -10s ATAU File Sebelum
+    attachSmartNav(nextBtn, 10, 1);   // Kanan: +10s ATAU File Lanjut
 
-    const updateAudioProgress = (e) => {
-        const rect = progressContainer.getBoundingClientRect();
-        let pos = (e.clientX - rect.left) / rect.width;
-        pos = Math.max(0, Math.min(1, pos)); // Batasi antara 0 dan 1
-        audio.currentTime = pos * audio.duration;
-    };
-
-    progressContainer.addEventListener('mousedown', (e) => {
-        isDraggingAudio = true;
-        updateAudioProgress(e);
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isDraggingAudio) {
-            updateAudioProgress(e);
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (isDraggingAudio) {
-            isDraggingAudio = false;
-        }
-    });
-
-    // Sentuhan Untuk Mobile
-    progressContainer.addEventListener('touchstart', (e) => {
-        isDraggingAudio = true;
-        updateAudioProgress(e.touches[0]);
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-        if(isDraggingAudio) updateAudioProgress(e.touches[0]);
-    });
-
-    document.addEventListener('touchend', () => {
-        isDraggingAudio = false;
-    });
-
-    // Volume Slider
+    // Kontrol Volume Real-time
     if(volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
