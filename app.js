@@ -6,11 +6,11 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
+// KONFIGURASI AVATAR
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
+// KONFIGURASI PROJECT
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -20,7 +20,7 @@ const CONFIG = {
     BUCKET_ID: 'taskfiles'
 };
 
-// API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
+// API SheetDB 
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -37,14 +37,12 @@ let selectedProfileImage = null;
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// STATE PREVIEW NAVIGATION (Baru untuk Media Gallery)
+// STATE PREVIEW NAVIGATION
 let currentPreviewList = [];
-let audioInstance = null; // Global audio object
+let audioInstance = null; 
 
-// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
-// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -57,16 +55,16 @@ const toggleLoading = (show, msg = "Memproses...") => {
 };
 
 // ======================================================
-// 2. MAIN EXECUTION (Saat Halaman Dimuat)
+// 2. MAIN EXECUTION
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkSession(); // Cek sesi login
-    initDragAndDrop(); // Setup drag-drop upload
-    initLogout(); // Setup tombol logout
-    initSearchBar(); // Setup pencarian
-    initAllContextMenus(); // Setup klik kanan
-    initStorageTooltip(); // Setup tooltip storage
-    initProfileImageUploader(); // Setup upload profil
+    checkSession();
+    initDragAndDrop(); 
+    initLogout(); 
+    initSearchBar(); 
+    initAllContextMenus(); 
+    initStorageTooltip(); 
+    initProfileImageUploader(); 
 });
 
 // ======================================================
@@ -103,9 +101,8 @@ function checkSystemHealth() {
 }
 
 // ======================================================
-// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
+// 4. LOGIKA AUTH
 // ======================================================
-
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -290,10 +287,8 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC & THUMBNAIL GOOGLE DRIVE
+// 7. FILE MANAGER LOGIC
 // ======================================================
-
-// UPDATE PREVIEW LIST UNTUK GALERI NAVIGASI (Hanya File, bukan Folder)
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
@@ -331,7 +326,7 @@ function initSearchBar() {
 async function performSearch(keyword) {
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.search('name', keyword), Appwrite.Query.limit(50) ]);
-        updatePreviewList(res.documents); // Update untuk Gallery Mode
+        updatePreviewList(res.documents); 
         const grid = el('fileGrid'); grid.innerHTML = '';
         if (res.documents.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else res.documents.forEach(doc => renderItem(doc));
     } catch (e) { fallbackSearch(keyword); }
@@ -341,7 +336,7 @@ async function fallbackSearch(keyword) {
     try {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]);
         const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase()));
-        updatePreviewList(filtered); // Update untuk Gallery Mode
+        updatePreviewList(filtered); 
         const grid = el('fileGrid'); grid.innerHTML = '';
         if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
     } catch(err){}
@@ -371,7 +366,7 @@ function renderItem(doc) {
 
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'heic', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp', 'svg', 'ico'];
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
-        const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; // TAMBAHAN FORMAT AUDIO
+        const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
 
@@ -383,7 +378,7 @@ function renderItem(doc) {
             else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; } 
             else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; } 
             else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
-            else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } // TAMPILAN ICON MUSIK
+            else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } 
             
             return `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`.replace(/"/g, "'"); 
         };
@@ -393,7 +388,6 @@ function renderItem(doc) {
         } else if (vidExts.includes(ext)) {
             content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
-            // TAMPILAN GRID KHUSUS AUDIO
             content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
@@ -483,7 +477,7 @@ function initAllContextMenus() {
 }
 
 // ======================================================
-// 8. STORAGE LOGIC & MODAL
+// 8. STORAGE LOGIC
 // ======================================================
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
@@ -650,7 +644,6 @@ async function loadFiles(param) {
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
         
-        // Simpan semua list file untuk navigasi Next / Previous Media Player
         updatePreviewList(res.documents);
 
         if (res.documents.length === 0) {
@@ -681,7 +674,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE (NAVIGATION, VIDEO, & MUSIC)
+// 9. LOGIKA PRATINJAU FILE & APPLE MUSIC PLAYER FIXED
 // ======================================================
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
@@ -690,7 +683,6 @@ window.openPreview = (doc) => {
     currentPreviewDoc = doc;
     const ext = doc.name.split('.').pop().toLowerCase();
     
-    // Logika Navigasi Galeri
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
 
@@ -715,7 +707,7 @@ window.openPreview = (doc) => {
     const otherDocs = ['csv', 'txt', 'rtf'];
     const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico']; 
     const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
-    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; // FORMAT AUDIO
+    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
 
     if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
     else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
@@ -797,7 +789,7 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML BARU UNTUK APPLE MUSIC PLAYER
+            // STRUKTUR HTML APPLE AUDIO PLAYER BARU 
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -822,9 +814,9 @@ window.openPreview = (doc) => {
                         </div>
 
                         <div class="audio-buttons-area">
-                            <button class="audio-btn side" onclick="navigatePreview(-1)" title="Previous Track"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s | 2x Klik: Track Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                             <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn side" onclick="navigatePreview(1)" title="Next Track"><i class="fa-solid fa-forward-step"></i></button>
+                            <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s | 2x Klik: Track Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                         </div>
                         
                         <div class="audio-volume-area">
@@ -875,12 +867,14 @@ window.navigatePreview = (direction) => {
 };
 
 // ======================================================
-// LOGIKA PEMUTAR AUDIO KUSTOM (APPLE MUSIC STYLE)
+// LOGIKA PEMUTAR AUDIO KUSTOM
 // ======================================================
 window.initCustomAudioPlayer = () => {
     const audio = el('customAudio');
-    audioInstance = audio; // Simpan ke global agar bisa dimatikan saat navigasi/close
+    audioInstance = audio; 
     const playPauseBtn = el('audioPlayPause');
+    const prevBtn = el('audioPrevBtn');
+    const nextBtn = el('audioNextBtn');
     const progressContainer = el('audioProgressContainer');
     const progressBar = el('audioProgressBar');
     const progressThumb = el('audioProgressThumb');
@@ -915,7 +909,6 @@ window.initCustomAudioPlayer = () => {
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
         coverArt.classList.remove('playing');
-        // Otomatis lanjut lagu berikutnya jika ada
         navigatePreview(1);
     });
 
@@ -930,17 +923,86 @@ window.initCustomAudioPlayer = () => {
     });
 
     const togglePlay = () => {
-        if (audio.paused || audio.ended) { audio.play(); } 
-        else { audio.pause(); }
+        if (audio.paused || audio.ended) audio.play(); 
+        else audio.pause();
     };
     playPauseBtn.addEventListener('click', togglePlay);
 
-    progressContainer.addEventListener('click', (e) => {
-        const rect = progressContainer.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        audio.currentTime = pos * audio.duration;
+    // ====================================================
+    // LOGIKA PREVIOUS & NEXT (1x Klik Skip 10s, 2x Klik Pindah Lagu)
+    // ====================================================
+    let clickTimerPrev = null;
+    prevBtn.addEventListener('click', (e) => {
+        if (e.detail === 1) {
+            clickTimerPrev = setTimeout(() => {
+                // 1x Klik: Mundur 10 detik
+                audio.currentTime = Math.max(0, audio.currentTime - 10);
+            }, 250); // Waktu tunggu untuk melihat apakah user klik 2x
+        } else if (e.detail === 2) {
+            clearTimeout(clickTimerPrev);
+            // 2x Klik: Lagu Sebelumnya
+            navigatePreview(-1);
+        }
     });
 
+    let clickTimerNext = null;
+    nextBtn.addEventListener('click', (e) => {
+        if (e.detail === 1) {
+            clickTimerNext = setTimeout(() => {
+                // 1x Klik: Maju 10 detik
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+            }, 250);
+        } else if (e.detail === 2) {
+            clearTimeout(clickTimerNext);
+            // 2x Klik: Lagu Selanjutnya
+            navigatePreview(1);
+        }
+    });
+
+    // ====================================================
+    // LOGIKA PROGRESS BAR (CLICK & DRAG / "Bisa Dimainkan")
+    // ====================================================
+    let isDraggingAudio = false;
+
+    const updateAudioProgress = (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        let pos = (e.clientX - rect.left) / rect.width;
+        pos = Math.max(0, Math.min(1, pos)); // Batasi antara 0 dan 1
+        audio.currentTime = pos * audio.duration;
+    };
+
+    progressContainer.addEventListener('mousedown', (e) => {
+        isDraggingAudio = true;
+        updateAudioProgress(e);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDraggingAudio) {
+            updateAudioProgress(e);
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDraggingAudio) {
+            isDraggingAudio = false;
+        }
+    });
+
+    // Sentuhan Untuk Mobile
+    progressContainer.addEventListener('touchstart', (e) => {
+        isDraggingAudio = true;
+        updateAudioProgress(e.touches[0]);
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if(isDraggingAudio) updateAudioProgress(e.touches[0]);
+    });
+
+    document.addEventListener('touchend', () => {
+        isDraggingAudio = false;
+    });
+
+    // Volume Slider
     if(volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
@@ -1071,7 +1133,6 @@ window.closePreview = () => {
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
     
-    // Matikan audio jika sedang main
     if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
