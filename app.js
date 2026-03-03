@@ -196,7 +196,7 @@ async function syncUserData(authUser) {
         const payload = { name: authUser.name, email: authUser.email };
         if (!userDoc) { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); } 
         else if (!userDoc.name || userDoc.name !== authUser.name) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); }
-    } catch (err) { console.error("Sync Error:", err); }
+    } catch (err) {}
 }
 
 async function initializeDashboard(userObj) {
@@ -287,8 +287,9 @@ window.saveProfile = async () => {
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC
+// 7. FILE MANAGER LOGIC & THUMBNAIL GOOGLE DRIVE
 // ======================================================
+
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
@@ -477,7 +478,7 @@ function initAllContextMenus() {
 }
 
 // ======================================================
-// 8. STORAGE LOGIC
+// 8. STORAGE LOGIC & MODAL
 // ======================================================
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
@@ -643,8 +644,7 @@ async function loadFiles(param) {
     } 
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        
-        updatePreviewList(res.documents);
+        updatePreviewList(res.documents); 
 
         if (res.documents.length === 0) {
             grid.innerHTML = `
@@ -674,7 +674,7 @@ function updateHeaderUI() {
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
-// 9. LOGIKA PRATINJAU FILE (NAVIGATION & DESIGN BARU)
+// 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
@@ -737,51 +737,31 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
-                    
                     <div class="apple-video-overlay" id="vidOverlay">
                         <div class="apple-top-controls">
                             <div class="placeholder-top-left" style="width:40px"></div>
-                            
                             <div class="top-right-group">
                                 <div class="apple-volume-container pure-glass" id="vidVolumeContainer">
-                                    <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute">
-                                        <i class="fa-solid fa-volume-high"></i>
-                                    </button>
-                                    <div class="volume-slider-wrapper">
-                                        <input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
-                                    </div>
+                                    <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                                    <div class="volume-slider-wrapper"><input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;"></div>
                                 </div>
                                 <button class="apple-glass-btn pure-glass small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                             </div>
                         </div>
 
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn pure-glass" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
-                                </svg>
+                            <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
+                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
                             </button>
-                            
-                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
-                                <i class="fa-solid fa-pause"></i>
-                            </button>
-                            
-                            <button class="apple-glass-btn pure-glass" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text>
-                                </svg>
+                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                            <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
+                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
                             </button>
                         </div>
 
                         <div class="apple-bottom-pill pure-glass">
                             <span class="apple-time" id="vidCurrentTime">0:00</span>
-                            <div class="apple-progress-container" id="vidProgressContainer">
-                                <div class="apple-progress-bar" id="vidProgressBar"><div class="apple-progress-thumb"></div></div>
-                            </div>
+                            <div class="apple-progress-container" id="vidProgressContainer"><div class="apple-progress-bar" id="vidProgressBar"><div class="apple-progress-thumb"></div></div></div>
                             <span class="apple-time" id="vidDuration">-0:00</span>
                         </div>
                     </div>
@@ -790,38 +770,29 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML APPLE MUSIC PLAYER DENGAN SEEKABLE SLIDER
+            // INJEKSI HTML APPLE MUSIC PLAYER DENGAN SMART SKIP & SEEKABLE TIMELINE
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
-                    <div class="audio-cover-art" id="audioCoverArt">
-                        <i class="fa-solid fa-music"></i>
-                    </div>
-                    
-                    <div class="audio-info-controls">
-                        <div class="audio-title-area">
+                    <div class="audio-top-section">
+                        <div class="audio-cover-art" id="audioCoverArt"><i class="fa-solid fa-music"></i></div>
+                        <div class="audio-info-area">
                             <div class="audio-title" title="${doc.name}">${doc.name}</div>
-                            <div class="audio-artist">Unknown Artist</div>
+                            <div class="audio-artist">Storage Tasks Player</div>
                         </div>
+                    </div>
 
-                        <div class="audio-timeline-area">
-                            <span class="audio-time" id="audioCurrentTime">0:00</span>
-                            <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
-                            <span class="audio-time" id="audioDuration">-0:00</span>
-                        </div>
+                    <div class="audio-timeline-area">
+                        <span class="audio-time" id="audioCurrentTime">0:00</span>
+                        <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
+                        <span class="audio-time" id="audioDuration">-:--</span>
+                    </div>
 
-                        <div class="audio-buttons-area">
-                            <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10s&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                            <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10s&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
-                        </div>
-                        
-                        <div class="audio-volume-area">
-                            <i class="fa-solid fa-volume-low"></i>
-                            <input type="range" id="audioVolumeSlider" class="audio-vol-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
-                            <i class="fa-solid fa-volume-high"></i>
-                        </div>
+                    <div class="audio-controls-area">
+                        <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10 detik&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                        <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                        <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10 detik&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                     </div>
                 </div>
             `;
@@ -865,7 +836,7 @@ window.navigatePreview = (direction) => {
 };
 
 // ======================================================
-// LOGIKA PEMUTAR AUDIO KUSTOM (APPLE MUSIC STYLE & SEEKABLE)
+// LOGIKA PEMUTAR AUDIO KUSTOM (SEEKABLE & SMART CLICK)
 // ======================================================
 window.initCustomAudioPlayer = () => {
     const audio = el('customAudio');
@@ -876,7 +847,6 @@ window.initCustomAudioPlayer = () => {
     const progressSlider = el('audioProgressSlider');
     const timeDisplay = el('audioCurrentTime');
     const durationDisplay = el('audioDuration');
-    const volumeSlider = el('audioVolumeSlider');
     const coverArt = el('audioCoverArt');
 
     if(!audio) return;
@@ -894,7 +864,6 @@ window.initCustomAudioPlayer = () => {
         durationDisplay.innerText = `-${formatTime(audio.duration)}`; 
     });
 
-    // Update slider dan waktu berjalan otomatis
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
@@ -906,7 +875,7 @@ window.initCustomAudioPlayer = () => {
         }
     });
 
-    // Event saat slider dimainkan/digeser (Scrubbing)
+    // Event saat slider dimainkan/digeser (Seekable)
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
@@ -916,7 +885,6 @@ window.initCustomAudioPlayer = () => {
         }
     });
 
-    // Event saat pengguna selesai menggeser slider (Lepas klik)
     progressSlider.addEventListener('change', (e) => {
         if(!isNaN(audio.duration)) {
             audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
@@ -946,46 +914,42 @@ window.initCustomAudioPlayer = () => {
     };
     playPauseBtn.addEventListener('click', togglePlay);
 
-    // ==========================================
-    // FUNGSI SMART CLICK UNTUK NEXT/PREV AUDIO
-    // ==========================================
+    // FUNGSI SMART CLICK UNTUK NEXT/PREV AUDIO (1x vs 2x Klik)
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;
+        let clickCount = 0;
 
         element.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // e.detail menghitung jumlah klik beruntun dari pengguna
-            if (e.detail === 1) {
+            clickCount++;
+
+            // Animasi glow visual saat diklik
+            element.classList.add('glow');
+            setTimeout(() => element.classList.remove('glow'), 400);
+
+            if (clickCount === 1) {
                 timer = setTimeout(() => {
-                    // Klik 1x (Single Click): Skip lagu 10 detik
+                    // Klik 1x: Skip lagu (maju/mundur)
                     if(audio && !isNaN(audio.duration)) {
                         let newTime = audio.currentTime + skipTime;
                         if(newTime < 0) newTime = 0;
                         if(newTime > audio.duration) newTime = audio.duration;
                         audio.currentTime = newTime;
                     }
-                }, 250); // Jeda 250ms menanti jika ada klik kedua
-            } else if (e.detail === 2) {
-                // Klik 2x (Double Click): Pindah ke file sebelah
-                clearTimeout(timer); // Batalkan aksi klik 1x
+                    clickCount = 0;
+                }, 280); // jeda 280ms menanti klik kedua
+            } else if (clickCount === 2) {
+                // Klik 2x: Pindah ke file selanjutnya/sebelumnya
+                clearTimeout(timer);
                 navigatePreview(navDir);
+                clickCount = 0;
             }
         });
     }
 
-    attachSmartNav(prevBtn, -10, -1); // Kiri: -10s ATAU File Sebelum
-    attachSmartNav(nextBtn, 10, 1);   // Kanan: +10s ATAU File Lanjut
-
-    // Kontrol Volume Real-time
-    if(volumeSlider) {
-        volumeSlider.addEventListener('input', (e) => {
-            const vol = parseFloat(e.target.value);
-            audio.volume = vol;
-            volumeSlider.style.setProperty('--vol', (vol * 100) + '%');
-        });
-    }
+    attachSmartNav(prevBtn, -10, -1); 
+    attachSmartNav(nextBtn, 10, 1);   
 };
 
 window.initCustomVideoPlayer = () => {
