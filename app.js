@@ -36,11 +36,12 @@ let selectedUploadFile = null;
 let selectedProfileImage = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
-let currentOpenedDoc = null; // Menyimpan dokumen yang sedang di-preview
 
-// STATE PREVIEW NAVIGATION
+// STATE PREVIEW NAVIGATION (Untuk Media Gallery & Music Player)
 let currentPreviewList = [];
-let audioInstance = null; // Global audio object
+let audioInstance = null; 
+let currentPreviewDoc = null;
+let hideOverlayTimeout;
 
 // Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
@@ -682,20 +683,25 @@ window.togglePass = (id, icon) => { const input = document.getElementById(id); i
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
 
-function getDisplayedDocuments() {
-    const items = document.querySelectorAll('.item-card');
-    let docs = [];
-    items.forEach(item => {
-        if (item.querySelector('.mac-folder-container')) return;
-        const nameEl = item.querySelector('.item-name');
-        if (!nameEl) return;
-        docs.push({ name: nameEl.innerText });
-    });
-    return docs;
-}
+// Menambahkan Global Navigate function untuk menavigasi tanpa harus menutup modal
+window.navigatePreview = (direction) => {
+    if (!currentPreviewDoc) return;
+    const currentIndex = currentPreviewList.findIndex(d => d.$id === currentPreviewDoc.$id);
+    const newIndex = currentIndex + direction;
+    
+    if (newIndex >= 0 && newIndex < currentPreviewList.length) {
+        const video = el('customVideo');
+        if(video) { video.pause(); video.removeAttribute('src'); video.load(); }
+        
+        if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
+        
+        el('previewContent').innerHTML = '<div class="spinner"></div>';
+        openPreview(currentPreviewList[newIndex]);
+    }
+};
 
 window.openPreview = (doc) => {
-    currentOpenedDoc = doc; 
+    currentPreviewDoc = doc; 
     const ext = doc.name.split('.').pop().toLowerCase();
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
     const fileDownloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
@@ -729,8 +735,10 @@ window.openPreview = (doc) => {
 
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
+
     const prevBtn = el('previewPrevBtn');
     const nextBtn = el('previewNextBtn');
+    
     if(currentPreviewList.length <= 1) {
         prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
     } else {
@@ -789,7 +797,7 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS (APPLE STYLE)
+            // INJEKSI HTML APPLE MUSIC PLAYER DENGAN SEEKABLE SLIDER
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -809,87 +817,94 @@ window.openPreview = (doc) => {
                     </div>
 
                     <div class="audio-controls-area">
-                        <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10 detik&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                        <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10s&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                         <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                        <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10 detik&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10s&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                    </div>
+                    
+                    <div class="audio-volume-area">
+                        <i class="fa-solid fa-volume-low"></i>
+                        <input type="range" id="audioVolumeSlider" class="audio-vol-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
+                        <i class="fa-solid fa-volume-high"></i>
                     </div>
                 </div>
             `;
-            setTimeout(initAppleAudioPlayer, 50);
+            setTimeout(initCustomAudioPlayer, 50);
         }
         else if (pdfExt.includes(ext)) {
-            contentArea.innerHTML = `<iframe src="${fileViewUrl}" style="width:100%; height:100%; border:none; border-radius:8px; background:white;"></iframe>`;
+            contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
         } 
         else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
             let viewerUrl = '';
             if (msOfficeExts.includes(ext)) { viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`; } 
             else { viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`; }
-            contentArea.innerHTML = `<iframe src="${viewerUrl}" style="width:100%; height:100%; border:none; border-radius:8px; background:white;"></iframe>`;
+            contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${viewerUrl}"></iframe></div>`;
         } 
         else {
             contentArea.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
-                    <i class="fa-solid ${iconClass}" style="font-size:4rem; margin-bottom:20px; color:rgba(255,255,255,0.3);"></i>
-                    <p>Pratinjau tidak tersedia untuk format file ini.</p>
-                    <button class="btn-pill primary" style="width:auto; margin-top:20px; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
+                <div class="preview-unsupported">
+                    <i class="fa-solid ${iconClass}"></i>
+                    <p>Pratinjau langsung tidak tersedia untuk format file ini.</p>
+                    <button class="btn-pill primary" style="width:auto; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
                 </div>
             `;
         }
     }, 400); 
 };
 
-// ==============================================================================
-// FUNGSI INISIALISASI AUDIO PLAYER (SMART SKIP & SEEKABLE)
-// ==============================================================================
-function initAppleAudioPlayer() {
+// ======================================================
+// LOGIKA PEMUTAR AUDIO KUSTOM (SEEKABLE & SMART CLICK)
+// ======================================================
+window.initCustomAudioPlayer = () => {
     const audio = el('customAudio');
     audioInstance = audio; 
     const playPauseBtn = el('audioPlayPause');
     const prevBtn = el('audioPrevBtn');
     const nextBtn = el('audioNextBtn');
     const progressSlider = el('audioProgressSlider');
-    const currentTimeEl = el('audioCurrentTime');
-    const durationEl = el('audioDuration');
+    const timeDisplay = el('audioCurrentTime');
+    const durationDisplay = el('audioDuration');
+    const volumeSlider = el('audioVolumeSlider');
     const coverArt = el('audioCoverArt');
 
-    if (!audio) return;
+    if(!audio) return;
     let isDraggingAudio = false;
 
     const formatTime = (seconds) => {
-        if (isNaN(seconds)) return "0:00";
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
+        if(isNaN(seconds)) return "0:00";
+        const m = Math.floor(Math.abs(seconds) / 60); 
+        const s = Math.floor(Math.abs(seconds) % 60);
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    // 1. Sinkronisasi Timeline dengan Lagu yang Berjalan
+    audio.addEventListener('loadedmetadata', () => { 
+        timeDisplay.innerText = "0:00";
+        durationDisplay.innerText = `-${formatTime(audio.duration)}`; 
+    });
+
+    // Update slider saat lagu berjalan
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progressSlider.value = percent;
-            progressSlider.style.setProperty('--prog', percent + '%'); 
-            currentTimeEl.innerText = formatTime(audio.currentTime);
+            progressSlider.style.setProperty('--prog', percent + '%');
+            timeDisplay.innerText = formatTime(audio.currentTime);
             const timeRemaining = audio.duration - audio.currentTime;
-            durationEl.innerText = `-${formatTime(timeRemaining)}`;
+            durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
         }
     });
 
-    // 2. Tampilkan Total Durasi saat Metadata Dimuat
-    audio.addEventListener('loadedmetadata', () => {
-        currentTimeEl.innerText = "0:00";
-        durationEl.innerText = `-${formatTime(audio.duration)}`;
-    });
-
-    // 3. Logika Seeking (Menggeser Timeline)
+    // Slider digeser pengguna (Scrubbing)
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
         progressSlider.style.setProperty('--prog', percent + '%');
         if(!isNaN(audio.duration)) {
-            currentTimeEl.innerText = formatTime((percent / 100) * audio.duration);
+            timeDisplay.innerText = formatTime((percent / 100) * audio.duration);
         }
     });
 
+    // Slider dilepas pengguna (Set Waktu Baru)
     progressSlider.addEventListener('change', (e) => {
         if(!isNaN(audio.duration)) {
             audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
@@ -897,15 +912,10 @@ function initAppleAudioPlayer() {
         isDraggingAudio = false;
     });
 
-    // 4. Logika Play/Pause
-    playPauseBtn.addEventListener('click', () => {
-        if (audio.paused || audio.ended) {
-            audio.play();
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        } else {
-            audio.pause();
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        }
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        coverArt.classList.remove('playing');
+        window.navigatePreview(1); // Auto play file selanjutnya di folder
     });
 
     audio.addEventListener('play', () => {
@@ -918,35 +928,15 @@ function initAppleAudioPlayer() {
         coverArt.classList.remove('playing');
     });
 
-    audio.addEventListener('ended', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        coverArt.classList.remove('playing');
-        triggerTrackChange(1); // Otomatis lanjut lagu
-    });
-
-    // 5. Logika Navigasi Cerdas (Single Click: Skip | Double Click: Prev/Next Track)
-    const triggerTrackChange = (direction) => {
-        const displayedDocs = getDisplayedDocuments();
-        if (displayedDocs.length <= 1) return; 
-
-        const currentIndex = displayedDocs.findIndex(d => d.name === currentOpenedDoc.name);
-        if (currentIndex === -1) return;
-
-        let nextIndex = currentIndex + direction;
-        if (nextIndex < 0) nextIndex = displayedDocs.length - 1;
-        if (nextIndex >= displayedDocs.length) nextIndex = 0;
-
-        const nextDocName = displayedDocs[nextIndex].name;
-        
-        const items = document.querySelectorAll('.item-card');
-        items.forEach(item => {
-            const nameEl = item.querySelector('.item-name');
-            if(nameEl && nameEl.innerText === nextDocName) {
-                item.click(); 
-            }
-        });
+    const togglePlay = () => {
+        if (audio.paused || audio.ended) { audio.play(); } 
+        else { audio.pause(); }
     };
+    playPauseBtn.addEventListener('click', togglePlay);
 
+    // ==========================================
+    // FUNGSI SMART CLICK UNTUK NEXT/PREV AUDIO
+    // ==========================================
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;
@@ -955,12 +945,14 @@ function initAppleAudioPlayer() {
         element.addEventListener('click', (e) => {
             e.preventDefault();
             clickCount++;
+
+            // Efek visual klik
             element.classList.add('glow');
-            setTimeout(() => element.classList.remove('glow'), 500);
+            setTimeout(() => element.classList.remove('glow'), 400);
 
             if (clickCount === 1) {
                 timer = setTimeout(() => {
-                    // Klik 1x: Skip Mundur / Maju 10 detik
+                    // Jika klik hanya 1x: Skip lagu +/- 10 detik
                     if(audio && !isNaN(audio.duration)) {
                         let newTime = audio.currentTime + skipTime;
                         if(newTime < 0) newTime = 0;
@@ -968,33 +960,26 @@ function initAppleAudioPlayer() {
                         audio.currentTime = newTime;
                     }
                     clickCount = 0;
-                }, 280); 
+                }, 300); // Tunggu 300ms untuk melihat ada klik kedua atau tidak
             } else if (clickCount === 2) {
-                // Klik 2x: Pindah Lagu / File
+                // Jika klik 2x Cepat: Navigasi ke file selanjutnya/sebelumnya
                 clearTimeout(timer);
-                triggerTrackChange(navDir);
+                window.navigatePreview(navDir);
                 clickCount = 0;
             }
         });
     }
 
-    attachSmartNav(prevBtn, -10, -1); 
-    attachSmartNav(nextBtn, 10, 1); 
-}
+    attachSmartNav(prevBtn, -10, -1); // Kiri: Skip -10s ATAU File Prev
+    attachSmartNav(nextBtn, 10, 1);   // Kanan: Skip +10s ATAU File Next
 
-window.navigatePreview = (direction) => {
-    if (!currentPreviewDoc) return;
-    const currentIndex = currentPreviewList.findIndex(d => d.$id === currentPreviewDoc.$id);
-    const newIndex = currentIndex + direction;
-    
-    if (newIndex >= 0 && newIndex < currentPreviewList.length) {
-        const video = el('customVideo');
-        if(video) { video.pause(); video.removeAttribute('src'); video.load(); }
-        
-        if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
-        
-        el('previewContent').innerHTML = '<div class="spinner"></div>';
-        openPreview(currentPreviewList[newIndex]);
+    // Kontrol Volume Real-time
+    if(volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            audio.volume = vol;
+            volumeSlider.style.setProperty('--vol', (vol * 100) + '%');
+        });
     }
 };
 
@@ -1119,6 +1104,7 @@ window.closePreview = () => {
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
     
+    // Matikan audio jika modal ditutup
     if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
@@ -1132,8 +1118,8 @@ window.closePreview = () => {
 };
 
 window.downloadPreviewItem = () => {
-    if (selectedItem) {
-        window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank');
+    if (currentPreviewDoc) {
+        window.open(storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId), '_blank');
     }
 };
 
@@ -1143,9 +1129,10 @@ window.togglePreviewMenu = () => {
 };
 
 window.openPreviewInNewTab = () => {
-    if (selectedItem) {
-        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, selectedItem.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, selectedItem.fileId);
+    if (currentPreviewDoc) {
+        const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId);
         window.open(fileViewUrl, '_blank');
         el('previewContextMenu').classList.add('hidden');
+        closePreview();
     }
 };
