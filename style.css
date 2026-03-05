@@ -156,6 +156,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* ============================================================ */
 /* NEW, MODERN, ELEGANT MAC OS FOLDER ICON (PURE CSS FIXED)     */
+/* Desain mulus tanpa patahan, menggunakan teknik bayangan presisi */
 /* ============================================================ */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
 
@@ -384,19 +385,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     z-index: 30000; display: flex; flex-direction: column;
     opacity: 0; transition: opacity 0.3s ease;
-    pointer-events: none; /* Mencegah klik tembus saat hidden */
+    pointer-events: none; 
 }
-.preview-overlay.show-preview { 
-    opacity: 1; display: flex !important; pointer-events: auto;
-}
+.preview-overlay.show-preview { opacity: 1; pointer-events: auto; display: flex !important; }
 
 /* Header Glass Apple */
 .preview-header {
     background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
     height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-    z-index: 30005; /* Diatas konten */
-    flex-shrink: 0;
+    z-index: 30005; flex-shrink: 0;
 }
 .preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
 .preview-file-info {
@@ -435,13 +433,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     display: flex; align-items: center; justify-content: center; border-radius: 50%;
     color: white; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
+
 .nav-arrow:hover { background: rgba(255, 255, 255, 0.3) !important; transform: scale(1.08) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; }
 .nav-arrow:active { transform: scale(0.95) !important; }
 
 /* Area Konten Tengah */
 .preview-content-area {
     flex: 1; display: flex; justify-content: center; align-items: center;
-    height: 100%; padding: 20px 90px; overflow: hidden; position: relative;
+    height: 100%; padding: 20px 20px; overflow: hidden; position: relative;
 }
 .preview-content-area img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; }
 .preview-unsupported { display: flex; flex-direction: column; align-items: center; color: white; text-align: center; animation: previewZoomIn 0.3s ease-out; }
@@ -514,72 +513,69 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .apple-audio-player {
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    width: 600px; max-width: 90vw; height: 180px;
+    display: flex; flex-direction: row; /* Horizontal ala Apple */
+    align-items: center; justify-content: space-between;
+    width: 650px; max-width: 90vw; 
     background: rgba(30, 41, 59, 0.65); 
     backdrop-filter: blur(45px) saturate(210%); -webkit-backdrop-filter: blur(45px) saturate(210%);
     border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 28px;
-    padding: 20px 30px;
+    padding: 25px; gap: 30px;
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.2);
-    animation: previewZoomIn 0.35s ease-out; position: relative; overflow: hidden; color: white;
+    animation: previewZoomIn 0.35s ease-out; color: white;
 }
-
-.apple-audio-player::before {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at center, rgba(45, 212, 191, 0.15), transparent 70%);
-    opacity: 0.6; pointer-events: none; z-index: 0;
-}
-
-.audio-top-section { display: flex; align-items: center; width: 100%; gap: 15px; z-index: 1; margin-bottom: 10px; }
 
 .audio-cover-art {
-    width: 55px; height: 55px; border-radius: 12px;
+    width: 180px; height: 180px; border-radius: 16px;
     background: linear-gradient(135deg, #a855f7, #2dd4bf);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); flex-shrink: 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); flex-shrink: 0;
     transition: transform 0.3s ease;
 }
-.audio-cover-art i { font-size: 1.8rem; color: rgba(255, 255, 255, 0.9); }
-.audio-cover-art.playing { animation: pulseCover 2s infinite alternate ease-in-out; }
-@keyframes pulseCover { 0% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.3); } 100% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5); } }
+.audio-cover-art i { font-size: 5rem; color: rgba(255, 255, 255, 0.9); }
+.audio-cover-art.playing { transform: scale(1.05); box-shadow: 0 15px 35px rgba(168, 85, 247, 0.5); }
 
-.audio-info-area { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-.audio-title { font-size: 1.1rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.2px; }
-.audio-artist { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; margin-top: 1px; }
+.audio-right-panel {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px; overflow: hidden;
+}
 
-.audio-timeline-area { display: flex; align-items: center; gap: 10px; width: 100%; z-index: 1; margin-bottom: 5px; }
+.audio-info-area { display: flex; flex-direction: column; }
+.audio-title { font-size: 1.4rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.2px; }
+.audio-artist { font-size: 1rem; color: rgba(255, 255, 255, 0.6); font-weight: 500; margin-top: 2px; }
+
+.audio-timeline-area { display: flex; align-items: center; gap: 12px; width: 100%; }
 
 /* AUDIO SLIDER (SEEKABLE PURE GLASS) */
 .apple-audio-slider {
-    -webkit-appearance: none; appearance: none; flex: 1; height: 5px;
-    background: rgba(255, 255, 255, 0.15); border-radius: 5px; outline: none; cursor: pointer; transition: background 0.2s; position: relative;
+    -webkit-appearance: none; appearance: none; flex: 1; height: 6px;
+    background: rgba(255, 255, 255, 0.15); border-radius: 3px; outline: none; cursor: pointer; position: relative;
 }
 .apple-audio-slider::-webkit-slider-runnable-track {
-    background: linear-gradient(to right, white var(--prog), rgba(255, 255, 255, 0.15) var(--prog));
-    height: 5px; border-radius: 5px;
+    background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), rgba(255, 255, 255, 0.15) var(--prog));
+    height: 6px; border-radius: 3px;
 }
 .apple-audio-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
-    background: white; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; margin-top: -3.5px;
+    -webkit-appearance: none; width: 0px; height: 0px; 
+    background: white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -3px;
 }
-.apple-audio-slider:hover::-webkit-slider-thumb { transform: scale(1.3); box-shadow: 0 0 15px white; }
+.audio-timeline-area:hover .apple-audio-slider::-webkit-slider-thumb { width: 12px; height: 12px; }
 
-.audio-time { font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-family: 'Consolas', monospace; width: 40px; text-align: center; user-select: none; }
+.audio-time { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); font-family: 'SF Pro Text', 'Consolas', monospace; font-variant-numeric: tabular-nums; width: 40px; text-align: center; }
 
-.audio-controls-area { display: flex; justify-content: center; align-items: center; width: 100%; gap: 40px; z-index: 1; }
-.audio-btn { background: transparent; border: none; color: white; font-size: 1.6rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; position: relative; }
-.audio-btn:hover { color: var(--accent); background: rgba(255, 255, 255, 0.08); }
-.audio-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.15); }
-.audio-btn.glow::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 15px rgba(45, 212, 191, 0.7); animation: buttonGlow 0.5s ease-out; pointer-events: none; }
-@keyframes buttonGlow { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+.audio-controls-area { display: flex; justify-content: center; align-items: center; width: 100%; gap: 35px; }
+.audio-btn { background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; position: relative; }
+.audio-btn:hover { color: var(--accent); opacity: 0.8; transform: scale(1.05); }
+.audio-btn:active { transform: scale(0.95); opacity: 1; }
+.audio-btn.play { font-size: 2.5rem; }
 
-.audio-btn.play { font-size: 2.2rem; color: var(--accent); width: 55px; height: 55px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-.audio-btn.play:hover { background: rgba(255, 255, 255, 0.12); box-shadow: 0 0 15px rgba(45, 212, 191, 0.3); }
+/* Glow effect buat double click */
+.audio-btn.glow { color: var(--accent); transform: scale(0.85); opacity: 0.5; }
+
+.audio-volume-area { display: flex; align-items: center; gap: 10px; width: 80%; margin: 0 auto; }
+.audio-volume-area i { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); }
 
 @media screen and (max-width: 600px) {
-    .apple-audio-player { width: 90%; height: 160px; padding: 15px 20px; }
-    .audio-cover-art { width: 45px; height: 45px; }
-    .audio-controls-area { gap: 25px; }
-    .audio-btn { font-size: 1.3rem; }
-    .audio-btn.play { font-size: 1.8rem; width: 45px; height: 45px; }
+    .apple-audio-player { flex-direction: column; padding: 25px; width: 90vw; height: auto; }
+    .audio-cover-art { width: 150px; height: 150px; }
+    .audio-right-panel { width: 100%; align-items: center; text-align: center; }
+    .audio-volume-area { width: 100%; }
 }

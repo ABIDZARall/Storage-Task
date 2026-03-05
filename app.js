@@ -6,11 +6,11 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI AVATAR
+// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// KONFIGURASI PROJECT
+// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -20,7 +20,7 @@ const CONFIG = {
     BUCKET_ID: 'taskfiles'
 };
 
-// API SheetDB 
+// API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
@@ -37,14 +37,16 @@ let selectedProfileImage = null;
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// STATE PREVIEW NAVIGATION
+// STATE PREVIEW NAVIGATION (Untuk Media Gallery & Music Player)
 let currentPreviewList = [];
 let audioInstance = null; 
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
 
+// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
+// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -57,10 +59,10 @@ const toggleLoading = (show, msg = "Memproses...") => {
 };
 
 // ======================================================
-// 2. MAIN EXECUTION
+// 2. MAIN EXECUTION (Saat Halaman Dimuat)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkSession();
+    checkSession(); 
     initDragAndDrop(); 
     initLogout(); 
     initSearchBar(); 
@@ -70,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======================================================
-// 3. FUNGSI LOGGING KE EXCEL
+// 3. FUNGSI LOGGING KE EXCEL (SHEETDB)
 // ======================================================
 async function recordActivity(sheetName, data) {
     try {
@@ -94,7 +96,7 @@ async function recordActivity(sheetName, data) {
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: payload })
         });
-    } catch (error) {}
+    } catch (error) { console.error("System Log Error:", error); }
 }
 
 function checkSystemHealth() {
@@ -103,8 +105,9 @@ function checkSystemHealth() {
 }
 
 // ======================================================
-// 4. LOGIKA AUTH
+// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
 // ======================================================
+
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -198,7 +201,7 @@ async function syncUserData(authUser) {
         const payload = { name: authUser.name, email: authUser.email };
         if (!userDoc) { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); } 
         else if (!userDoc.name || userDoc.name !== authUser.name) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); }
-    } catch (err) {}
+    } catch (err) { console.error("Sync Error:", err); }
 }
 
 async function initializeDashboard(userObj) {
@@ -480,7 +483,7 @@ function initAllContextMenus() {
 }
 
 // ======================================================
-// 8. STORAGE LOGIC
+// 8. STORAGE LOGIC & MODAL
 // ======================================================
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
@@ -679,6 +682,18 @@ window.togglePass = (id, icon) => { const input = document.getElementById(id); i
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
 
+function getDisplayedDocuments() {
+    const items = document.querySelectorAll('.item-card');
+    let docs = [];
+    items.forEach(item => {
+        if (item.querySelector('.mac-folder-container')) return;
+        const nameEl = item.querySelector('.item-name');
+        if (!nameEl) return;
+        docs.push({ name: nameEl.innerText, element: item });
+    });
+    return docs;
+}
+
 window.openPreview = (doc) => {
     currentPreviewDoc = doc; 
     const ext = doc.name.split('.').pop().toLowerCase();
@@ -710,10 +725,10 @@ window.openPreview = (doc) => {
     const contentArea = el('previewContent');
     contentArea.innerHTML = '<div class="spinner"></div>'; 
 
-    // Tampilkan modal overlay
+    // Tampilkan modal overlay dengan opacity smooth
     const overlay = el('previewModal');
     overlay.classList.remove('hidden');
-    setTimeout(() => overlay.classList.add('show-preview'), 10); // WAJIB ADA untuk Opacity transition
+    setTimeout(() => overlay.classList.add('show-preview'), 10);
 
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
@@ -779,6 +794,7 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
+            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -800,9 +816,9 @@ window.openPreview = (doc) => {
                     </div>
 
                     <div class="audio-controls-area">
-                        <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10 detik&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                        <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
-                        <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10 detik&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                        <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
+                        <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                     </div>
                 </div>
             `;
@@ -829,7 +845,7 @@ window.openPreview = (doc) => {
                 </div>
             `;
         }
-    }, 400); 
+    }, 400); // Waktu agar loading animation smooth
 };
 
 // ==============================================================================
@@ -856,7 +872,7 @@ function initAppleAudioPlayer() {
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    // Sinkronisasi Timeline dengan Waktu Lagu
+    // 1. Sinkronisasi Timeline dengan Lagu yang Berjalan
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
@@ -868,12 +884,13 @@ function initAppleAudioPlayer() {
         }
     });
 
+    // 2. Tampilkan Total Durasi saat Metadata Dimuat
     audio.addEventListener('loadedmetadata', () => {
         currentTimeEl.innerText = "0:00";
         durationEl.innerText = `-${formatTime(audio.duration)}`;
     });
 
-    // Logika Menggeser Timeline (Seekable Slider)
+    // 3. Logika Seeking (Menggeser Timeline Slider Kaca)
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
@@ -890,7 +907,7 @@ function initAppleAudioPlayer() {
         isDraggingAudio = false;
     });
 
-    // Logika Play/Pause
+    // 4. Logika Play/Pause
     const togglePlay = () => {
         if (audio.paused) {
             audio.play();
@@ -912,13 +929,35 @@ function initAppleAudioPlayer() {
         coverArt.classList.remove('playing');
     });
 
+    // 5. Logika Pindah Navigasi Galeri
+    const triggerTrackChange = (direction) => {
+        const displayedDocs = getDisplayedDocuments();
+        if (displayedDocs.length <= 1) return; 
+
+        const currentIndex = displayedDocs.findIndex(d => d.name === currentPreviewDoc.name);
+        if (currentIndex === -1) return;
+
+        let nextIndex = currentIndex + direction;
+        if (nextIndex < 0) nextIndex = displayedDocs.length - 1;
+        if (nextIndex >= displayedDocs.length) nextIndex = 0;
+
+        const nextDocName = displayedDocs[nextIndex].name;
+        
+        // Pindah lagu
+        displayedDocs.forEach(docObj => {
+            if(docObj.name === nextDocName && docObj.element) {
+                docObj.element.click(); 
+            }
+        });
+    };
+
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
         coverArt.classList.remove('playing');
-        window.navigatePreview(1); // Lanjut ke lagu/file berikutnya secara otomatis
+        triggerTrackChange(1); // Lanjut lagu otomatis
     });
 
-    // Logika Smart Navigation (1x Klik vs 2x Klik)
+    // 6. Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;
@@ -928,7 +967,6 @@ function initAppleAudioPlayer() {
             e.preventDefault();
             clickCount++;
             
-            // Efek glow visual
             element.classList.add('glow');
             setTimeout(() => element.classList.remove('glow'), 500);
 
@@ -944,9 +982,9 @@ function initAppleAudioPlayer() {
                     clickCount = 0;
                 }, 280); 
             } else if (clickCount === 2) {
-                // Klik 2x: Pindah Lagu / Pindah File di Gallery
+                // Klik 2x: Pindah Lagu / File
                 clearTimeout(timer);
-                window.navigatePreview(navDir);
+                triggerTrackChange(navDir);
                 clickCount = 0;
             }
         });
@@ -1091,9 +1129,12 @@ window.initCustomVideoPlayer = () => {
 
 window.closePreview = () => {
     const overlay = el('previewModal');
+    
+    // Matikan video jika dimainkan
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
     
+    // Matikan audio jika dimainkan
     if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
@@ -1103,7 +1144,7 @@ window.closePreview = () => {
         el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
         clearTimeout(hideOverlayTimeout);
-    }, 350); // Menunggu transisi CSS selesai
+    }, 350); // Waktu sesuai durasi animasi CSS dijamin hilang murni
 };
 
 window.downloadPreviewItem = () => {
