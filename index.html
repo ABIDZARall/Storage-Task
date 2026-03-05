@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
     <title>Storage Tasks - Pro Drive</title>
     
     <link rel="stylesheet" href="style.css">
@@ -115,7 +116,7 @@
     <section id="dashboardPage" class="dashboard-layout hidden">
         <header class="top-nav">
             <div class="brand-area" onclick="goBack()" title="Ke Beranda">
-                <img src="logo.png" alt="Logo" style="height: 40px;">
+                <img src="logo.png" alt="Logo" class="logo-img">
             </div>
             <div class="profile-area">
                 <img src="profile-default.jpeg" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()" title="Edit Profil">
@@ -126,7 +127,9 @@
         <div class="main-glass-panel">
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
-                    <button id="newBtnMain" class="btn-pill new-btn"><i class="fa-solid fa-plus"></i> Baru</button>
+                    <button id="newBtnMain" class="btn-pill new-btn">
+                        <i class="fa-solid fa-plus"></i> <span class="new-btn-text">Baru</span>
+                    </button>
                     
                     <div id="dropdownNewMenu" class="dropdown-content extended-menu">
                         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
@@ -142,13 +145,13 @@
                 </div>
 
                 <nav class="sidebar-menu">
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> Beranda</a>
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> Drive Saya</a>
-                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item"><i class="fa-solid fa-computer"></i> Komputer</a>
-                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item"><i class="fa-solid fa-user-group"></i> Dibagikan</a>
-                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> Terbaru</a>
-                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item"><i class="fa-solid fa-star"></i> Berbintang</a>
-                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> Sampah</a>
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> <span>Beranda</span></a>
+                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> <span>Drive Saya</span></a>
+                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item hide-mobile"><i class="fa-solid fa-computer"></i> <span>Komputer</span></a>
+                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item hide-mobile"><i class="fa-solid fa-user-group"></i> <span>Dibagikan</span></a>
+                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> <span>Terbaru</span></a>
+                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item"><i class="fa-solid fa-star"></i> <span>Berbintang</span></a>
+                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> <span>Sampah</span></a>
                 </nav>
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;" title="Lihat detail penyimpanan">

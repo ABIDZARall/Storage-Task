@@ -382,6 +382,36 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
+// FUNGSI HELPER UNTUK MENGATUR POSISI MENU AGAR TIDAK KELUAR LAYAR (RESPONSIVE EDGE PROTECTION)
+function positionMenuInsideWindow(menu, clientX, clientY) {
+    menu.classList.remove('hidden'); 
+    menu.classList.add('show');
+    
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let left = clientX;
+    let top = clientY;
+    
+    // Jika menu melebar ke kanan melebihi layar, geser ke kiri
+    if (left + menuWidth > windowWidth) {
+        left = windowWidth - menuWidth - 10;
+    }
+    // Jika menu memanjang ke bawah melebihi layar, geser ke atas
+    if (top + menuHeight > windowHeight) {
+        top = windowHeight - menuHeight - 10;
+    }
+    
+    // Pastikan tidak negatif (terpotong di kiri/atas)
+    if (left < 0) left = 10;
+    if (top < 0) top = 10;
+    
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+}
+
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); div.className = 'item-card';
@@ -464,15 +494,14 @@ function renderItem(doc) {
             }
         });
 
-        menu.style.top = `${e.clientY}px`; menu.style.left = `${e.clientX}px`;
+        // Gunakan fungsi proteksi batas layar untuk menu konteks file
+        positionMenuInsideWindow(menu, e.clientX, e.clientY);
         
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
-
-        menu.classList.remove('hidden'); menu.classList.add('show');
     };
 
     grid.appendChild(div);
@@ -496,14 +525,17 @@ function initAllContextMenus() {
     }
 
     if (navDrive) {
-        navDrive.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); closeAllMenus(); globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show'); };
+        navDrive.oncontextmenu = (e) => { 
+            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
+            positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
+        };
     }
 
     if (mainArea) {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); closeAllMenus();
-            globalMenu.style.top = `${e.clientY}px`; globalMenu.style.left = `${e.clientX}px`; globalMenu.classList.add('show');
+            positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         };
     }
     
