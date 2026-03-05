@@ -31,6 +31,10 @@ let userDataDB = null;
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
+
+// ARRAY BREADCRUMB / HISTORY UNTUK FITUR KEMBALI BERTAHAP
+let folderHistory = [{ id: 'root', name: 'Drive' }];
+
 let selectedItem = null; 
 let selectedUploadFile = null; 
 let selectedProfileImage = null; 
@@ -206,6 +210,7 @@ async function syncUserData(authUser) {
 
 async function initializeDashboard(userObj) {
     currentUser = userObj;
+    folderHistory = [{ id: 'root', name: 'Drive' }]; // Inisialisasi awal
     const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
         .then(doc => { userDataDB = doc; })
         .catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; });
@@ -222,6 +227,7 @@ async function checkSession() {
         currentUser = await account.get();
         await syncUserData(currentUser);
         try { userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id); } catch (e) { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; }
+        folderHistory = [{ id: 'root', name: 'Drive' }];
         updateProfileUI(); window.nav('dashboardPage'); loadFiles('root'); calculateStorage();
     } catch (e) { window.nav('loginPage'); } finally { toggleLoading(false); }
 }
@@ -299,6 +305,7 @@ function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
 
+// LOGIKA NAVIGASI SIDEBAR
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); element.classList.add('active');
     currentFolderId = 'root'; currentViewMode = mode;
@@ -307,16 +314,41 @@ window.handleMenuClick = (element, mode) => {
     else if(mode === 'starred') currentFolderName = "Berbintang";
     else if(mode === 'trash') currentFolderName = "Sampah";
     else currentFolderName = element.innerText.trim();
+    
+    // Reset history stack jika pindah menu sidebar utama
+    folderHistory = [{ id: currentFolderId, name: currentFolderName }];
+    
     loadFiles(mode);
 };
 
+// LOGIKA NAVIGASI TOMBOL KEMBALI BERTAHAP
 window.goBack = () => {
-    currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.nav-item')[0].classList.add('active'); loadFiles('root');
+    if (folderHistory.length > 1) {
+        // Hapus folder saat ini dari riwayat
+        folderHistory.pop(); 
+        // Ambil data folder parent (sebelumnya)
+        const parent = folderHistory[folderHistory.length - 1];
+        currentFolderId = parent.id; 
+        currentFolderName = parent.name;
+        currentViewMode = 'root'; // Pastikan dalam mode file root jika mundur dari folder
+        loadFiles(currentFolderId);
+    } else {
+        // Jika sudah di root atau di mode lain (recent, trash), reset ke Drive utama
+        currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
+        folderHistory = [{ id: 'root', name: 'Drive' }];
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.nav-item')[0].classList.add('active'); 
+        loadFiles('root');
+    }
 };
 
-window.openFolder = (id, name) => { currentFolderId = id; currentFolderName = name; loadFiles(id); };
+// LOGIKA NAVIGASI MASUK FOLDER (TAMBAH KE HISTORY)
+window.openFolder = (id, name) => { 
+    folderHistory.push({ id, name });
+    currentFolderId = id; 
+    currentFolderName = name; 
+    loadFiles(id); 
+};
 
 function initSearchBar() {
     const input = el('searchInput'); if (!input) return;
@@ -666,13 +698,31 @@ async function loadFiles(param) {
     } catch (e) { console.error(e); } 
 }
 
+// LOGIKA UPDATE HEADER (MENAMPILKAN NAMA FOLDER BREADCRUMB SESUAI HISTORY)
 function updateHeaderUI() { 
-    const container = document.querySelector('.breadcrumb-area'); const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    const container = document.querySelector('.breadcrumb-area'); 
+    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    
     if (isRoot) { 
         const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
         container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
     } else { 
-        container.innerHTML = `<div class="back-nav-container"><button onclick="goBack()" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Drive</button><h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2></div>`; 
+        let backText = "Drive";
+        
+        // Membaca nama folder parent dari history stack
+        if (folderHistory.length > 1) {
+            backText = folderHistory[folderHistory.length - 2].name; 
+        } else if (currentViewMode !== 'root') {
+            backText = "Drive"; 
+        }
+
+        container.innerHTML = `
+            <div class="back-nav-container">
+                <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
+                </button>
+                <h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2>
+            </div>`; 
     } 
 }
 
