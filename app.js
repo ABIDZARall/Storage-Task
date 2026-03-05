@@ -794,33 +794,46 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE ORIGINAL HORIZONTAL
+            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE ORIGINAL v2
             contentArea.innerHTML = `
-                <div class="apple-audio-player">
+                <div class="apple-audio-player-v2">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
-                    <div class="audio-cover-art" id="audioCoverArt">
+                    <div class="audio-cover-v2" id="audioCoverArt">
                         <i class="fa-solid fa-music"></i>
                     </div>
 
-                    <div class="audio-right-panel">
-                        <div class="audio-info-area">
-                            <div class="audio-title" title="${doc.name}">${doc.name}</div>
-                            <div class="audio-artist">Storage Tasks Player</div>
+                    <div class="audio-right-v2">
+                        <div class="audio-header-v2">
+                            <div class="audio-meta-v2">
+                                <div class="audio-title-v2" title="${doc.name}">${doc.name}</div>
+                                <div class="audio-artist-v2">Storage Tasks Player</div>
+                            </div>
+                            <button class="audio-airplay-btn"><i class="fa-solid fa-satellite-dish"></i></button>
                         </div>
 
-                        <div class="audio-timeline-area">
-                            <span class="audio-time" id="audioCurrentTime">0:00</span>
-                            <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
-                            <span class="audio-time" id="audioDuration">-:--</span>
+                        <div class="audio-timeline-v2">
+                            <input type="range" id="audioProgressSlider" class="apple-slider-v2" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
+                            <div class="audio-time-row">
+                                <span id="audioCurrentTime">0:00</span>
+                                <span id="audioDuration">-:--</span>
+                            </div>
                         </div>
 
-                        <div class="audio-controls-area">
-                            <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                            <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        <div class="audio-controls-v2">
+                            <button class="audio-btn-v2" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn-v2 play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
+                            <button class="audio-btn-v2" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        </div>
+
+                        <div class="audio-volume-v2">
+                            <i class="fa-solid fa-volume-off"></i>
+                            <input type="range" id="audioVolumeSlider" class="apple-slider-v2 volume-slider-v2" min="0" max="1" step="0.01" value="1" style="--prog: 100%;">
+                            <i class="fa-solid fa-volume-high"></i>
                         </div>
                     </div>
+                    
+                    <div class="ios-indicator"></div>
                 </div>
             `;
             setTimeout(initAppleAudioPlayer, 50);
@@ -850,7 +863,7 @@ window.openPreview = (doc) => {
 };
 
 // ==============================================================================
-// FUNGSI INISIALISASI AUDIO PLAYER LIQUID GLASS
+// FUNGSI INISIALISASI AUDIO PLAYER LIQUID GLASS v2
 // ==============================================================================
 function initAppleAudioPlayer() {
     const audio = el('customAudio');
@@ -862,6 +875,7 @@ function initAppleAudioPlayer() {
     const currentTimeEl = el('audioCurrentTime');
     const durationEl = el('audioDuration');
     const coverArt = el('audioCoverArt');
+    const volumeSlider = el('audioVolumeSlider');
 
     if (!audio) return;
     let isDraggingAudio = false;
@@ -908,14 +922,24 @@ function initAppleAudioPlayer() {
         isDraggingAudio = false;
     });
 
-    // 4. Logika Play/Pause
+    // 4. Logika Volume Slider
+    if (volumeSlider) {
+        audio.volume = 1; // Default
+        volumeSlider.addEventListener('input', (e) => {
+            const vol = parseFloat(e.target.value);
+            audio.volume = vol;
+            volumeSlider.style.setProperty('--prog', (vol * 100) + '%');
+        });
+    }
+
+    // 5. Logika Play/Pause
     const togglePlay = () => {
         if (audio.paused) {
             audio.play();
             playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         } else {
             audio.pause();
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         }
     };
     playPauseBtn.addEventListener('click', togglePlay);
@@ -926,11 +950,11 @@ function initAppleAudioPlayer() {
     });
 
     audio.addEventListener('pause', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         coverArt.classList.remove('playing');
     });
 
-    // 5. Logika Pindah Navigasi Galeri
+    // 6. Logika Pindah Navigasi Galeri
     const triggerTrackChange = (direction) => {
         const displayedDocs = getDisplayedDocuments();
         if (displayedDocs.length <= 1) return; 
@@ -953,12 +977,12 @@ function initAppleAudioPlayer() {
     };
 
     audio.addEventListener('ended', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         coverArt.classList.remove('playing');
         triggerTrackChange(1); // Lanjut lagu otomatis
     });
 
-    // 6. Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
+    // 7. Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;

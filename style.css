@@ -469,7 +469,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-glass-btn:active { transform: scale(0.95); transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
 
-/* Tombol Skip Hollow SVG Fix */
 .apple-skip-btn i { display: none !important; }
 .apple-skip-btn { position: relative; display: flex; align-items: center; justify-content: center; background-color: transparent; }
 .apple-skip-btn::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background-repeat: no-repeat; background-position: center; background-size: 60%; z-index: 1; opacity: 0.9; }
@@ -498,85 +497,88 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
 /* ============================================================ */
-/* NEW: APPLE ORIGINAL AUDIO/MUSIC PLAYER (LIQUID GLASS HORIZONTAL) */
+/* NEW: APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK BARU) */
 /* ============================================================ */
-.preview-content-area:has(.apple-audio-player) {
+.preview-content-area:has(.apple-audio-player-v2) {
     display: flex; justify-content: center; align-items: center; padding: 0;
 }
 
-/* Liquid Glass Container (Frosted Menu Style) */
-.apple-audio-player {
-    display: flex; flex-direction: row; 
-    align-items: center; justify-content: flex-start;
-    width: 700px; max-width: 90vw; 
+.apple-audio-player-v2 {
+    display: flex; flex-direction: row;
+    width: 720px; max-width: 95vw; height: 320px;
     
-    /* Frosted Liquid Glass Background as requested */
-    background: rgba(255, 255, 255, 0.1); 
-    backdrop-filter: blur(40px) saturate(200%); 
+    /* Liquid Glass Effect from Reference Gambar 4 */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
-    
-    border: 1px solid rgba(255, 255, 255, 0.25); 
-    border-top: 1px solid rgba(255, 255, 255, 0.4); /* Stronger highlight on top edge */
-    border-radius: 24px;
-    padding: 24px; gap: 35px;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.5); /* Sorotan putih halus di atas */
+    border-radius: 28px;
+    padding: 20px; gap: 30px;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
     
     animation: previewZoomIn 0.35s ease-out; color: white;
+    position: relative;
 }
 
-/* Cover Art (Left Side) */
-.audio-cover-art {
-    width: 200px; height: 200px; border-radius: 12px;
-    /* Beautiful gradient matching apple style covers */
+/* Bagian Kiri: Cover Art Besar Sesuai Gambar 3 */
+.audio-cover-v2 {
+    width: 280px; height: 280px; border-radius: 16px;
     background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); flex-shrink: 0;
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.audio-cover-art i { font-size: 6rem; color: rgba(255, 255, 255, 0.9); }
-.audio-cover-art.playing { transform: scale(1.04); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.5); }
+.audio-cover-v2 i { font-size: 8rem; color: rgba(255, 255, 255, 0.9); }
+.audio-cover-v2.playing { transform: scale(1.03); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
 
-/* Info & Controls Panel (Right Side) */
-.audio-right-panel {
-    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; overflow: hidden;
+/* Bagian Kanan: Layout Kontrol Sesuai Gambar 3 */
+.audio-right-v2 {
+    flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 10px 10px 10px 0;
 }
 
-.audio-info-area { display: flex; flex-direction: column; gap: 4px; }
-.audio-title { font-size: 1.6rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.2px; }
-.audio-artist { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; }
+.audio-header-v2 { display: flex; justify-content: space-between; align-items: flex-start; }
+.audio-meta-v2 { display: flex; flex-direction: column; gap: 5px; }
+.audio-title-v2 { font-size: 1.6rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; letter-spacing: -0.3px; }
+.audio-artist-v2 { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; }
 
-.audio-timeline-area { display: flex; align-items: center; gap: 12px; width: 100%; }
+.audio-airplay-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+.audio-airplay-btn:hover { color: white; }
 
-/* AUDIO SLIDER (APPLE STYLE) */
-.apple-audio-slider {
-    -webkit-appearance: none; appearance: none; flex: 1; height: 5px;
+.audio-timeline-v2 { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+
+.apple-slider-v2 {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
     background: rgba(255, 255, 255, 0.2); border-radius: 3px; outline: none; cursor: pointer; position: relative;
 }
-.apple-audio-slider::-webkit-slider-runnable-track {
-    background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog));
-    height: 5px; border-radius: 3px;
+.apple-slider-v2::-webkit-slider-runnable-track { background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog)); height: 6px; border-radius: 3px; }
+.apple-slider-v2::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; 
+    background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -5px;
+    opacity: 1; 
 }
-.apple-audio-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px; 
-    background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -4.5px;
-    opacity: 0; /* Hidden until hover per apple style */
-}
-.audio-timeline-area:hover .apple-audio-slider::-webkit-slider-thumb { opacity: 1; }
 
-.audio-time { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); font-family: 'SF Pro Text', 'Consolas', monospace; font-variant-numeric: tabular-nums; width: 45px; text-align: center; font-weight: 500;}
+.audio-time-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-family: 'SF Pro Text', 'Consolas', monospace; font-weight: 600; font-variant-numeric: tabular-nums;}
 
-/* Player Controls Area */
-.audio-controls-area { display: flex; justify-content: flex-start; align-items: center; width: 100%; gap: 30px; }
-.audio-btn { background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; position: relative; }
-.audio-btn:hover { color: var(--accent); opacity: 0.9; transform: scale(1.05); }
-.audio-btn:active { transform: scale(0.95); opacity: 1; }
-.audio-btn.play { font-size: 2.8rem; }
+.audio-controls-v2 { display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 10px; }
+.audio-btn-v2 { background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+.audio-btn-v2:hover { opacity: 0.8; transform: scale(1.05); }
+.audio-btn-v2:active { transform: scale(0.95); opacity: 1; }
+.audio-btn-v2.play { font-size: 3rem; }
 
-/* Glow effect buat double click */
-.audio-btn.glow { color: var(--accent); transform: scale(0.85); opacity: 0.5; }
+/* Tambahan Volume di Bawah seperti Apple Original */
+.audio-volume-v2 { display: flex; align-items: center; gap: 15px; margin-top: 15px; }
+.audio-volume-v2 i { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); }
+.volume-slider-v2 { flex: 1; height: 4px; }
+.volume-slider-v2::-webkit-slider-runnable-track { height: 4px; }
+.volume-slider-v2::-webkit-slider-thumb { width: 12px; height: 12px; margin-top: -4px; }
 
-@media screen and (max-width: 650px) {
-    .apple-audio-player { flex-direction: column; padding: 25px; gap: 25px; text-align: center; }
-    .audio-cover-art { width: 180px; height: 180px; }
-    .audio-controls-area { justify-content: center; }
+/* Aksen iOS Home Indicator untuk estetika Apple */
+.ios-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 5px; background: rgba(255,255,255,0.5); border-radius: 10px; }
+
+@media screen and (max-width: 768px) {
+    .apple-audio-player-v2 { flex-direction: column; width: 90vw; height: auto; padding: 25px; gap: 20px; }
+    .audio-cover-v2 { width: 100%; height: 280px; }
+    .audio-right-v2 { padding: 0; }
 }
