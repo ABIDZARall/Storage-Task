@@ -146,7 +146,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
 }
 
-/* Teks Nama File (Aman di bawah) */
 .item-name { 
     font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -156,7 +155,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* ============================================================ */
 /* NEW, MODERN, ELEGANT MAC OS FOLDER ICON (PURE CSS FIXED)     */
-/* Desain mulus tanpa patahan, menggunakan teknik bayangan presisi */
 /* ============================================================ */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
 
@@ -179,17 +177,15 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform: scale(1.05) translateY(-3px);
 }
 
-/* Bagian Belakang Folder */
 .mac-folder-back {
     position: absolute;
     bottom: 0; left: 0;
     width: 100%; height: 82%;
     background: linear-gradient(180deg, #007aff, #0056d6);
-    border-radius: 0 8px 8px 8px; /* Kiri atas 0 agar menyatu mulus dengan tab */
+    border-radius: 0 8px 8px 8px;
     box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
 
-/* Tab Folder */
 .mac-folder-back::before {
     content: '';
     position: absolute;
@@ -199,7 +195,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-radius: 8px 8px 0 0;
 }
 
-/* Lengkungan Penghubung Sempurna (Fillet/Concave Curve) */
 .mac-folder-back::after {
     content: '';
     position: absolute;
@@ -207,10 +202,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     width: 10px; height: 6px;
     background: transparent;
     border-bottom-left-radius: 6px;
-    box-shadow: -4px 3px 0 0 #006ae0; /* Membuat kurva cekung mulus ke badan folder */
+    box-shadow: -4px 3px 0 0 #006ae0;
 }
 
-/* Panel Kaca Depan */
 .mac-folder-front {
     position: absolute;
     bottom: 0; left: 0;
@@ -227,7 +221,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform-origin: bottom;
 }
 
-/* Garis detail minimalis */
 .mac-folder-front::after {
     content: '';
     width: 22px; height: 4px;
@@ -236,7 +229,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-/* Efek Buka saat Hover */
 .item-card:hover .mac-folder-front {
     transform: skewX(-3deg) scaleY(0.96); 
     filter: brightness(1.1);
@@ -506,76 +498,85 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
 /* ============================================================ */
-/* NEW: APPLE ORIGINAL AUDIO/MUSIC PLAYER (LIQUID GLASS)        */
+/* NEW: APPLE ORIGINAL AUDIO/MUSIC PLAYER (LIQUID GLASS HORIZONTAL) */
 /* ============================================================ */
 .preview-content-area:has(.apple-audio-player) {
     display: flex; justify-content: center; align-items: center; padding: 0;
 }
 
+/* Liquid Glass Container (Frosted Menu Style) */
 .apple-audio-player {
-    display: flex; flex-direction: row; /* Horizontal ala Apple */
-    align-items: center; justify-content: space-between;
-    width: 650px; max-width: 90vw; 
-    background: rgba(30, 41, 59, 0.65); 
-    backdrop-filter: blur(45px) saturate(210%); -webkit-backdrop-filter: blur(45px) saturate(210%);
-    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 28px;
-    padding: 25px; gap: 30px;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    display: flex; flex-direction: row; 
+    align-items: center; justify-content: flex-start;
+    width: 700px; max-width: 90vw; 
+    
+    /* Frosted Liquid Glass Background as requested */
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(40px) saturate(200%); 
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    
+    border: 1px solid rgba(255, 255, 255, 0.25); 
+    border-top: 1px solid rgba(255, 255, 255, 0.4); /* Stronger highlight on top edge */
+    border-radius: 24px;
+    padding: 24px; gap: 35px;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+    
     animation: previewZoomIn 0.35s ease-out; color: white;
 }
 
+/* Cover Art (Left Side) */
 .audio-cover-art {
-    width: 180px; height: 180px; border-radius: 16px;
-    background: linear-gradient(135deg, #a855f7, #2dd4bf);
+    width: 200px; height: 200px; border-radius: 12px;
+    /* Beautiful gradient matching apple style covers */
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); flex-shrink: 0;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); flex-shrink: 0;
     transition: transform 0.3s ease;
 }
-.audio-cover-art i { font-size: 5rem; color: rgba(255, 255, 255, 0.9); }
-.audio-cover-art.playing { transform: scale(1.05); box-shadow: 0 15px 35px rgba(168, 85, 247, 0.5); }
+.audio-cover-art i { font-size: 6rem; color: rgba(255, 255, 255, 0.9); }
+.audio-cover-art.playing { transform: scale(1.04); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.5); }
 
+/* Info & Controls Panel (Right Side) */
 .audio-right-panel {
-    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 15px; overflow: hidden;
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; overflow: hidden;
 }
 
-.audio-info-area { display: flex; flex-direction: column; }
-.audio-title { font-size: 1.4rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.2px; }
-.audio-artist { font-size: 1rem; color: rgba(255, 255, 255, 0.6); font-weight: 500; margin-top: 2px; }
+.audio-info-area { display: flex; flex-direction: column; gap: 4px; }
+.audio-title { font-size: 1.6rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.2px; }
+.audio-artist { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; }
 
 .audio-timeline-area { display: flex; align-items: center; gap: 12px; width: 100%; }
 
-/* AUDIO SLIDER (SEEKABLE PURE GLASS) */
+/* AUDIO SLIDER (APPLE STYLE) */
 .apple-audio-slider {
-    -webkit-appearance: none; appearance: none; flex: 1; height: 6px;
-    background: rgba(255, 255, 255, 0.15); border-radius: 3px; outline: none; cursor: pointer; position: relative;
+    -webkit-appearance: none; appearance: none; flex: 1; height: 5px;
+    background: rgba(255, 255, 255, 0.2); border-radius: 3px; outline: none; cursor: pointer; position: relative;
 }
 .apple-audio-slider::-webkit-slider-runnable-track {
-    background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), rgba(255, 255, 255, 0.15) var(--prog));
-    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog));
+    height: 5px; border-radius: 3px;
 }
 .apple-audio-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 0px; height: 0px; 
-    background: white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -3px;
+    -webkit-appearance: none; width: 14px; height: 14px; 
+    background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -4.5px;
+    opacity: 0; /* Hidden until hover per apple style */
 }
-.audio-timeline-area:hover .apple-audio-slider::-webkit-slider-thumb { width: 12px; height: 12px; }
+.audio-timeline-area:hover .apple-audio-slider::-webkit-slider-thumb { opacity: 1; }
 
-.audio-time { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); font-family: 'SF Pro Text', 'Consolas', monospace; font-variant-numeric: tabular-nums; width: 40px; text-align: center; }
+.audio-time { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); font-family: 'SF Pro Text', 'Consolas', monospace; font-variant-numeric: tabular-nums; width: 45px; text-align: center; font-weight: 500;}
 
-.audio-controls-area { display: flex; justify-content: center; align-items: center; width: 100%; gap: 35px; }
+/* Player Controls Area */
+.audio-controls-area { display: flex; justify-content: flex-start; align-items: center; width: 100%; gap: 30px; }
 .audio-btn { background: transparent; border: none; color: white; font-size: 1.8rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; position: relative; }
-.audio-btn:hover { color: var(--accent); opacity: 0.8; transform: scale(1.05); }
+.audio-btn:hover { color: var(--accent); opacity: 0.9; transform: scale(1.05); }
 .audio-btn:active { transform: scale(0.95); opacity: 1; }
-.audio-btn.play { font-size: 2.5rem; }
+.audio-btn.play { font-size: 2.8rem; }
 
 /* Glow effect buat double click */
 .audio-btn.glow { color: var(--accent); transform: scale(0.85); opacity: 0.5; }
 
-.audio-volume-area { display: flex; align-items: center; gap: 10px; width: 80%; margin: 0 auto; }
-.audio-volume-area i { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); }
-
-@media screen and (max-width: 600px) {
-    .apple-audio-player { flex-direction: column; padding: 25px; width: 90vw; height: auto; }
-    .audio-cover-art { width: 150px; height: 150px; }
-    .audio-right-panel { width: 100%; align-items: center; text-align: center; }
-    .audio-volume-area { width: 100%; }
+@media screen and (max-width: 650px) {
+    .apple-audio-player { flex-direction: column; padding: 25px; gap: 25px; text-align: center; }
+    .audio-cover-art { width: 180px; height: 180px; }
+    .audio-controls-area { justify-content: center; }
 }

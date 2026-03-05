@@ -794,31 +794,32 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE
+            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE ORIGINAL HORIZONTAL
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
-                    <div class="audio-top-section">
-                        <div class="audio-cover-art" id="audioCoverArt">
-                            <i class="fa-solid fa-music"></i>
-                        </div>
+                    <div class="audio-cover-art" id="audioCoverArt">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+
+                    <div class="audio-right-panel">
                         <div class="audio-info-area">
                             <div class="audio-title" title="${doc.name}">${doc.name}</div>
                             <div class="audio-artist">Storage Tasks Player</div>
                         </div>
-                    </div>
 
-                    <div class="audio-timeline-area">
-                        <span class="audio-time" id="audioCurrentTime">0:00</span>
-                        <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
-                        <span class="audio-time" id="audioDuration">-:--</span>
-                    </div>
+                        <div class="audio-timeline-area">
+                            <span class="audio-time" id="audioCurrentTime">0:00</span>
+                            <input type="range" id="audioProgressSlider" class="apple-audio-slider" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
+                            <span class="audio-time" id="audioDuration">-:--</span>
+                        </div>
 
-                    <div class="audio-controls-area">
-                        <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                        <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
-                        <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        <div class="audio-controls-area">
+                            <button class="audio-btn side" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
+                            <button class="audio-btn side" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        </div>
                     </div>
                 </div>
             `;
