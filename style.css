@@ -123,46 +123,58 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn i { font-size: 0.9rem; }
 
 /* ============================================================ */
-/* GRID ITEM STYLING (PERBAIKAN AGAR TEKS TIDAK KEPOTONG)       */
+/* GRID ITEM STYLING (DIKUNCI AGAR PERFECT SQUARE ANTI GEPENG)  */
 /* ============================================================ */
 .file-grid-area { 
     flex: 1; overflow-y: auto; display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-    align-items: start; align-content: start; gap: 20px; padding: 10px 15px; 
+    /* minmax diatur sedikit lebih besar agar proporsi pas, max-content untuk menjaga height tidak ditarik parent */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+    grid-auto-rows: max-content; 
+    align-content: start; gap: 20px; padding: 10px 15px; 
 }
 
 .item-card { 
     background: rgba(255, 255, 255, 0.04); 
     border-radius: 12px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
     cursor: pointer; position: relative; transition: all 0.3s ease; 
     border: 1px solid rgba(255,255,255,0.05); 
     padding: 12px; 
     box-sizing: border-box; width: 100%;
-    aspect-ratio: 1 / 1; 
+    aspect-ratio: 1 / 1 !important; /* MENGUNCI MENJADI KOTAK SEMPURNA */
+    overflow: hidden; /* SUPER PENTING: Mencegah konten mendesak flexbox menjadi gepeng */
 }
 .item-card:hover { 
     background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); 
     border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
 }
 
+/* Mengunci ruang visual (Folder/Thumbnail) agar tidak pernah merusak tinggi parent */
+.mac-folder-container, .thumb-box {
+    width: 100%;
+    height: calc(100% - 24px); /* Mengambil tinggi mutlak dikurangi area margin & teks */
+    flex: none !important; /* Jangan biarkan flex mengubah tinggi */
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; position: relative;
+}
+.mac-folder-container { pointer-events: none; overflow: visible; }
+.thumb-box { border-radius: 8px; background: rgba(0,0,0,0.2); overflow: hidden; }
+
 .item-name { 
     font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    color: #f1f5f9; flex-shrink: 0; 
-    height: 18px; line-height: 18px; margin-top: auto; 
+    color: #f1f5f9; flex: none; /* Jangan merenggang */
+    height: 16px; line-height: 16px; margin-top: auto; 
+}
+
+@media screen and (max-width: 600px) {
+    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
 }
 
 /* ============================================================ */
-/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON (PURE CSS FIXED)     */
+/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON                      */
 /* ============================================================ */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
-
-.mac-folder-container {
-    width: 100%; flex: 1; min-height: 0;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 10px; pointer-events: none;
-}
 
 .mac-folder-icon {
     position: relative;
@@ -178,72 +190,40 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .mac-folder-back {
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 100%; height: 82%;
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 82%;
     background: linear-gradient(180deg, #007aff, #0056d6);
-    border-radius: 0 8px 8px 8px;
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    border-radius: 0 8px 8px 8px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
-
 .mac-folder-back::before {
-    content: '';
-    position: absolute;
-    top: -10px; left: 0;
-    width: 32px; height: 12px;
-    background: linear-gradient(180deg, #007aff, #006ae0);
-    border-radius: 8px 8px 0 0;
+    content: ''; position: absolute; top: -10px; left: 0; width: 32px; height: 12px;
+    background: linear-gradient(180deg, #007aff, #006ae0); border-radius: 8px 8px 0 0;
 }
-
 .mac-folder-back::after {
-    content: '';
-    position: absolute;
-    top: -6px; left: 32px;
-    width: 10px; height: 6px;
-    background: transparent;
-    border-bottom-left-radius: 6px;
-    box-shadow: -4px 3px 0 0 #006ae0;
+    content: ''; position: absolute; top: -6px; left: 32px; width: 10px; height: 6px;
+    background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 #006ae0;
 }
 
 .mac-folder-front {
-    position: absolute;
-    bottom: 0; left: 0;
-    width: 100%; height: 74%;
-    background: linear-gradient(180deg, #3aa0ff, #0062ff);
-    border-radius: 8px;
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 74%;
+    background: linear-gradient(180deg, #3aa0ff, #0062ff); border-radius: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.3);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 12px;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-    transform-origin: bottom;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom;
 }
 
 .mac-folder-front::after {
-    content: '';
-    width: 22px; height: 4px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    content: ''; width: 22px; height: 4px; background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .item-card:hover .mac-folder-front {
-    transform: skewX(-3deg) scaleY(0.96); 
-    filter: brightness(1.1);
+    transform: skewX(-3deg) scaleY(0.96); filter: brightness(1.1);
 }
 
 /* ============================================================ */
-/* FILE THUMBNAILS */
+/* FILE THUMBNAILS (WARNA & EXTS)                               */
 /* ============================================================ */
-.thumb-box { 
-    width: 100%; flex: 1; min-height: 0; 
-    display: flex; justify-content: center; align-items: center; 
-    border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; 
-    margin-bottom: 10px; overflow: hidden; 
-}
-.thumb-box:has(.mac-folder-icon) { overflow: visible; background: transparent; }
 .thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 .huge-icon { font-size: 3rem !important; margin: 0 !important; }
@@ -257,7 +237,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .bg-purple { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); }
 .bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); }
 .bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
-.fallback-ext { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-top: 5px; opacity: 0.8; }
 
 /* ============================================================ */
 /* MODALS & OVERLAYS (LOADING, DEFAULTS)                        */
