@@ -40,6 +40,8 @@ let searchTimeout = null;
 // STATE PREVIEW NAVIGATION
 let currentPreviewList = [];
 let audioInstance = null; 
+let currentPreviewDoc = null;
+let hideOverlayTimeout;
 
 const el = (id) => document.getElementById(id);
 
@@ -92,7 +94,7 @@ async function recordActivity(sheetName, data) {
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: payload })
         });
-    } catch (error) { console.error("System Log Error:", error); }
+    } catch (error) {}
 }
 
 function checkSystemHealth() {
@@ -644,6 +646,7 @@ async function loadFiles(param) {
     } 
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
+        
         updatePreviewList(res.documents); 
 
         if (res.documents.length === 0) {
@@ -676,27 +679,22 @@ window.togglePass = (id, icon) => { const input = document.getElementById(id); i
 // ======================================================
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
-let currentPreviewDoc = null;
-let hideOverlayTimeout;
+
+function getDisplayedDocuments() {
+    const items = document.querySelectorAll('.item-card');
+    let docs = [];
+    items.forEach(item => {
+        if (item.querySelector('.mac-folder-container')) return;
+        const nameEl = item.querySelector('.item-name');
+        if (!nameEl) return;
+        docs.push({ name: nameEl.innerText, element: item });
+    });
+    return docs;
+}
 
 window.openPreview = (doc) => {
-    currentPreviewDoc = doc;
+    currentPreviewDoc = doc; 
     const ext = doc.name.split('.').pop().toLowerCase();
-    
-    // Logika Navigasi Galeri
-    let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
-    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
-
-    const prevBtn = el('previewPrevBtn');
-    const nextBtn = el('previewNextBtn');
-    
-    if(currentPreviewList.length <= 1) {
-        prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
-    } else {
-        currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
-        currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
-    }
-
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
     const fileDownloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
 
@@ -723,27 +721,44 @@ window.openPreview = (doc) => {
     iconEl.style.color = iconColor;
 
     const contentArea = el('previewContent');
-    contentArea.innerHTML = '<div class="spinner"></div>';
+    contentArea.innerHTML = '<div class="spinner"></div>'; 
 
-    const overlay = el('previewModal');
-    overlay.classList.remove('hidden');
-    setTimeout(() => overlay.classList.add('show-preview'), 10);
+    el('previewModal').classList.remove('hidden');
+
+    let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
+    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
+
+    const prevBtn = el('previewPrevBtn');
+    const nextBtn = el('previewNextBtn');
+    
+    if(currentPreviewList.length <= 1) {
+        prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
+    } else {
+        currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
+        currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
+    }
 
     setTimeout(() => {
         if (familiarImages.includes(ext)) {
-            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" loading="lazy">`;
+            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
         } 
         else if (vidExts.includes(ext)) {
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
+                    
                     <div class="apple-video-overlay" id="vidOverlay">
                         <div class="apple-top-controls">
                             <div class="placeholder-top-left" style="width:40px"></div>
+                            
                             <div class="top-right-group">
                                 <div class="apple-volume-container pure-glass" id="vidVolumeContainer">
-                                    <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
-                                    <div class="volume-slider-wrapper"><input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;"></div>
+                                    <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                    </button>
+                                    <div class="volume-slider-wrapper">
+                                        <input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
+                                    </div>
                                 </div>
                                 <button class="apple-glass-btn pure-glass small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
                             </div>
@@ -753,7 +768,11 @@ window.openPreview = (doc) => {
                             <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
                                 <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
                             </button>
-                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                            
+                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
+                                <i class="fa-solid fa-pause"></i>
+                            </button>
+                            
                             <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
                                 <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
                             </button>
@@ -770,13 +789,15 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML APPLE MUSIC PLAYER DENGAN SMART SKIP & SEEKABLE TIMELINE
+            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
                     <div class="audio-top-section">
-                        <div class="audio-cover-art" id="audioCoverArt"><i class="fa-solid fa-music"></i></div>
+                        <div class="audio-cover-art" id="audioCoverArt">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
                         <div class="audio-info-area">
                             <div class="audio-title" title="${doc.name}">${doc.name}</div>
                             <div class="audio-artist">Storage Tasks Player</div>
@@ -791,33 +812,181 @@ window.openPreview = (doc) => {
 
                     <div class="audio-controls-area">
                         <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10 detik&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                        <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                        <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
                         <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10 detik&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                     </div>
                 </div>
             `;
-            setTimeout(initCustomAudioPlayer, 50);
+            setTimeout(initAppleAudioPlayer, 50);
         }
         else if (pdfExt.includes(ext)) {
             contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
         } 
         else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
             let viewerUrl = '';
-            if (msOfficeExts.includes(ext)) { viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`; } 
-            else { viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`; }
+            if (msOfficeExts.includes(ext)) {
+                viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
+            } else {
+                viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
+            }
             contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${viewerUrl}"></iframe></div>`;
         } 
         else {
             contentArea.innerHTML = `
-                <div class="preview-unsupported">
-                    <i class="fa-solid ${iconClass}"></i>
-                    <p>Pratinjau langsung tidak tersedia untuk format file ini.</p>
-                    <button class="btn-pill primary" style="width:auto; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
+                <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
+                    <i class="fa-solid ${iconClass}" style="font-size:4rem; margin-bottom:20px; color:rgba(255,255,255,0.3);"></i>
+                    <p>Pratinjau tidak tersedia untuk format file ini.</p>
+                    <button class="btn-pill primary" style="width:auto; margin-top:20px; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
                 </div>
             `;
         }
     }, 400); 
 };
+
+// ==============================================================================
+// FUNGSI INISIALISASI AUDIO PLAYER LIQUID GLASS
+// ==============================================================================
+function initAppleAudioPlayer() {
+    const audio = el('customAudio');
+    audioInstance = audio; 
+    const playPauseBtn = el('audioPlayPause');
+    const prevBtn = el('audioPrevBtn');
+    const nextBtn = el('audioNextBtn');
+    const progressSlider = el('audioProgressSlider');
+    const currentTimeEl = el('audioCurrentTime');
+    const durationEl = el('audioDuration');
+    const coverArt = el('audioCoverArt');
+
+    if (!audio) return;
+    let isDraggingAudio = false;
+
+    const formatTime = (seconds) => {
+        if (isNaN(seconds) || seconds < 0) return "0:00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    };
+
+    // Sinkronisasi Timeline
+    audio.addEventListener('timeupdate', () => {
+        if (!isDraggingAudio && !isNaN(audio.duration)) {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressSlider.value = percent;
+            progressSlider.style.setProperty('--prog', percent + '%'); 
+            currentTimeEl.innerText = formatTime(audio.currentTime);
+            const timeRemaining = audio.duration - audio.currentTime;
+            durationEl.innerText = `-${formatTime(timeRemaining)}`;
+        }
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+        currentTimeEl.innerText = "0:00";
+        durationEl.innerText = `-${formatTime(audio.duration)}`;
+    });
+
+    // Logika Seeking (Menggeser Timeline)
+    progressSlider.addEventListener('input', (e) => {
+        isDraggingAudio = true;
+        const percent = parseFloat(e.target.value);
+        progressSlider.style.setProperty('--prog', percent + '%');
+        if(!isNaN(audio.duration)) {
+            currentTimeEl.innerText = formatTime((percent / 100) * audio.duration);
+        }
+    });
+
+    progressSlider.addEventListener('change', (e) => {
+        if(!isNaN(audio.duration)) {
+            audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
+        }
+        isDraggingAudio = false;
+    });
+
+    // Logika Play/Pause
+    const togglePlay = () => {
+        if (audio.paused) {
+            audio.play();
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        } else {
+            audio.pause();
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        }
+    };
+    playPauseBtn.addEventListener('click', togglePlay);
+
+    audio.addEventListener('play', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        coverArt.classList.add('playing');
+    });
+
+    audio.addEventListener('pause', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        coverArt.classList.remove('playing');
+    });
+
+    // Pindah otomatis
+    const triggerTrackChange = (direction) => {
+        const displayedDocs = getDisplayedDocuments();
+        if (displayedDocs.length <= 1) return; 
+
+        const currentIndex = displayedDocs.findIndex(d => d.name === currentPreviewDoc.name);
+        if (currentIndex === -1) return;
+
+        let nextIndex = currentIndex + direction;
+        if (nextIndex < 0) nextIndex = displayedDocs.length - 1;
+        if (nextIndex >= displayedDocs.length) nextIndex = 0;
+
+        const nextDocName = displayedDocs[nextIndex].name;
+        
+        const items = document.querySelectorAll('.item-card');
+        items.forEach(item => {
+            const nameEl = item.querySelector('.item-name');
+            if(nameEl && nameEl.innerText === nextDocName) {
+                item.click(); 
+            }
+        });
+    };
+
+    audio.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
+        coverArt.classList.remove('playing');
+        triggerTrackChange(1); 
+    });
+
+    // Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
+    function attachSmartNav(element, skipTime, navDir) {
+        if(!element) return;
+        let timer = null;
+        let clickCount = 0;
+
+        element.addEventListener('click', (e) => {
+            e.preventDefault();
+            clickCount++;
+            
+            element.classList.add('glow');
+            setTimeout(() => element.classList.remove('glow'), 500);
+
+            if (clickCount === 1) {
+                timer = setTimeout(() => {
+                    if(audio && !isNaN(audio.duration)) {
+                        let newTime = audio.currentTime + skipTime;
+                        if(newTime < 0) newTime = 0;
+                        if(newTime > audio.duration) newTime = audio.duration;
+                        audio.currentTime = newTime;
+                    }
+                    clickCount = 0;
+                }, 280); 
+            } else if (clickCount === 2) {
+                clearTimeout(timer);
+                triggerTrackChange(navDir);
+                clickCount = 0;
+            }
+        });
+    }
+
+    attachSmartNav(prevBtn, -10, -1); 
+    attachSmartNav(nextBtn, 10, 1); 
+}
+// ==============================================================================
 
 window.navigatePreview = (direction) => {
     if (!currentPreviewDoc) return;
@@ -833,123 +1002,6 @@ window.navigatePreview = (direction) => {
         el('previewContent').innerHTML = '<div class="spinner"></div>';
         openPreview(currentPreviewList[newIndex]);
     }
-};
-
-// ======================================================
-// LOGIKA PEMUTAR AUDIO KUSTOM (SEEKABLE & SMART CLICK)
-// ======================================================
-window.initCustomAudioPlayer = () => {
-    const audio = el('customAudio');
-    audioInstance = audio; 
-    const playPauseBtn = el('audioPlayPause');
-    const prevBtn = el('audioPrevBtn');
-    const nextBtn = el('audioNextBtn');
-    const progressSlider = el('audioProgressSlider');
-    const timeDisplay = el('audioCurrentTime');
-    const durationDisplay = el('audioDuration');
-    const coverArt = el('audioCoverArt');
-
-    if(!audio) return;
-    let isDraggingAudio = false;
-
-    const formatTime = (seconds) => {
-        if(isNaN(seconds)) return "0:00";
-        const m = Math.floor(Math.abs(seconds) / 60); 
-        const s = Math.floor(Math.abs(seconds) % 60);
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
-    };
-
-    audio.addEventListener('loadedmetadata', () => { 
-        timeDisplay.innerText = "0:00";
-        durationDisplay.innerText = `-${formatTime(audio.duration)}`; 
-    });
-
-    audio.addEventListener('timeupdate', () => {
-        if (!isDraggingAudio && !isNaN(audio.duration)) {
-            const percent = (audio.currentTime / audio.duration) * 100;
-            progressSlider.value = percent;
-            progressSlider.style.setProperty('--prog', percent + '%');
-            timeDisplay.innerText = formatTime(audio.currentTime);
-            const timeRemaining = audio.duration - audio.currentTime;
-            durationDisplay.innerText = `-${formatTime(timeRemaining)}`;
-        }
-    });
-
-    // Event saat slider dimainkan/digeser (Seekable)
-    progressSlider.addEventListener('input', (e) => {
-        isDraggingAudio = true;
-        const percent = parseFloat(e.target.value);
-        progressSlider.style.setProperty('--prog', percent + '%');
-        if(!isNaN(audio.duration)) {
-            timeDisplay.innerText = formatTime((percent / 100) * audio.duration);
-        }
-    });
-
-    progressSlider.addEventListener('change', (e) => {
-        if(!isNaN(audio.duration)) {
-            audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
-        }
-        isDraggingAudio = false;
-    });
-
-    audio.addEventListener('ended', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        coverArt.classList.remove('playing');
-        navigatePreview(1); // Auto play lagu selanjutnya
-    });
-
-    audio.addEventListener('play', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        coverArt.classList.add('playing');
-    });
-
-    audio.addEventListener('pause', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
-        coverArt.classList.remove('playing');
-    });
-
-    const togglePlay = () => {
-        if (audio.paused || audio.ended) { audio.play(); } 
-        else { audio.pause(); }
-    };
-    playPauseBtn.addEventListener('click', togglePlay);
-
-    // FUNGSI SMART CLICK UNTUK NEXT/PREV AUDIO (1x vs 2x Klik)
-    function attachSmartNav(element, skipTime, navDir) {
-        if(!element) return;
-        let timer = null;
-        let clickCount = 0;
-
-        element.addEventListener('click', (e) => {
-            e.preventDefault();
-            clickCount++;
-
-            // Animasi glow visual saat diklik
-            element.classList.add('glow');
-            setTimeout(() => element.classList.remove('glow'), 400);
-
-            if (clickCount === 1) {
-                timer = setTimeout(() => {
-                    // Klik 1x: Skip lagu (maju/mundur)
-                    if(audio && !isNaN(audio.duration)) {
-                        let newTime = audio.currentTime + skipTime;
-                        if(newTime < 0) newTime = 0;
-                        if(newTime > audio.duration) newTime = audio.duration;
-                        audio.currentTime = newTime;
-                    }
-                    clickCount = 0;
-                }, 280); // jeda 280ms menanti klik kedua
-            } else if (clickCount === 2) {
-                // Klik 2x: Pindah ke file selanjutnya/sebelumnya
-                clearTimeout(timer);
-                navigatePreview(navDir);
-                clickCount = 0;
-            }
-        });
-    }
-
-    attachSmartNav(prevBtn, -10, -1); 
-    attachSmartNav(nextBtn, 10, 1);   
 };
 
 window.initCustomVideoPlayer = () => {

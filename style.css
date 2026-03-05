@@ -245,7 +245,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* FILE THUMBNAILS */
 /* ============================================================ */
 .thumb-box { 
-    width: 100%; flex: 1; min-height: 0; /* Dinamis menyesuaikan ruang sisa */
+    width: 100%; flex: 1; min-height: 0; 
     display: flex; justify-content: center; align-items: center; 
     border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; 
     margin-bottom: 10px; overflow: hidden; 
@@ -393,6 +393,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
     height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
     z-index: 30005; /* Diatas konten */
+    flex-shrink: 0;
 }
 .preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
 .preview-file-info {
