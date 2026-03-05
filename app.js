@@ -480,7 +480,7 @@ function initAllContextMenus() {
 }
 
 // ======================================================
-// 8. STORAGE LOGIC & MODAL
+// 8. STORAGE LOGIC
 // ======================================================
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
@@ -646,7 +646,6 @@ async function loadFiles(param) {
     } 
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        
         updatePreviewList(res.documents); 
 
         if (res.documents.length === 0) {
@@ -680,18 +679,6 @@ window.togglePass = (id, icon) => { const input = document.getElementById(id); i
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
 
-function getDisplayedDocuments() {
-    const items = document.querySelectorAll('.item-card');
-    let docs = [];
-    items.forEach(item => {
-        if (item.querySelector('.mac-folder-container')) return;
-        const nameEl = item.querySelector('.item-name');
-        if (!nameEl) return;
-        docs.push({ name: nameEl.innerText, element: item });
-    });
-    return docs;
-}
-
 window.openPreview = (doc) => {
     currentPreviewDoc = doc; 
     const ext = doc.name.split('.').pop().toLowerCase();
@@ -723,7 +710,10 @@ window.openPreview = (doc) => {
     const contentArea = el('previewContent');
     contentArea.innerHTML = '<div class="spinner"></div>'; 
 
-    el('previewModal').classList.remove('hidden');
+    // Tampilkan modal overlay
+    const overlay = el('previewModal');
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('show-preview'), 10); // WAJIB ADA untuk Opacity transition
 
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
     if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
@@ -789,7 +779,6 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE
             contentArea.innerHTML = `
                 <div class="apple-audio-player">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -812,7 +801,7 @@ window.openPreview = (doc) => {
 
                     <div class="audio-controls-area">
                         <button class="audio-btn side" id="audioPrevBtn" title="Klik 1x: Mundur 10 detik&#10;Klik 2x: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                        <button class="audio-btn play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
+                        <button class="audio-btn play" id="audioPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
                         <button class="audio-btn side" id="audioNextBtn" title="Klik 1x: Maju 10 detik&#10;Klik 2x: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                     </div>
                 </div>
@@ -867,7 +856,7 @@ function initAppleAudioPlayer() {
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    // Sinkronisasi Timeline
+    // Sinkronisasi Timeline dengan Waktu Lagu
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
@@ -884,7 +873,7 @@ function initAppleAudioPlayer() {
         durationEl.innerText = `-${formatTime(audio.duration)}`;
     });
 
-    // Logika Seeking (Menggeser Timeline)
+    // Logika Menggeser Timeline (Seekable Slider)
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
@@ -923,36 +912,13 @@ function initAppleAudioPlayer() {
         coverArt.classList.remove('playing');
     });
 
-    // Pindah otomatis
-    const triggerTrackChange = (direction) => {
-        const displayedDocs = getDisplayedDocuments();
-        if (displayedDocs.length <= 1) return; 
-
-        const currentIndex = displayedDocs.findIndex(d => d.name === currentPreviewDoc.name);
-        if (currentIndex === -1) return;
-
-        let nextIndex = currentIndex + direction;
-        if (nextIndex < 0) nextIndex = displayedDocs.length - 1;
-        if (nextIndex >= displayedDocs.length) nextIndex = 0;
-
-        const nextDocName = displayedDocs[nextIndex].name;
-        
-        const items = document.querySelectorAll('.item-card');
-        items.forEach(item => {
-            const nameEl = item.querySelector('.item-name');
-            if(nameEl && nameEl.innerText === nextDocName) {
-                item.click(); 
-            }
-        });
-    };
-
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 3px;"></i>';
         coverArt.classList.remove('playing');
-        triggerTrackChange(1); 
+        window.navigatePreview(1); // Lanjut ke lagu/file berikutnya secara otomatis
     });
 
-    // Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
+    // Logika Smart Navigation (1x Klik vs 2x Klik)
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;
@@ -962,11 +928,13 @@ function initAppleAudioPlayer() {
             e.preventDefault();
             clickCount++;
             
+            // Efek glow visual
             element.classList.add('glow');
             setTimeout(() => element.classList.remove('glow'), 500);
 
             if (clickCount === 1) {
                 timer = setTimeout(() => {
+                    // Klik 1x: Skip Mundur / Maju 10 detik
                     if(audio && !isNaN(audio.duration)) {
                         let newTime = audio.currentTime + skipTime;
                         if(newTime < 0) newTime = 0;
@@ -976,8 +944,9 @@ function initAppleAudioPlayer() {
                     clickCount = 0;
                 }, 280); 
             } else if (clickCount === 2) {
+                // Klik 2x: Pindah Lagu / Pindah File di Gallery
                 clearTimeout(timer);
-                triggerTrackChange(navDir);
+                window.navigatePreview(navDir);
                 clickCount = 0;
             }
         });
@@ -1134,7 +1103,7 @@ window.closePreview = () => {
         el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
         clearTimeout(hideOverlayTimeout);
-    }, 350);
+    }, 350); // Menunggu transisi CSS selesai
 };
 
 window.downloadPreviewItem = () => {
