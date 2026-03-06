@@ -577,7 +577,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         gap: 12px; 
         padding: 5px; 
         /* Memberi ruang ekstra di akhir list agar file terbawah tidak tertutup menu/widget */
-        padding-bottom: calc(200px + env(safe-area-inset-bottom)) !important; 
+        padding-bottom: calc(230px + env(safe-area-inset-bottom)) !important; 
         height: 100%;
         overflow-y: auto;
     }
@@ -585,11 +585,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
-    /* WIDGET STORAGE MELAYANG (FLOATING) KIRI BAWAH - APPLE GLASS */
+    /* WIDGET STORAGE MELAYANG (FLOATING) KIRI BAWAH - APPLE GLASS DENGAN JARAK EKSTRA (SPACING) */
     .storage-widget { 
         position: fixed !important;
-        /* Ditempatkan sejajar dengan tinggi tombol Plus (FAB) */
-        bottom: calc(95px + env(safe-area-inset-bottom)) !important;
+        /* Dinaikkan posisinya (jarak +20px dari pill menu) agar tidak berdempetan */
+        bottom: calc(105px + env(safe-area-inset-bottom)) !important;
         left: 15px !important;
         width: auto !important;
         min-width: 150px !important;
@@ -643,11 +643,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         justify-content: space-between !important; align-items: center !important; gap: 5px !important;
     }
     
-    /* FLOATING ACTION BUTTON APPLE GLASS (Tombol Baru Bulat di HP) */
+    /* FLOATING ACTION BUTTON APPLE GLASS (Tombol Baru Bulat di HP) DENGAN JARAK EKSTRA (SPACING) */
     .new-btn-wrapper { 
         position: fixed !important; 
-        /* Menyesuaikan sejajar dengan Storage Widget */
-        bottom: calc(95px + env(safe-area-inset-bottom)) !important; 
+        /* Dinaikkan posisinya sejajar dengan Storage Widget yang baru agar tidak berdempetan */
+        bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
         right: 15px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
     }
     .new-btn { 
