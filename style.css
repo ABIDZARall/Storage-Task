@@ -634,7 +634,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important;
     }
     
-    /* BOTTOM NAVIGATION BAR MELAYANG (FLOATING PILL) APPLE GLASS */
+    /* BOTTOM NAVIGATION BAR MELAYANG (FLOATING PILL) APPLE GLASS - UPDATED FOR MORE TRANSPARENCY */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important; /* Mengambang di atas safe area */
@@ -643,12 +643,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         height: auto !important; padding: 8px 12px !important;
         border-radius: 35px !important; /* Bentuk Pill seperti referensi */
         
-        /* APPLE LIQUID GLASS EFFECT */
-        background: rgba(30, 41, 59, 0.55) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; 
-        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        /* APPLE LIQUID GLASS EFFECT - UPDATED TO BE MORE TRANSPARENT & PURE GLASS */
+        background: rgba(30, 41, 59, 0.15) !important; /* Jauh lebih transparan (sebelumnya 0.55) */
+        backdrop-filter: blur(50px) saturate(250%) !important; /* Blur dan saturasi ditingkatkan untuk efek kaca murni premium */
+        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.3) !important; /* Highlight atas elegan tetap dijaga */
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2) !important;
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
