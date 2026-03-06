@@ -89,29 +89,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .logout-btn { padding: 0; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); color: #ef4444; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
-/* ============================================================ */
-/* UPDATE: MAIN GLASS PANEL DESKTOP (KACA MURNI APPLE ORIGINAL) */
-/* ============================================================ */
+/* Pembungkus Kaca Utama (Max-width agar tidak melebar jelek di TV) */
 .main-glass-panel { 
-    flex: 1; 
-    /* Dibuat nyaris 100% transparan agar warna cairan background tembus pandang sempurna */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%); 
-    
-    /* Efek Liquid Glass Apple: Blur sangat tinggi dan saturasi dinaikkan tajam */
-    backdrop-filter: blur(60px) saturate(250%); 
-    -webkit-backdrop-filter: blur(60px) saturate(250%); 
-    
-    border-radius: 32px; 
-    
-    /* Garis tepi kaca (Edge Highlight) khas desain VisionOS / Apple */
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-    border-top: 1px solid rgba(255, 255, 255, 0.35); 
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    
-    /* Inner glow untuk kesan tebal dan drop shadow kuat untuk kesan melayang */
-    box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.15); 
-    
-    padding: 25px; display: flex; gap: 25px; overflow: hidden; 
+    flex: 1; background: var(--glass-bg); backdrop-filter: blur(30px); border-radius: 16px; 
+    border: 1px solid var(--glass-border); padding: 20px; display: flex; gap: 20px; overflow: hidden; 
     max-width: 2560px; margin: 0 auto; width: 100%; 
 }
 
@@ -569,15 +550,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
-    /* PENIADAAN DESAIN KACA DESKTOP UNTUK HP (AGAR TETAP TRANSPARAN KE BACKGROUND) */
     .main-glass-panel { 
         flex: 1; flex-direction: column; 
-        border-radius: 0; border: none !important; padding: 10px; 
+        border-radius: 0; border: none; padding: 10px; 
         height: auto; gap: 10px;
-        background: transparent !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
     }
     
     .top-nav { padding: 5px 15px; margin-bottom: 5px; }
@@ -620,10 +596,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         max-width: 220px !important;
         margin: 0 !important;
         
-        /* APPLE LIQUID GLASS EFFECT (Lebih transparan, efek kaca murni) */
-        background: rgba(30, 41, 59, 0.15) !important;
-        backdrop-filter: blur(50px) saturate(250%) !important;
-        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
+        /* APPLE LIQUID GLASS EFFECT */
+        background: rgba(30, 41, 59, 0.65) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
@@ -646,7 +622,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important;
     }
     
-    /* BOTTOM NAVIGATION BAR MELAYANG (FLOATING PILL) APPLE GLASS - UPDATED FOR MORE TRANSPARENCY (KACA MURNI) */
+    /* BOTTOM NAVIGATION BAR MELAYANG (FLOATING PILL) APPLE GLASS */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important; /* Mengambang di atas safe area */
@@ -655,12 +631,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         height: auto !important; padding: 8px 12px !important;
         border-radius: 35px !important; /* Bentuk Pill seperti referensi */
         
-        /* APPLE LIQUID GLASS EFFECT KACA MURNI TRANSPARAN */
-        background: rgba(30, 41, 59, 0.15) !important; /* Sangat transparan, bukan gelap pekat */
-        backdrop-filter: blur(50px) saturate(250%) !important; /* Blur sangat tinggi untuk mendistorsi "cairan" di belakangnya */
-        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
+        /* APPLE LIQUID GLASS EFFECT */
+        background: rgba(30, 41, 59, 0.55) !important; 
+        backdrop-filter: blur(40px) saturate(200%) !important; 
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.3) !important; /* Pantulan cahaya kaca di tepi atas */
+        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2) !important;
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
@@ -678,12 +654,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         
-        /* APPLE GLASS UNTUK TOMBOL FAB (Sama transparan dengan Bottom Nav) */
-        background: rgba(30, 41, 59, 0.15) !important;
-        backdrop-filter: blur(50px) saturate(250%) !important;
-        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
+        /* APPLE GLASS UNTUK TOMBOL FAB */
+        background: rgba(30, 41, 59, 0.65) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
         color: white !important;
     }
@@ -691,12 +667,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
     
-    /* Perbaikan Menu Klik Kanan & Dropdown dengan Liquid Glass Kaca Murni */
+    /* Perbaikan Menu Klik Kanan & Dropdown dengan Liquid Glass */
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
-        background: rgba(30, 41, 59, 0.25) !important; /* Sedikit lebih gelap dari nav agar terbaca */
-        backdrop-filter: blur(50px) saturate(250%) !important;
-        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
+        background: rgba(30, 41, 59, 0.85) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
