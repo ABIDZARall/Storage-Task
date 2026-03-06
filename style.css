@@ -564,7 +564,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         display: contents; 
     }
     
-    /* WIDGET STORAGE DIPINDAH KE KIRI BAWAH & APPLE GLASS */
+    /* AREA KONTEN UTAMA DIBUAT FULL LAYAR */
+    .main-content-area { 
+        order: 2; 
+        height: 100%; 
+        padding-bottom: 0 !important; /* Hapus padding agar tidak ada blok kosong (hijau) di bawah */
+    }
+
+    /* Grid File untuk Layar HP - Padding dipindah ke dalam sini agar bisa discroll sampai bawah */
+    .file-grid-area { 
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+        gap: 12px; 
+        padding: 5px; 
+        /* Memberi ruang ekstra di akhir list agar file terbawah tidak tertutup menu/widget */
+        padding-bottom: calc(200px + env(safe-area-inset-bottom)) !important; 
+        height: 100%;
+        overflow-y: auto;
+    }
+    .item-card { padding: 8px; border-radius: 10px; }
+    .mac-folder-icon { transform: scale(0.85); }
+    .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
+    
+    /* WIDGET STORAGE MELAYANG (FLOATING) KIRI BAWAH - APPLE GLASS */
     .storage-widget { 
         position: fixed !important;
         /* Ditempatkan sejajar dengan tinggi tombol Plus (FAB) */
@@ -601,21 +622,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important;
     }
     
-    /* AREA KONTEN UTAMA DIBERI JARAK BAWAH AGAR TIDAK TERTIMPA MENU / WIDGET */
-    .main-content-area { 
-        order: 2; 
-        height: 100%; 
-        padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important; /* Diperbesar agar transparan berfungsi nyata */
-    }
-    
-    /* BOTTOM NAVIGATION BAR APPLE GLASS (Pill Shape & Floating) */
+    /* BOTTOM NAVIGATION BAR MELAYANG (FLOATING PILL) APPLE GLASS */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important; /* Mengambang di atas safe area */
         left: 50% !important; transform: translateX(-50%) !important;
         width: max-content !important; min-width: 320px !important; max-width: 95vw !important;
         height: auto !important; padding: 8px 12px !important;
-        border-radius: 35px !important; /* Bentuk Pill */
+        border-radius: 35px !important; /* Bentuk Pill seperti referensi */
         
         /* APPLE LIQUID GLASS EFFECT */
         background: rgba(30, 41, 59, 0.55) !important; 
@@ -632,7 +646,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     /* FLOATING ACTION BUTTON APPLE GLASS (Tombol Baru Bulat di HP) */
     .new-btn-wrapper { 
         position: fixed !important; 
-        /* Menyesuaikan dengan safe area HP modern dan menempel di kanan bawah */
+        /* Menyesuaikan sejajar dengan Storage Widget */
         bottom: calc(95px + env(safe-area-inset-bottom)) !important; 
         right: 15px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
     }
@@ -672,7 +686,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .nav-item:hover { background: transparent !important; color: var(--accent) !important; }
     .nav-item.active { 
-        background: rgba(255, 255, 255, 0.15) !important; /* The inner active glass pill */
+        background: rgba(255, 255, 255, 0.15) !important; /* Pil aktif efek kaca dalam */
         color: white !important; border-top: none !important; 
         border: 1px solid rgba(255,255,255,0.1) !important;
         border-top: 1px solid rgba(255,255,255,0.2) !important;
@@ -682,11 +696,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
     .hide-mobile { display: none !important; }
 
-    /* Grid File untuk Layar HP */
-    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 5px; }
-    .item-card { padding: 8px; border-radius: 10px; }
-    .mac-folder-icon { transform: scale(0.85); }
-    .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
 
     /* Modals & Audio Player Responsif HP */
     .modal-box { padding: 15px; margin: 0 15px; max-width: calc(100vw - 30px); }
