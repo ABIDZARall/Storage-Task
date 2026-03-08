@@ -89,9 +89,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .logout-btn { padding: 0; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); color: #ef4444; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
-/* ============================================================ */
-/* MAIN GLASS PANEL DESKTOP (KACA MURNI APPLE ORIGINAL)         */
-/* ============================================================ */
+/* MAIN GLASS PANEL DESKTOP */
 .main-glass-panel { 
     flex: 1; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); 
@@ -605,7 +603,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
     /* ========================================================================= */
-    /* [KACA CAIR BENING MURNI] WIDGET STORAGE - EFEK KACAMATA RENANG DI AIR     */
+    /* [CLEAR LIQUID GLASS] WIDGET STORAGE - "EFEK KACAMATA RENANG / CAIRAN MURNI" */
     /* ========================================================================= */
     .storage-widget { 
         position: fixed !important;
@@ -616,18 +614,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         max-width: 220px !important;
         margin: 0 !important;
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
-        -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
+        /* EFEK CAIRAN MURNI: Blur sangat rendah (5px) untuk membiaskan file di belakang seperti lensa air */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+        backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important;
+        -webkit-backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+        /* Bingkai Glass Kaca Bening Apple (Highlight tajam untuk efek kaca murni) */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
+        /* Inner shadow tipis untuk ketebalan cairan kaca murni */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.4) !important;
         
         border-radius: 20px !important; 
         padding: 12px 16px !important; 
@@ -638,10 +636,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         order: unset !important;
     }
     
-    /* Penyesuaian Elemen Dalam Widget agar tetap terbaca di background bening */
     .storage-widget .storage-label {
         font-size: 0.75rem !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; font-weight: 600 !important; color: white !important;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important; 
+        text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important; 
     }
     .storage-widget .progress-track {
         height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.25) !important;
@@ -650,11 +647,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .storage-widget .storage-text {
         font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.95) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
     }
     
     /* ========================================================================= */
-    /* [KACA CAIR BENING MURNI] BOTTOM NAVIGATION BAR - EFEK KACAMATA RENANG     */
+    /* [CLEAR LIQUID GLASS] BOTTOM NAVIGATION BAR - "EFEK KACAMATA RENANG DI AIR"*/
     /* ========================================================================= */
     .sidebar-menu { 
         position: fixed !important; 
@@ -664,18 +661,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         height: auto !important; 
         padding: 8px 12px !important; 
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
-        background: rgba(255, 255, 255, 0.03) !important; 
-        backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important; 
-        -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
+        /* EFEK CAIRAN MURNI: Blur sangat rendah (5px) untuk membiaskan file di belakang seperti lensa air */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important; 
+        backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important; 
+        -webkit-backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+        /* Bingkai Glass Kaca Bening Apple */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
+        /* Inner shadow tebal untuk efek cairan menonjol */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.4) !important;
         border-radius: 35px !important; 
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
@@ -683,7 +680,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     
     /* ========================================================================= */
-    /* [KACA CAIR BENING MURNI] FLOATING ACTION BUTTON (Tombol Plus Baru)        */
+    /* [CLEAR LIQUID GLASS] FLOATING ACTION BUTTON (Tombol Plus Baru)            */
     /* ========================================================================= */
     .new-btn-wrapper { 
         position: fixed !important; 
@@ -694,55 +691,70 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
-        -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
+        /* EFEK CAIRAN MURNI: Blur sangat rendah (5px) untuk membiaskan file di belakang seperti lensa air */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+        backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important;
+        -webkit-backdrop-filter: blur(5px) saturate(200%) contrast(120%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+        /* Bingkai Glass Kaca Bening Apple */
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
+        /* Inner shadow cairan kaca */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.4) !important;
         color: white !important;
     }
     
     .new-btn:hover { background: rgba(255, 255, 255, 0.15) !important; }
     .new-btn-text { display: none !important; }
-    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;}
+    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; text-shadow: 0 2px 5px rgba(0,0,0,0.9) !important;}
     
     /* Menu Klik Kanan & Dropdown Liquid Glass (Tetap pakai blur tebal untuk privasi menu terbuka) */
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
         background: rgba(30, 41, 59, 0.25) !important; 
-        backdrop-filter: blur(30px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
     
-    /* ITEM NAV BAR DALAM PILL (Item tanpa background agar menyatu dengan efek lensa cairan) */
+    /* ITEM NAV BAR DALAM PILL (Sesuai dengan kotak sudut melengkung sebelumnya) */
     .nav-item { 
-        flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
-        padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
-        text-align: center !important; color: rgba(255,255,255,0.8) !important;
+        flex-direction: column !important; 
+        gap: 6px !important; /* Jarak antara ikon dan tulisan */
+        width: 70px !important; /* Diperlebar agar tidak dempet */
+        height: 65px !important; /* Dipertinggi agar ada ruang napas */
+        padding: 8px 4px !important; /* Jarak dalam (padding) */
+        border-radius: 18px !important; /* Kotak sudut melengkung */
+        justify-content: center !important; 
+        text-align: center !important; 
+        color: rgba(255,255,255,0.8) !important;
         transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
         background: transparent !important; 
+        border: 1px solid transparent !important; /* Cegah layout lompat */
     }
     .nav-item:hover { background: rgba(255, 255, 255, 0.05) !important; color: white !important; }
     
-    /* State Aktif - Highlight dengan Inner Shadow (seperti lekukan kaca pembesar / air) */
+    /* State Aktif - Highlight Kaca Bening Melengkung */
     .nav-item.active { 
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%) !important; 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%) !important; 
         color: white !important; border-top: none !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-top: 1px solid rgba(255,255,255,0.3) !important;
-        box-shadow: inset 0 1px 2px rgba(255,255,255,0.3) !important; 
+        
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        border-top: 1px solid rgba(255,255,255,0.5) !important;
+        border-left: 1px solid rgba(255,255,255,0.3) !important;
+        
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.4) !important; 
+        border-radius: 18px !important; /* Kotak sudut melengkung */
+        
+        /* Efek distorsi ekstra untuk menu yang aktif */
+        backdrop-filter: blur(8px) saturate(200%) brightness(110%) !important;
+        -webkit-backdrop-filter: blur(8px) saturate(200%) brightness(110%) !important;
     }
-    .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.6) !important;}
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;}
+    .nav-item i { font-size: 1.4rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;}
+    .nav-item span { font-size: 0.65rem !important; font-weight: 600 !important; letter-spacing: 0.3px !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;}
     .hide-mobile { display: none !important; }
 
 
