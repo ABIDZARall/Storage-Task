@@ -802,15 +802,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         
-        /* EFEK CAIRAN MURNI: Blur halus membiaskan file */
+        /* EFEK CAIRAN MURNI: Blur sangat halus (5px) menembus file dengan jelas */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
         backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         
+        /* Bingkai Kaca Bening Apple */
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         
+        /* Inner shadow cairan tebal */
         box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
         color: white !important;
     }
