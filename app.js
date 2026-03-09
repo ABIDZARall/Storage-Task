@@ -63,6 +63,20 @@ const toggleLoading = (show, msg = "Memproses...") => {
 };
 
 // ======================================================
+// FUNGSI ANIMASI SLIDING NAV INDICATOR (NEW)
+// ======================================================
+function updateNavIndicator(element) {
+    const indicator = document.querySelector('.nav-indicator');
+    if (!indicator || !element) return;
+    
+    // Sesuaikan lebar dan letak (x, y) indicator dengan elemen menu (nav-item) aktif
+    indicator.style.width = element.offsetWidth + 'px';
+    indicator.style.height = element.offsetHeight + 'px';
+    indicator.style.left = element.offsetLeft + 'px';
+    indicator.style.top = element.offsetTop + 'px';
+}
+
+// ======================================================
 // 2. MAIN EXECUTION (Saat Halaman Dimuat)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -73,6 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initAllContextMenus(); 
     initStorageTooltip(); 
     initProfileImageUploader(); 
+    
+    // Inisialisasi posisi Indikator Kaca Bergeser saat layar pertama kali dibuka
+    setTimeout(() => {
+        const activeItem = document.querySelector('.nav-item.active');
+        if(activeItem) updateNavIndicator(activeItem);
+    }, 150);
+
+    // Update posisi indikator saat user me-resize layar hp/desktop
+    window.addEventListener('resize', () => {
+        const activeItem = document.querySelector('.nav-item.active');
+        if(activeItem) updateNavIndicator(activeItem);
+    });
 });
 
 // ======================================================
@@ -245,6 +271,11 @@ function updateProfileUI() {
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => { const element = el(id); if(element) element.classList.add('hidden'); });
     const target = el(pageId); if(target) target.classList.remove('hidden');
+    // Memastikan indikator terupdate dengan benar saat berganti layar utama
+    setTimeout(() => {
+        const activeItem = document.querySelector('.nav-item.active');
+        if(activeItem) updateNavIndicator(activeItem);
+    }, 50);
 };
 
 // ======================================================
@@ -307,7 +338,12 @@ function updatePreviewList(documentsArray) {
 
 // LOGIKA NAVIGASI SIDEBAR
 window.handleMenuClick = (element, mode) => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); element.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
+    element.classList.add('active');
+    
+    // Panggil logika untuk menggeser indikator aktif
+    updateNavIndicator(element);
+
     currentFolderId = 'root'; currentViewMode = mode;
     if(mode === 'root') currentFolderName = "Drive";
     else if(mode === 'recent') currentFolderName = "Terbaru";
@@ -337,7 +373,9 @@ window.goBack = () => {
         currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
         folderHistory = [{ id: 'root', name: 'Drive' }];
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.nav-item')[0].classList.add('active'); 
+        const navDriveEl = document.querySelectorAll('.nav-item')[0];
+        navDriveEl.classList.add('active'); 
+        updateNavIndicator(navDriveEl); // Geser indikator kembali ke drive utama
         loadFiles('root');
     }
 };
