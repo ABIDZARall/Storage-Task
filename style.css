@@ -680,7 +680,48 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
         justify-content: space-between !important; align-items: center !important; gap: 5px !important;
+
+        /* Isolate context untuk z-index pseudo element animasi geser */
+        isolation: isolate !important;
     }
+
+    /* ========================================================================= */
+    /* [ANIMASI GESER] INDIKATOR BOTTOM NAVIGATION BAR                           */
+    /* ========================================================================= */
+    
+    /* Indikator Kaca yang akan bergeser */
+    .sidebar-menu::before {
+        content: '';
+        position: absolute;
+        top: 8px; /* Sesuai padding-top sidebar-menu */
+        left: 12px; /* Sesuai padding-left sidebar-menu */
+        width: 65px; /* Sesuai lebar .nav-item */
+        height: 60px; /* Sesuai tinggi .nav-item */
+        border-radius: 24px;
+
+        /* Desain Kaca Liquid Asli yang dipindahkan ke indikator ini */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255,255,255,0.3);
+        box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
+
+        /* Animasi geser (Spring/Bouncy effect seperti pada video referensi) */
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: -1;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Tampilkan indikator jika ada nav-item yang aktif */
+    .sidebar-menu:has(.nav-item.active)::before { opacity: 1; }
+
+    /* Logika Pergeseran Indikator berdasarkan urutan item yang aktif (Lebar 65px + Gap 5px) */
+    .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
+    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(calc(65px + 5px)); }
+    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc((65px + 5px) * 2)); }
+    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc((65px + 5px) * 3)); }
+    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc((65px + 5px) * 4)); }
+    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc((65px + 5px) * 5)); }
     
     /* ========================================================================= */
     /* [KACA CAIR BENING MURNI] FLOATING ACTION BUTTON (Tombol Plus Baru)        */
@@ -733,13 +774,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .nav-item:hover { background: rgba(255, 255, 255, 0.05) !important; color: white !important; }
     
-    /* State Aktif - Highlight dengan Inner Shadow (seperti lekukan kaca pembesar / air) */
+    /* State Aktif - Teks dan Ikon menjadi putih (Background dihandle oleh animasi indikator geser pseudo ::before di atas) */
     .nav-item.active { 
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%) !important; 
-        color: white !important; border-top: none !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-top: 1px solid rgba(255,255,255,0.3) !important;
-        box-shadow: inset 0 1px 2px rgba(255,255,255,0.3) !important; 
+        background: transparent !important; 
+        color: white !important; 
+        border: 1px solid transparent !important; /* Menjaga ukuran box model agar tidak loncat */
+        box-shadow: none !important; 
     }
     .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.6) !important;}
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;}
@@ -780,4 +820,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
     .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
     .sidebar-menu .nav-item { width: 55px !important; }
+    
+    /* Penyesuaian Animasi Geser Indikator untuk Layar Super Kecil */
+    .sidebar-menu::before {
+        top: 6px !important; /* Sesuai padding-top sidebar-menu 480px */
+        left: 10px !important; /* Sesuai padding-left sidebar-menu 480px */
+        width: 55px !important; /* Sesuai lebar .nav-item 480px */
+    }
+    
+    /* Kalkulasi ulang jarak pergeseran untuk layar super kecil (Lebar 55px + Gap 5px) */
+    .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
+    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(calc(55px + 5px)); }
+    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc((55px + 5px) * 2)); }
+    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc((55px + 5px) * 3)); }
+    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc((55px + 5px) * 4)); }
+    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc((55px + 5px) * 5)); }
 }
