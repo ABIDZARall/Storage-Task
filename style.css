@@ -641,6 +641,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
         justify-content: space-between !important; align-items: center !important; gap: 5px !important;
+        
+        /* Tambahan untuk menjaga agar Pseudo Element (Indikator Animasi) tetap didalam batas */
+        position: relative;
     }
     
     /* FLOATING ACTION BUTTON APPLE GLASS (Tombol Baru Bulat di HP) DENGAN JARAK EKSTRA (SPACING) */
@@ -677,21 +680,65 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
     
-    /* ITEM NAV BAR DALAM PILL */
+    /* ITEM NAV BAR DALAM PILL (HANYA Z-INDEX YG DITAMBAHKAN UNTUK ANIMASI SLIDER) */
     .nav-item { 
         flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
         padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
         text-align: center !important; color: rgba(255,255,255,0.6) !important;
         transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        position: relative !important; z-index: 1 !important; /* Posisi di atas Indikator Animasi (::before) */
     }
     .nav-item:hover { background: transparent !important; color: var(--accent) !important; }
+
+    /* STATE AKTIF (.nav-item.active) BACKGROUND DIHAPUS, DIGANTIKAN OLEH ANIMASI KACA MELAYANG DIBAWAH */
     .nav-item.active { 
-        background: rgba(255, 255, 255, 0.15) !important; /* Pil aktif efek kaca dalam */
-        color: white !important; border-top: none !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-top: 1px solid rgba(255,255,255,0.2) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2) !important;
+        background: transparent !important; 
+        color: white !important; 
+        border-top: 1px solid transparent !important; 
+        border: 1px solid transparent !important;
+        box-shadow: none !important;
     }
+
+    /* ======== NEW: ANIMASI INDIKATOR SLIDING KACA MELAYANG ======== */
+    .sidebar-menu::before {
+        content: '';
+        position: absolute;
+        width: 65px;
+        height: 60px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.15); /* Efek Kaca Sama Persis Seperti Sebelumnya */
+        border: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2);
+        /* Transisi Pergeseran Yang Sangat Mulus */
+        transition: transform 0.45s cubic-bezier(0.25, 1, 0.3, 1);
+        z-index: 0;
+        top: 8px; /* Mengikuti padding-top container .sidebar-menu */
+        left: 12px; /* Mengikuti padding-left container .sidebar-menu */
+        pointer-events: none;
+        transform: translateX(0); /* Titik awal */
+    }
+
+    /* LOGIKA PERGESERAN ANIMASI (MENGGUNAKAN FUNGSI :HAS() & CALC() MATEMATIKA FLEXBOX) */
+    /* Rumus Responsive Flexbox: translateX( index * ( lebar_item + (100% - padding_kiri_kanan - total_lebar_semua_item) / jumlah_gap ) ) */
+    /* 349px = 24px (padding Kiri+Kanan) + (5 Menu * 65px) */
+    .sidebar-menu:has(.nav-item:nth-child(1).active)::before {
+        transform: translateX(0px); /* 1. Beranda */
+    }
+    .sidebar-menu:has(.nav-item:nth-child(2).active)::before {
+        transform: translateX(calc(1 * (65px + (100% - 349px) / 4))); /* 2. Drive Saya */
+    }
+    .sidebar-menu:has(.nav-item:nth-child(3).active)::before {
+        transform: translateX(calc(2 * (65px + (100% - 349px) / 4))); /* 3. Terbaru */
+    }
+    .sidebar-menu:has(.nav-item:nth-child(4).active)::before {
+        transform: translateX(calc(3 * (65px + (100% - 349px) / 4))); /* 4. Berbintang */
+    }
+    .sidebar-menu:has(.nav-item:nth-child(5).active)::before {
+        transform: translateX(calc(4 * (65px + (100% - 349px) / 4))); /* 5. Sampah */
+    }
+    /* ============================================================== */
+
     .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important;}
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
     .hide-mobile { display: none !important; }
