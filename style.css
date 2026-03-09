@@ -590,7 +590,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         background: transparent !important;
     }
     
-    /* Ruang scroll palsu agar file terbawah tidak tertutup permanen */
+    /* Ruang scroll palsu agar file terbawah tidak tertutup permanen oleh menu transparan */
     .file-grid-area::after {
         content: '';
         display: block;
@@ -605,7 +605,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
     /* ========================================================================= */
-    /* [KACA CAIR BENING MURNI] WIDGET STORAGE - EFEK KACAMATA RENANG DI AIR     */
+    /* [CLEAR LIQUID GLASS] WIDGET STORAGE - EFEK KACAMATA RENANG DI AIR         */
     /* ========================================================================= */
     .storage-widget { 
         position: fixed !important;
@@ -616,14 +616,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         max-width: 220px !important;
         margin: 0 !important;
         
-        background: rgba(255, 255, 255, 0.03) !important;
-        backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
-        -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
+        /* EFEK CAIRAN MURNI: Blur halus (6px) membiaskan gambar di belakangnya seperti lensa */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+        backdrop-filter: blur(6px) saturate(200%) brightness(110%) !important;
+        -webkit-backdrop-filter: blur(6px) saturate(200%) brightness(110%) !important;
         
+        /* Bingkai Kaca Bening Apple */
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         
+        /* Inner shadow tebal untuk membentuk ketebalan air/kaca bening */
         box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
         
         border-radius: 20px !important; 
@@ -650,71 +653,154 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     
     /* ========================================================================= */
-    /* [KACA CAIR BENING MURNI] BOTTOM NAVIGATION BAR - EFEK KACAMATA RENANG     */
+    /* [CLEAR LIQUID GLASS] BOTTOM NAVIGATION BAR CONTAINER                      */
+    /* Container ini TETAP (TIDAK BERGERAK) sesuai instruksi Anda.               */
     /* ========================================================================= */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important; 
         left: 50% !important; transform: translateX(-50%) !important;
+        width: 90vw !important; max-width: 420px !important;
+        height: 64px !important; /* Dibuat statis agar tidak goyang saat klik */
+        padding: 6px 8px !important; /* Padding merata untuk batasan slide */
         
-        /* FIX 1: Hapus min-width tetap yang memaksa melar. Biarkan kontainer merapat 100% pada isi kontennya */
-        width: max-content !important; min-width: auto !important; max-width: 95vw !important;
-        height: auto !important; 
-        padding: 8px 12px !important; 
-        
-        background: rgba(255, 255, 255, 0.03) !important; 
-        backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important; 
-        -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
-        
+        /* Container Glass Bening Utama (Lensa luar yang diam) */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important; 
+        backdrop-filter: blur(4px) saturate(150%) brightness(105%) !important; 
+        -webkit-backdrop-filter: blur(4px) saturate(150%) brightness(105%) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-        
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.2) !important;
         border-radius: 35px !important; 
         
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
+        z-index: 5000 !important; 
+        display: flex !important; flex-direction: row !important; 
+        align-items: center !important;
         
-        /* FIX 2: Ganti space-between jadi flex-start agar GAP bersifat statis absolut dan kalkulasi geser dijamin tepat! */
-        justify-content: flex-start !important; align-items: center !important; gap: 5px !important;
-
-        isolation: isolate !important;
+        /* Wajib untuk menahan kaca indikator agar tetap di dalam pill */
+        overflow: hidden !important; 
     }
 
     /* ========================================================================= */
-    /* [ANIMASI GESER] INDIKATOR BOTTOM NAVIGATION BAR                           */
+    /* [ANIMASI SLIDE MURNI] KACA PELAPIS INDIKATOR AKTIF (YANG BERGESER)        */
+    /* Elemen ::before ini yang akan bergeser (slide) ke kiri/kanan dengan mulus */
+    /* mengikuti menu yang diklik TANPA melompat atau terangkat ke atas.         */
     /* ========================================================================= */
-    
     .sidebar-menu::before {
         content: '';
         position: absolute;
-        top: 8px; /* Sesuai padding-top sidebar-menu */
-        left: 12px; /* Sesuai padding-left sidebar-menu */
-        width: 65px; /* Sesuai lebar .nav-item */
-        height: 60px; /* Sesuai tinggi .nav-item */
-        border-radius: 24px;
-
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-top: 1px solid rgba(255,255,255,0.3);
-        box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
-
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        z-index: -1;
-        opacity: 0;
+        top: 6px; bottom: 6px; 
+        border-radius: 28px !important;
+        
+        /* Desain Kaca Cair Bening (Clear Liquid Lens) Premium untuk Indikator */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+        
+        /* Blur 5px + Brightness membuat file di belakangnya tembus pandang seperti lensa air */
+        backdrop-filter: blur(5px) saturate(220%) contrast(110%) brightness(115%) !important;
+        -webkit-backdrop-filter: blur(5px) saturate(220%) contrast(110%) brightness(115%) !important;
+        
+        /* Tepi Kaca Lebih Tajam dan Elegan */
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.5) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
+        
+        /* Inner shadow tebal agar terlihat seperti lensa cembung (3D) */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 2px 5px rgba(255,255,255,0.5), inset 0 -2px 3px rgba(0,0,0,0.05) !important;
+        
+        z-index: 0; /* Taruh di bawah ikon dan teks */
         pointer-events: none;
+        
+        /* Transisi Slide Elastis Khas iOS (Smooth Sliding Kiri-Kanan) */
+        transition: left 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        
+        /* Posisi dan ukuran default fallback */
+        left: 8px; width: 38% !important; 
     }
 
-    .sidebar-menu:has(.nav-item.active)::before { opacity: 1; }
+    /* MATEMATIKA POSISI SLIDE: 
+       Menghitung posisi kiri (left) dengan presisi menggunakan Flexbox math
+       8px adalah padding kiri kontainer. Item aktif (38.4%), pasif (15.4%). */
+    .sidebar-menu:has(.nav-item:nth-of-type(1).active)::before { left: 8px !important; }
+    .sidebar-menu:has(.nav-item:nth-of-type(2).active)::before { left: calc(8px + (100% - 16px) * 0.1538) !important; }
+    .sidebar-menu:has(.nav-item:nth-of-type(5).active)::before { left: calc(8px + (100% - 16px) * 0.3076) !important; } 
+    .sidebar-menu:has(.nav-item:nth-of-type(6).active)::before { left: calc(8px + (100% - 16px) * 0.4614) !important; }
+    .sidebar-menu:has(.nav-item:nth-of-type(7).active)::before { left: calc(8px + (100% - 16px) * 0.6153) !important; }
 
-    /* Logika Pergeseran Indikator (Lebar 65px + Gap 5px = 70px absolute) */
-    .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
-    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(70px); }
-    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc(70px * 2)); }
-    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc(70px * 3)); }
-    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc(70px * 4)); }
-    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc(70px * 5)); }
+    /* ========================================================================= */
+    /* ITEM NAV BAR (Ikon & Teks - Semua efek background/border dihapus)         */
+    /* ========================================================================= */
+    .nav-item { 
+        width: 15.4% !important; /* Lebar default item tidak aktif */
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: row !important; /* Ikon dan teks sejajar horizontal */
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        color: rgba(255,255,255,0.7) !important;
+        
+        /* Transisi ukuran item yang melebar mengikuti kecepatan slide kaca */
+        transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        
+        /* PENTING: Item ini MURNI transparan. Background dikendalikan kaca slide ::before */
+        background: transparent !important; 
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        transform: none !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 1 !important; /* Pastikan ikon di atas kaca */
+    }
     
+    /* State Hover untuk item pasif (Tipis, menyatu dengan lensa Nav Bar) */
+    .nav-item:hover:not(.active) { 
+        background: rgba(255, 255, 255, 0.05) !important; 
+        color: white !important; 
+        border-radius: 20px !important; 
+    }
+    
+    /* State Aktif - Item Memanjang otomatis memberikan ruang ke Kaca Pelapis Slide */
+    .nav-item.active { 
+        width: 38.4% !important; /* Membesar secara dinamis untuk menampung teks */
+        color: white !important; 
+        background: transparent !important; 
+        border: none !important;
+        box-shadow: none !important;
+        transform: none !important; /* TETAP RATA, TIDAK TERANGKAT/MELOMPAT */
+    }
+    
+    /* Efek transisi Teks (Menyembul dan melebar seirama pergeseran kaca) */
+    .nav-item span { 
+        font-size: 0 !important; 
+        opacity: 0 !important; 
+        max-width: 0 !important;
+        font-weight: 600 !important; 
+        overflow: hidden !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.7) !important; 
+        transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .nav-item.active span { 
+        font-size: 0.75rem !important; 
+        opacity: 1 !important; 
+        max-width: 80px !important; /* Memberi ruang teks untuk tampil */
+    }
+    
+    /* Efek transisi Ikon (Membesar lembut) */
+    .nav-item i { 
+        font-size: 1.25rem !important; 
+        margin: 0 !important; 
+        width: auto !important; 
+        background: transparent !important; 
+        padding: 0 !important; 
+        text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; 
+        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+    .nav-item.active i { transform: scale(1.1) !important; text-shadow: 0 2px 6px rgba(255,255,255,0.5) !important; }
+    
+    .hide-mobile { display: none !important; }
+
     /* ========================================================================= */
     /* [KACA CAIR BENING MURNI] FLOATING ACTION BUTTON (Tombol Plus Baru)        */
     /* ========================================================================= */
@@ -727,7 +813,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
         backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         
@@ -743,37 +829,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;}
     
+    /* Menu Klik Kanan & Dropdown Liquid Glass (Tetap pakai blur tebal untuk privasi menu terbuka) */
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
         background: rgba(30, 41, 59, 0.25) !important; 
-        backdrop-filter: blur(30px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+        backdrop-filter: blur(50px) saturate(250%) !important;
+        -webkit-backdrop-filter: blur(50px) saturate(250%) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
-    
-    .nav-item { 
-        flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
-        
-        /* FIX 3: Cegah item agar tidak menyusut paksa saat layar semakin kecil */
-        flex-shrink: 0 !important; 
-        
-        padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
-        text-align: center !important; color: rgba(255,255,255,0.8) !important;
-        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        background: transparent !important; 
-    }
-    .nav-item:hover { background: rgba(255, 255, 255, 0.05) !important; color: white !important; }
-    
-    .nav-item.active { 
-        background: transparent !important; 
-        color: white !important; 
-        border: 1px solid transparent !important; 
-        box-shadow: none !important; 
-    }
-    .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.6) !important;}
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;}
-    .hide-mobile { display: none !important; }
+
 
     /* Modals & Audio Player Responsif HP */
     .modal-box { padding: 15px; margin: 0 15px; max-width: calc(100vw - 30px); }
@@ -805,35 +870,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
-    
+    /* Penyesuaian kecil widget storage untuk layar hp super kecil */
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
-    
-    /* FIX 4: Sesuaikan ulang keseluruhan dimensi, gap & padding agar pas & rapi di layar sangat sempit seperti resolusi 320px */
-    .sidebar-menu { 
-        min-width: auto !important; 
-        padding: 6px 8px !important; 
-        gap: 4px !important; 
-        justify-content: flex-start !important; 
-    }
-    
-    .sidebar-menu .nav-item { 
-        width: 50px !important; 
-        height: 55px !important; 
-        flex-shrink: 0 !important; 
-    }
-    
-    .sidebar-menu::before {
-        top: 6px !important; /* Sinkronisasi dengan padding-top */
-        left: 8px !important; /* Sinkronisasi dengan padding-left */
-        width: 50px !important; 
-        height: 55px !important;
-    }
-    
-    /* Kalkulasi jarak absolut untuk layar super kecil (Lebar 50px + Gap 4px = 54px) */
-    .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
-    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(54px); }
-    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc(54px * 2)); }
-    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc(54px * 3)); }
-    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc(54px * 4)); }
-    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc(54px * 5)); }
+    .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
+    .sidebar-menu .nav-item { width: 55px !important; }
 }
