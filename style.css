@@ -89,7 +89,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .logout-btn { padding: 0; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); color: #ef4444; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: 0.2s; }
 .logout-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
-/* MAIN GLASS PANEL DESKTOP (KACA MURNI APPLE ORIGINAL) */
+/* ============================================================ */
+/* MAIN GLASS PANEL DESKTOP (KACA MURNI APPLE ORIGINAL)         */
+/* ============================================================ */
 .main-glass-panel { 
     flex: 1; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); 
@@ -637,6 +639,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         order: unset !important;
     }
     
+    /* Penyesuaian Elemen Dalam Widget agar tetap terbaca di background bening */
     .storage-widget .storage-label {
         font-size: 0.75rem !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; font-weight: 600 !important; color: white !important;
         text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important; 
@@ -721,102 +724,52 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
     
-    /* ========================================================================= */
-    /* ANIMASI INDIKATOR MENU AKTIF - SLIDING, MEKAR, DAN MELAYANG               */
-    /* ========================================================================= */
-    
-    /* Konfigurasi Dasar Nav Item */
+    /* ITEM NAV BAR DALAM PILL (Item tanpa background agar menyatu dengan efek lensa cairan) */
     .nav-item { 
-        position: relative !important;
         flex-direction: column !important; 
-        gap: 4px !important; 
-        width: auto !important; 
+        gap: 6px !important; 
+        width: auto !important; /* Menyesuaikan teks */
         min-width: 60px !important;
-        height: 60px !important; 
+        height: auto !important; 
         padding: 10px 12px !important; 
         border-radius: 24px !important; 
         justify-content: center !important; 
         text-align: center !important; 
-        color: rgba(255,255,255,0.6) !important;
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important; /* Efek pegas (spring) Apple */
+        color: rgba(255,255,255,0.8) !important;
+        
+        /* Animasi bergeser (sliding & elastis) saat menu diklik */
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        
         background: transparent !important; 
         border: 1px solid transparent !important;
-        z-index: 1 !important;
     }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.05) !important; color: white !important; }
     
-    /* Kaca Indikator Tersembunyi (Pseudo-element digunakan sebagai kaca geser) */
-    .nav-item::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        border-radius: 24px !important;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%) !important; 
-        backdrop-filter: blur(8px) saturate(200%) brightness(115%) !important;
-        -webkit-backdrop-filter: blur(8px) saturate(200%) brightness(115%) !important;
+    /* State Aktif - INDIKATOR KACA AKTIF MELAYANG DENGAN EFEK KACAMATA RENANG (BLUR HALUS) */
+    .nav-item.active { 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%) !important; 
+        color: white !important; 
+        
+        /* Padding diperbesar untuk memberi jarak lega di dalam kaca */
+        padding: 12px 24px !important; 
+        border-top: none !important; 
+        
+        /* EFEK LENSA BENING GANDA SAAT AKTIF (KACA PEMBESAR) */
+        backdrop-filter: blur(5px) saturate(200%) brightness(115%) !important;
+        -webkit-backdrop-filter: blur(5px) saturate(200%) brightness(115%) !important;
+        
         border: 1px solid rgba(255,255,255,0.2) !important;
         border-top: 1px solid rgba(255,255,255,0.45) !important;
         border-left: 1px solid rgba(255,255,255,0.3) !important;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.4) !important; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.4) !important; 
         
-        /* Animasi Kaca: Mengecil & Menghilang saat tidak aktif */
-        transform: scale(0.5) translateY(10px);
-        opacity: 0;
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        z-index: -1 !important;
-        pointer-events: none;
+        /* Melayang lebih tinggi dari menu lain */
+        transform: translateY(-4px) scale(1.05) !important; 
     }
-
-    /* Saat Menu Aktif - Kaca Mekar, Melayang & Teks Terbuka */
-    .nav-item.active { 
-        color: white !important; 
-        padding: 12px 24px !important; /* Kaca akan otomatis memanjang mengikuti teks ini */
-        transform: translateY(-8px) !important; /* Efek melayang terangkat dari bar bawah */
-    }
-    
-    /* Memunculkan Indikator Kaca dengan animasi membesar (Pop) */
-    .nav-item.active::before {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-    }
-
-    /* Ikon Menu - Geser ke atas saat aktif */
-    .nav-item i { 
-        font-size: 1.3rem !important; 
-        margin: 0 !important; 
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.4) !important;
-    }
-    .nav-item.active i { 
-        transform: scale(1.15) !important; 
-        text-shadow: 0 2px 8px rgba(255,255,255,0.3) !important;
-    }
-
-    /* Teks Menu - Disembunyikan saat tidak aktif, Muncul halus saat aktif */
-    .nav-item span { 
-        font-size: 0.7rem !important; 
-        font-weight: 600 !important; 
-        text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important; 
-        
-        /* Logika Menyembunyikan Teks (Membuat Lebar Item Menyusut) */
-        max-width: 0;
-        max-height: 0;
-        opacity: 0;
-        transform: scale(0);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        white-space: nowrap;
-        overflow: hidden;
-        display: block;
-    }
-    
-    /* Teks Muncul - Membuat Kaca Indikator ikut Memanjang Otomatis (Sliding Effect) */
-    .nav-item.active span { 
-        max-width: 150px; /* Batas toleransi judul menu */
-        max-height: 20px;
-        opacity: 1;
-        transform: scale(1);
-        margin-top: 4px !important;
-    }
-    
+    .nav-item i { font-size: 1.4rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.5) !important; transition: transform 0.4s ease !important;}
+    .nav-item.active i { transform: scale(1.15) !important; }
+    .nav-item span { font-size: 0.7rem !important; font-weight: 600 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important; transition: all 0.4s ease !important;}
+    .nav-item.active span { font-size: 0.75rem !important; }
     .hide-mobile { display: none !important; }
 
 
