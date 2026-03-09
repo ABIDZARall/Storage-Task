@@ -616,17 +616,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         max-width: 220px !important;
         margin: 0 !important;
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
         background: rgba(255, 255, 255, 0.03) !important;
         backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
         box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
         
         border-radius: 20px !important; 
@@ -638,7 +635,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         order: unset !important;
     }
     
-    /* Penyesuaian Elemen Dalam Widget agar tetap terbaca di background bening */
     .storage-widget .storage-label {
         font-size: 0.75rem !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; font-weight: 600 !important; color: white !important;
         text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important; 
@@ -660,28 +656,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important; 
         left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; min-width: 320px !important; max-width: 95vw !important;
+        
+        /* FIX 1: Hapus min-width tetap yang memaksa melar. Biarkan kontainer merapat 100% pada isi kontennya */
+        width: max-content !important; min-width: auto !important; max-width: 95vw !important;
         height: auto !important; 
         padding: 8px 12px !important; 
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
         background: rgba(255, 255, 255, 0.03) !important; 
         backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important; 
         -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
         box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
         border-radius: 35px !important; 
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: space-between !important; align-items: center !important; gap: 5px !important;
+        
+        /* FIX 2: Ganti space-between jadi flex-start agar GAP bersifat statis absolut dan kalkulasi geser dijamin tepat! */
+        justify-content: flex-start !important; align-items: center !important; gap: 5px !important;
 
-        /* Isolate context untuk z-index pseudo element animasi geser */
         isolation: isolate !important;
     }
 
@@ -689,7 +685,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     /* [ANIMASI GESER] INDIKATOR BOTTOM NAVIGATION BAR                           */
     /* ========================================================================= */
     
-    /* Indikator Kaca yang akan bergeser */
     .sidebar-menu::before {
         content: '';
         position: absolute;
@@ -699,29 +694,26 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         height: 60px; /* Sesuai tinggi .nav-item */
         border-radius: 24px;
 
-        /* Desain Kaca Liquid Asli yang dipindahkan ke indikator ini */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
         border: 1px solid rgba(255,255,255,0.1);
         border-top: 1px solid rgba(255,255,255,0.3);
         box-shadow: inset 0 1px 2px rgba(255,255,255,0.3);
 
-        /* Animasi geser (Spring/Bouncy effect seperti pada video referensi) */
         transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         z-index: -1;
         opacity: 0;
         pointer-events: none;
     }
 
-    /* Tampilkan indikator jika ada nav-item yang aktif */
     .sidebar-menu:has(.nav-item.active)::before { opacity: 1; }
 
-    /* Logika Pergeseran Indikator berdasarkan urutan item yang aktif (Lebar 65px + Gap 5px) */
+    /* Logika Pergeseran Indikator (Lebar 65px + Gap 5px = 70px absolute) */
     .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
-    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(calc(65px + 5px)); }
-    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc((65px + 5px) * 2)); }
-    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc((65px + 5px) * 3)); }
-    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc((65px + 5px) * 4)); }
-    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc((65px + 5px) * 5)); }
+    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(70px); }
+    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc(70px * 2)); }
+    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc(70px * 3)); }
+    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc(70px * 4)); }
+    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc(70px * 5)); }
     
     /* ========================================================================= */
     /* [KACA CAIR BENING MURNI] FLOATING ACTION BUTTON (Tombol Plus Baru)        */
@@ -735,17 +727,14 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         
-        /* 1. MENGHAPUS BLUR TEBAL, MENGGUNAKAN BLUR HALUS (5PX) SEBAGAI DISTORSI CAIRAN/LENSA */
         background: rgba(255, 255, 255, 0.03) !important;
         backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         -webkit-backdrop-filter: blur(5px) saturate(180%) brightness(110%) !important;
         
-        /* 2. HIGHLIGHT KACA 3D (Pantulan Cahaya) */
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         
-        /* 3. INNER SHADOW (Ketebalan Cairan) */
         box-shadow: 0 10px 20px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3) !important;
         color: white !important;
     }
@@ -754,7 +743,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;}
     
-    /* Menu Klik Kanan & Dropdown Liquid Glass (Tetap pakai blur tebal untuk privasi menu terbuka) */
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
         background: rgba(30, 41, 59, 0.25) !important; 
@@ -764,9 +752,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
     
-    /* ITEM NAV BAR DALAM PILL (Item tanpa background agar menyatu dengan efek lensa cairan) */
     .nav-item { 
         flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
+        
+        /* FIX 3: Cegah item agar tidak menyusut paksa saat layar semakin kecil */
+        flex-shrink: 0 !important; 
+        
         padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
         text-align: center !important; color: rgba(255,255,255,0.8) !important;
         transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
@@ -774,17 +765,15 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .nav-item:hover { background: rgba(255, 255, 255, 0.05) !important; color: white !important; }
     
-    /* State Aktif - Teks dan Ikon menjadi putih (Background dihandle oleh animasi indikator geser pseudo ::before di atas) */
     .nav-item.active { 
         background: transparent !important; 
         color: white !important; 
-        border: 1px solid transparent !important; /* Menjaga ukuran box model agar tidak loncat */
+        border: 1px solid transparent !important; 
         box-shadow: none !important; 
     }
     .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.6) !important;}
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;}
     .hide-mobile { display: none !important; }
-
 
     /* Modals & Audio Player Responsif HP */
     .modal-box { padding: 15px; margin: 0 15px; max-width: calc(100vw - 30px); }
@@ -816,23 +805,35 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
-    /* Penyesuaian kecil widget storage untuk layar hp super kecil */
-    .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
-    .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
-    .sidebar-menu .nav-item { width: 55px !important; }
     
-    /* Penyesuaian Animasi Geser Indikator untuk Layar Super Kecil */
-    .sidebar-menu::before {
-        top: 6px !important; /* Sesuai padding-top sidebar-menu 480px */
-        left: 10px !important; /* Sesuai padding-left sidebar-menu 480px */
-        width: 55px !important; /* Sesuai lebar .nav-item 480px */
+    .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
+    
+    /* FIX 4: Sesuaikan ulang keseluruhan dimensi, gap & padding agar pas & rapi di layar sangat sempit seperti resolusi 320px */
+    .sidebar-menu { 
+        min-width: auto !important; 
+        padding: 6px 8px !important; 
+        gap: 4px !important; 
+        justify-content: flex-start !important; 
     }
     
-    /* Kalkulasi ulang jarak pergeseran untuk layar super kecil (Lebar 55px + Gap 5px) */
+    .sidebar-menu .nav-item { 
+        width: 50px !important; 
+        height: 55px !important; 
+        flex-shrink: 0 !important; 
+    }
+    
+    .sidebar-menu::before {
+        top: 6px !important; /* Sinkronisasi dengan padding-top */
+        left: 8px !important; /* Sinkronisasi dengan padding-left */
+        width: 50px !important; 
+        height: 55px !important;
+    }
+    
+    /* Kalkulasi jarak absolut untuk layar super kecil (Lebar 50px + Gap 4px = 54px) */
     .sidebar-menu:has(.nav-item:nth-child(1).active)::before { transform: translateX(0); }
-    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(calc(55px + 5px)); }
-    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc((55px + 5px) * 2)); }
-    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc((55px + 5px) * 3)); }
-    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc((55px + 5px) * 4)); }
-    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc((55px + 5px) * 5)); }
+    .sidebar-menu:has(.nav-item:nth-child(2).active)::before { transform: translateX(54px); }
+    .sidebar-menu:has(.nav-item:nth-child(3).active)::before { transform: translateX(calc(54px * 2)); }
+    .sidebar-menu:has(.nav-item:nth-child(4).active)::before { transform: translateX(calc(54px * 3)); }
+    .sidebar-menu:has(.nav-item:nth-child(5).active)::before { transform: translateX(calc(54px * 4)); }
+    .sidebar-menu:has(.nav-item:nth-child(6).active)::before { transform: translateX(calc(54px * 5)); }
 }
