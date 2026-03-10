@@ -1,5 +1,6 @@
 /* ================= GLOBAL & RESET ================= */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* DITAMBAHKAN: -webkit-tap-highlight-color: transparent; untuk menghilangkan kotak biru HP */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 /* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR */
 ::-webkit-scrollbar { width: 14px; height: 14px; background-color: transparent; }
@@ -116,7 +117,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     pointer-events: none;
 }
 
-.nav-item { display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; position: relative; z-index: 1; }
+/* DITAMBAHKAN: user-select: none dan outline: none untuk mencegah teks terblok dan kotak highlight */
+.nav-item { 
+    display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; 
+    border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; 
+    font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; 
+    position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
+}
 .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
 
 /* HAPUS BACKGROUND DARI ACTIVE ITEM, BIARKAN INDIKATOR YANG MENGISI */
@@ -661,11 +668,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     
     /* ITEM NAV BAR DALAM PILL (Hapus background active karena sudah diwakili indicator) */
+    /* DITAMBAHKAN: outline: none dan tap-highlight */
     .nav-item { 
         flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
         padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
         text-align: center !important; color: rgba(255,255,255,0.6) !important;
-        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
     }
     .nav-item:hover { background: transparent !important; color: var(--accent) !important; }
     .nav-item.active { 
