@@ -166,22 +166,26 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 
-/* UPDATE: PERBAIKAN TOMBOL + BARU AGAR TIDAK MENINGGALKAN JEJAK & TIDAK TABRAKAN */
+/* UPDATE: PERBAIKAN ANIMASI TOMBOL + BARU AGAR LEBIH RAPI & TIDAK TABRAKAN */
 .new-btn { 
     width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
     padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
     outline: none !important; /* Mencegah kotak biru jejak fokus */
     -webkit-tap-highlight-color: transparent;
+    border: none;
 }
 .new-btn:hover { 
-    transform: translateY(-2px); /* Diganti dari scale() agar tidak mendesak layout lain */
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+    /* Dihapus transform: translateY() dan scale() agar tidak menggeser/menabrak tata letak.
+       Sebagai gantinya, gunakan pencerahan warna dan penebalan bayangan yang halus. */
+    background: #f8fafc;
+    box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
 }
 .new-btn:active { 
-    transform: scale(0.96) !important; /* Efek menekan tanpa bekas fokus */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    transform: scale(0.97) !important; /* Efek menekan masuk ke dalam */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
+    transition: 0.1s;
 }
 .new-btn:focus { outline: none !important; }
 
@@ -223,7 +227,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 
-/* UPDATE: DESAIN KOLOM PENCARIAN (TELUSURI) - PERBAIKAN TABRAKAN LAYOUT */
+/* UPDATE: PERBAIKAN ANIMASI KOLOM PENCARIAN (TELUSURI) AGAR LEBIH RAPI & TIDAK TABRAKAN */
 .search-bar-pill { 
     width: 100%; max-width: 600px; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
@@ -234,16 +238,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    /* Transisi diperhalus hanya untuk background, border, dan bayangan */
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
 }
-.search-bar-pill:focus-within { 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)); 
-    border-color: rgba(255, 255, 255, 0.4); 
-    /* Dihapus transform: translateY(-2px) agar form pencarian tidak melompat dan menabrak batas atas container */
-    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.3), 0 0 0 3px rgba(45, 212, 191, 0.2);
+.search-bar-pill:focus-within, .search-bar-pill:hover { 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
+    border-color: rgba(255, 255, 255, 0.5); 
+    /* Dihapus transform (skala/translate) sama sekali agar elemen diam di tempat.
+       Efek fokus hanya mengandalkan glow yang memancar halus ke luar. */
+    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
-.search-icon { color: rgba(255, 255, 255, 0.6); font-size: 1rem; }
+.search-icon { color: rgba(255, 255, 255, 0.6); font-size: 1rem; transition: color 0.3s ease; }
+.search-bar-pill:focus-within .search-icon { color: white; }
 
 .breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
