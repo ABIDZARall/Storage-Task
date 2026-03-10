@@ -89,7 +89,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .brand-area:hover { background: rgba(255, 255, 255, 0.05); }
 .profile-area { display: flex; align-items: center; gap: 15px; }
 
-/* UPDATE: DESAIN AVATAR PROFIL LIQUID GLASS APPLE ORIGINAL */
+/* DESAIN AVATAR PROFIL LIQUID GLASS APPLE ORIGINAL */
 .avatar { 
     width: 42px; height: 42px; border-radius: 50%; object-fit: cover; 
     border: 2px solid rgba(255, 255, 255, 0.15); 
@@ -102,7 +102,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* UPDATE: DESAIN TOMBOL LOGOUT LIQUID GLASS APPLE ORIGINAL + PERBAIKAN JEJAK (OUTLINE) */
+/* UPDATE: PERBAIKAN BUG GHOSTING/JEJAK PADA TOMBOL LOGOUT KACA */
 .logout-btn { 
     padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
@@ -114,21 +114,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    /* Transisi dipisahkan agar lebih rapi dan bebas glitch */
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
     font-size: 1.1rem;
-    outline: none !important; /* Mencegah jejak saat diklik */
+    outline: none !important; 
     -webkit-tap-highlight-color: transparent;
+    /* MENGHILANGKAN BUG GHOSTING OUTLINE DARI BROWSER (HARDWARE ACCELERATION) */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
 .logout-btn:hover { 
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
     border-color: rgba(239, 68, 68, 0.4);
     color: #f87171;
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    /* Translate dihapus agar batas bulatnya presisi */
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 .logout-btn:active {
-    transform: scale(0.92) !important; /* Animasi tekan yang responsif tanpa bekas */
-    transition: 0.1s;
+    /* Mencegah pecah atau bergeser parah saat diklik */
+    transform: scale(0.92) translateZ(0) !important; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .logout-btn:focus { outline: none !important; }
 
@@ -166,26 +173,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 
-/* UPDATE: PERBAIKAN ANIMASI TOMBOL + BARU AGAR LEBIH RAPI & TIDAK TABRAKAN */
+/* UPDATE: PERBAIKAN BUG TABRAKAN & JEJAK PADA TOMBOL + BARU DESKTOP */
 .new-btn { 
     width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
     padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    outline: none !important; /* Mencegah kotak biru jejak fokus */
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    outline: none !important; /* Mencegah jejak kotak / outline saat fokus */
     -webkit-tap-highlight-color: transparent;
     border: none;
+    -webkit-backface-visibility: hidden; /* Stabilisasi Rendering Animasi */
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
 .new-btn:hover { 
-    /* Dihapus transform: translateY() dan scale() agar tidak menggeser/menabrak tata letak.
-       Sebagai gantinya, gunakan pencerahan warna dan penebalan bayangan yang halus. */
     background: #f8fafc;
+    /* Dihapus transform: scale()/translate() agar tidak menabrak elemen sekitarnya */
     box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
 }
 .new-btn:active { 
-    transform: scale(0.97) !important; /* Efek menekan masuk ke dalam */
+    transform: scale(0.96) translateZ(0) !important; /* Efek ditekan masuk tanpa jejak */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
-    transition: 0.1s;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .new-btn:focus { outline: none !important; }
 
@@ -238,14 +247,17 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-    /* Transisi diperhalus hanya untuk background, border, dan bayangan */
+    /* Transisi diperhalus khusus untuk elemen statis */
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    /* Cegah glitch */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
 .search-bar-pill:focus-within, .search-bar-pill:hover { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
     border-color: rgba(255, 255, 255, 0.5); 
-    /* Dihapus transform (skala/translate) sama sekali agar elemen diam di tempat.
-       Efek fokus hanya mengandalkan glow yang memancar halus ke luar. */
+    /* Dihapus transform untuk mencegah tabrakan/lompatan, diganti efek cahaya/glow keluar yang elegan */
     box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
@@ -758,7 +770,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2) !important;
     }
     
-    /* FLOATING ACTION BUTTON APPLE GLASS */
+    /* FLOATING ACTION BUTTON APPLE GLASS (TOMBOL PLUS) - PERBAIKAN ANIMASI & GHOST RING */
     .new-btn-wrapper { 
         position: fixed !important; 
         bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
@@ -767,11 +779,25 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .new-btn { 
         width: 60px !important; height: 60px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
-        background: rgba(30, 41, 59, 0.65) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        background: rgba(30, 41, 59, 0.65) !important; 
+        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important; color: white !important;
+        /* Hapus lompatan dan atur hardware rendering di mode HP */
+        transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+        transform: translateZ(0) !important;
     }
-    .new-btn:hover { background: rgba(255, 255, 255, 0.2) !important; }
+    .new-btn:hover { 
+        background: rgba(255, 255, 255, 0.15) !important; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important;
+    }
+    .new-btn:active {
+        transform: scale(0.92) translateZ(0) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important;
+        transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+    }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
     
