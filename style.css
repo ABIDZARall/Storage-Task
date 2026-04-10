@@ -455,12 +455,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 /* MODAL PENYIMPANAN (POPUP) - LIQUID GLASS APPLE ORIGINAL      */
 /* ============================================================ */
-/* Bagian ini telah diubah untuk mengaplikasikan efek frosted glass yang responsif */
 .storage-detail-box-wide { 
     width: 100%; max-width: 650px; padding: 30px; 
-    
-    /* LIQUID GLASS STYLE APPEL MURNI */
-    background: rgba(30, 41, 59, 0.45) !important; /* Semi transparan */
+    background: rgba(30, 41, 59, 0.45) !important; 
     backdrop-filter: blur(40px) saturate(200%) !important; 
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important; 
@@ -468,7 +465,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 28px !important; 
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
-    
     display: flex; flex-direction: column; 
 }
 
@@ -484,7 +480,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .storage-sub-hero { color: #cbd5e1; font-size: 0.95rem; }
 .multi-color-progress { width: 100%; height: 12px; background: transparent; border-radius: 10px; overflow: hidden; margin-top: 10px; display: flex; }
 .bar-segment { height: 100%; transition: all 0.2s ease; cursor: pointer; position: relative; border-right: 4px solid rgba(0,0,0,0.1); box-sizing: border-box; }
-.bar-free { background-color: rgba(255,255,255,0.1); } /* Track kosong lebih clear di kaca */
+.bar-free { background-color: rgba(255,255,255,0.1); } 
 .bar-segment:last-child { border-right: none; }
 .bar-segment:hover { filter: brightness(1.2); }
 .bar-images { background-color: var(--clr-blue); } .bar-videos { background-color: var(--clr-yellow); } .bar-docs { background-color: var(--clr-red); } .bar-others { background-color: var(--clr-grey); }
@@ -508,27 +504,80 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .primary-dark { background: rgba(66, 133, 244, 0.2); color: #93c5fd; border: 1px solid rgba(66,133,244,0.1); } .primary-dark:hover { background: rgba(66, 133, 244, 0.35); }
 
 /* ============================================================ */
-/* STORAGE FULL PAGE LAINNYA...                                 */
+/* NEW UPDATE: STORAGE FULL PAGE - LIQUID GLASS APPLE ORIGINAL  */
 /* ============================================================ */
-.full-screen-layout { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 9000; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
-.storage-page-header { display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.back-icon-btn { background: transparent; border: none; color: white; font-size: 1.2rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
-.back-icon-btn:hover { background: rgba(255,255,255,0.1); }
-.storage-page-header h2 { font-size: 1.4rem; font-weight: 500; }
+.full-screen-layout { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    
+    /* Transparent blur overlay so the liquid-bg behind it shines through */
+    background: rgba(15, 23, 42, 0.65); 
+    backdrop-filter: blur(25px) saturate(150%);
+    -webkit-backdrop-filter: blur(25px) saturate(150%);
+    
+    z-index: 9000; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; 
+}
+
+.storage-page-header { 
+    display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    position: sticky; top: 0; z-index: 9010;
+}
+
+.back-icon-btn { 
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+    color: white; font-size: 1.2rem; cursor: pointer; width: 42px; height: 42px; 
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); backdrop-filter: blur(10px); 
+}
+.back-icon-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+
+.storage-page-header h2 { font-size: 1.4rem; font-weight: 600; color: white; letter-spacing: -0.3px; }
 .storage-page-content { flex: 1; display: flex; justify-content: center; align-items: flex-start; }
-.storage-manager-card { width: 100%; max-width: 800px; background: #1e293b; border-radius: 16px; border: 1px solid var(--glass-border); padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-.card-header-text { text-align: center; margin-bottom: 30px; }
-.card-header-text h1 { font-size: 2rem; font-weight: 400; margin-bottom: 10px; }
-.card-header-text p { color: #94a3b8; font-size: 0.95rem; }
-.storage-summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; font-weight: 500; }
-.highlight-text { color: white; font-weight: 600; }
-.page-progress { height: 10px; margin-bottom: 30px; }
+
+/* LIQUID GLASS APPLE ORIGINAL - KARTU PENGELOLA PENYIMPANAN */
+.storage-manager-card { 
+    width: 100%; max-width: 800px; 
+    padding: 40px 50px; 
+    
+    background: rgba(30, 41, 59, 0.45) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 32px !important; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    
+    transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.card-header-text { text-align: center; margin-bottom: 40px; }
+.card-header-text h1 { font-size: 2.2rem; font-weight: 600; margin-bottom: 12px; color: white; letter-spacing: -0.5px; }
+.card-header-text p { color: #cbd5e1; font-size: 1rem; }
+
+.storage-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 1rem; font-weight: 500; color: #f8fafc; }
+.highlight-text { color: white; font-weight: 700; font-family: 'SF Pro Text', 'Consolas', monospace; font-size: 1.1rem; }
+
+.page-progress { 
+    height: 14px; margin-bottom: 40px; 
+    background: rgba(0,0,0,0.25); 
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); 
+    border: 1px solid rgba(255,255,255,0.05); 
+}
+
 .storage-detail-list { display: flex; flex-direction: column; gap: 0; }
-.detail-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.detail-item { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); 
+    transition: background 0.2s ease, border-radius 0.2s ease; 
+}
+.detail-item:hover { background: rgba(255,255,255,0.04); border-radius: 12px; border-bottom-color: transparent; }
 .detail-item:last-child { border-bottom: none; }
-.dt-left { display: flex; align-items: center; gap: 15px; font-size: 1rem; color: #e2e8f0; }
-.dt-right { font-family: 'Consolas', monospace; color: #94a3b8; }
-.item-free { opacity: 0.7; }
+
+.dt-left { display: flex; align-items: center; gap: 15px; font-size: 1.05rem; color: #f1f5f9; font-weight: 500; }
+.dt-right { font-family: 'SF Pro Text', 'Consolas', monospace; color: #cbd5e1; font-weight: 600; font-size: 1rem; }
+.item-free { opacity: 0.8; }
+
 
 /* ============================================================ */
 /* PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION FIXED     */
@@ -738,6 +787,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .sidebar-left { width: 200px; padding-right: 10px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
     .apple-audio-player-v2 { width: 90vw; }
+    
+    /* Penyesuaian Tablet untuk Halaman Pengelola Penyimpanan */
+    .storage-manager-card { padding: 35px 30px !important; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
@@ -863,37 +915,33 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
     .hide-mobile { display: none !important; }
 
-    /* UPDATE RESPONSIVE MODAL: Tetap pertahankan row untuk tombol Batal & Buat */
     .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
     .modal-actions-grid { flex-direction: row; }
 
-    /* ============================================================ */
-    /* SUSUNAN RESPONSIF (REORDER) POPUP PENYIMPANAN DI MOBILE      */
-    /* ============================================================ */
+    /* STORAGE DETAIL POPUP RESPONSIVE */
     .storage-detail-box-wide { padding: 25px 20px !important; border-radius: 24px !important; }
     .storage-hero h1 { font-size: 2.3rem !important; }
-    .storage-flex-container { 
-        display: flex !important; 
-        flex-direction: column !important; 
-        gap: 15px !important; 
-    }
-    /* Mengubah columns menjadi konten flex bebas agar bisa diurutkan manual */
+    .storage-flex-container { display: flex !important; flex-direction: column !important; gap: 15px !important; }
     .storage-col-left, .storage-col-right { display: contents !important; }
-    
-    /* 1. Angka Utama di Atas */
     .storage-content-wrapper { order: 1; margin-bottom: 5px; }
-    
-    /* 2. Keterangan Warna Legend Menyusul di Bawah Bar */
-    .storage-legend { 
-        order: 2; margin-bottom: 0 !important; 
-        background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; 
-        border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
-    }
-    
-    /* 3. Tombol-Tombol Terkumpul di Paling Bawah */
+    .storage-legend { order: 2; margin-bottom: 0 !important; background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); }
     .storage-btn-left-container { order: 3; margin-top: 10px !important; }
     .storage-btn-right-container { order: 4; }
     
+    /* STORAGE FULL PAGE RESPONSIVE MOBILE */
+    .storage-page-header { padding-bottom: 15px; margin-bottom: 20px; }
+    .storage-manager-card { padding: 25px 20px !important; border-radius: 24px !important; margin: 0 5px; }
+    .card-header-text { margin-bottom: 25px; }
+    .card-header-text h1 { font-size: 1.7rem; margin-bottom: 8px; }
+    .card-header-text p { font-size: 0.85rem; }
+    .storage-summary-row { flex-direction: row; justify-content: space-between; font-size: 0.85rem; margin-bottom: 15px; }
+    .highlight-text { font-size: 0.95rem; }
+    .page-progress { height: 10px; margin-bottom: 25px; }
+    .detail-item { padding: 12px 5px; }
+    .dt-left { font-size: 0.95rem; gap: 10px; }
+    .dt-right { font-size: 0.9rem; }
+
+    /* AUDIO & VIDEO RESPONSIVE */
     .apple-audio-player-v2 { flex-direction: column; width: 90vw; height: auto; max-height: 85vh; padding: 20px; gap: 15px; border-radius: 24px; }
     .audio-cover-v2 { width: 100%; height: auto; aspect-ratio: 1/1; max-height: 280px; margin: 0 auto; }
     .audio-right-v2 { padding: 0; width: 100%; }
@@ -922,4 +970,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
     .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
     .sidebar-menu .nav-item { width: 55px !important; }
+    
+    /* Penyesuaian Ruang Penyimpanan di layar super kecil */
+    .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
