@@ -372,20 +372,71 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-/* Responsif Modal Box */
-.modal-box { width: 100%; max-width: 380px; margin: 0 15px; padding: 20px; background: #1e293b; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1); transition: transform 0.3s ease; }
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-.modal-header h3 { font-size: 1.1rem; color: white; }
-.close-icon { cursor: pointer; color: #64748b; transition: 0.3s; } .close-icon:hover { color: var(--danger); }
-.modal-actions-grid { display: flex; gap: 15px; margin-top: 20px; width: 100%; }
-.modal-actions-grid button { flex: 1; height: 40px; border-radius: 8px; }
-.secondary { background: rgba(255,255,255,0.1); color: white; }
+
+/* ============================================================ */
+/* UPDATE: Responsif Modal Box (Folder Baru & Upload) - LIQUID GLASS APPLE ORIGINAL */
+/* ============================================================ */
+.modal-box { 
+    width: 100%; max-width: 380px; margin: 0 15px; padding: 25px; 
+    
+    /* LIQUID GLASS EFEK MURNI */
+    background: rgba(30, 41, 59, 0.55) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 24px !important; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; 
+}
+
+.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+.modal-header h3 { font-size: 1.15rem; color: white; font-weight: 700; letter-spacing: -0.3px; }
+.close-icon { cursor: pointer; color: #cbd5e1; transition: 0.3s; padding: 5px; border-radius: 50%; } 
+.close-icon:hover { color: white; background: rgba(255,255,255,0.1); }
+
+/* Penyesuaian Input Kaca (Untuk Modal Folder) */
+.modal-box .pill-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    height: 48px; border-radius: 12px;
+}
+.modal-box .pill-input:focus-within {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(45, 212, 191, 0.15);
+}
+
+.modal-actions-grid { display: flex; gap: 15px; margin-top: 25px; width: 100%; }
+.modal-actions-grid button { flex: 1; height: 44px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
+.modal-actions .btn-pill { height: 44px; border-radius: 12px; margin-top: 15px; font-weight: 600; font-size: 0.95rem; }
+
+.secondary { 
+    background: rgba(255,255,255,0.1); color: white; 
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+}
+.secondary:hover { background: rgba(255,255,255,0.15); }
 .full-width { width: 100%; }
 
-/* Drag & Drop Area */
-.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(255, 255, 255, 0.02); }
-.drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.1); }
-.animate-icon { font-size: 2.5rem; color: #64748b; margin-bottom: 15px; }
+/* Penyesuaian Drag & Drop Area Apple Glass (Untuk Modal Upload) */
+.drag-drop-area { 
+    border: 2px dashed rgba(255, 255, 255, 0.2); 
+    border-radius: 16px; 
+    padding: 35px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; 
+    background: rgba(255, 255, 255, 0.03); 
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+}
+.drag-drop-area:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.15); }
+.animate-icon { font-size: 3rem; color: #94a3b8; margin-bottom: 15px; transition: 0.3s; }
+.drag-drop-area:hover .animate-icon { color: white; }
 .drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
@@ -812,7 +863,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
     .hide-mobile { display: none !important; }
 
-    .modal-box { padding: 15px; margin: 0 15px; max-width: calc(100vw - 30px); }
+    /* UPDATE RESPONSIVE MODAL: Tetap pertahankan row untuk tombol Batal & Buat */
+    .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
+    .modal-actions-grid { flex-direction: row; }
 
     /* ============================================================ */
     /* SUSUNAN RESPONSIF (REORDER) POPUP PENYIMPANAN DI MOBILE      */
