@@ -39,7 +39,8 @@ button, a { outline: none !important; }
 
 /* Menggunakan 100dvh (Dynamic Viewport Height) mencegah terpotong oleh Browser UI Bar di Mobile */
 body { font-family: 'Inter', '-apple-system', 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; height: 100dvh; width: 100vw; }
-.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #134e4a, #0f172a); z-index: -1; }
+/* PENGHALUSAN BACKGROUND UNTUK KESAN NICEGRAM */
+.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #11363c, #0d1424, #0a0f1d); z-index: -1; }
 .hidden { display: none !important; }
 
 /* ============================================================ */
@@ -92,8 +93,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     padding: 5px 12px 5px 5px; border-radius: 12px; 
 }
 .brand-area:hover { 
-    background: rgba(255, 255, 255, 0.08); 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.1); 
+    background: rgba(255, 255, 255, 0.05); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.05); 
     transform: scale(1.02); 
 }
 .logo-img { 
@@ -105,7 +106,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
     font-size: 1.35rem; font-weight: 700; color: #ffffff; 
     letter-spacing: -0.5px; 
-    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2); 
     user-select: none; 
 }
 
@@ -247,32 +248,31 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 
+/* SEARCH BAR NICEGRAM VIBE */
 .search-bar-pill { 
     width: 100%; max-width: 600px; 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
+    background: rgba(255, 255, 255, 0.06); /* Lebih halus seperti search Nicegram */
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border-radius: 40px; height: 48px; padding: 0 20px; display: flex; align-items: center; 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     transform: translateZ(0); 
 }
 .search-bar-pill:focus-within, .search-bar-pill:hover { 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
-    border-color: rgba(255, 255, 255, 0.5); 
-    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1); 
+    border-color: rgba(255, 255, 255, 0.2); 
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1);
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
-.search-icon { color: rgba(255, 255, 255, 0.6); font-size: 1rem; transition: color 0.3s ease; }
+.search-icon { color: rgba(255, 255, 255, 0.5); font-size: 1.05rem; transition: color 0.3s ease; }
 .search-bar-pill:focus-within .search-icon { color: white; }
 
 .breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
-.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
+.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: -0.3px; }
 .back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 
 .back-btn { 
@@ -286,7 +286,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .back-btn i { font-size: 0.9rem; flex-shrink: 0; }
 
 /* ============================================================ */
-/* GRID ITEM STYLING (DIKUNCI AGAR PERFECT SQUARE ANTI GEPENG)  */
+/* GRID ITEM STYLING - NICEGRAM REFINED CARDS                   */
 /* ============================================================ */
 .file-grid-area { 
     flex: 1; overflow-y: auto; display: grid; 
@@ -296,19 +296,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .item-card { 
-    background: rgba(255, 255, 255, 0.04); 
-    border-radius: 12px; 
+    background: rgba(255, 255, 255, 0.03); /* Lebih halus */
+    border-radius: 16px; /* Lebih rounded seperti app modern */
     display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
     cursor: pointer; position: relative; transition: all 0.3s ease; 
-    border: 1px solid rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.04); 
     padding: 12px; 
     box-sizing: border-box; width: 100%;
     aspect-ratio: 1 / 1 !important; 
     overflow: hidden; 
 }
 .item-card:hover { 
-    background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); 
-    border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
+    background: rgba(255, 255, 255, 0.06); transform: translateY(-4px); 
+    border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.25); 
 }
 
 .mac-folder-container, .thumb-box {
@@ -814,44 +814,129 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-manager-card { padding: 35px 30px !important; }
 }
 
-/* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
+/* ============================================================ */
+/* MOBILE / HP / IPAD PORTRAIT (<= 768px) - NICEGRAM VIBE       */
+/* ============================================================ */
 @media screen and (max-width: 768px) {
+    /* Menghilangkan padding utama agar konten menempel di tepi layar (Nicegram style) */
     .dashboard-layout { padding: 0; }
     
     .main-glass-panel { 
         flex: 1; flex-direction: column; 
-        border-radius: 0; border: none; padding: 10px; 
-        height: auto; gap: 10px;
-        background: rgba(255, 255, 255, 0.02); 
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border-radius: 0; border: none; padding: 0; 
+        height: auto; gap: 0;
+        background: transparent; 
+        backdrop-filter: none; -webkit-backdrop-filter: none;
         box-shadow: none;
     }
     
-    /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
-    .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
-    .logo-img { height: 38px; }
-    .brand-text { font-size: 1.15rem; letter-spacing: -0.3px; }
-    .brand-area { gap: 8px; padding: 4px; }
+    /* HEADER (TOP NAV) - Dibuat seakan Header Native App iOS */
+    .top-nav { 
+        padding: 15px 20px 10px 20px; margin-bottom: 5px; min-height: 65px; 
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        z-index: 4000; position: sticky; top: 0;
+    }
+    .logo-img { height: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+    .brand-text { font-size: 1.25rem; letter-spacing: -0.3px; text-shadow: 0 2px 5px rgba(0,0,0,0.4); font-weight: 700; }
+    .brand-area { gap: 10px; padding: 0; background: transparent !important; box-shadow: none !important; transform: none !important; }
     
-    .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
+    .search-row { padding: 0 15px; margin-top: 10px; margin-bottom: 15px; }
+    .search-bar-pill { height: 44px; border-radius: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.05); box-shadow: none; }
+    .search-bar-pill input { font-size: 0.9rem; }
+    
+    .breadcrumb-area { padding-left: 20px; margin-bottom: 10px; }
+    .breadcrumb-area h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.3px; color: #f8fafc; }
     
     .sidebar-left { display: contents; }
-    
     .main-content-area { order: 2; height: 100%; padding-bottom: 0 !important; }
 
+    /* GRID FILES - Penyesuaian jarak responsif terhadap Bottom Dock Nav */
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-        gap: 12px; padding: 5px; 
-        padding-bottom: calc(230px + env(safe-area-inset-bottom)) !important; 
+        gap: 12px; padding: 5px 15px; 
+        padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important; 
         height: 100%; overflow-y: auto;
     }
-    .item-card { padding: 8px; border-radius: 10px; }
+    .item-card { padding: 10px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.04); }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
+    /* FLOATING BOTTOM NAV (NICEGRAM / iOS STYLE) */
+    /* Menu bawah dibuat Full Width melekat sempurna di ujung layar */
+    .sidebar-menu { 
+        position: fixed !important; 
+        bottom: 0 !important;
+        left: 0 !important; transform: none !important;
+        width: 100% !important; min-width: 100% !important; max-width: 100% !important;
+        height: auto !important; 
+        padding: 10px 15px calc(15px + env(safe-area-inset-bottom)) 15px !important;
+        border-radius: 28px 28px 0 0 !important; 
+        
+        background: rgba(15, 23, 42, 0.75) !important; 
+        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        border: none !important; border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.3) !important;
+        
+        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
+        justify-content: space-around !important; align-items: center !important; gap: 0 !important;
+    }
+
+    /* Penyesuaian indicator nav yang semula vertikal, sekarang tidak terpakai diganti warna aktif */
+    .nav-indicator { display: none !important; }
+    
+    /* TATA LETAK ICON BOTTOM NAV */
+    .nav-item { 
+        flex-direction: column !important; gap: 6px !important; width: 20% !important; height: auto !important; 
+        padding: 5px 0 !important; border-radius: 0 !important; justify-content: center !important; 
+        text-align: center !important; color: rgba(255,255,255,0.45) !important;
+        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
+    }
+    .nav-item:hover { background: transparent !important; color: rgba(255,255,255,0.7) !important; }
+    .nav-item.active { 
+        background: transparent !important; 
+        color: white !important; border: none !important; box-shadow: none !important;
+    }
+    .nav-item i { font-size: 1.4rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important; transition: transform 0.2s;}
+    .nav-item.active i { transform: scale(1.15); filter: drop-shadow(0 2px 5px rgba(255,255,255,0.3)); }
+    .nav-item span { font-size: 0.65rem !important; font-weight: 600 !important; letter-spacing: -0.2px; }
+    .hide-mobile { display: none !important; }
+
+    /* TOMBOL (+) FLOAT RAPIH DI ATAS DOCK */
+    .new-btn-wrapper { 
+        position: fixed !important; 
+        bottom: calc(95px + env(safe-area-inset-bottom)) !important; 
+        right: 20px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
+    }
+    .new-btn { 
+        width: 60px !important; height: 60px !important; border-radius: 50% !important; 
+        padding: 0 !important; justify-content: center !important; align-items: center !important; 
+        background: rgba(255, 255, 255, 0.15) !important; 
+        backdrop-filter: blur(30px) saturate(200%) !important; -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important; border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3) !important; color: white !important;
+        transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        -webkit-backface-visibility: hidden !important; backface-visibility: hidden !important; transform: translateZ(0) !important;
+    }
+    .new-btn:hover { background: rgba(255, 255, 255, 0.25) !important; transform: scale(1.05) translateZ(0) !important;}
+    .new-btn:active { transform: scale(0.92) translateZ(0) !important; }
+    .new-btn-text { display: none !important; }
+    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
+
+    /* MENU DROPDOWN KETIKA (+) DIKLIK (NICEGRAM STYLE) */
+    .dropdown-content.extended-menu { 
+        top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
+        background: rgba(30, 41, 59, 0.85) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-radius: 20px !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1) !important; padding: 8px 0 !important;
+    }
+    .dropdown-content.extended-menu a { padding: 12px 20px !important; font-size: 0.9rem !important; }
+    
+    /* WIDGET STORAGE FLOAT KIRI BAWAH */
     .storage-widget { 
         position: fixed !important;
-        bottom: calc(105px + env(safe-area-inset-bottom)) !important; left: 15px !important;
+        bottom: calc(95px + env(safe-area-inset-bottom)) !important; left: 15px !important;
         width: auto !important; min-width: 150px !important; max-width: 220px !important; margin: 0 !important;
         
         background: rgba(30, 41, 59, 0.65) !important;
@@ -861,86 +946,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         border-radius: 20px !important; padding: 12px 16px !important; z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
     }
-    
     .storage-widget .storage-label { font-size: 0.75rem !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; font-weight: 600 !important; color: white !important; }
     .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.15) !important; }
     .storage-widget .storage-text { font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
-    
-    .sidebar-menu { 
-        position: fixed !important; 
-        bottom: calc(20px + env(safe-area-inset-bottom)) !important;
-        left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; min-width: 320px !important; max-width: 95vw !important;
-        height: auto !important; padding: 8px 12px !important;
-        border-radius: 35px !important; 
-        
-        background: rgba(30, 41, 59, 0.55) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2) !important;
-        
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: space-between !important; align-items: center !important; gap: 5px !important;
-    }
-
-    .nav-indicator {
-        height: 60px !important;
-        border-radius: 24px !important;
-        background: rgba(255, 255, 255, 0.15) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-top: 1px solid rgba(255,255,255,0.2) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2) !important;
-    }
-    
-    .new-btn-wrapper { 
-        position: fixed !important; 
-        bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
-        right: 15px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
-    }
-    .new-btn { 
-        width: 60px !important; height: 60px !important; border-radius: 50% !important; 
-        padding: 0 !important; justify-content: center !important; align-items: center !important; 
-        background: rgba(30, 41, 59, 0.65) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important; color: white !important;
-        transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
-    }
-    .new-btn:hover { 
-        background: rgba(255, 255, 255, 0.15) !important; 
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important;
-    }
-    .new-btn:active {
-        transform: scale(0.92) translateZ(0) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important;
-        transition: transform 0.1s ease, box-shadow 0.1s ease !important;
-    }
-    .new-btn-text { display: none !important; }
-    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
-    
-    .dropdown-content.extended-menu { 
-        top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
-        background: rgba(30, 41, 59, 0.85) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
-    }
-    
-    .nav-item { 
-        flex-direction: column !important; gap: 4px !important; width: 65px !important; height: 60px !important; 
-        padding: 0 !important; border-radius: 24px !important; justify-content: center !important; 
-        text-align: center !important; color: rgba(255,255,255,0.6) !important;
-        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
-    }
-    .nav-item:hover { background: transparent !important; color: var(--accent) !important; }
-    .nav-item.active { 
-        background: transparent !important; 
-        color: white !important; border: none !important; box-shadow: none !important;
-    }
-    .nav-item i { font-size: 1.3rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important;}
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
-    .hide-mobile { display: none !important; }
 
     .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
     .modal-actions-grid { flex-direction: row; }
@@ -994,14 +1002,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
-    .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
-    .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
-    .sidebar-menu .nav-item { width: 55px !important; }
     
     /* Penyesuaian Responsif Logo & Brand Text ekstra kecil */
-    .logo-img { height: 34px !important; }
-    .brand-text { font-size: 1.05rem !important; }
+    .top-nav { padding: 15px 15px 10px 15px; }
+    .logo-img { height: 32px !important; }
+    .brand-text { font-size: 1.1rem !important; }
     
-    /* Penyesuaian Ruang Penyimpanan di layar super kecil */
+    .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
