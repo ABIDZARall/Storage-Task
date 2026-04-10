@@ -80,13 +80,35 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .profile-actions { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
 
 /* ============================================================ */
-/* DASHBOARD LAYOUT & SIDEBAR                                   */
+/* DASHBOARD LAYOUT & SIDEBAR - BRAND LOGO & TEXT UPDATE        */
 /* ============================================================ */
 .dashboard-layout { height: 100dvh; padding: 15px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; height: 45px; flex-shrink: 0; }
-.logo-img { height: 40px; }
-.brand-area { display: flex; align-items: center; cursor: pointer; transition: transform 0.2s; padding: 5px; border-radius: 8px; }
-.brand-area:hover { background: rgba(255, 255, 255, 0.05); }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 55px; flex-shrink: 0; }
+
+/* UPDATE: LIQUID GLASS LOGO & TYPOGRAPHY */
+.brand-area { 
+    display: flex; align-items: center; gap: 12px; cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    padding: 5px 12px 5px 5px; border-radius: 12px; 
+}
+.brand-area:hover { 
+    background: rgba(255, 255, 255, 0.08); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.1); 
+    transform: scale(1.02); 
+}
+.logo-img { 
+    height: 48px; 
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2)); 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+}
+.brand-text { 
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
+    font-size: 1.35rem; font-weight: 700; color: #ffffff; 
+    letter-spacing: -0.5px; 
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
+    user-select: none; 
+}
+
 .profile-area { display: flex; align-items: center; gap: 15px; }
 
 /* DESAIN AVATAR PROFIL LIQUID GLASS APPLE ORIGINAL */
@@ -805,7 +827,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: none;
     }
     
-    .top-nav { padding: 5px 15px; margin-bottom: 5px; }
+    /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
+    .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
+    .logo-img { height: 38px; }
+    .brand-text { font-size: 1.15rem; letter-spacing: -0.3px; }
+    .brand-area { gap: 8px; padding: 4px; }
+    
     .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
     
     .sidebar-left { display: contents; }
@@ -970,6 +997,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
     .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
     .sidebar-menu .nav-item { width: 55px !important; }
+    
+    /* Penyesuaian Responsif Logo & Brand Text ekstra kecil */
+    .logo-img { height: 34px !important; }
+    .brand-text { font-size: 1.05rem !important; }
     
     /* Penyesuaian Ruang Penyimpanan di layar super kecil */
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
