@@ -817,7 +817,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
-/* (PEMBARUAN: SIDEBAR MENU KAPSUL NICEGRAM DENGAN SLIDING ANIMATION) */
+/* (PEMBARUAN: WIDGET PENYIMPANAN & TOMBOL PLUS DIPERKECIL ALA NICEGRAM) */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
@@ -849,22 +849,31 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
+    /* ============================================================== */
+    /* WIDGET PENYIMPANAN - DIPERKECIL & DIPERPADAT (NICEGRAM STYLE) */
+    /* ============================================================== */
     .storage-widget { 
         position: fixed !important;
-        bottom: calc(90px + env(safe-area-inset-bottom)) !important; left: 15px !important;
-        width: auto !important; min-width: 150px !important; max-width: 220px !important; margin: 0 !important;
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Disesuaikan dengan kapsul yang lebih pendek */
+        left: 15px !important;
+        width: auto !important; 
+        min-width: 140px !important; /* Diperkecil */
+        max-width: 180px !important; /* Diperkecil */
+        margin: 0 !important;
         
         background: rgba(30, 41, 59, 0.65) !important;
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
-        border-radius: 20px !important; padding: 12px 16px !important; z-index: 5001 !important;
+        border-radius: 18px !important; /* Sedikit lebih membulat */
+        padding: 10px 14px !important; /* Padding diperkecil */
+        z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
     }
     
-    .storage-widget .storage-label { font-size: 0.75rem !important; margin-bottom: 5px !important; display: flex !important; align-items: center !important; gap: 6px !important; font-weight: 600 !important; color: white !important; }
-    .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.15) !important; }
-    .storage-widget .storage-text { font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
+    .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
+    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; } /* Dipertipis */
+    .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
     /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
     .sidebar-menu { 
@@ -936,15 +945,22 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; }
     
     .hide-mobile { display: none !important; }
+    
     /* ============================================================== */
-
+    /* TOMBOL PLUS (NEW) - DIPERKECIL & COMPACT (NICEGRAM STYLE)      */
+    /* ============================================================== */
     .new-btn-wrapper { 
         position: fixed !important; 
-        bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
-        right: 15px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Disamakan tingginya dengan widget storage */
+        right: 15px !important; 
+        width: 50px !important; /* Diperkecil dari 60px */
+        height: 50px !important; /* Diperkecil dari 60px */
+        z-index: 5001 !important; margin: 0 !important; 
     }
     .new-btn { 
-        width: 60px !important; height: 60px !important; border-radius: 50% !important; 
+        width: 50px !important; /* Diperkecil */
+        height: 50px !important; /* Diperkecil */
+        border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         background: rgba(30, 41, 59, 0.65) !important; 
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
@@ -965,10 +981,10 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         transition: transform 0.1s ease, box-shadow 0.1s ease !important;
     }
     .new-btn-text { display: none !important; }
-    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
+    .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } /* Diperkecil dari 1.5rem */
     
     .dropdown-content.extended-menu { 
-        top: auto !important; bottom: 75px !important; right: 0 !important; left: auto !important; transform: none !important; 
+        top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
         background: rgba(30, 41, 59, 0.85) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
@@ -1025,7 +1041,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
-    .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
+    
+    /* WIDGET DI LAYAR SANGAT KECIL JUGA DIPERKECIL */
+    .storage-widget { min-width: 120px !important; max-width: 160px !important; padding: 8px 10px !important; left: 10px !important; }
     
     /* MENGHILANGKAN WIDTH 95VW AGAR KAPSUL TETAP PENDEK DAN TIDAK MELEBAR KE TEPI LAYAR */
     .sidebar-menu { width: max-content !important; max-width: 96vw !important; padding: 5px 6px !important; justify-content: center !important; }
