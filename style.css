@@ -82,11 +82,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dashboard-layout { height: 100dvh; padding: 15px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 55px; flex-shrink: 0; }
 
-/* UPDATE: LIQUID GLASS LOGO & TYPOGRAPHY */
+/* UPDATE: LIQUID GLASS LOGO & TYPOGRAPHY - DIPERBESAR DI DESKTOP */
 .brand-area { 
-    display: flex; align-items: center; gap: 12px; cursor: pointer; 
+    display: flex; align-items: center; gap: 14px; cursor: pointer; 
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    padding: 5px 12px 5px 5px; border-radius: 12px; 
+    padding: 5px 15px 5px 5px; border-radius: 14px; 
 }
 .brand-area:hover { 
     background: rgba(255, 255, 255, 0.08); 
@@ -94,13 +94,15 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform: scale(1.02); 
 }
 .logo-img { 
-    height: 48px; 
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2)); 
+    height: 54px; /* Logo diperbesar di laptop/komputer */
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); 
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    display: block; /* Menampilkan logo di layar besar */
 }
 .brand-text { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
-    font-size: 1.35rem; font-weight: 700; color: #ffffff; 
+    font-size: 1.55rem; /* Teks Cloud Storage diperbesar di laptop/komputer */
+    font-weight: 700; color: #ffffff; 
     letter-spacing: -0.5px; 
     text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
     user-select: none; 
@@ -809,6 +811,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     
     /* Penyesuaian Tablet untuk Halaman Pengelola Penyimpanan */
     .storage-manager-card { padding: 35px 30px !important; }
+    
+    /* MENYEMBUNYIKAN LOGO DI TABLET */
+    .top-nav .logo-img { display: none !important; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
@@ -826,9 +831,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     
     /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
     .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
-    .logo-img { height: 38px; }
-    .brand-text { font-size: 1.15rem; letter-spacing: -0.3px; }
-    .brand-area { gap: 8px; padding: 4px; }
+    
+    /* MENYEMBUNYIKAN LOGO DI MOBILE */
+    .top-nav .logo-img { display: none !important; }
+    
+    .brand-text { font-size: 1.3rem; letter-spacing: -0.3px; }
+    .brand-area { gap: 0; padding: 4px 8px; }
     
     .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
     
@@ -996,8 +1004,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .sidebar-menu .nav-item { width: 55px !important; }
     
     /* Penyesuaian Responsif Logo & Brand Text ekstra kecil */
-    .logo-img { height: 34px !important; }
-    .brand-text { font-size: 1.05rem !important; }
+    /* MENYEMBUNYIKAN LOGO DI MOBILE SANGAT KECIL JUGA */
+    .top-nav .logo-img { display: none !important; }
+    .brand-text { font-size: 1.2rem !important; }
     
     /* Penyesuaian Ruang Penyimpanan di layar super kecil */
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
