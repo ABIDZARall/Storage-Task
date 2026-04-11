@@ -182,65 +182,91 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     width: 100%; 
 }
 
-.sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
+/* ============================================================ */
+/* MENGEMBALIKAN DESAIN SIDEBAR MENU SEBELUMNYA TAPI DENGAN 
+/* SENTUHAN LIQUID GLASS APPLE X NICEGRAM                       */
+/* ============================================================ */
+.sidebar-left { 
+    width: 240px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    border-right: 1px solid rgba(255,255,255,0.05); 
+    padding-right: 15px; 
+    flex-shrink: 0; 
+    overflow-y: auto; 
+}
+
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 
-/* UPDATE: PERBAIKAN BUG TABRAKAN & JEJAK PADA TOMBOL + BARU DESKTOP */
+/* TOMBOL BARU MENGGUNAKAN DESAIN SEBELUMNYA TAPI LEBIH PREMIUM */
 .new-btn { 
-    width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
-    padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    width: 100%; background: rgba(255, 255, 255, 0.05); color: #ffffff; justify-content: flex-start; 
+    padding-left: 20px; gap: 12px; height: 48px; border-radius: 12px; font-size: 1.05rem; font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1); 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
     outline: none !important; 
     -webkit-tap-highlight-color: transparent;
-    border: none;
     -webkit-backface-visibility: hidden; 
     backface-visibility: hidden;
     transform: translateZ(0); 
 }
 .new-btn:hover { 
-    background: #f8fafc;
-    box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2); 
 }
 .new-btn:active { 
     transform: scale(0.96) translateZ(0) !important; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2), inset 0 2px 4px rgba(0,0,0,0.1); 
 }
 .new-btn:focus { outline: none !important; }
 
-.dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.dropdown-content { position: absolute; top: 55px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
 
-/* ANIMASI INDIKATOR (BISA BERGESER KESAMPING/ATAS BAWAH) */
+/* SIDEBAR MENU UTAMA - DIKEMBALIKAN KE GAYA LIST KE BAWAH DENGAN INDIKATOR */
+.sidebar-menu { 
+    flex: 1; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    position: relative; 
+}
+
+/* ANIMASI INDIKATOR (BISA BERGESER ATAS BAWAH DI DESKTOP) */
 .nav-indicator {
     position: absolute;
     left: 0; top: 0;
-    width: 0; height: 40px; 
-    border-radius: 8px;
-    background: rgba(45, 212, 191, 0.15); 
+    width: 0; height: 44px; 
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.1);
     transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     z-index: 0;
     pointer-events: none;
 }
 
 .nav-item { 
-    display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; 
-    border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; 
-    font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; 
+    display: flex; align-items: center; gap: 15px; padding: 0 15px; height: 44px; 
+    border-radius: 10px; color: rgba(255, 255, 255, 0.6); text-decoration: none; 
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s; 
     position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
 }
-.nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.nav-item:hover { color: white; background: rgba(255,255,255,0.03); }
+.nav-item.active { background: transparent !important; color: #ffffff; font-weight: 600; border: none !important; box-shadow: none !important; }
+.nav-item i { font-size: 1.1rem; width: 24px; text-align: center; }
 
-/* HAPUS BACKGROUND DARI ACTIVE ITEM, BIARKAN INDIKATOR YANG MENGISI */
-.nav-item.active { background: transparent !important; color: var(--accent); font-weight: 700; border: none !important; box-shadow: none !important; }
-
-.storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
-.storage-widget:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
-.storage-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: white; }
-.progress-track { width: 100%; height: 5px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 8px 0; overflow: hidden; }
-.progress-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; border-radius: 10px; }
-.storage-text { font-size: 0.75rem; text-align: right; color: rgba(255, 255, 255, 0.6); }
+/* STORAGE WIDGET (Penyimpanan) */
+.storage-widget { padding: 15px; background: rgba(0,0,0,0.25); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+.storage-widget:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+.storage-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; color: white; display: flex; align-items: center; gap: 8px;}
+.progress-track { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 10px 0; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);}
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #0d9488); transition: 0.5s; border-radius: 10px; }
+.storage-text { font-size: 0.8rem; text-align: right; color: rgba(255, 255, 255, 0.7); font-family: "SF Pro Text", monospace; font-weight: 500; }
 
 /* MAIN CONTENT AREA */
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -840,7 +866,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     
     .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
     
-    .sidebar-left { display: contents; }
+    /* Sidebar kembali normal menjadi vertikal, disembunyikan jika tidak dipanggil */
+    .sidebar-left { 
+        display: none; /* Sementara disembunyikan karena kembali ke desain list vertikal Desktop, 
+                          kecuali ingin Anda munculkan sebagai drawer menu off-canvas. 
+                          Tetapi saya akan biarkan struktur Nicegram Bottom Nav di mobile untuk navigasi utamanya */
+    }
     
     .main-content-area { order: 2; height: 100%; padding-bottom: 0 !important; }
 
@@ -871,6 +902,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.15) !important; }
     .storage-widget .storage-text { font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
+    /* TETAP MEMPERTAHANKAN MENU BOTTOM NAV GAYA NICEGRAM UNTUK MOBILE */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important;
