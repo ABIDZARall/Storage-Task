@@ -817,7 +817,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
-/* (Pembaruan Utama Desain Bottom Nav Minimalis Premium & Squircle Highlight ala Nicegram) */
+/* (Pembaruan Utama: Desain Bottom Nav Minimalis Kapsul Nicegram yang PRESISI dengan Teks) */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
@@ -851,7 +851,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     
     .storage-widget { 
         position: fixed !important;
-        bottom: calc(100px + env(safe-area-inset-bottom)) !important; left: 15px !important;
+        bottom: calc(90px + env(safe-area-inset-bottom)) !important; left: 15px !important;
         width: auto !important; min-width: 150px !important; max-width: 220px !important; margin: 0 !important;
         
         background: rgba(30, 41, 59, 0.65) !important;
@@ -866,13 +866,15 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.15) !important; }
     .storage-widget .storage-text { font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
-    /* === DESAIN SIDEBAR MENU ALA NICEGRAM (MINIMALIS & CAPSULE) === */
+    /* === UPDATE BARU: DESAIN SIDEBAR MENU ALA NICEGRAM (PRESISI & DINAMIS) === */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(15px + env(safe-area-inset-bottom)) !important;
         left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; min-width: 280px !important; max-width: 90vw !important;
-        height: auto !important; padding: 6px 12px !important;
+        width: max-content !important; /* Membuat pil otomatis mengecil memeluk item di dalamnya */
+        max-width: 95vw !important; /* Mencegah tumpah ke ujung layar jika item terlalu banyak */
+        height: auto !important; 
+        padding: 5px !important; /* Ruang lebih padat/rapat seperti nicegram */
         border-radius: 100px !important; /* Bentuk Capsule Premium */
         
         background: rgba(30, 41, 59, 0.65) !important; 
@@ -881,41 +883,52 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3) !important;
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: space-around !important; align-items: center !important; gap: 4px !important;
+        justify-content: center !important; align-items: center !important; gap: 4px !important;
     }
 
+    /* MATIKAN floating animation bawaan di mobile agar kita bisa menggunakan CSS background murni yang 100% responsif membungkus huruf per huruf teksnya */
     .nav-indicator {
-        height: 54px !important;
-        border-radius: 20px !important; /* Squircle (Kotak membulat) highlight */
-        background: rgba(255, 255, 255, 0.12) !important; /* Efek highlight halus Nicegram */
+        display: none !important;
+    }
+
+    /* Setup KOTAK menu secara individual (Lebih tipis dan padat) */
+    .nav-item { 
+        flex-direction: column !important; gap: 3px !important; /* Jarak icon & teks didekatkan */
+        width: auto !important; /* LEBAR DINAMIS: otomatis mengikuti panjang teks di dalamnya! */
+        min-width: 50px !important; /* Jangan biarkan terlalu gepeng kalau teksnya pendek */
+        height: 48px !important; /* Tinggi dibuat lebih ceper mirip nicegram */
+        padding: 4px 12px !important; /* Jarak padding kiri & kanan sebagai buffer teks dengan pinggiran kotak highlight */
+        border-radius: 18px !important; /* Bentuk Squircle membulat modern */
+        justify-content: center !important; 
+        text-align: center !important; 
+        color: rgba(255,255,255,0.55) !important;
+        background: transparent !important;
+        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
+    }
+    .nav-item:hover { color: rgba(255,255,255,0.9) !important; background: rgba(255,255,255,0.05) !important; }
+    
+    /* KOTAK (SQUIRCLE) MENU AKTIF YANG PRESISI MENBUNGKUS TEKS */
+    .nav-item.active { 
+        color: white !important; 
+        background: rgba(255, 255, 255, 0.12) !important; /* Highlight squircle liquid glass ala Nicegram */
         border: 1px solid rgba(255,255,255,0.08) !important;
         border-top: 1px solid rgba(255,255,255,0.15) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.15) !important;
     }
-
-    .nav-item { 
-        flex-direction: column !important; gap: 4px !important; 
-        width: 56px !important; height: 54px !important; 
-        padding: 0 !important; border-radius: 20px !important; justify-content: center !important; 
-        text-align: center !important; color: rgba(255,255,255,0.55) !important;
-        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
-    }
-    .nav-item:hover { color: rgba(255,255,255,0.9) !important; background: transparent !important; }
-    
-    /* Warna aktif teks & ikon dibuat seragam dan mencolok */
-    .nav-item.active { color: white !important; background: transparent !important; border: none !important; box-shadow: none !important; }
-    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 10px rgba(45, 212, 191, 0.4); transform: scale(1.1) translateY(-1px) !important; }
+    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 10px rgba(45, 212, 191, 0.4); transform: scale(1.05) !important; }
     .nav-item.active span { color: white !important; font-weight: 700 !important; }
     
-    .nav-item i { font-size: 1.35rem !important; transition: transform 0.3s ease, color 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
-    .nav-item span { font-size: 0.6rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; }
+    .nav-item i { font-size: 1.25rem !important; transition: transform 0.3s ease, color 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
+    
+    /* Penting: Kunci lebar teks agar tidak tumpah/turun ke baris baru walau layar kecil */
+    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; }
     
     .hide-mobile { display: none !important; }
     /* ============================================================== */
 
     .new-btn-wrapper { 
         position: fixed !important; 
-        bottom: calc(100px + env(safe-area-inset-bottom)) !important; 
+        bottom: calc(90px + env(safe-area-inset-bottom)) !important; 
         right: 15px !important; width: 60px !important; height: 60px !important; z-index: 5001 !important; margin: 0 !important; 
     }
     .new-btn { 
@@ -1001,8 +1014,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
-    .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
-    .sidebar-menu .nav-item { width: 52px !important; } /* Sedikit lebih kecil agar tidak terlalu sempit */
+    
+    /* Mengakali teks panjang seperti "Drive Saya" agar muat tanpa tabrakan */
+    .sidebar-menu { width: 95vw !important; padding: 4px !important; gap: 2px !important; justify-content: space-between !important; }
+    .sidebar-menu .nav-item { padding: 4px 8px !important; min-width: 45px !important; } 
+    .nav-item span { font-size: 0.55rem !important; } 
+    .nav-item i { font-size: 1.15rem !important; }
     
     /* MENYEMBUNYIKAN LOGO DI MOBILE SANGAT KECIL JUGA */
     .top-nav .logo-img { display: none !important; }
