@@ -473,33 +473,6 @@
             window.addEventListener('resize', updateIndicator);
             setTimeout(updateIndicator, 100);
             setTimeout(updateIndicator, 500); // Ekstra delay untuk memastikan font termuat
-            
-            // ==========================================
-            // ANIMASI HIDE WIDGET & FAB SAAT SCROLL BAWAH
-            // ==========================================
-            const scroller = document.querySelector('.main-content-area');
-            const fab = document.querySelector('.new-btn-wrapper');
-            const widget = document.querySelector('.storage-widget');
-            let lastScrollTop = 0;
-
-            if (scroller) {
-                scroller.addEventListener('scroll', () => {
-                    if (window.innerWidth > 768) return; // Hanya eksekusi di Mobile/Tablet
-                    
-                    let scrollTop = scroller.scrollTop;
-                    // Deteksi arah scroll (Threshold 20px agar tidak terlalu sensitif)
-                    if (scrollTop > lastScrollTop && scrollTop > 20) {
-                        // Scroll Ke Bawah -> Sembunyikan
-                        if(fab) fab.classList.add('hide-on-scroll');
-                        if(widget) widget.classList.add('hide-on-scroll');
-                    } else {
-                        // Scroll Ke Atas -> Tampilkan
-                        if(fab) fab.classList.remove('hide-on-scroll');
-                        if(widget) widget.classList.remove('hide-on-scroll');
-                    }
-                    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
-                });
-            }
         });
     </script>
 </body>
