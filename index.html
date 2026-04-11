@@ -430,5 +430,50 @@
     </div>
 
     <script src="app.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const indicator = document.querySelector('.nav-indicator');
+            const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
+
+            function updateIndicator() {
+                // Hanya jalankan di tampilan mobile/tablet
+                if(window.innerWidth > 768) {
+                    if(indicator) indicator.style.display = 'none';
+                    return;
+                }
+                
+                const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
+                if (activeItem && indicator) {
+                    indicator.style.display = 'block';
+                    // Menyesuaikan lebar dan posisi secara dinamis mengikuti ikon yang aktif
+                    indicator.style.width = `${activeItem.offsetWidth}px`;
+                    indicator.style.left = `${activeItem.offsetLeft}px`;
+                }
+            }
+
+            // Memantau perubahan class (saat menu diklik oleh app.js)
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        updateIndicator();
+                    }
+                });
+            });
+
+            navItems.forEach(item => {
+                observer.observe(item, { attributes: true });
+                // Fallback klik listener
+                item.addEventListener('click', () => {
+                    setTimeout(updateIndicator, 10);
+                });
+            });
+
+            // Update saat layar di-resize atau baru dimuat
+            window.addEventListener('resize', updateIndicator);
+            setTimeout(updateIndicator, 100);
+            setTimeout(updateIndicator, 500); // Ekstra delay untuk memastikan font termuat
+        });
+    </script>
 </body>
 </html>
