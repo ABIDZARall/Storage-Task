@@ -148,13 +148,36 @@
                 <nav class="sidebar-menu">
                     <div class="nav-indicator"></div>
                     
-                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> <span>Beranda</span></a>
-                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item"><i class="fa-brands fa-google-drive"></i> <span>Drive Saya</span></a>
-                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item hide-mobile"><i class="fa-solid fa-computer"></i> <span>Komputer</span></a>
-                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item hide-mobile"><i class="fa-solid fa-user-group"></i> <span>Dibagikan</span></a>
-                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item"><i class="fa-solid fa-clock"></i> <span>Terbaru</span></a>
-                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item"><i class="fa-solid fa-star"></i> <span>Berbintang</span></a>
-                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> <span>Sampah</span></a>
+                    <a onclick="handleMenuClick(this, 'root')" class="nav-item active">
+                        <div class="nav-icon-wrapper"><i class="fa-solid fa-house"></i></div>
+                        <span>Beranda</span>
+                    </a>
+                    <a id="navDrive" onclick="handleMenuClick(this, 'root')" class="nav-item">
+                        <div class="nav-icon-wrapper"><i class="fa-brands fa-google-drive"></i></div>
+                        <span>Drive Saya</span>
+                    </a>
+                    <a onclick="handleMenuClick(this, 'computer')" class="nav-item hide-mobile">
+                        <div class="nav-icon-wrapper"><i class="fa-solid fa-computer"></i></div>
+                        <span>Komputer</span>
+                    </a>
+                    <a onclick="handleMenuClick(this, 'shared')" class="nav-item hide-mobile">
+                        <div class="nav-icon-wrapper"><i class="fa-solid fa-user-group"></i></div>
+                        <span>Dibagikan</span>
+                    </a>
+                    <a onclick="handleMenuClick(this, 'recent')" class="nav-item">
+                        <div class="nav-icon-wrapper">
+                            <i class="fa-solid fa-clock"></i>
+                            <span class="nice-badge">43</span> </div>
+                        <span>Terbaru</span>
+                    </a>
+                    <a onclick="handleMenuClick(this, 'starred')" class="nav-item">
+                        <div class="nav-icon-wrapper"><i class="fa-solid fa-star"></i></div>
+                        <span>Berbintang</span>
+                    </a>
+                    <a onclick="handleMenuClick(this, 'trash')" class="nav-item">
+                        <div class="nav-icon-wrapper"><i class="fa-solid fa-trash-can"></i></div>
+                        <span>Sampah</span>
+                    </a>
                 </nav>
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;" title="Lihat detail penyimpanan">
