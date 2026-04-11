@@ -82,6 +82,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .dashboard-layout { height: 100dvh; padding: 15px; display: flex; flex-direction: column; }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 55px; flex-shrink: 0; }
 
+/* UPDATE: LIQUID GLASS LOGO & TYPOGRAPHY - DIPERBESAR DI DESKTOP */
 .brand-area { 
     display: flex; align-items: center; gap: 14px; cursor: pointer; 
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
@@ -93,103 +94,147 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform: scale(1.02); 
 }
 .logo-img { 
-    height: 54px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); 
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: block;
+    height: 54px; /* Logo diperbesar di laptop/komputer */
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    display: block; /* Menampilkan logo di layar besar */
 }
 .brand-text { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
-    font-size: 1.55rem; font-weight: 700; color: #ffffff; 
-    letter-spacing: -0.5px; text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
+    font-size: 1.55rem; /* Teks Cloud Storage diperbesar di laptop/komputer */
+    font-weight: 700; color: #ffffff; 
+    letter-spacing: -0.5px; 
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
     user-select: none; 
 }
 
 .profile-area { display: flex; align-items: center; gap: 15px; }
 
+/* DESAIN AVATAR PROFIL LIQUID GLASS APPLE ORIGINAL */
 .avatar { 
     width: 42px; height: 42px; border-radius: 50%; object-fit: cover; 
-    border: 2px solid rgba(255, 255, 255, 0.15); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.15); 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
 }
-.avatar:hover { border-color: rgba(255, 255, 255, 0.4); transform: scale(1.05); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); }
+.avatar:hover { 
+    border-color: rgba(255, 255, 255, 0.4); 
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
 
+/* UPDATE: PERBAIKAN BUG GHOSTING/JEJAK PADA TOMBOL LOGOUT KACA */
 .logout-btn { 
     padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-    color: #ef4444; border-radius: 50%; 
-    border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    color: #ef4444; 
+    border-radius: 50%; 
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
-    font-size: 1.1rem; outline: none !important; -webkit-tap-highlight-color: transparent; -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); 
+    font-size: 1.1rem;
+    outline: none !important; 
+    -webkit-tap-highlight-color: transparent;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
 .logout-btn:hover { 
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border-color: rgba(239, 68, 68, 0.4); color: #f87171;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
-.logout-btn:active { transform: scale(0.92) translateZ(0) !important; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.logout-btn:active {
+    transform: scale(0.92) translateZ(0) !important; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.logout-btn:focus { outline: none !important; }
 
 /* ============================================================ */
 /* APPLE ORIGINAL LIQUID GLASS EFFECT UPDATE (MAIN PANEL)       */
 /* ============================================================ */
 .main-glass-panel { 
-    flex: 1; background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
-    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); 
-    border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.4); border-left: 1px solid rgba(255, 255, 255, 0.3); 
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.4), inset 0 -1px 2px rgba(0, 0, 0, 0.1);
-    padding: 20px; display: flex; gap: 20px; overflow: hidden; max-width: 2560px; margin: 0 auto; width: 100%; 
+    flex: 1; 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
+    backdrop-filter: blur(40px) saturate(200%); 
+    -webkit-backdrop-filter: blur(40px) saturate(200%); 
+    border-radius: 32px; 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-top: 1px solid rgba(255, 255, 255, 0.4); 
+    border-left: 1px solid rgba(255, 255, 255, 0.3); 
+    box-shadow: 
+        0 30px 60px -12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.4),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    
+    padding: 20px; 
+    display: flex; 
+    gap: 20px; 
+    overflow: hidden; 
+    max-width: 2560px; 
+    margin: 0 auto; 
+    width: 100%; 
 }
 
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 
+/* UPDATE: PERBAIKAN BUG TABRAKAN & JEJAK PADA TOMBOL + BARU DESKTOP */
 .new-btn { 
     width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
     padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
-    outline: none !important; -webkit-tap-highlight-color: transparent; border: none; -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    outline: none !important; 
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    -webkit-backface-visibility: hidden; 
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
-.new-btn:hover { background: #f8fafc; box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); }
-.new-btn:active { transform: scale(0.96) translateZ(0) !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.new-btn:hover { 
+    background: #f8fafc;
+    box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
+}
+.new-btn:active { 
+    transform: scale(0.96) translateZ(0) !important; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.new-btn:focus { outline: none !important; }
 
 .dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
 
-/* Wrapper untuk Icon Navigasi + Badge Notifikasi */
-.nav-icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
-
-/* Badge Angka/Notifikasi ala Nicegram & iOS */
-.nice-badge {
-    position: absolute; top: -6px; right: -8px;
-    background: #3b82f6; color: white;
-    font-size: 0.65rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700;
-    min-width: 18px; height: 18px; padding: 0 5px;
-    border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    border: 2px solid #1e293b; /* Border warna gelap agar kontras dengan ikon */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
-    animation: badgePop 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-@keyframes badgePop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-
-/* ANIMASI INDIKATOR APPLE GLASS (DESKTOP) */
+/* ANIMASI INDIKATOR (BISA BERGESER KESAMPING/ATAS BAWAH) */
 .nav-indicator {
-    position: absolute; left: 0; top: 0;
-    width: 100%; height: 44px; border-radius: 12px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.1));
-    border: 1px solid rgba(96, 165, 250, 0.3); border-top: 1px solid rgba(147, 197, 253, 0.5);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2), inset 0 2px 4px rgba(255,255,255,0.3);
-    backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); z-index: 0; pointer-events: none;
+    position: absolute;
+    left: 0; top: 0;
+    width: 0; height: 40px; 
+    border-radius: 8px;
+    background: rgba(45, 212, 191, 0.15); 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 0;
+    pointer-events: none;
 }
 
 .nav-item { 
     display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 44px; 
-    border-radius: 12px; color: rgba(255, 255, 255, 0.65); text-decoration: none; 
-    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.3s ease; 
+    border-radius: 10px; color: rgba(255, 255, 255, 0.7); text-decoration: none; 
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s ease; 
     position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
 }
-.nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
-.nav-item.active { background: transparent !important; color: white !important; font-weight: 700; border: none !important; box-shadow: none !important; }
-.nav-item i { width: 20px; text-align: center; }
+.nav-item i { font-size: 1.1rem; width: 20px; text-align: center; }
+.nav-item:hover { background: rgba(255,255,255,0.08); color: white; transform: translateX(2px); }
+
+/* HAPUS BACKGROUND DARI ACTIVE ITEM, BIARKAN INDIKATOR YANG MENGISI */
+.nav-item.active { background: transparent !important; color: var(--accent); font-weight: 700; border: none !important; box-shadow: none !important; }
 
 .storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
 .storage-widget:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
@@ -205,15 +250,21 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .search-bar-pill { 
     width: 100%; max-width: 600px; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
-    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
     border-radius: 40px; height: 48px; padding: 0 20px; display: flex; align-items: center; 
-    border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
     transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); 
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0); 
 }
 .search-bar-pill:focus-within, .search-bar-pill:hover { 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); border-color: rgba(255, 255, 255, 0.5); 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
+    border-color: rgba(255, 255, 255, 0.5); 
     box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
@@ -223,9 +274,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
 .back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+
 .back-btn { 
-    display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 50px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px); 
+    display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; 
+    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 50px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; 
+    cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px); 
     max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
@@ -235,69 +289,173 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* GRID ITEM STYLING (DIKUNCI AGAR PERFECT SQUARE ANTI GEPENG)  */
 /* ============================================================ */
 .file-grid-area { 
-    flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
-    grid-auto-rows: max-content; align-content: start; gap: 20px; padding: 10px 15px; 
+    flex: 1; overflow-y: auto; display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    grid-auto-rows: max-content; 
+    align-content: start; gap: 20px; padding: 10px 15px; 
 }
-.item-card { 
-    background: rgba(255, 255, 255, 0.04); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-    cursor: pointer; position: relative; transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); padding: 12px; box-sizing: border-box; width: 100%;
-    aspect-ratio: 1 / 1 !important; overflow: hidden; 
-}
-.item-card:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); }
 
-.mac-folder-container, .thumb-box { width: 100%; height: calc(100% - 24px); flex: none !important; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; position: relative; }
+.item-card { 
+    background: rgba(255, 255, 255, 0.04); 
+    border-radius: 12px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
+    cursor: pointer; position: relative; transition: all 0.3s ease; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    padding: 12px; 
+    box-sizing: border-box; width: 100%;
+    aspect-ratio: 1 / 1 !important; 
+    overflow: hidden; 
+}
+.item-card:hover { 
+    background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); 
+    border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
+}
+
+.mac-folder-container, .thumb-box {
+    width: 100%;
+    height: calc(100% - 24px); 
+    flex: none !important; 
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; position: relative;
+}
 .mac-folder-container { pointer-events: none; overflow: visible; }
 .thumb-box { border-radius: 8px; background: rgba(0,0,0,0.2); overflow: hidden; }
 
-.item-name { font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f1f5f9; flex: none; height: 16px; line-height: 16px; margin-top: auto; }
+.item-name { 
+    font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    color: #f1f5f9; flex: none; 
+    height: 16px; line-height: 16px; margin-top: auto; 
+}
 
-/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON */
+/* ============================================================ */
+/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON                      */
+/* ============================================================ */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
-.mac-folder-icon { position: relative; width: 76px; height: 58px; margin: auto; transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25)); }
+
+.mac-folder-icon {
+    position: relative; width: 76px; height: 58px; margin: auto;
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+}
 .item-card:hover .mac-folder-icon { transform: scale(1.05) translateY(-3px); }
-.mac-folder-back { position: absolute; bottom: 0; left: 0; width: 100%; height: 82%; background: linear-gradient(180deg, #007aff, #0056d6); border-radius: 0 8px 8px 8px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2); }
-.mac-folder-back::before { content: ''; position: absolute; top: -10px; left: 0; width: 32px; height: 12px; background: linear-gradient(180deg, #007aff, #006ae0); border-radius: 8px 8px 0 0; }
-.mac-folder-back::after { content: ''; position: absolute; top: -6px; left: 32px; width: 10px; height: 6px; background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 #006ae0; }
-.mac-folder-front { position: absolute; bottom: 0; left: 0; width: 100%; height: 74%; background: linear-gradient(180deg, #3aa0ff, #0062ff); border-radius: 8px; border-top: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.3); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom; }
-.mac-folder-front::after { content: ''; width: 22px; height: 4px; background: rgba(255, 255, 255, 0.9); border-radius: 4px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+
+.mac-folder-back {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 82%;
+    background: linear-gradient(180deg, #007aff, #0056d6);
+    border-radius: 0 8px 8px 8px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+.mac-folder-back::before {
+    content: ''; position: absolute; top: -10px; left: 0; width: 32px; height: 12px;
+    background: linear-gradient(180deg, #007aff, #006ae0); border-radius: 8px 8px 0 0;
+}
+.mac-folder-back::after {
+    content: ''; position: absolute; top: -6px; left: 32px; width: 10px; height: 6px;
+    background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 #006ae0;
+}
+
+.mac-folder-front {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 74%;
+    background: linear-gradient(180deg, #3aa0ff, #0062ff); border-radius: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom;
+}
+
+.mac-folder-front::after {
+    content: ''; width: 22px; height: 4px; background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
 .item-card:hover .mac-folder-front { transform: skewX(-3deg) scaleY(0.96); filter: brightness(1.1); }
 
-/* FILE THUMBNAILS (WARNA & EXTS) */
+/* ============================================================ */
+/* FILE THUMBNAILS (WARNA & EXTS)                               */
+/* ============================================================ */
 .thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
 .huge-icon { font-size: 3rem !important; margin: 0 !important; }
-.icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: var(--clr-purple); }
-.bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); } .bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); } .bg-green { background: rgba(52, 168, 83, 0.2); border: 1px solid rgba(52, 168, 83, 0.2); } .bg-yellow { background: rgba(251, 188, 4, 0.2); border: 1px solid rgba(251, 188, 4, 0.3); } .bg-purple { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); } .bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); } .bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
 
-/* MODALS & OVERLAYS (LOADING, DEFAULTS) */
+/* Warna Ikon & Background Extensions */
+.icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: var(--clr-purple); }
+.bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
+.bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); }
+.bg-green { background: rgba(52, 168, 83, 0.2); border: 1px solid rgba(52, 168, 83, 0.2); }
+.bg-yellow { background: rgba(251, 188, 4, 0.2); border: 1px solid rgba(251, 188, 4, 0.3); }
+.bg-purple { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); }
+.bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); }
+.bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
+
+/* ============================================================ */
+/* MODALS & OVERLAYS (LOADING, DEFAULTS)                        */
+/* ============================================================ */
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
 .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
 
-/* MODAL BOXES - LIQUID GLASS APPLE ORIGINAL */
+/* ============================================================ */
+/* UPDATE: Responsif Modal Box (Folder Baru & Upload) - LIQUID GLASS APPLE ORIGINAL */
+/* ============================================================ */
 .modal-box { 
     width: 100%; max-width: 380px; margin: 0 15px; padding: 25px; 
-    background: rgba(30, 41, 59, 0.55) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important; border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 24px !important; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    
+    /* LIQUID GLASS EFEK MURNI */
+    background: rgba(30, 41, 59, 0.55) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 24px !important; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; 
 }
+
 .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
 .modal-header h3 { font-size: 1.15rem; color: white; font-weight: 700; letter-spacing: -0.3px; }
 .close-icon { cursor: pointer; color: #cbd5e1; transition: 0.3s; padding: 5px; border-radius: 50%; } 
 .close-icon:hover { color: white; background: rgba(255,255,255,0.1); }
-.modal-box .pill-input { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); height: 48px; border-radius: 12px; }
-.modal-box .pill-input:focus-within { border-color: var(--accent); background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(45, 212, 191, 0.15); }
+
+/* Penyesuaian Input Kaca (Untuk Modal Folder) */
+.modal-box .pill-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    height: 48px; border-radius: 12px;
+}
+.modal-box .pill-input:focus-within {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(45, 212, 191, 0.15);
+}
+
 .modal-actions-grid { display: flex; gap: 15px; margin-top: 25px; width: 100%; }
 .modal-actions-grid button { flex: 1; height: 44px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
 .modal-actions .btn-pill { height: 44px; border-radius: 12px; margin-top: 15px; font-weight: 600; font-size: 0.95rem; }
-.secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 1px 2px rgba(255,255,255,0.1); }
+
+.secondary { 
+    background: rgba(255,255,255,0.1); color: white; 
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+}
 .secondary:hover { background: rgba(255,255,255,0.15); }
 .full-width { width: 100%; }
 
-.drag-drop-area { border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 35px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.03); box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); }
-.drag-drop-area:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.4); }
+/* Penyesuaian Drag & Drop Area Apple Glass (Untuk Modal Upload) */
+.drag-drop-area { 
+    border: 2px dashed rgba(255, 255, 255, 0.2); 
+    border-radius: 16px; 
+    padding: 35px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; 
+    background: rgba(255, 255, 255, 0.03); 
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+}
+.drag-drop-area:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.4);
+}
 .drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.15); }
 .animate-icon { font-size: 3rem; color: #94a3b8; margin-bottom: 15px; transition: 0.3s; }
 .drag-drop-area:hover .animate-icon { color: white; }
@@ -316,13 +474,22 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @keyframes modalPopSmooth { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 .modal-box.animate-open { animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-/* MODAL PENYIMPANAN (POPUP) - LIQUID GLASS APPLE ORIGINAL */
+/* ============================================================ */
+/* MODAL PENYIMPANAN (POPUP) - LIQUID GLASS APPLE ORIGINAL      */
+/* ============================================================ */
 .storage-detail-box-wide { 
     width: 100%; max-width: 650px; padding: 30px; 
-    background: rgba(30, 41, 59, 0.45) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important; border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 28px !important; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; display: flex; flex-direction: column; 
+    background: rgba(30, 41, 59, 0.45) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 28px !important; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    display: flex; flex-direction: column; 
 }
+
 .storage-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 .storage-modal-header h3 { font-size: 1.1rem; font-weight: 600; color: white; letter-spacing: 0.5px; }
 .close-icon-simple { color: #e2e8f0; cursor: pointer; font-size: 1rem; transition: 0.2s; padding: 5px; border-radius: 50%; }
@@ -335,7 +502,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .storage-sub-hero { color: #cbd5e1; font-size: 0.95rem; }
 .multi-color-progress { width: 100%; height: 12px; background: transparent; border-radius: 10px; overflow: hidden; margin-top: 10px; display: flex; }
 .bar-segment { height: 100%; transition: all 0.2s ease; cursor: pointer; position: relative; border-right: 4px solid rgba(0,0,0,0.1); box-sizing: border-box; }
-.bar-free { background-color: rgba(255,255,255,0.1); } .bar-segment:last-child { border-right: none; } .bar-segment:hover { filter: brightness(1.2); }
+.bar-free { background-color: rgba(255,255,255,0.1); } 
+.bar-segment:last-child { border-right: none; }
+.bar-segment:hover { filter: brightness(1.2); }
 .bar-images { background-color: var(--clr-blue); } .bar-videos { background-color: var(--clr-yellow); } .bar-docs { background-color: var(--clr-red); } .bar-others { background-color: var(--clr-grey); }
 
 .custom-tooltip { position: fixed; z-index: 20000; background: #ffffff; color: #1e293b; padding: 16px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); width: 220px; pointer-events: none; font-family: 'Inter', sans-serif; transform: translate(-50%, -120%); transition: opacity 0.15s, transform 0.1s; text-align: left; }
@@ -356,78 +525,190 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .secondary-dark { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.05); } .secondary-dark:hover { background: rgba(255,255,255,0.2); }
 .primary-dark { background: rgba(66, 133, 244, 0.2); color: #93c5fd; border: 1px solid rgba(66,133,244,0.1); } .primary-dark:hover { background: rgba(66, 133, 244, 0.35); }
 
-/* STORAGE FULL PAGE - LIQUID GLASS APPLE ORIGINAL */
+/* ============================================================ */
+/* NEW UPDATE: STORAGE FULL PAGE - LIQUID GLASS APPLE ORIGINAL  */
+/* ============================================================ */
 .full-screen-layout { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(25px) saturate(150%); -webkit-backdrop-filter: blur(25px) saturate(150%);
+    
+    /* Transparent blur overlay so the liquid-bg behind it shines through */
+    background: rgba(15, 23, 42, 0.65); 
+    backdrop-filter: blur(25px) saturate(150%);
+    -webkit-backdrop-filter: blur(25px) saturate(150%);
+    
     z-index: 9000; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; 
 }
-.storage-page-header { display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 9010; }
-.back-icon-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 1.2rem; cursor: pointer; width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); backdrop-filter: blur(10px); }
+
+.storage-page-header { 
+    display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    position: sticky; top: 0; z-index: 9010;
+}
+
+.back-icon-btn { 
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+    color: white; font-size: 1.2rem; cursor: pointer; width: 42px; height: 42px; 
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+    transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); backdrop-filter: blur(10px); 
+}
 .back-icon-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+
 .storage-page-header h2 { font-size: 1.4rem; font-weight: 600; color: white; letter-spacing: -0.3px; }
 .storage-page-content { flex: 1; display: flex; justify-content: center; align-items: flex-start; }
+
+/* LIQUID GLASS APPLE ORIGINAL - KARTU PENGELOLA PENYIMPANAN */
 .storage-manager-card { 
-    width: 100%; max-width: 800px; padding: 40px 50px; 
-    background: rgba(30, 41, 59, 0.45) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important; border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 32px !important; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    width: 100%; max-width: 800px; 
+    padding: 40px 50px; 
+    
+    background: rgba(30, 41, 59, 0.45) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 32px !important; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
+    
     transition: transform 0.35s ease, opacity 0.35s ease;
 }
+
 .card-header-text { text-align: center; margin-bottom: 40px; }
 .card-header-text h1 { font-size: 2.2rem; font-weight: 600; margin-bottom: 12px; color: white; letter-spacing: -0.5px; }
 .card-header-text p { color: #cbd5e1; font-size: 1rem; }
+
 .storage-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 1rem; font-weight: 500; color: #f8fafc; }
 .highlight-text { color: white; font-weight: 700; font-family: 'SF Pro Text', 'Consolas', monospace; font-size: 1.1rem; }
-.page-progress { height: 14px; margin-bottom: 40px; background: rgba(0,0,0,0.25); box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+
+.page-progress { 
+    height: 14px; margin-bottom: 40px; 
+    background: rgba(0,0,0,0.25); 
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); 
+    border: 1px solid rgba(255,255,255,0.05); 
+}
+
 .storage-detail-list { display: flex; flex-direction: column; gap: 0; }
-.detail-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); transition: background 0.2s ease, border-radius 0.2s ease; }
+.detail-item { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); 
+    transition: background 0.2s ease, border-radius 0.2s ease; 
+}
 .detail-item:hover { background: rgba(255,255,255,0.04); border-radius: 12px; border-bottom-color: transparent; }
 .detail-item:last-child { border-bottom: none; }
+
 .dt-left { display: flex; align-items: center; gap: 15px; font-size: 1.05rem; color: #f1f5f9; font-weight: 500; }
 .dt-right { font-family: 'SF Pro Text', 'Consolas', monospace; color: #cbd5e1; font-weight: 600; font-size: 1rem; }
 .item-free { opacity: 0.8; }
 
-/* PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION FIXED */
-.preview-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 30000; display: flex; flex-direction: column; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+
+/* ============================================================ */
+/* PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION FIXED     */
+/* ============================================================ */
+.preview-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.85); 
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    z-index: 30000; display: flex; flex-direction: column;
+    opacity: 0; transition: opacity 0.3s ease;
+    pointer-events: none; 
+}
 .preview-overlay.show-preview { opacity: 1; pointer-events: auto; display: flex !important; }
-.preview-header { background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 30005; flex-shrink: 0; }
+
+/* Header Glass Apple */
+.preview-header {
+    background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+    z-index: 30005; flex-shrink: 0;
+}
 .preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
-.preview-file-info { display: flex; align-items: center; gap: 10px; color: white; font-weight: 500; font-size: 1rem; max-width: 50vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.icon-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.1rem; cursor: pointer; width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+.preview-file-info {
+    display: flex; align-items: center; gap: 10px; color: white; font-weight: 500; font-size: 1rem;
+    max-width: 50vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.icon-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.1rem; cursor: pointer;
+    width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; transition: 0.2s;
+}
 .icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
-.pure-glass { background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important; -webkit-backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important; border: 1px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important; }
-.preview-body-container { flex: 1; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 20px; overflow: hidden; }
+
+/* PURE GLASS STYLE GLOBAL */
+.pure-glass {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(250%) brightness(115%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important;
+}
+
+/* ----------------------------------------------------- */
+/* CONTAINER BODY PREVIEW (FLEXBOX PRESISI UNTUK NAV)    */
+/* ----------------------------------------------------- */
+.preview-body-container {
+    flex: 1; display: flex; justify-content: space-between; align-items: center; 
+    width: 100%; padding: 0 20px; overflow: hidden; 
+}
+
+/* Pembungkus Navigasi Kiri & Kanan */
 .nav-button-container { flex-shrink: 0; width: 60px; display: flex; justify-content: center; z-index: 30010; }
-.nav-arrow { width: 55px !important; height: 55px !important; font-size: 1.3rem !important; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important; }
+
+/* NAVIGATION BUTTONS (Liquid Glass Circles) */
+.nav-arrow {
+    width: 55px !important; height: 55px !important; font-size: 1.3rem !important;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    color: white; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
 .nav-arrow:hover { background: rgba(255, 255, 255, 0.3) !important; transform: scale(1.08) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; }
 .nav-arrow:active { transform: scale(0.95) !important; }
-.preview-content-area { flex: 1; display: flex; justify-content: center; align-items: center; height: 100%; padding: 20px 20px; overflow: hidden; position: relative; }
+
+/* Area Konten Tengah */
+.preview-content-area {
+    flex: 1; display: flex; justify-content: center; align-items: center;
+    height: 100%; padding: 20px 20px; overflow: hidden; position: relative;
+}
 .preview-content-area img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; }
 .preview-unsupported { display: flex; flex-direction: column; align-items: center; color: white; text-align: center; animation: previewZoomIn 0.3s ease-out; }
 .preview-unsupported i { font-size: 4rem; margin-bottom: 20px; color: rgba(255,255,255,0.3); }
 .preview-unsupported p { margin-bottom: 20px; color: rgba(255,255,255,0.7); }
+
 @keyframes previewZoomIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-.doc-glass-wrapper { width: 100%; height: 95%; max-width: 1200px; padding: 10px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4); display: flex; animation: previewZoomIn 0.3s ease-out; }
+
+/* MAC OS DOCUMENT VIEWER GLASS WINDOW */
+.doc-glass-wrapper {
+    width: 100%; height: 95%; max-width: 1200px; padding: 10px; background: rgba(255, 255, 255, 0.05); 
+    backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4); display: flex; animation: previewZoomIn 0.3s ease-out;
+}
 .doc-glass-wrapper iframe { flex: 1; width: 100%; height: 100%; border-radius: 8px; border: none; background: #f8f9fa; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
 
-/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (CLEAN) */
-.apple-video-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; }
+/* ============================================================ */
+/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (CLEAN)      */
+/* ============================================================ */
+.apple-video-wrapper { 
+    position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
+    background: transparent; border-radius: 16px; overflow: hidden; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; 
+}
 .apple-video-wrapper video { width: 100%; max-height: 100%; border-radius: 16px; outline: none; background-color: transparent; }
 .apple-video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.15); opacity: 1; transition: opacity 0.5s ease-in-out; pointer-events: none; }
 .apple-video-overlay * { pointer-events: auto; }
+
 .apple-center-controls { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 30px; align-items: center; }
 .apple-glass-btn { color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); width: 65px; height: 65px; font-size: 1.5rem; position: relative; }
 .apple-glass-btn.play-pause-btn { width: 85px; height: 85px; font-size: 2.5rem; }
 .apple-glass-btn:hover { background: rgba(255, 255, 255, 0.3) !important; transform: scale(1.08); box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; }
 .apple-glass-btn:active { transform: scale(0.95); transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
 .apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
+
 .apple-skip-btn i { display: none !important; }
 .apple-skip-btn { position: relative; display: flex; align-items: center; justify-content: center; background-color: transparent; }
 .apple-skip-btn::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background-repeat: no-repeat; background-position: center; background-size: 60%; z-index: 1; opacity: 0.9; }
 #vidSkipBack::before { background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'); }
 #vidSkipForward::before { background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>'); }
 .apple-skip-btn .skip-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.85rem; font-weight: 700; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: -0.3px; z-index: 2; margin-top: 1px; pointer-events: none; }
+
 .apple-top-controls { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
 .top-right-group { display: flex; gap: 12px; align-items: center; }
 .apple-volume-container { display: flex; align-items: center; justify-content: flex-start; border-radius: 30px; height: 40px; width: 40px; padding: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
@@ -439,6 +720,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-volume-slider { -webkit-appearance: none; appearance: none; background: linear-gradient(to right, #ffffff var(--vol), rgba(255,255,255,0.3) var(--vol)); width: 100%; height: 5px; border-radius: 3px; outline: none; cursor: pointer; transition: 0.1s; }
 .apple-volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s; }
 .apple-volume-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
 .apple-bottom-pill { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; height: 44px; border-radius: 25px; display: flex; align-items: center; padding: 0 20px; gap: 15px; }
 .apple-progress-container { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.25); border-radius: 3px; cursor: pointer; position: relative; transition: height 0.2s; display: flex; align-items: center; }
 .apple-progress-container:hover { height: 8px; }
@@ -447,34 +729,65 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .apple-progress-container:hover .apple-progress-thumb { transform: translateY(-50%) scale(1); }
 .apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-/* APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK BARU) */
+/* ============================================================ */
+/* NEW: APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK BARU) */
+/* ============================================================ */
 .preview-content-area:has(.apple-audio-player-v2) { display: flex; justify-content: center; align-items: center; padding: 0; }
-.apple-audio-player-v2 { display: flex; flex-direction: row; width: 720px; max-width: 95vw; height: 320px; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.5); border-radius: 28px; padding: 20px; gap: 30px; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3); animation: previewZoomIn 0.35s ease-out; color: white; position: relative; }
-.audio-cover-v2 { width: 280px; height: 280px; border-radius: 16px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+.apple-audio-player-v2 {
+    display: flex; flex-direction: row; width: 720px; max-width: 95vw; height: 320px;
+    background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.5); border-radius: 28px;
+    padding: 20px; gap: 30px; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    animation: previewZoomIn 0.35s ease-out; color: white; position: relative;
+}
+
+.audio-cover-v2 {
+    width: 280px; height: 280px; border-radius: 16px;
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 .audio-cover-v2 i { font-size: 8rem; color: rgba(255, 255, 255, 0.9); }
 .audio-cover-v2.playing { transform: scale(1.03); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
+
 .audio-right-v2 { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 10px 10px 0; min-width: 0; }
+
 .audio-header-v2 { display: flex; justify-content: space-between; align-items: flex-start; }
 .audio-meta-v2 { display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
 .audio-title-v2 { font-size: 1.6rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.3px; }
 .audio-artist-v2 { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; }
+
 .audio-airplay-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-left: 10px;}
 .audio-airplay-btn:hover { color: white; }
+
 .audio-timeline-v2 { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-.apple-slider-v2 { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px; outline: none; cursor: pointer; position: relative; }
+
+.apple-slider-v2 {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+    background: rgba(255, 255, 255, 0.2); border-radius: 3px; outline: none; cursor: pointer; position: relative;
+}
 .apple-slider-v2::-webkit-slider-runnable-track { background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog)); height: 6px; border-radius: 3px; }
-.apple-slider-v2::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -5px; opacity: 1; }
+.apple-slider-v2::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; 
+    background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -5px; opacity: 1; 
+}
+
 .audio-time-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-family: 'SF Pro Text', 'Consolas', monospace; font-weight: 600; font-variant-numeric: tabular-nums;}
+
 .audio-controls-v2 { display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 10px; }
 .audio-btn-v2 { background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
 .audio-btn-v2:hover { opacity: 0.8; transform: scale(1.05); }
 .audio-btn-v2:active { transform: scale(0.95); opacity: 1; }
 .audio-btn-v2.play { font-size: 3rem; }
+
 .audio-volume-v2 { display: flex; align-items: center; gap: 15px; margin-top: 15px; }
 .audio-volume-v2 i { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); }
 .volume-slider-v2 { flex: 1; height: 4px; }
 .volume-slider-v2::-webkit-slider-runnable-track { height: 4px; }
 .volume-slider-v2::-webkit-slider-thumb { width: 12px; height: 12px; margin-top: -4px; }
+
 .ios-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 5px; background: rgba(255,255,255,0.5); border-radius: 10px; }
 
 
@@ -496,7 +809,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .sidebar-left { width: 200px; padding-right: 10px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
     .apple-audio-player-v2 { width: 90vw; }
+    
+    /* Penyesuaian Tablet untuk Halaman Pengelola Penyimpanan */
     .storage-manager-card { padding: 35px 30px !important; }
+    
+    /* MENYEMBUNYIKAN LOGO DI TABLET */
     .top-nav .logo-img { display: none !important; }
 }
 
@@ -513,12 +830,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: none;
     }
     
+    /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
     .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
+    
+    /* MENYEMBUNYIKAN LOGO DI MOBILE */
     .top-nav .logo-img { display: none !important; }
+    
     .brand-text { font-size: 1.3rem; letter-spacing: -0.3px; }
     .brand-area { gap: 0; padding: 4px 8px; }
+    
     .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
+    
     .sidebar-left { display: contents; }
+    
     .main-content-area { order: 2; height: 100%; padding-bottom: 0 !important; }
 
     .file-grid-area { 
@@ -535,6 +859,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         position: fixed !important;
         bottom: calc(105px + env(safe-area-inset-bottom)) !important; left: 15px !important;
         width: auto !important; min-width: 150px !important; max-width: 220px !important; margin: 0 !important;
+        
         background: rgba(30, 41, 59, 0.65) !important;
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -547,69 +872,75 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(255,255,255,0.15) !important; }
     .storage-widget .storage-text { font-size: 0.65rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
-    /* UPDATE DESAIN SIDEBAR MENU MOBILE ALA NICEGRAM (TATA LETAK KAPSUL, ITEM DISUSUN VERTIKAL) */
+    /* ============================================================ */
+    /* NICEGRAM STYLE MOBILE BOTTOM NAV (DENGAN LIQUID GLASS APPLE) */
+    /* ============================================================ */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(20px + env(safe-area-inset-bottom)) !important;
         left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; min-width: 340px !important; max-width: 95vw !important;
-        height: 72px !important; padding: 6px 10px !important;
-        border-radius: 36px !important; /* Desain Pill/Kapsul seperti Nicegram */
+        width: max-content !important; min-width: 320px !important; max-width: 95vw !important;
+        height: 70px !important; padding: 5px 10px !important;
+        border-radius: 35px !important; 
         
-        /* Dark Liquid Glass (Premium Nicegram Feel) */
-        background: rgba(15, 23, 42, 0.75) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15) !important;
+        /* Premium Apple Liquid Glass Background */
+        background: rgba(25, 33, 44, 0.75) !important; 
+        backdrop-filter: blur(40px) saturate(200%) !important; 
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important; 
+        border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1) !important;
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: space-around !important; align-items: center !important; gap: 0 !important;
+        justify-content: space-between !important; align-items: center !important; gap: 4px !important;
     }
 
-    /* PENGATURAN ITEM NAVIGASI NICEGRAM-STYLE (Icon Stacked dengan Teks) */
-    .nav-item { 
-        flex-direction: column !important; gap: 4px !important; 
-        width: 65px !important; height: 60px !important; 
-        padding: 0 !important; border-radius: 20px !important; 
-        justify-content: center !important; align-items: center !important;
-        text-align: center !important; color: #64748b !important; /* Warna inaktif ala Nicegram */
-        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; 
-        outline: none !important; -webkit-tap-highlight-color: transparent !important;
-        position: relative; z-index: 2;
-    }
-    
-    .nav-item:hover { color: #94a3b8 !important; }
-    
-    .nav-item.active { 
-        background: transparent !important; /* Latar belakang ditangani oleh .nav-indicator */
-        color: #ffffff !important; font-weight: 700 !important; border: none !important; box-shadow: none !important;
-    }
-    
-    .nav-item i { 
-        font-size: 1.4rem !important; margin: 0 !important; width: auto !important; background: transparent !important; padding: 0 !important;
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
-    }
-    .nav-item.active i { transform: scale(1.1) !important; }
-    
-    .nav-item span { font-size: 0.65rem !important; font-weight: 600 !important; letter-spacing: 0.2px !important; z-index: 2; }
-    
-    .hide-mobile { display: none !important; }
-
-    /* PIL AKTIF ALA NICEGRAM + APPLE LIQUID GLASS */
+    /* Active Indicator - Nicegram Bubble Highlight */
     .nav-indicator {
-        height: 60px !important; width: 65px !important;
-        border-radius: 20px !important;
-        
-        /* Premium Blue Glass Matching Nicegram Active Item */
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(37, 99, 235, 0.2)) !important; 
-        backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border: 1px solid rgba(96, 165, 250, 0.4) !important; border-top: 1px solid rgba(147, 197, 253, 0.6) !important;
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3), inset 0 2px 4px rgba(255,255,255,0.3) !important;
-        
-        z-index: 1 !important; position: absolute !important;
+        height: 60px !important;
+        top: 5px !important;
+        border-radius: 30px !important; /* Perfect circle/pill shape */
+        /* Warna kaca transparan berpadu tema Accent Anda */
+        background: rgba(45, 212, 191, 0.15) !important; 
+        border: 1px solid rgba(45, 212, 191, 0.3) !important;
+        box-shadow: inset 0 1px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(45, 212, 191, 0.1) !important;
         transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
     }
     
+    .nav-item { 
+        flex-direction: column !important; gap: 4px !important; 
+        width: 60px !important; height: 60px !important; 
+        padding: 0 !important; border-radius: 30px !important; 
+        justify-content: center !important; text-align: center !important; 
+        color: rgba(255, 255, 255, 0.5) !important; /* Warna item tidak aktif */
+        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; 
+        outline: none !important; -webkit-tap-highlight-color: transparent !important;
+        z-index: 2 !important;
+    }
+    .nav-item:hover { color: rgba(255, 255, 255, 0.9) !important; }
+    
+    .nav-item.active { 
+        color: var(--accent) !important; /* Warna highlight aktif menyala */
+    }
+    .nav-item i { 
+        font-size: 1.35rem !important; margin: 0 !important; width: auto !important; 
+        padding: 0 !important; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    }
+    .nav-item.active i {
+        transform: scale(1.1) translateY(-1px) !important;
+        color: var(--accent) !important;
+        text-shadow: 0 4px 10px rgba(45, 212, 191, 0.4) !important;
+    }
+    .nav-item span { 
+        font-size: 0.65rem !important; font-weight: 600 !important; 
+        letter-spacing: 0.2px !important; transition: all 0.3s ease !important;
+    }
+    .nav-item.active span {
+        font-weight: 700 !important;
+    }
+    .hide-mobile { display: none !important; }
+
+    /* Tombol '+' Baru Melayang (Konsisten Tidak Tertutup Menu Bawah) */
     .new-btn-wrapper { 
         position: fixed !important; 
         bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
@@ -623,10 +954,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important; color: white !important;
         transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        -webkit-backface-visibility: hidden !important; backface-visibility: hidden !important; transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+        transform: translateZ(0) !important;
     }
-    .new-btn:hover { background: rgba(255, 255, 255, 0.15) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important; }
-    .new-btn:active { transform: scale(0.92) translateZ(0) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important; transition: transform 0.1s ease, box-shadow 0.1s ease !important; }
+    .new-btn:hover { 
+        background: rgba(255, 255, 255, 0.15) !important; 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important;
+    }
+    .new-btn:active {
+        transform: scale(0.92) translateZ(0) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important;
+        transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+    }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; }
     
@@ -691,7 +1031,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget { min-width: 130px !important; max-width: 180px !important; padding: 10px 12px !important; left: 15px !important; }
     .sidebar-menu { min-width: 95vw !important; padding: 6px 10px !important;}
     .sidebar-menu .nav-item { width: 55px !important; }
+    
+    /* Penyesuaian Responsif Logo & Brand Text ekstra kecil */
+    /* MENYEMBUNYIKAN LOGO DI MOBILE SANGAT KECIL JUGA */
     .top-nav .logo-img { display: none !important; }
     .brand-text { font-size: 1.2rem !important; }
+    
+    /* Penyesuaian Ruang Penyimpanan di layar super kecil */
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
