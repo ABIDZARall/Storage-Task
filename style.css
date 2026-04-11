@@ -830,25 +830,69 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: none;
     }
     
-    /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
-    .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
+    /* DASH AVATAR & LOGOUT DIPERKECIL */
+    .top-nav { min-height: 45px !important; margin-bottom: 10px !important; padding: 5px 10px !important; }
     .top-nav .logo-img { display: none !important; }
-    .brand-text { font-size: 1.3rem; letter-spacing: -0.3px; }
+    .brand-text { font-size: 1.25rem !important; letter-spacing: -0.3px; }
     .brand-area { gap: 0; padding: 4px 8px; }
-    .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
-    .sidebar-left { display: contents; }
-    .main-content-area { order: 2; height: 100%; padding-bottom: 0 !important; }
-
+    
+    .avatar { width: 34px !important; height: 34px !important; }
+    .logout-btn { width: 34px !important; height: 34px !important; font-size: 0.95rem !important; }
+    
+    /* MEMINDAHKAN SCROLLING KE MAIN-CONTENT-AREA UNTUK EFEK STICKY KACA */
+    .main-content-area { 
+        order: 2; height: 100%; 
+        overflow-y: auto !important; /* SCROLL PINDAH KESINI */
+        padding-bottom: 230px !important;
+        position: relative;
+        /* Menyembunyikan scrollbar agar UI lebih rapi */
+        scrollbar-width: none; 
+    }
+    .main-content-area::-webkit-scrollbar { display: none; }
+    
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
         gap: 12px; padding: 5px; 
-        padding-bottom: calc(230px + env(safe-area-inset-bottom)) !important; 
-        height: 100%; overflow-y: auto;
+        height: auto !important; 
+        overflow-y: visible !important; /* Hapus scroll di sini */
+        padding-bottom: 0 !important;
     }
     .item-card { padding: 8px; border-radius: 10px; }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
+    /* ============================================================== */
+    /* EFEK STICKY LIQUID GLASS UNTUK SEARCH-ROW & BREADCRUMB         */
+    /* (MEMBERIKAN EFEK FILE KELIHTAN DI BELAKANGNYA SAAT SCROLL)     */
+    /* ============================================================== */
+    .search-row {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 50 !important;
+        padding: 10px 5px !important;
+        margin: -5px -5px 0 -5px !important; /* Menutupi area panel utama */
+        background: rgba(15, 23, 42, 0.75) !important; /* Tembus pandang (Liquid glass) */
+        backdrop-filter: blur(25px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+    }
+    
+    .breadcrumb-area {
+        position: sticky !important;
+        top: 60px !important; /* Terletak tepat di bawah search-row yang tingginya 60px (40px + 10px + 10px) */
+        z-index: 49 !important;
+        padding: 10px 15px !important;
+        margin: 0 -5px 10px -5px !important; /* Menutupi area panel utama */
+        background: rgba(15, 23, 42, 0.75) !important; /* Tembus pandang (Liquid glass) */
+        backdrop-filter: blur(25px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    /* KAPSUL SEARCH DRIVE DIPERKECIL */
+    .search-bar-pill { height: 40px !important; padding: 0 15px !important; border-radius: 20px !important; }
+    .search-bar-pill input { font-size: 0.85rem !important; }
+    .search-icon { font-size: 0.9rem !important; }
+
     /* ============================================================== */
     /* WIDGET PENYIMPANAN - DIPERKECIL & DIPERPADAT (NICEGRAM STYLE) */
     /* ============================================================== */
@@ -869,6 +913,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         padding: 10px 14px !important; /* Padding diperkecil */
         z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; /* Animasi HIDE on SCROLL */
     }
     
     .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
@@ -956,6 +1001,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 50px !important; /* Diperkecil dari 60px */
         height: 50px !important; /* Diperkecil dari 60px */
         z-index: 5001 !important; margin: 0 !important; 
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; /* Animasi HIDE on SCROLL */
     }
     .new-btn { 
         width: 50px !important; /* Diperkecil */
@@ -982,6 +1028,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } /* Diperkecil dari 1.5rem */
+    
+    /* KELAS KHUSUS ANIMASI MENGHILANG SAAT DI SCROLL */
+    .hide-on-scroll {
+        transform: translateY(150px) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
     
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
