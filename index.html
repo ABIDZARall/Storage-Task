@@ -468,38 +468,6 @@
             window.addEventListener('resize', updateIndicator);
             setTimeout(updateIndicator, 100);
             setTimeout(updateIndicator, 500); 
-            
-            // ==============================================================
-            // ANIMASI HIDE WIDGET & FAB SAAT SCROLL (NICEGRAM/DRIVE STYLE)
-            // ==============================================================
-            const scroller = document.querySelector('.main-content-area');
-            const fab = document.querySelector('.new-btn-wrapper');
-            const widget = document.querySelector('.storage-widget');
-            let lastScrollTop = 0;
-            const delta = 5; // Threshold agar animasi tidak sensitif/getar
-
-            if (scroller) {
-                scroller.addEventListener('scroll', () => {
-                    if (window.innerWidth > 768) return; // Hanya eksekusi di Mobile/Tablet
-                    
-                    let scrollTop = scroller.scrollTop;
-                    
-                    // Pastikan scroll melewati batas delta
-                    if (Math.abs(lastScrollTop - scrollTop) <= delta) return;
-
-                    // Jika scroll ke bawah lebih dari 30px (menghindari hide di posisi paling atas)
-                    if (scrollTop > lastScrollTop && scrollTop > 30) {
-                        // Scroll Ke Bawah -> Sembunyikan ke bawah layar
-                        if(fab) fab.classList.add('hide-on-scroll');
-                        if(widget) widget.classList.add('hide-on-scroll');
-                    } else {
-                        // Scroll Ke Atas -> Tampilkan kembali
-                        if(fab) fab.classList.remove('hide-on-scroll');
-                        if(widget) widget.classList.remove('hide-on-scroll');
-                    }
-                    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
-                });
-            }
         });
     </script>
 </body>

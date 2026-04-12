@@ -817,13 +817,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
-/* (PEMBARUAN: ANIMASI SCROLL, HEADER STICKY KACA, RESIZING) */
+/* (PEMBARUAN: ANIMASI SCROLL DIHAPUS, HEADER STICKY TRANSPARAN) */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
     .main-glass-panel { 
         flex: 1; flex-direction: column; 
-        border-radius: 0; border: none; padding: 0; /* Padding dihapus, dipindah ke elemen dalam */
+        border-radius: 0; border: none; padding: 0; 
         height: auto; gap: 0;
         background: rgba(255, 255, 255, 0.02); 
         backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -840,9 +840,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
     
     /* ============================================================== */
-    /* EFEK STICKY LIQUID GLASS UNTUK SEARCH-ROW & BREADCRUMB         */
-    /* File grid akan di-scroll di dalam main-content-area.           */
-    /* Header (Search & Judul) akan tetap di atas menembus pandang.   */
+    /* EFEK STICKY TRANSPARAN UNTUK SEARCH-ROW & BREADCRUMB           */
+    /* File grid akan di-scroll di belakangnya. Background dihapus.   */
     /* ============================================================== */
     .main-content-area { 
         order: 2; height: 100%; 
@@ -859,25 +858,31 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         z-index: 100 !important;
         padding: 10px 15px !important;
         margin: 0 !important;
-        background: rgba(15, 23, 42, 0.4) !important; /* Transparansi Liquid Glass Apple */
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: transparent !important; /* Latar belakang kaca dihapus */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        pointer-events: none !important; /* Membiarkan klik tembus ke grid di area kosong */
     }
+    .search-row > * { pointer-events: auto !important; } /* Pill tetap bisa diklik */
     
     .breadcrumb-area {
         position: sticky !important;
-        top: 56px !important; /* Jarak tepat di bawah search-row (36px + 10px + 10px) */
+        top: 56px !important; /* Jarak tepat di bawah search-row */
         z-index: 99 !important;
-        padding: 10px 15px !important;
+        padding: 5px 15px 15px 15px !important;
         margin: 0 !important;
-        background: rgba(15, 23, 42, 0.4) !important; /* Transparansi Liquid Glass Apple */
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: transparent !important; /* Latar belakang kaca dihapus */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+        pointer-events: none !important; /* Membiarkan klik tembus ke grid */
+    }
+    .breadcrumb-area h2 {
+        text-shadow: 0 2px 8px rgba(0,0,0,0.6) !important; /* Bayangan agar teks tetap terbaca saat grid lewat di belakangnya */
     }
     
-    /* KAPSUL SEARCH DRIVE DIPERKECIL & DIBUAT RAMPING */
+    /* KAPSUL SEARCH DRIVE DIPERKECIL & DIBUAT RAMPING (TETAP LIQUID GLASS) */
     .search-bar-pill { 
         height: 36px !important; 
         padding: 0 15px !important; 
@@ -900,7 +905,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
     /* ============================================================== */
-    /* WIDGET PENYIMPANAN - ANIMASI SCROLL & DIPERPADAT (NICEGRAM)    */
+    /* WIDGET PENYIMPANAN - DIBUAT TETAP, ANIMASI MENGHILANG DIHAPUS  */
     /* ============================================================== */
     .storage-widget { 
         position: fixed !important;
@@ -919,9 +924,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         padding: 10px 14px !important; 
         z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
-        
-        /* Transisi khusus untuk efek menghilang saat di-*scroll* ke bawah */
-        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important; 
     }
     
     .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
@@ -996,7 +998,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .hide-mobile { display: none !important; }
     
     /* ============================================================== */
-    /* TOMBOL PLUS (NEW) - ANIMASI SCROLL & COMPACT (NICEGRAM STYLE)  */
+    /* TOMBOL PLUS (NEW) - DIBUAT TETAP, ANIMASI MENGHILANG DIHAPUS   */
     /* ============================================================== */
     .new-btn-wrapper { 
         position: fixed !important; 
@@ -1005,9 +1007,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         width: 50px !important; 
         height: 50px !important; 
         z-index: 5001 !important; margin: 0 !important; 
-        
-        /* Transisi khusus untuk efek menghilang saat di-*scroll* ke bawah */
-        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important;
     }
     .new-btn { 
         width: 50px !important; 
@@ -1034,13 +1033,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
-    
-    /* CLASS KHUSUS ANIMASI MENGHILANG SAAT KONTEN DI-SCROLL KE BAWAH */
-    .hide-on-scroll {
-        transform: translateY(130px) !important; /* Bergerak ke luar layar bawah dengan mulus */
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
     
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
