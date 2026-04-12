@@ -817,6 +817,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
+/* (PEMBARUAN: ANIMASI SCROLL DIHAPUS, HEADER STICKY TRANSPARAN) */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
@@ -839,80 +840,57 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
     
     /* ============================================================== */
-    /* EFEK STICKY TRANSPARAN UNTUK AREA SEARCH-ROW & BREADCRUMB      */
-    /* File grid akan di-scroll bebas di bawahnya                     */
+    /* EFEK STICKY TRANSPARAN UNTUK SEARCH-ROW & BREADCRUMB           */
+    /* File grid akan di-scroll di belakangnya. Background dihapus.   */
     /* ============================================================== */
     .main-content-area { 
         order: 2; height: 100%; 
-        overflow-y: auto !important; 
-        padding-bottom: 230px !important; 
+        overflow-y: auto !important; /* Area ini yang bisa di-scroll */
+        padding-bottom: 230px !important; /* Ruang untuk capsule menu */
         position: relative;
-        scrollbar-width: none; 
+        scrollbar-width: none; /* Menyembunyikan scrollbar agar rapi */
     }
     .main-content-area::-webkit-scrollbar { display: none; }
     
-    /* PEMBUNGKUS AREA SEARCH DAN TITLE - TRANSPARAN PENUH */
     .search-row {
         position: sticky !important;
         top: 0 !important;
         z-index: 100 !important;
         padding: 10px 15px !important;
         margin: 0 !important;
-        background: transparent !important; /* DIBUAT TEMBUS PANDANG */
-        backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        -webkit-backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
+        background: transparent !important; /* Latar belakang kaca dihapus */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         border: none !important;
-        pointer-events: none !important; 
+        pointer-events: none !important; /* Membiarkan klik tembus ke grid di area kosong */
     }
-    .search-row > * { pointer-events: auto !important; }
+    .search-row > * { pointer-events: auto !important; } /* Pill tetap bisa diklik */
     
     .breadcrumb-area {
         position: sticky !important;
-        top: 56px !important; 
+        top: 56px !important; /* Jarak tepat di bawah search-row */
         z-index: 99 !important;
         padding: 5px 15px 15px 15px !important;
         margin: 0 !important;
-        background: transparent !important; /* DIBUAT TEMBUS PANDANG */
-        backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        -webkit-backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
+        background: transparent !important; /* Latar belakang kaca dihapus */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         border: none !important;
-        pointer-events: none !important; 
+        pointer-events: none !important; /* Membiarkan klik tembus ke grid */
+    }
+    .breadcrumb-area h2 {
+        text-shadow: 0 2px 8px rgba(0,0,0,0.6) !important; /* Bayangan agar teks tetap terbaca saat grid lewat di belakangnya */
     }
     
-    /* KAPSUL SEARCH DRIVE (LIQUID GLASS STANDALONE) */
+    /* KAPSUL SEARCH DRIVE DIPERKECIL & DIBUAT RAMPING (TETAP LIQUID GLASS) */
     .search-bar-pill { 
-        height: 40px !important; 
+        height: 36px !important; 
         padding: 0 15px !important; 
-        border-radius: 20px !important; 
-        /* EFEK LIQUID GLASS BLUR KHUSUS PADA KAPSULNYA SAJA */
-        background: rgba(30, 41, 59, 0.65) !important;
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+        border-radius: 18px !important; 
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
     }
     .search-bar-pill input { font-size: 0.85rem !important; margin-left: 8px !important; }
     .search-icon { font-size: 0.85rem !important; }
-    
-    /* KAPSUL JUDUL (HEADER TITLE) BARU (LIQUID GLASS STANDALONE) */
-    .header-title-pill {
-        display: inline-block;
-        padding: 8px 16px;
-        border-radius: 12px;
-        margin-left: -5px; /* Menyesuaikan agar rata kiri */
-        font-size: 1.3rem !important;
-        font-weight: 700;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        /* EFEK LIQUID GLASS BLUR KHUSUS PADA KAPSUL JUDULNYA SAJA */
-        background: rgba(30, 41, 59, 0.45) !important;
-        backdrop-filter: blur(15px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-    }
 
     /* Grid file menyesuaikan area baru */
     .file-grid-area { 
