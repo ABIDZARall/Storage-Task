@@ -817,115 +817,62 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
-/* (PEMBARUAN: ANIMASI SCROLL, HEADER STICKY KACA, RESIZING) */
+/* (PEMBARUAN: WIDGET PENYIMPANAN & TOMBOL PLUS DIPERKECIL ALA NICEGRAM) */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
     .main-glass-panel { 
         flex: 1; flex-direction: column; 
-        border-radius: 0; border: none; padding: 0; /* Padding dihapus, dipindah ke elemen dalam */
-        height: auto; gap: 0;
+        border-radius: 0; border: none; padding: 10px; 
+        height: auto; gap: 10px;
         background: rgba(255, 255, 255, 0.02); 
         backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
         box-shadow: none;
     }
     
-    /* DASH AVATAR & LOGOUT DIPERKECIL (COMPACT) */
-    .top-nav { min-height: 40px !important; margin-bottom: 5px !important; padding: 10px 15px 5px 15px !important; }
+    /* Penyesuaian Responsif Logo dan Teks Cloud Storage */
+    .top-nav { padding: 5px 15px; margin-bottom: 5px; min-height: 50px; }
     .top-nav .logo-img { display: none !important; }
-    .brand-text { font-size: 1.25rem !important; letter-spacing: -0.3px; }
+    .brand-text { font-size: 1.3rem; letter-spacing: -0.3px; }
     .brand-area { gap: 0; padding: 4px 8px; }
-    
-    .avatar { width: 32px !important; height: 32px !important; border-width: 1px !important; }
-    .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
-    
-    /* ============================================================== */
-    /* EFEK STICKY LIQUID GLASS UNTUK SEARCH-ROW & BREADCRUMB         */
-    /* File grid akan di-scroll di dalam main-content-area.           */
-    /* Header (Search & Judul) akan tetap di atas menembus pandang.   */
-    /* ============================================================== */
-    .main-content-area { 
-        order: 2; height: 100%; 
-        overflow-y: auto !important; /* Area ini yang bisa di-scroll */
-        padding-bottom: 230px !important; /* Ruang untuk capsule menu */
-        position: relative;
-        scrollbar-width: none; /* Menyembunyikan scrollbar agar rapi */
-    }
-    .main-content-area::-webkit-scrollbar { display: none; }
-    
-    .search-row {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 100 !important;
-        padding: 10px 15px !important;
-        margin: 0 !important;
-        background: rgba(15, 23, 42, 0.4) !important; /* Transparansi Liquid Glass Apple */
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-    }
-    
-    .breadcrumb-area {
-        position: sticky !important;
-        top: 56px !important; /* Jarak tepat di bawah search-row (36px + 10px + 10px) */
-        z-index: 99 !important;
-        padding: 10px 15px !important;
-        margin: 0 !important;
-        background: rgba(15, 23, 42, 0.4) !important; /* Transparansi Liquid Glass Apple */
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-    }
-    
-    /* KAPSUL SEARCH DRIVE DIPERKECIL & DIBUAT RAMPING */
-    .search-bar-pill { 
-        height: 36px !important; 
-        padding: 0 15px !important; 
-        border-radius: 18px !important; 
-        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-    }
-    .search-bar-pill input { font-size: 0.85rem !important; margin-left: 8px !important; }
-    .search-icon { font-size: 0.85rem !important; }
+    .breadcrumb-area { padding-left: 10px; margin-bottom: 10px; }
+    .sidebar-left { display: contents; }
+    .main-content-area { order: 2; height: 100%; padding-bottom: 0 !important; }
 
-    /* Grid file menyesuaikan area baru */
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-        gap: 12px; padding: 15px; 
-        height: auto !important; 
-        overflow-y: visible !important; 
-        padding-bottom: 0 !important;
+        gap: 12px; padding: 5px; 
+        padding-bottom: calc(230px + env(safe-area-inset-bottom)) !important; 
+        height: 100%; overflow-y: auto;
     }
     .item-card { padding: 8px; border-radius: 10px; }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
     /* ============================================================== */
-    /* WIDGET PENYIMPANAN - ANIMASI SCROLL & DIPERPADAT (NICEGRAM)    */
+    /* WIDGET PENYIMPANAN - DIPERKECIL & DIPERPADAT (NICEGRAM STYLE) */
     /* ============================================================== */
     .storage-widget { 
         position: fixed !important;
-        bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Disesuaikan dengan kapsul yang lebih pendek */
         left: 15px !important;
         width: auto !important; 
-        min-width: 140px !important; 
-        max-width: 180px !important; 
+        min-width: 140px !important; /* Diperkecil */
+        max-width: 180px !important; /* Diperkecil */
         margin: 0 !important;
         
         background: rgba(30, 41, 59, 0.65) !important;
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
-        border-radius: 18px !important; 
-        padding: 10px 14px !important; 
+        border-radius: 18px !important; /* Sedikit lebih membulat */
+        padding: 10px 14px !important; /* Padding diperkecil */
         z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
-        
-        /* Transisi khusus untuk efek menghilang saat di-*scroll* ke bawah */
-        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important; 
     }
     
     .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
-    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; }
+    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; } /* Dipertipis */
     .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
     /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
@@ -933,11 +880,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         position: fixed !important; 
         bottom: calc(15px + env(safe-area-inset-bottom)) !important;
         left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; 
-        max-width: 92vw !important; 
+        width: max-content !important; /* Membuat kapsul otomatis memendek menyesuaikan isi */
+        max-width: 92vw !important; /* Mencegah memanjang hingga menabrak layar tepi */
         height: auto !important; 
-        padding: 6px 8px !important; 
-        border-radius: 50px !important; 
+        padding: 6px 8px !important; /* Ruang dalam dibuat lebih padat agar pil lebih pendek */
+        border-radius: 50px !important; /* Bentuk sempurna pil/kapsul membulat */
         
         background: rgba(30, 41, 59, 0.65) !important; 
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
@@ -945,34 +892,37 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3) !important;
         
         z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: center !important; align-items: center !important; gap: 0px !important; 
+        justify-content: center !important; align-items: center !important; gap: 0px !important; /* Gap 0, andalkan padding item */
     }
 
+    /* KOTAK INDIKATOR HIGHLIGHT DENGAN EFEK SLIDING */
     .nav-indicator {
         display: block !important;
         position: absolute !important;
-        top: 6px !important; 
-        height: 48px !important; 
-        border-radius: 50px !important; 
+        top: 6px !important; /* Menyesuaikan nilai padding luar sidebar-menu */
+        height: 48px !important; /* Menyesuaikan tinggi item */
+        border-radius: 50px !important; /* Membulat penuh, sempurna mengikuti ujung kapsul utama */
         
-        background: rgba(255, 255, 255, 0.15) !important; 
+        background: rgba(255, 255, 255, 0.15) !important; /* Liquid glass highlight */
         border: 1px solid rgba(255,255,255,0.1) !important;
         border-top: 1px solid rgba(255,255,255,0.25) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.2) !important;
         
+        /* Animasi menggeser mulus */
         transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
         z-index: 0 !important;
         pointer-events: none !important;
     }
 
+    /* Setup Individual Nav Item */
     .nav-item { 
         position: relative !important;
-        z-index: 1 !important; 
-        flex-direction: column !important; gap: 2px !important; 
+        z-index: 1 !important; /* Posisikan teks dan ikon di atas indikator yang bergeser */
+        flex-direction: column !important; gap: 2px !important; /* Teks dan ikon lebih rapat */
         width: auto !important; 
-        min-width: 48px !important; 
+        min-width: 48px !important; /* Diperkecil dari 50px */
         height: 48px !important; 
-        padding: 4px 10px !important; 
+        padding: 4px 10px !important; /* Padding dikurangi agar tidak memanjang */
         border-radius: 50px !important; 
         justify-content: center !important; 
         text-align: center !important; 
@@ -981,6 +931,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
     }
     
+    /* Hilangkan background statis, biarkan .nav-indicator yang mengisi warnanya */
     .nav-item.active { 
         color: white !important; 
         background: transparent !important; 
@@ -996,22 +947,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .hide-mobile { display: none !important; }
     
     /* ============================================================== */
-    /* TOMBOL PLUS (NEW) - ANIMASI SCROLL & COMPACT (NICEGRAM STYLE)  */
+    /* TOMBOL PLUS (NEW) - DIPERKECIL & COMPACT (NICEGRAM STYLE)      */
     /* ============================================================== */
     .new-btn-wrapper { 
         position: fixed !important; 
-        bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Disamakan tingginya dengan widget storage */
         right: 15px !important; 
-        width: 50px !important; 
-        height: 50px !important; 
+        width: 50px !important; /* Diperkecil dari 60px */
+        height: 50px !important; /* Diperkecil dari 60px */
         z-index: 5001 !important; margin: 0 !important; 
-        
-        /* Transisi khusus untuk efek menghilang saat di-*scroll* ke bawah */
-        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease !important;
     }
     .new-btn { 
-        width: 50px !important; 
-        height: 50px !important; 
+        width: 50px !important; /* Diperkecil */
+        height: 50px !important; /* Diperkecil */
         border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
         background: rgba(30, 41, 59, 0.65) !important; 
@@ -1033,14 +981,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         transition: transform 0.1s ease, box-shadow 0.1s ease !important;
     }
     .new-btn-text { display: none !important; }
-    .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
-    
-    /* CLASS KHUSUS ANIMASI MENGHILANG SAAT KONTEN DI-SCROLL KE BAWAH */
-    .hide-on-scroll {
-        transform: translateY(130px) !important; /* Bergerak ke luar layar bawah dengan mulus */
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
+    .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } /* Diperkecil dari 1.5rem */
     
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
@@ -1101,15 +1042,19 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
     
+    /* WIDGET DI LAYAR SANGAT KECIL JUGA DIPERKECIL */
     .storage-widget { min-width: 120px !important; max-width: 160px !important; padding: 8px 10px !important; left: 10px !important; }
     
+    /* MENGHILANGKAN WIDTH 95VW AGAR KAPSUL TETAP PENDEK DAN TIDAK MELEBAR KE TEPI LAYAR */
     .sidebar-menu { width: max-content !important; max-width: 96vw !important; padding: 5px 6px !important; justify-content: center !important; }
     .sidebar-menu .nav-item { padding: 4px 8px !important; min-width: 42px !important; } 
     .nav-item span { font-size: 0.55rem !important; letter-spacing: 0px !important; } 
     .nav-item i { font-size: 1.15rem !important; }
     
+    /* MENYEMBUNYIKAN LOGO DI MOBILE SANGAT KECIL JUGA */
     .top-nav .logo-img { display: none !important; }
     .brand-text { font-size: 1.2rem !important; }
     
+    /* Penyesuaian Ruang Penyimpanan di layar super kecil */
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
