@@ -437,7 +437,6 @@
             const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
 
             function updateIndicator() {
-                // Hanya jalankan di tampilan mobile/tablet
                 if(window.innerWidth > 768) {
                     if(indicator) indicator.style.display = 'none';
                     return;
@@ -446,13 +445,11 @@
                 const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
                 if (activeItem && indicator) {
                     indicator.style.display = 'block';
-                    // Menyesuaikan lebar dan posisi secara dinamis mengikuti ikon yang aktif
                     indicator.style.width = `${activeItem.offsetWidth}px`;
                     indicator.style.left = `${activeItem.offsetLeft}px`;
                 }
             }
 
-            // Memantau perubahan class (saat menu diklik oleh app.js)
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.attributeName === 'class') {
@@ -463,16 +460,46 @@
 
             navItems.forEach(item => {
                 observer.observe(item, { attributes: true });
-                // Fallback klik listener
                 item.addEventListener('click', () => {
                     setTimeout(updateIndicator, 10);
                 });
             });
 
-            // Update saat layar di-resize atau baru dimuat
             window.addEventListener('resize', updateIndicator);
             setTimeout(updateIndicator, 100);
-            setTimeout(updateIndicator, 500); // Ekstra delay untuk memastikan font termuat
+            setTimeout(updateIndicator, 500); 
+            
+            // ==============================================================
+            // ANIMASI HIDE WIDGET & FAB SAAT SCROLL (NICEGRAM/DRIVE STYLE)
+            // ==============================================================
+            const scroller = document.querySelector('.main-content-area');
+            const fab = document.querySelector('.new-btn-wrapper');
+            const widget = document.querySelector('.storage-widget');
+            let lastScrollTop = 0;
+            const delta = 5; // Threshold agar animasi tidak sensitif/getar
+
+            if (scroller) {
+                scroller.addEventListener('scroll', () => {
+                    if (window.innerWidth > 768) return; // Hanya eksekusi di Mobile/Tablet
+                    
+                    let scrollTop = scroller.scrollTop;
+                    
+                    // Pastikan scroll melewati batas delta
+                    if (Math.abs(lastScrollTop - scrollTop) <= delta) return;
+
+                    // Jika scroll ke bawah lebih dari 30px (menghindari hide di posisi paling atas)
+                    if (scrollTop > lastScrollTop && scrollTop > 30) {
+                        // Scroll Ke Bawah -> Sembunyikan ke bawah layar
+                        if(fab) fab.classList.add('hide-on-scroll');
+                        if(widget) widget.classList.add('hide-on-scroll');
+                    } else {
+                        // Scroll Ke Atas -> Tampilkan kembali
+                        if(fab) fab.classList.remove('hide-on-scroll');
+                        if(widget) widget.classList.remove('hide-on-scroll');
+                    }
+                    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
+                });
+            }
         });
     </script>
 </body>
