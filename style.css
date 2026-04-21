@@ -208,7 +208,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .search-bar-pill:focus-within .search-icon { color: var(--accent); }
 
 .breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
-.breadcrumb-area h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+.header-title-pill h2 { font-size: 1.8rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
 .back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 
 .back-btn { 
@@ -572,6 +572,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
+/* PEMBARUAN: EFEK KACA TEMBUS PANDANG PADA JUDUL & SEARCH BAR, WIDGET FIXED DI ATAS */
 @media screen and (max-width: 768px) {
     .dashboard-layout { padding: 0; }
     
@@ -590,44 +591,60 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .main-content-area { order: 2; height: 100%; overflow-y: auto !important; padding-bottom: 230px !important; position: relative; scrollbar-width: none; }
     .main-content-area::-webkit-scrollbar { display: none; }
     
+    /* Area Baris Pencarian Tembus Pandang Ke Grid File (Background Dihilangkan) */
     .search-row { position: sticky !important; top: 0 !important; z-index: 100 !important; padding: 10px 15px !important; margin: 0 !important; background: transparent !important; border: none !important; pointer-events: none !important; }
     .search-row > * { pointer-events: auto !important; }
     
+    /* Area Breadcrumb Tembus Pandang Ke Grid File (Background Dihilangkan) */
     .breadcrumb-area { position: sticky !important; top: 56px !important; z-index: 99 !important; padding: 5px 15px 15px 15px !important; margin: 0 !important; background: transparent !important; border: none !important; pointer-events: none !important; }
     
+    /* Desain Kapsul Search Abu-Abu Asli Apple (Liquid Glass Blur) */
     .search-bar-pill { 
         height: 40px !important; padding: 0 15px !important; border-radius: 20px !important; 
-        background: rgba(255, 255, 255, 0.85) !important; backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+        background: rgba(118, 118, 128, 0.15) !important; /* Warna abu-abu asli apple iOS */
+        backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
         border: 1px solid rgba(0, 0, 0, 0.05) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
     }
     .search-bar-pill input { font-size: 0.85rem !important; margin-left: 8px !important; }
     .search-icon { font-size: 0.85rem !important; }
     
-    .header-title-pill { display: inline-block; padding: 8px 16px; border-radius: 12px; margin-left: -5px; font-size: 1.3rem !important; font-weight: 700; color: var(--text-main); background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(15px) saturate(200%) !important; border: 1px solid rgba(0, 0, 0, 0.05) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important; }
+    /* Desain Kapsul Khusus Untuk Judul (Liquid Glass Blur) */
+    .header-title-pill { 
+        display: inline-block; padding: 8px 16px; border-radius: 18px; margin-left: -5px; 
+        background: rgba(255, 255, 255, 0.75) !important; /* Kaca Tembus Pandang */
+        backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+        pointer-events: auto !important;
+    }
+    .header-title-pill { font-size: 1.25rem !important; font-weight: 700; color: var(--text-main); margin: 0; letter-spacing: -0.3px; text-shadow: 0 1px 3px rgba(255,255,255,0.8); }
 
-    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 15px; height: auto !important; overflow-y: visible !important; padding-bottom: 0 !important; }
+    /* Grid file menyesuaikan posisi baru Widget di atas */
+    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 15px; height: auto !important; overflow-y: visible !important; padding-top: 85px !important; padding-bottom: 0 !important; }
     .item-card { padding: 8px; border-radius: 10px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
+    /* Widget Penyimpanan Fixed di Atas (Tepat di bawah Breadcrumb) Tanpa Animasi Hilang */
     .storage-widget { 
-        position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; left: 15px !important;
-        width: auto !important; min-width: 140px !important; max-width: 180px !important; margin: 0 !important;
-        background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(30px) saturate(200%) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important; border-radius: 16px !important; padding: 10px 14px !important; z-index: 5001 !important;
+        position: fixed !important; top: 115px !important; left: 15px !important; bottom: auto !important;
+        width: auto !important; min-width: 160px !important; max-width: 220px !important; margin: 0 !important;
+        background: rgba(255, 255, 255, 0.85) !important; backdrop-filter: blur(30px) saturate(200%) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08) !important; border-radius: 18px !important; padding: 10px 14px !important; z-index: 98 !important;
+        transition: none !important; /* Animasi menghilang dihapus */
     }
-    .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; color: var(--text-main) !important; }
-    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(0,0,0,0.05) !important; }
-    .storage-widget .storage-text { font-size: 0.6rem !important; color: var(--text-sec) !important; }
+    .storage-widget .storage-label { font-size: 0.75rem !important; margin-bottom: 4px !important; color: var(--text-main) !important; }
+    .storage-widget .progress-track { height: 5px !important; margin: 0 0 5px 0 !important; background: rgba(0,0,0,0.05) !important; }
+    .storage-widget .storage-text { font-size: 0.65rem !important; color: var(--text-sec) !important; }
     
+    /* Sidebar Menu Nicegram Style: Kapsul Pendek dengan Active Box yang membulat (50px) */
     .sidebar-menu { 
         position: fixed !important; bottom: calc(15px + env(safe-area-inset-bottom)) !important; left: 50% !important; transform: translateX(-50%) !important;
         width: max-content !important; max-width: 92vw !important; padding: 6px 8px !important; border-radius: 50px !important; 
         background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(40px) saturate(200%) !important; border: 1px solid rgba(0, 0, 0, 0.08) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important; z-index: 5000 !important; display: flex !important; flex-direction: row !important; gap: 0px !important; 
     }
-    .nav-indicator { display: block !important; position: absolute !important; top: 6px !important; height: 48px !important; border-radius: 50px !important; background: rgba(0, 0, 0, 0.04) !important; border: 1px solid rgba(0,0,0,0.02) !important; z-index: 0 !important; }
-    .nav-item { flex-direction: column !important; gap: 2px !important; min-width: 48px !important; height: 48px !important; padding: 4px 10px !important; color: var(--text-sec) !important; }
+    .nav-indicator { display: block !important; position: absolute !important; top: 6px !important; height: 48px !important; border-radius: 50px !important; background: rgba(0, 0, 0, 0.04) !important; border: 1px solid rgba(0,0,0,0.02) !important; z-index: 0 !important; transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; }
+    .nav-item { flex-direction: column !important; gap: 2px !important; min-width: 48px !important; height: 48px !important; padding: 4px 10px !important; color: var(--text-sec) !important; border-radius: 50px !important; z-index: 1 !important; transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; }
     .nav-item.active { color: var(--accent) !important; background: transparent !important; border: none !important; box-shadow: none !important; }
     .nav-item.active i { color: var(--accent) !important; transform: scale(1.05) !important; }
     .nav-item.active span { color: var(--accent) !important; font-weight: 700 !important; }
@@ -635,7 +652,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; }
     .hide-mobile { display: none !important; }
     
-    .new-btn-wrapper { position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; right: 15px !important; width: 50px !important; height: 50px !important; z-index: 5001 !important; margin: 0 !important; }
+    /* Tombol Plus Baru: Fixed Tanpa Animasi Menghilang */
+    .new-btn-wrapper { position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; right: 15px !important; width: 50px !important; height: 50px !important; z-index: 5001 !important; margin: 0 !important; transition: none !important; }
     .new-btn { width: 50px !important; height: 50px !important; border-radius: 50% !important; padding: 0 !important; justify-content: center !important; align-items: center !important; background: var(--accent) !important; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.3) !important; color: white !important; }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
@@ -691,7 +709,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
-    .storage-widget { min-width: 120px !important; max-width: 160px !important; padding: 8px 10px !important; left: 10px !important; }
+    .storage-widget { min-width: 140px !important; max-width: 180px !important; padding: 8px 12px !important; left: 15px !important; }
     .sidebar-menu { width: max-content !important; max-width: 96vw !important; padding: 5px 6px !important; justify-content: center !important; }
     .sidebar-menu .nav-item { padding: 4px 8px !important; min-width: 42px !important; } 
     .nav-item span { font-size: 0.55rem !important; letter-spacing: 0px !important; } 
