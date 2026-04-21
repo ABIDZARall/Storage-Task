@@ -63,13 +63,12 @@ const toggleLoading = (show, msg = "Memproses...") => {
 };
 
 // ======================================================
-// FUNGSI ANIMASI SLIDING NAV INDICATOR (NEW)
+// FUNGSI ANIMASI SLIDING NAV INDICATOR
 // ======================================================
 function updateNavIndicator(element) {
     const indicator = document.querySelector('.nav-indicator');
     if (!indicator || !element) return;
     
-    // Sesuaikan lebar dan letak (x, y) indicator dengan elemen menu (nav-item) aktif
     indicator.style.width = element.offsetWidth + 'px';
     indicator.style.height = element.offsetHeight + 'px';
     indicator.style.left = element.offsetLeft + 'px';
@@ -88,13 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initStorageTooltip(); 
     initProfileImageUploader(); 
     
-    // Inisialisasi posisi Indikator Kaca Bergeser saat layar pertama kali dibuka
     setTimeout(() => {
         const activeItem = document.querySelector('.nav-item.active');
         if(activeItem) updateNavIndicator(activeItem);
     }, 150);
 
-    // Update posisi indikator saat user me-resize layar hp/desktop
     window.addEventListener('resize', () => {
         const activeItem = document.querySelector('.nav-item.active');
         if(activeItem) updateNavIndicator(activeItem);
@@ -159,31 +156,33 @@ if (el('signupForm')) {
     });
 }
 
+// PERBAIKAN: Login Logic Dipercepat & Disederhanakan untuk Hemat Request
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
         try {
-            toggleLoading(true, "Mengecek Kredensial..."); checkSystemHealth();
+            toggleLoading(true, "Memproses Login..."); checkSystemHealth();
+            
             if (!inputId.includes('@')) {
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('name', inputId) ]);
-                if (res.documents.length > 0) inputId = res.documents[0].email; else throw new Error("Username tidak ditemukan di database.");
+                if (res.documents.length > 0) inputId = res.documents[0].email; 
+                else throw new Error("Username tidak ditemukan.");
             }
-            let dbUser = null;
-            const userCheck = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', inputId) ]);
-            if (userCheck.documents.length > 0) {
-                dbUser = userCheck.documents[0];
-                if (dbUser.password && dbUser.password !== pass && dbUser.password !== 'NULL') throw new Error("Password Anda salah.");
-            } else { throw new Error("Akun tidak ditemukan."); }
-
-            toggleLoading(true, "Menyiapkan Sesi Dashboard...");
-            let authSuccess = false;
-            try { await account.createEmailPasswordSession(inputId, pass); authSuccess = true; } catch (authErr) {}
-            let user = authSuccess ? await account.get() : { $id: dbUser.$id, name: dbUser.name, email: dbUser.email, phone: dbUser.phone };
-            if (authSuccess) await syncUserData(user); 
+            
+            // Langsung tembak Session ke Appwrite, hemat 2 API Request
+            await account.createEmailPasswordSession(inputId, pass); 
+            
+            let user = await account.get();
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            
+            await syncUserData(user); 
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(e => {});
             await initializeDashboard(user); 
-        } catch (error) { toggleLoading(false); alert("Login Gagal: " + error.message); }
+        } catch (error) { 
+            toggleLoading(false); 
+            alert("Login Gagal: " + error.message); 
+        }
     });
 }
 
@@ -194,8 +193,9 @@ function initLogout() {
         newBtn.addEventListener('click', async () => {
             if (confirm("Yakin ingin keluar dari Drive?")) {
                 toggleLoading(true, "Mengakhiri Sesi...");
-                if (currentUser) await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email });
+                if (currentUser) await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email }).catch(e=>{});
                 try { await account.deleteSession('current'); } catch (error) {}
+                sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
                 window.location.reload(); 
             }
         });
@@ -221,48 +221,71 @@ if (el('resetForm')) {
 }
 
 // ======================================================
-// 5. HELPER DATA & SINKRONISASI
+// 5. HELPER DATA & SINKRONISASI (DIOPTIMASI DENGAN CACHE)
 // ======================================================
 async function syncUserData(authUser) {
     if (!authUser) return;
     try {
-        let userDoc;
-        try { userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id); } catch (e) { if (e.code === 404) userDoc = null; }
-        const payload = { name: authUser.name, email: authUser.email };
-        if (!userDoc) { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); } 
-        else if (!userDoc.name || userDoc.name !== authUser.name) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); }
+        const cachedUserDataDB = sessionStorage.getItem('userDataDB');
+        if (cachedUserDataDB) {
+            userDataDB = JSON.parse(cachedUserDataDB);
+        } else {
+            let userDoc;
+            try { userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id); } catch (e) { if (e.code === 404) userDoc = null; }
+            const payload = { name: authUser.name, email: authUser.email };
+            if (!userDoc) { 
+                userDoc = await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); 
+            } else if (!userDoc.name || userDoc.name !== authUser.name) { 
+                userDoc = await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); 
+            }
+            userDataDB = userDoc;
+            sessionStorage.setItem('userDataDB', JSON.stringify(userDataDB));
+        }
     } catch (err) { console.error("Sync Error:", err); }
 }
 
 async function initializeDashboard(userObj) {
     currentUser = userObj;
-    folderHistory = [{ id: 'root', name: 'Drive' }]; // Inisialisasi awal
-    const dbPromise = databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id)
-        .then(doc => { userDataDB = doc; })
-        .catch(() => { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; });
+    folderHistory = [{ id: 'root', name: 'Drive' }];
     const filePromise = loadFiles('root');
     const storagePromise = calculateStorage();
-    await Promise.all([dbPromise, filePromise, storagePromise]);
+    await Promise.all([filePromise, storagePromise]);
     updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
+// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
-    toggleLoading(true, "Memuat Sesi Terakhir...");
+    toggleLoading(true, "Memuat Ruang Kerja...");
     try {
-        currentUser = await account.get();
-        await syncUserData(currentUser);
-        try { userDataDB = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id); } catch (e) { userDataDB = { phone: '', avatarUrl: DEFAULT_AVATAR_DB_URL }; }
+        const cachedUser = sessionStorage.getItem('currentUser');
+        if (cachedUser) {
+            currentUser = JSON.parse(cachedUser);
+            await syncUserData(currentUser);
+        } else {
+            currentUser = await account.get();
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+            await syncUserData(currentUser);
+        }
+        
         folderHistory = [{ id: 'root', name: 'Drive' }];
-        updateProfileUI(); window.nav('dashboardPage'); loadFiles('root'); calculateStorage();
-    } catch (e) { window.nav('loginPage'); } finally { toggleLoading(false); }
+        updateProfileUI(); window.nav('dashboardPage'); 
+        calculateStorage(); loadFiles('root');
+    } catch (e) { 
+        sessionStorage.clear();
+        window.nav('loginPage'); 
+    } finally { 
+        toggleLoading(false); 
+    }
 }
 
+// PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     let finalSrc;
     if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') { finalSrc = DEFAULT_AVATAR_LOCAL; } 
-    else { finalSrc = dbUrl + `&t=${new Date().getTime()}`; } 
+    else { finalSrc = dbUrl; } 
+    
     if(el('dashAvatar')) el('dashAvatar').src = finalSrc;
     if(el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc;
     if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
@@ -271,7 +294,6 @@ function updateProfileUI() {
 window.nav = (pageId) => {
     ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => { const element = el(id); if(element) element.classList.add('hidden'); });
     const target = el(pageId); if(target) target.classList.remove('hidden');
-    // Memastikan indikator terupdate dengan benar saat berganti layar utama
     setTimeout(() => {
         const activeItem = document.querySelector('.nav-item.active');
         if(activeItem) updateNavIndicator(activeItem);
@@ -309,7 +331,8 @@ window.saveProfile = async () => {
         
         if (selectedProfileImage) {
             const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-            newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
+            // Tambahkan cache buster KHUSUS SAAT UPLOAD SAJA agar update instan di browser
+            newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href + `&t=${new Date().getTime()}`;
         }
 
         if (newName && newName !== currentUser.name) await account.updateName(newName);
@@ -324,24 +347,23 @@ window.saveProfile = async () => {
         if (!userDataDB) userDataDB = {};
         userDataDB.phone = newPhone; userDataDB.avatarUrl = newAvatarUrl;
 
-        currentUser = await account.get(); updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
+        sessionStorage.setItem('userDataDB', JSON.stringify(userDataDB));
+        currentUser = await account.get(); sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
     } catch (error) { toggleLoading(false); alert("Gagal Menyimpan: " + error.message); }
 };
 
 // ======================================================
-// 7. FILE MANAGER LOGIC & THUMBNAIL GOOGLE DRIVE
+// 7. FILE MANAGER LOGIC
 // ======================================================
 
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
 
-// LOGIKA NAVIGASI SIDEBAR
 window.handleMenuClick = (element, mode) => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
     element.classList.add('active');
-    
-    // Panggil logika untuk menggeser indikator aktif
     updateNavIndicator(element);
 
     currentFolderId = 'root'; currentViewMode = mode;
@@ -351,36 +373,29 @@ window.handleMenuClick = (element, mode) => {
     else if(mode === 'trash') currentFolderName = "Sampah";
     else currentFolderName = element.innerText.trim();
     
-    // Reset history stack jika pindah menu sidebar utama
     folderHistory = [{ id: currentFolderId, name: currentFolderName }];
-    
     loadFiles(mode);
 };
 
-// LOGIKA NAVIGASI TOMBOL KEMBALI BERTAHAP
 window.goBack = () => {
     if (folderHistory.length > 1) {
-        // Hapus folder saat ini dari riwayat
         folderHistory.pop(); 
-        // Ambil data folder parent (sebelumnya)
         const parent = folderHistory[folderHistory.length - 1];
         currentFolderId = parent.id; 
         currentFolderName = parent.name;
-        currentViewMode = 'root'; // Pastikan dalam mode file root jika mundur dari folder
+        currentViewMode = 'root'; 
         loadFiles(currentFolderId);
     } else {
-        // Jika sudah di root atau di mode lain (recent, trash), reset ke Drive utama
         currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
         folderHistory = [{ id: 'root', name: 'Drive' }];
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         const navDriveEl = document.querySelectorAll('.nav-item')[0];
         navDriveEl.classList.add('active'); 
-        updateNavIndicator(navDriveEl); // Geser indikator kembali ke drive utama
+        updateNavIndicator(navDriveEl); 
         loadFiles('root');
     }
 };
 
-// LOGIKA NAVIGASI MASUK FOLDER (TAMBAH KE HISTORY)
 window.openFolder = (id, name) => { 
     folderHistory.push({ id, name });
     currentFolderId = id; 
@@ -420,7 +435,6 @@ async function fallbackSearch(keyword) {
 
 window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-// FUNGSI HELPER UNTUK MENGATUR POSISI MENU AGAR TIDAK KELUAR LAYAR (RESPONSIVE EDGE PROTECTION)
 function positionMenuInsideWindow(menu, clientX, clientY) {
     menu.classList.remove('hidden'); 
     menu.classList.add('show');
@@ -433,16 +447,8 @@ function positionMenuInsideWindow(menu, clientX, clientY) {
     let left = clientX;
     let top = clientY;
     
-    // Jika menu melebar ke kanan melebihi layar, geser ke kiri
-    if (left + menuWidth > windowWidth) {
-        left = windowWidth - menuWidth - 10;
-    }
-    // Jika menu memanjang ke bawah melebihi layar, geser ke atas
-    if (top + menuHeight > windowHeight) {
-        top = windowHeight - menuHeight - 10;
-    }
-    
-    // Pastikan tidak negatif (terpotong di kiri/atas)
+    if (left + menuWidth > windowWidth) left = windowWidth - menuWidth - 10;
+    if (top + menuHeight > windowHeight) top = windowHeight - menuHeight - 10;
     if (left < 0) left = 10;
     if (top < 0) top = 10;
     
@@ -492,11 +498,27 @@ function renderItem(doc) {
         if (familiarImages.includes(ext)) {
             content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
-            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="metadata" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
+            // PERBAIKAN: preload diubah ke "none" agar tidak menyedot kuota Cached Egress Appwrite
+            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
             content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            const backendThumbUrl = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
+            // PERBAIKAN: Smart Thumbnail Cache untuk Dokumen HuggingFace
+            let thumbUrlToUse = '';
+            let localCache = JSON.parse(localStorage.getItem('hfThumbCache') || '{}');
+            
+            if (doc.thumbUrl && doc.thumbUrl !== 'NULL' && doc.thumbUrl !== '') {
+                thumbUrlToUse = doc.thumbUrl;
+            } else if (localCache[doc.fileId]) {
+                thumbUrlToUse = localCache[doc.fileId];
+            } else {
+                thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
+                localCache[doc.fileId] = thumbUrlToUse;
+                localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
+                // Opsional: Coba update ke Appwrite jika Anda sudah buat attribute 'thumbUrl' di database
+                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>console.log("Tambahkan atribut 'thumbUrl' bertipe String di Appwrite untuk efisiensi cloud."));
+            }
+
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
             if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
             else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
@@ -505,7 +527,7 @@ function renderItem(doc) {
 
             content = `
                 <div class="thumb-box" style="background:#f8f9fa;">
-                    <img src="${backendThumbUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
+                    <img src="${thumbUrlToUse}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
                     <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
                     </div>
@@ -532,7 +554,6 @@ function renderItem(doc) {
             }
         });
 
-        // Gunakan fungsi proteksi batas layar untuk menu konteks file
         positionMenuInsideWindow(menu, e.clientX, e.clientY);
         
         const isTrash = doc.trashed;
@@ -679,9 +700,17 @@ window.openStorageModal = async () => {
     window.openModal('storageModal');
 };
 
+// PERBAIKAN: Fungsi Cache Storage untuk Menghindari Request Berlebihan
 async function calculateStorage() {
     if (!currentUser) return;
     try {
+        const cachedStorage = sessionStorage.getItem('storageDetail');
+        if (cachedStorage && !window.forceCalculateStorage) {
+            storageDetail = JSON.parse(cachedStorage);
+            updateStorageUI();
+            return;
+        }
+
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file') ]);
         
         storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 }; const limit = 2 * 1024 * 1024 * 1024; 
@@ -694,11 +723,20 @@ async function calculateStorage() {
             else storageDetail.others += size;
         });
 
-        el('storageUsed').innerText = formatSize(storageDetail.total);
-        const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
+        sessionStorage.setItem('storageDetail', JSON.stringify(storageDetail));
+        window.forceCalculateStorage = false;
+        updateStorageUI();
+    } catch (e) { console.error("Gagal hitung storage:", e); }
+}
+
+function updateStorageUI() {
+    const limit = 2 * 1024 * 1024 * 1024;
+    if(el('storageUsed')) el('storageUsed').innerText = formatSize(storageDetail.total);
+    const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
+    if(el('storageBar')) {
         el('storageBar').style.width = `${totalPct}%`;
         if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
-    } catch (e) { console.error("Gagal hitung storage:", e); }
+    }
 }
 
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
@@ -716,14 +754,16 @@ window.submitUploadFile = async () => {
     try {
         const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false });
-        resetUploadUI(); loadFiles(currentFolderId); calculateStorage();
+        resetUploadUI(); 
+        window.forceCalculateStorage = true;
+        loadFiles(currentFolderId); calculateStorage();
     } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
-window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
-window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); loadFiles('trash'); closeAllMenus(); } catch(e){} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa kembali!")) return; try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); window.forceCalculateStorage = true; loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa kembali!")) return; toggleLoading(true, "Menghapus..."); try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} finally { toggleLoading(false); }};
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : openPreview(selectedItem); closeAllMenus(); };
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
@@ -768,30 +808,24 @@ async function loadFiles(param) {
     } catch (e) { console.error(e); } 
 }
 
-// LOGIKA UPDATE HEADER (MENAMPILKAN NAMA FOLDER BREADCRUMB SESUAI HISTORY)
 function updateHeaderUI() { 
     const container = document.querySelector('.breadcrumb-area'); 
     const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
     
     if (isRoot) { 
         const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle">Welcome In Drive ${s}</h2>`; 
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
     } else { 
         let backText = "Drive";
-        
-        // Membaca nama folder parent dari history stack
-        if (folderHistory.length > 1) {
-            backText = folderHistory[folderHistory.length - 2].name; 
-        } else if (currentViewMode !== 'root') {
-            backText = "Drive"; 
-        }
+        if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
+        else if (currentViewMode !== 'root') { backText = "Drive"; }
 
         container.innerHTML = `
             <div class="back-nav-container">
                 <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
                 </button>
-                <h2 id="headerTitle" style="margin-top:10px;">${currentFolderName}</h2>
+                <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
             </div>`; 
     } 
 }
@@ -845,7 +879,6 @@ window.openPreview = (doc) => {
     const contentArea = el('previewContent');
     contentArea.innerHTML = '<div class="spinner"></div>'; 
 
-    // Tampilkan modal overlay dengan opacity smooth
     const overlay = el('previewModal');
     overlay.classList.remove('hidden');
     setTimeout(() => overlay.classList.add('show-preview'), 10);
@@ -914,7 +947,6 @@ window.openPreview = (doc) => {
             setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // INJEKSI HTML AUDIO PLAYER LIQUID GLASS APPLE ORIGINAL v2
             contentArea.innerHTML = `
                 <div class="apple-audio-player-v2">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -979,7 +1011,7 @@ window.openPreview = (doc) => {
                 </div>
             `;
         }
-    }, 400); // Waktu agar loading animation smooth
+    }, 400); 
 };
 
 // ==============================================================================
@@ -1007,7 +1039,6 @@ function initAppleAudioPlayer() {
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    // 1. Sinkronisasi Timeline dengan Lagu yang Berjalan
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
@@ -1019,13 +1050,11 @@ function initAppleAudioPlayer() {
         }
     });
 
-    // 2. Tampilkan Total Durasi saat Metadata Dimuat
     audio.addEventListener('loadedmetadata', () => {
         currentTimeEl.innerText = "0:00";
         durationEl.innerText = `-${formatTime(audio.duration)}`;
     });
 
-    // 3. Logika Seeking (Menggeser Timeline Slider Kaca)
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
@@ -1042,9 +1071,8 @@ function initAppleAudioPlayer() {
         isDraggingAudio = false;
     });
 
-    // 4. Logika Volume Slider
     if (volumeSlider) {
-        audio.volume = 1; // Default
+        audio.volume = 1; 
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
             audio.volume = vol;
@@ -1052,7 +1080,6 @@ function initAppleAudioPlayer() {
         });
     }
 
-    // 5. Logika Play/Pause
     const togglePlay = () => {
         if (audio.paused) {
             audio.play();
@@ -1074,7 +1101,6 @@ function initAppleAudioPlayer() {
         coverArt.classList.remove('playing');
     });
 
-    // 6. Logika Pindah Navigasi Galeri
     const triggerTrackChange = (direction) => {
         const displayedDocs = getDisplayedDocuments();
         if (displayedDocs.length <= 1) return; 
@@ -1088,7 +1114,6 @@ function initAppleAudioPlayer() {
 
         const nextDocName = displayedDocs[nextIndex].name;
         
-        // Pindah lagu
         displayedDocs.forEach(docObj => {
             if(docObj.name === nextDocName && docObj.element) {
                 docObj.element.click(); 
@@ -1099,10 +1124,9 @@ function initAppleAudioPlayer() {
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         coverArt.classList.remove('playing');
-        triggerTrackChange(1); // Lanjut lagu otomatis
+        triggerTrackChange(1); 
     });
 
-    // 7. Logika Navigasi Cerdas (1x Klik = Skip, 2x Klik = Pindah Lagu)
     function attachSmartNav(element, skipTime, navDir) {
         if(!element) return;
         let timer = null;
@@ -1117,7 +1141,6 @@ function initAppleAudioPlayer() {
 
             if (clickCount === 1) {
                 timer = setTimeout(() => {
-                    // Klik 1x: Skip Mundur / Maju 10 detik
                     if(audio && !isNaN(audio.duration)) {
                         let newTime = audio.currentTime + skipTime;
                         if(newTime < 0) newTime = 0;
@@ -1127,7 +1150,6 @@ function initAppleAudioPlayer() {
                     clickCount = 0;
                 }, 280); 
             } else if (clickCount === 2) {
-                // Klik 2x: Pindah Lagu / File
                 clearTimeout(timer);
                 triggerTrackChange(navDir);
                 clickCount = 0;
@@ -1138,7 +1160,6 @@ function initAppleAudioPlayer() {
     attachSmartNav(prevBtn, -10, -1); 
     attachSmartNav(nextBtn, 10, 1); 
 }
-// ==============================================================================
 
 window.navigatePreview = (direction) => {
     if (!currentPreviewDoc) return;
@@ -1275,11 +1296,9 @@ window.initCustomVideoPlayer = () => {
 window.closePreview = () => {
     const overlay = el('previewModal');
     
-    // Matikan video jika dimainkan
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
     
-    // Matikan audio jika dimainkan
     if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
@@ -1289,7 +1308,7 @@ window.closePreview = () => {
         el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
         clearTimeout(hideOverlayTimeout);
-    }, 350); // Waktu sesuai durasi animasi CSS dijamin hilang murni
+    }, 350); 
 };
 
 window.downloadPreviewItem = () => {
