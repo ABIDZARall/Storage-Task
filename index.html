@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#F5F5F7">
-    <title>Storage Tasks - Pro Drive</title>
+    <meta name="theme-color" content="#ffffff"> <title>Storage Tasks - Pro Drive</title>
     
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,7 +12,7 @@
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="liquid-bg"></div>
+    <div class="apple-bg"></div>
 
     <div id="loading" class="loading-overlay hidden">
         <div class="spinner"></div>
@@ -27,7 +26,7 @@
     </div>
 
     <section id="loginPage" class="full-screen-center hidden">
-        <div class="glass-card auth-card">
+        <div class="apple-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
                 <h3>Login</h3>
@@ -56,7 +55,7 @@
     </section>
 
     <section id="signupPage" class="full-screen-center hidden">
-        <div class="glass-card auth-card">
+        <div class="apple-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
                 <h3>Sign Up</h3>
@@ -82,11 +81,11 @@
     </section>
 
     <section id="resetPage" class="full-screen-center hidden">
-        <div class="glass-card auth-card">
+        <div class="apple-card auth-card">
             <div class="auth-header">
                 <img src="logo.png" alt="Logo" class="auth-logo">
                 <h3>Reset Password</h3>
-                <p style="font-size: 0.85rem; color: #94a3b8; margin-top:5px; margin-bottom: 25px;">Masukkan email akun Anda untuk membuat password baru.</p>
+                <p class="subtitle-text">Masukkan email akun Anda untuk membuat password baru.</p>
             </div>
             <form id="resetForm">
                 <div class="pill-input">
@@ -121,11 +120,11 @@
             </div>
             <div class="profile-area">
                 <img src="profile-default.jpeg" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()" title="Edit Profil">
-                <button id="logoutBtn" class="btn-pill small logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
+                <button id="logoutBtn" class="icon-btn-light logout-btn" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
 
-        <div class="main-glass-panel">
+        <div class="main-panel">
             <aside class="sidebar-left">
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn">
@@ -158,7 +157,7 @@
                 </nav>
 
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;" title="Lihat detail penyimpanan">
-                    <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
+                    <div class="storage-label"><i class="fa-solid fa-cloud"></i> Storage Indication</div>
                     <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
                     <div class="storage-text"><span id="storageUsed">0 MB</span> / 2 GB</div>
                 </div>
@@ -168,21 +167,19 @@
                 <div class="search-row">
                     <div class="search-bar-pill" id="searchContainer">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="Telusuri di Drive..." autocomplete="off">
+                        <input type="text" id="searchInput" placeholder="Search in Cloud Drive..." autocomplete="off">
                         <i class="fa-solid fa-xmark clear-icon hidden" id="clearSearchBtn" onclick="clearSearch()"></i>
                     </div>
                 </div>
                 
-                <div class="breadcrumb-area">
-                    <h2 id="headerTitle" class="header-title-pill">Good Afternoon, bizar_algi!</h2>
-                </div>
+                <div class="breadcrumb-area"><h2 id="headerTitle" class="header-title-pill">Good Afternoon!</h2></div>
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
         </div>
     </section>
 
     <section id="profilePage" class="full-screen-center hidden">
-        <div class="glass-card profile-card">
+        <div class="apple-card profile-card">
             <div class="profile-header">
                 <h3><i class="fa-solid fa-arrow-left" style="cursor:pointer; margin-right:10px;" onclick="nav('dashboardPage')"></i> Edit Profil</h3>
             </div>
@@ -213,7 +210,7 @@
                 </div>
                 
                 <div class="separator-line"></div>
-                <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:5px;">Ubah Password (Opsional)</p>
+                <p class="subtitle-text" style="text-align: left; width: 100%; margin-bottom:5px;">Ubah Password (Opsional)</p>
                 
                 <div class="pill-input">
                     <i class="fa-solid fa-key"></i>
@@ -231,14 +228,14 @@
 
     <section id="storagePage" class="full-screen-layout hidden">
         <header class="storage-page-header">
-            <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="icon-btn-light" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
             <h2>Pengelola Penyimpanan</h2>
             <div style="flex:1"></div>
             <img src="profile-default.jpeg" alt="User" class="avatar" id="storagePageAvatar">
         </header>
 
         <div class="storage-page-content">
-            <div class="storage-manager-card">
+            <div class="apple-card storage-manager-card">
                 <div class="card-header-text">
                     <h1 id="pageStoragePercent">Ruang penyimpanan 0% penuh</h1>
                     <p>Penyimpanan Anda digunakan bersama di Google Drive, Foto, dan lainnya.</p>
@@ -284,7 +281,7 @@
     </section>
 
     <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
-        <div class="glass-card modal-box">
+        <div class="apple-modal modal-box">
             <div class="modal-header">
                 <h3>Folder Baru</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('folderModal')"></i>
@@ -303,7 +300,7 @@
     </div>
 
     <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
-        <div class="glass-card modal-box upload-box-style">
+        <div class="apple-modal modal-box upload-box-style">
             <div class="modal-header">
                 <h3>Upload File</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
@@ -317,16 +314,16 @@
                 <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
             </div>
             <div class="modal-actions">
-                <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
+                <button class="btn-pill primary full-width" style="margin-top: 15px;" onclick="submitUploadFile()">Mulai Upload</button>
             </div>
         </div>
     </div>
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
-        <div class="glass-card modal-box storage-detail-box-wide">
+        <div class="apple-modal modal-box storage-detail-box-wide">
             <div class="storage-modal-header">
                 <h3>Penyimpanan</h3>
-                <i class="fa-solid fa-xmark close-icon-simple" onclick="closeModal('storageModal')"></i>
+                <i class="fa-solid fa-xmark close-icon" onclick="closeModal('storageModal')"></i>
             </div>
             <div class="storage-flex-container">
                 <div class="storage-col-left">
@@ -344,7 +341,7 @@
                         </div>
                     </div>
                     <div class="storage-btn-left-container">
-                        <button class="btn-rect secondary-dark" onclick="openStoragePage()">Kosongkan ruang penyimpanan</button>
+                        <button class="btn-rect secondary" onclick="openStoragePage()">Kosongkan ruang</button>
                     </div>
                 </div>
                 <div class="storage-col-right">
@@ -355,7 +352,7 @@
                         <div class="legend-row"><div class="legend-label"><span class="dot dot-others"></span> Lainnya</div><span id="valOthers" class="legend-val">0 MB</span></div>
                     </div>
                     <div class="storage-btn-right-container">
-                        <button class="btn-rect primary-dark" onclick="alert('Fitur upgrade akan segera hadir')">Dapatkan penyimpanan ekstra</button>
+                        <button class="btn-rect primary-light" onclick="alert('Fitur upgrade akan segera hadir')">Penyimpanan ekstra</button>
                     </div>
                 </div>
             </div> 
@@ -374,11 +371,11 @@
                 </div>
             </div>
             <div class="preview-header-right">
-                <button class="icon-btn" onclick="downloadPreviewItem()" title="Download"><i class="fa-solid fa-download"></i></button>
+                <button class="icon-btn-preview" onclick="downloadPreviewItem()" title="Download"><i class="fa-solid fa-download"></i></button>
                 <div style="position: relative;">
-                    <button class="icon-btn" onclick="togglePreviewMenu()" title="Tindakan lainnya"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    <div id="previewContextMenu" class="dropdown-content hidden" style="top: 50px; right: 0; left: auto; min-width: 200px;">
-                        <a href="javascript:void(0)" onclick="openPreviewInNewTab()"><i class="fa-solid fa-up-right-from-square"></i> Buka di jendela baru</a>
+                    <button class="icon-btn-preview" onclick="togglePreviewMenu()" title="Tindakan lainnya"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    <div id="previewContextMenu" class="dropdown-content hidden" style="top: 50px; right: 0; left: auto; min-width: 200px; background: rgba(30,41,59,0.9);">
+                        <a href="javascript:void(0)" onclick="openPreviewInNewTab()" style="color: white;"><i class="fa-solid fa-up-right-from-square"></i> Buka di jendela baru</a>
                     </div>
                 </div>
             </div>
@@ -391,8 +388,7 @@
                 </button>
             </div>
 
-            <div id="previewContent" class="preview-content-area">
-                </div>
+            <div id="previewContent" class="preview-content-area"></div>
 
             <div class="nav-button-container nav-right">
                 <button id="previewNextBtn" class="apple-glass-btn pure-glass nav-arrow hidden" onclick="navigatePreview(1)" title="File Selanjutnya">
@@ -402,10 +398,10 @@
         </div>
     </div>
 
-    <div id="fileContextMenu" class="context-menu-modern hidden">
+    <div id="fileContextMenu" class="context-menu-apple hidden">
         <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
         <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
-        <div class="ctx-item" id="ctxBtnOpenWith" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right"></i></div>
+        <div class="ctx-item" id="ctxBtnOpenWith" onclick="openCurrentItem()"><i class="fa-solid fa-up-right-from-square"></i><span>Buka dengan</span><i class="fa-solid fa-caret-right arrow-right" style="margin-left: auto;"></i></div>
         <hr class="ctx-divider">
         <div class="ctx-item" id="ctxBtnDownload" onclick="downloadCurrentItem()"><i class="fa-solid fa-download"></i><span>Download</span></div>
         <div class="ctx-item" onclick="renameCurrentItem()"><i class="fa-solid fa-pen"></i><span>Ganti nama</span></div>
@@ -419,7 +415,7 @@
         <div class="ctx-item ctx-danger hidden" id="ctxPermDeleteBtn" onclick="deleteItemPermanently()"><i class="fa-solid fa-ban"></i><span>Hapus Permanen</span></div>
     </div>
 
-    <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
+    <div id="globalContextMenu" class="dropdown-content context-menu-apple context-menu-fixed hidden">
         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
         <hr class="menu-divider">
         <a href="javascript:void(0)" onclick="triggerUploadModal()"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
@@ -440,16 +436,24 @@
 
             function updateIndicator() {
                 if(window.innerWidth > 768) {
-                    if(indicator) indicator.style.display = 'none';
+                    const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
+                    if(indicator && activeItem) {
+                        indicator.style.display = 'block';
+                        indicator.style.width = '100%';
+                        indicator.style.height = `${activeItem.offsetHeight}px`;
+                        indicator.style.left = '0';
+                        indicator.style.top = `${activeItem.offsetTop}px`;
+                    }
                     return;
                 }
                 
                 const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
                 if (activeItem && indicator) {
                     indicator.style.display = 'block';
-                    // Menyesuaikan lebar dan posisi secara dinamis mengikuti ikon yang aktif dengan animasi CSS
                     indicator.style.width = `${activeItem.offsetWidth}px`;
+                    indicator.style.height = `100%`;
                     indicator.style.left = `${activeItem.offsetLeft}px`;
+                    indicator.style.top = `0`;
                 }
             }
 
@@ -471,7 +475,6 @@
             window.addEventListener('resize', updateIndicator);
             setTimeout(updateIndicator, 100);
             setTimeout(updateIndicator, 500); 
-            // Catatan: Skrip scroll menyembunyikan tombol & widget telah dihapus agar permanen/fixed.
         });
     </script>
 </body>
