@@ -409,7 +409,7 @@ function initSearchBar() {
         const query = e.target.value.trim();
         if (query.length === 0) { el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); return; }
         el('clearSearchBtn').classList.remove('hidden'); clearTimeout(searchTimeout);
-        el('fileGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;margin-top:50px;"><div class="spinner"></div><p>Mencari "${query}"...</p></div>`;
+        el('fileGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;margin-top:50px;"><div class="spinner"></div><p style="color:#1D1D1F;">Mencari "${query}"...</p></div>`;
         searchTimeout = setTimeout(() => performSearch(query), 600);
     });
 }
@@ -419,7 +419,7 @@ async function performSearch(keyword) {
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.search('name', keyword), Appwrite.Query.limit(50) ]);
         updatePreviewList(res.documents); 
         const grid = el('fileGrid'); grid.innerHTML = '';
-        if (res.documents.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else res.documents.forEach(doc => renderItem(doc));
+        if (res.documents.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#86868B;">Tidak ditemukan.</p>`; else res.documents.forEach(doc => renderItem(doc));
     } catch (e) { fallbackSearch(keyword); }
 }
 
@@ -429,7 +429,7 @@ async function fallbackSearch(keyword) {
         const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase()));
         updatePreviewList(filtered); 
         const grid = el('fileGrid'); grid.innerHTML = '';
-        if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
+        if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#86868B;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
     } catch(err){}
 }
 
@@ -461,7 +461,7 @@ function renderItem(doc) {
     const div = document.createElement('div'); div.className = 'item-card';
 
     const isFolder = doc.type === 'folder';
-    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:15;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
+    const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#FFCC00;z-index:15;text-shadow:0 0 5px rgba(0,0,0,0.1);"></i>` : '';
     let content = '';
 
     if (isFolder) {
@@ -499,9 +499,9 @@ function renderItem(doc) {
             content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
         } else if (vidExts.includes(ext)) {
             // PERBAIKAN: preload diubah ke "none" agar tidak menyedot kuota Cached Egress Appwrite
-            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
+            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.9); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
-            content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
+            content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(175,82,222,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             // PERBAIKAN: Smart Thumbnail Cache untuk Dokumen HuggingFace
             let thumbUrlToUse = '';
@@ -520,15 +520,15 @@ function renderItem(doc) {
             }
 
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
-            if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#ea4335"; }
-            else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#4285f4"; }
-            else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34a853"; }
-            else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#fbbc04"; }
+            if (pdfExt.includes(ext)) { badgeIcon = "fa-file-pdf"; badgeColor = "#FF3B30"; }
+            else if (ext.includes('doc')) { badgeIcon = "fa-file-word"; badgeColor = "#007AFF"; }
+            else if (ext.includes('xls') || ext.includes('csv')) { badgeIcon = "fa-file-excel"; badgeColor = "#34C759"; }
+            else if (ext.includes('ppt')) { badgeIcon = "fa-file-powerpoint"; badgeColor = "#FF9500"; }
 
             content = `
-                <div class="thumb-box" style="background:#f8f9fa;">
+                <div class="thumb-box" style="background:#F5F5F7;">
                     <img src="${thumbUrlToUse}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
-                    <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                    <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
                     </div>
                 </div>
@@ -735,7 +735,7 @@ function updateStorageUI() {
     const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
     if(el('storageBar')) {
         el('storageBar').style.width = `${totalPct}%`;
-        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
+        if(totalPct > 90) el('storageBar').style.backgroundColor = '#FF3B30'; else el('storageBar').style.backgroundColor = '';
     }
 }
 
@@ -800,7 +800,7 @@ async function loadFiles(param) {
                         <div class="mac-folder-back"></div>
                         <div class="mac-folder-front"></div>
                     </div>
-                    <p>Folder Kosong</p>
+                    <p style="color:#86868B;">Folder Kosong</p>
                 </div>`; 
         } else {
             res.documents.forEach(doc => renderItem(doc)); 
@@ -814,7 +814,8 @@ function updateHeaderUI() {
     
     if (isRoot) { 
         const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
+        const userName = currentUser ? currentUser.name.split(' ')[0] : 'User';
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Good ${s}, ${userName}!</h2>`; 
     } else { 
         let backText = "Drive";
         if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
@@ -864,13 +865,13 @@ window.openPreview = (doc) => {
     const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
     const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
 
-    if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
-    else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
-    else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; iconColor = "#34a853"; }
-    else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#fbbc04"; }
-    else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#2dd4bf"; }
-    else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#facc15"; }
-    else if (audioExts.includes(ext)) { iconClass = "fa-music"; iconColor = "#a855f7"; }
+    if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#FF3B30"; }
+    else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#007AFF"; }
+    else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; iconColor = "#34C759"; }
+    else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; iconColor = "#FF9500"; }
+    else if (familiarImages.includes(ext)) { iconClass = "fa-file-image"; iconColor = "#007AFF"; }
+    else if (vidExts.includes(ext)) { iconClass = "fa-file-video"; iconColor = "#FFCC00"; }
+    else if (audioExts.includes(ext)) { iconClass = "fa-music"; iconColor = "#AF52DE"; }
 
     const iconEl = el('previewFileIcon');
     iconEl.className = `fa-solid ${iconClass}`;
@@ -984,8 +985,6 @@ window.openPreview = (doc) => {
                             <i class="fa-solid fa-volume-high"></i>
                         </div>
                     </div>
-                    
-                    <div class="ios-indicator"></div>
                 </div>
             `;
             setTimeout(initAppleAudioPlayer, 50);
@@ -1004,9 +1003,9 @@ window.openPreview = (doc) => {
         } 
         else {
             contentArea.innerHTML = `
-                <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
-                    <i class="fa-solid ${iconClass}" style="font-size:4rem; margin-bottom:20px; color:rgba(255,255,255,0.3);"></i>
-                    <p>Pratinjau tidak tersedia untuk format file ini.</p>
+                <div class="preview-unsupported">
+                    <i class="fa-solid ${iconClass}" style="color: rgba(255,255,255,0.2);"></i>
+                    <p style="color:#FFFFFF;">Pratinjau tidak tersedia untuk format file ini.</p>
                     <button class="btn-pill primary" style="width:auto; margin-top:20px; padding:0 30px;" onclick="downloadPreviewItem()">Download File</button>
                 </div>
             `;
