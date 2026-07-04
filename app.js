@@ -482,7 +482,7 @@ function renderItem(doc) {
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
 
-        const createFallback = (ext) => {
+        const createFallback = (ext, forOnError = false) => {
             let iconClass = "fa-file"; let colorClass = "icon-grey";
             if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; } }
             else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; } 
@@ -492,20 +492,32 @@ function renderItem(doc) {
             else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
             else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } 
             
-            return `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`.replace(/"/g, "'"); 
+            const htmlStr = `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`;
+            // PERBAIKAN: Gunakan &quot; untuk atribut HTML agar terhindar dari Syntax Error di onerror=''
+            return forOnError ? htmlStr.replace(/"/g, "&quot;") : htmlStr;
         };
 
         if (familiarImages.includes(ext)) {
-            content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></div>`;
+            content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext, true)}'"></div>`;
         } else if (vidExts.includes(ext)) {
             // PERBAIKAN: preload diubah ke "none" agar tidak menyedot kuota Cached Egress Appwrite
-            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
+            content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext, true)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
             content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
             // PERBAIKAN: Smart Thumbnail Cache untuk Dokumen HuggingFace
             let thumbUrlToUse = '';
             let localCache = JSON.parse(localStorage.getItem('hfThumbCache') || '{}');
+            
+            if (doc.thumbUrl && doc.thumbUrl !== 'NULL' && doc.thumbUrl !== '') {
+                thumbUrlToUse = doc.thumbUrl;
+            } else if (localCache[doc.fileId]) {
+                thumbUrlToUse = localCache[doc.fileId];
+            } else {
+                thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
+                localCache[doc.fileId] = thumbUrlToUse;
+                localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
+            }
             
             if (doc.thumbUrl && doc.thumbUrl !== 'NULL' && doc.thumbUrl !== '') {
                 thumbUrlToUse = doc.thumbUrl;
@@ -527,14 +539,15 @@ function renderItem(doc) {
 
             content = `
                 <div class="thumb-box" style="background:#f8f9fa;">
-                    <img src="${thumbUrlToUse}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext)}'" style="object-fit: cover;">
+                    <img src="${thumbUrlToUse}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext, true)}'" style="object-fit: cover;">
                     <div style="position: absolute; bottom: 6px; right: 6px; background: rgba(255,255,255,0.95); padding: 5px 7px; border-radius: 6px; display: flex; align-items: center; justify-content: center; z-index: 11; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                         <i class="fa-solid ${badgeIcon}" style="font-size: 1.1rem; color: ${badgeColor};"></i>
                     </div>
                 </div>
             `;
         } else {
-            content = `<div class="thumb-box">${createFallback(ext).replace(/'/g, '"')}</div>`;
+            // Jika elemen langsung dirender via DOM (bukan via onerror), tidak perlu parameter true
+            content = `<div class="thumb-box">${createFallback(ext)}</div>`;
         }
     }
 
