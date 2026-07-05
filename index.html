@@ -303,21 +303,36 @@
     <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
         <div class="glass-card modal-box upload-box-style">
             <div class="modal-header">
-                <h3>Upload File</h3>
+                <h3 id="uploadModalTitle">Upload File</h3>
                 <i class="fa-solid fa-xmark close-icon" onclick="closeModal('uploadModal')"></i>
             </div>
             <div class="modal-body">
-                <div id="dropZone" class="drag-drop-area" onclick="document.getElementById('fileInputHidden').click()">
+                <div id="dropZone" class="drag-drop-area">
                     <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
-                    <h4>Seret file ke sini</h4>
-                    <input type="file" id="fileInputHidden" hidden>
+                    <h4 id="uploadModalDesc">Seret item ke sini atau klik</h4>
+                    <input type="file" id="fileInputHidden" hidden multiple>
+                    <input type="file" id="folderInputHidden" hidden webkitdirectory directory multiple>
                 </div>
-                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;"><p id="fileInfoText"></p></div>
+                <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;max-height:80px;overflow-y:auto;">
+                    <p id="fileInfoText"></p>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="btn-pill primary full-width" onclick="submitUploadFile()">Mulai Upload</button>
             </div>
         </div>
+    </div>
+
+    <div id="dropdownNewMenu" class="dropdown-content extended-menu context-menu-fixed">
+        <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)" onclick="triggerUploadModal('file')"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+        <a href="javascript:void(0)" onclick="triggerUploadModal('folder')"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+        <hr class="menu-divider">
+        <a href="javascript:void(0)" onclick="openGoogleDoc('document')"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
+        <a href="javascript:void(0)" onclick="openGoogleDoc('spreadsheet')"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
+        <a href="javascript:void(0)" onclick="openGoogleDoc('presentation')"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
+        <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
     </div>
 
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">

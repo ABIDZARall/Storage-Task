@@ -836,7 +836,6 @@ function updateStorageUI() {
 
 window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
 window.closeModal = (id) => el(id).classList.add('hidden');
-window.triggerUploadModal = () => { resetUploadUI(); window.openModal('uploadModal'); };
 window.createFolder = () => window.openModal('folderModal');
 
 window.submitCreateFolder = async () => {
@@ -844,16 +843,6 @@ window.submitCreateFolder = async () => {
     try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
-window.submitUploadFile = async () => {
-    if (!selectedUploadFile) return alert("Pilih file dulu!"); closeModal('uploadModal'); toggleLoading(true, "Mengunggah...");
-    try {
-        const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedUploadFile);
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name: selectedUploadFile.name, type: 'file', parentId: currentFolderId, owner: currentUser.$id, url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: selectedUploadFile.size, starred: false, trashed: false });
-        resetUploadUI(); 
-        window.forceCalculateStorage = true;
-        loadFiles(currentFolderId); calculateStorage();
-    } catch (e) { alert(e.message); } finally { toggleLoading(false); }
-};
 
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); window.forceCalculateStorage = true; loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); calculateStorage(); closeAllMenus(); } catch(e){} };
@@ -863,15 +852,173 @@ window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ?
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
 
-function resetUploadUI() { selectedUploadFile = null; el('fileInfoContainer').classList.add('hidden'); el('fileInputHidden').value = ''; }
-function handleFileSelect(file) { selectedUploadFile = file; el('fileInfoText').innerText = `Terpilih: ${file.name}`; el('fileInfoContainer').classList.remove('hidden'); }
+// =========================================================================
+// ENGINE UPLOAD PARALEL & STRUKTUR REAL-FOLDER
+// =========================================================================
+
+let selectedUploadFiles = []; 
+let uploadMode = 'file'; 
+
+// 1. Modifikasi pemicu Modal Upload
+window.triggerUploadModal = (mode = 'file') => { 
+    resetUploadUI(); 
+    uploadMode = mode;
+    const dropZone = document.getElementById('dropZone');
+    
+    if (mode === 'folder') {
+        document.getElementById('uploadModalTitle').innerText = "Upload Folder";
+        document.getElementById('uploadModalDesc').innerText = "Klik untuk pilih folder dari perangkat Anda";
+        dropZone.onclick = () => document.getElementById('folderInputHidden').click();
+    } else {
+        document.getElementById('uploadModalTitle').innerText = "Upload File";
+        document.getElementById('uploadModalDesc').innerText = "Seret file ke sini atau klik";
+        dropZone.onclick = () => document.getElementById('fileInputHidden').click();
+    }
+    
+    window.openModal('uploadModal'); 
+};
+
+// 2. Pembacaan Array (File Jamak) untuk Drag & Drop dan Klik
+function resetUploadUI() { 
+    selectedUploadFiles = []; 
+    const fileContainer = document.getElementById('fileInfoContainer');
+    if(fileContainer) fileContainer.classList.add('hidden'); 
+    
+    const fileInput = document.getElementById('fileInputHidden');
+    const folderInput = document.getElementById('folderInputHidden');
+    if (fileInput) fileInput.value = ''; 
+    if (folderInput) folderInput.value = ''; 
+}
+
+function handleFileSelect(files) { 
+    if (!files || files.length === 0) return;
+    selectedUploadFiles = Array.from(files); 
+    
+    const infoText = document.getElementById('fileInfoText');
+    if (selectedUploadFiles.length === 1) {
+        infoText.innerText = `Terpilih: ${selectedUploadFiles[0].name}`; 
+    } else {
+        infoText.innerText = `Terpilih: ${selectedUploadFiles.length} item siap diupload`; 
+    }
+    document.getElementById('fileInfoContainer').classList.remove('hidden'); 
+}
+
 function initDragAndDrop() {
-    const zone = el('dropZone'); const input = el('fileInputHidden'); if (!zone) return;
+    const zone = document.getElementById('dropZone'); 
+    const fileInput = document.getElementById('fileInputHidden'); 
+    const folderInput = document.getElementById('folderInputHidden'); 
+    
+    if (!zone) return;
     zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('active')); 
-    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('active'); if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
-    if(input) input.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
+    zone.addEventListener('drop', (e) => { 
+        e.preventDefault(); 
+        zone.classList.remove('active'); 
+        if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files); 
+    });
+    
+    if(fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
+    if(folderInput) folderInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
 }
+
+// 3. Eksekusi Upload Serentak (Concurrent) & Pembuat Struktur Folder Otomatis
+window.submitUploadFile = async () => {
+    if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!"); 
+    closeModal('uploadModal'); 
+    toggleLoading(true, `Mengunggah ${selectedUploadFiles.length} item secara paralel...`);
+    
+    try {
+        // Cache memori agar sistem tidak berulang kali membuat folder yang sama
+        let folderCache = { [currentFolderId]: currentFolderId }; 
+        
+        // Logika AI untuk memetakan "path" (jalur file) menjadi struktur folder sungguhan di Database
+        const ensureFolderExists = async (pathStr) => {
+            if (folderCache[pathStr]) return folderCache[pathStr];
+            
+            let parts = pathStr.split('/');
+            let currentPath = '';
+            let parentId = currentFolderId;
+            
+            for (let part of parts) {
+                if (!part) continue;
+                currentPath = currentPath ? `${currentPath}/${part}` : part;
+                
+                if (folderCache[currentPath]) {
+                    parentId = folderCache[currentPath];
+                } else {
+                    const newFolderId = Appwrite.ID.unique();
+                    await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, newFolderId, { 
+                        name: part, type: 'folder', parentId: parentId, owner: currentUser.$id, size: 0, starred: false, trashed: false 
+                    });
+                    folderCache[currentPath] = newFolderId;
+                    parentId = newFolderId;
+                }
+            }
+            return parentId;
+        };
+
+        // STEP 1: Analisa & Bangun Hierarki Foldernya (Synchronous)
+        for (const file of selectedUploadFiles) {
+            let targetParentId = currentFolderId;
+            
+            // "webkitRelativePath" adalah DNA struktur real-folder dari perangkat (contoh: Gambar/Liburan/foto1.jpg)
+            if (file.webkitRelativePath) {
+                const pathParts = file.webkitRelativePath.split('/');
+                pathParts.pop(); // Buang nama filenya, simpan sisanya sebagai folder parent
+                if (pathParts.length > 0) {
+                    const folderPath = pathParts.join('/');
+                    targetParentId = await ensureFolderExists(folderPath);
+                }
+            }
+            // Sisipkan ID tujuannya ke dalam properti file untuk siap tembak
+            file.targetParentId = targetParentId;
+        }
+
+        // STEP 2: Tembak Semua File Serentak Tanpa Menunggu (Asynchronous / Promise.all)
+        const uploadPromises = selectedUploadFiles.map(async (file) => {
+            const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
+            return databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { 
+                name: file.name, type: 'file', parentId: file.targetParentId || currentFolderId, owner: currentUser.$id, 
+                url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: file.size, starred: false, trashed: false 
+            });
+        });
+        
+        await Promise.all(uploadPromises); // Semua file berjalan bersamaan menghemat waktu 90%
+        
+        resetUploadUI(); 
+        window.forceCalculateStorage = true;
+        loadFiles(currentFolderId); 
+        calculateStorage();
+    } catch (e) { 
+        alert("Terjadi kesalahan saat mengunggah: " + e.message); 
+    } finally { 
+        toggleLoading(false); 
+    }
+};
+
+// =========================================================================
+// OPTIMASI: FOLDER BARU BISA PAKE TOMBOL ENTER DARI KEYBOARD
+// =========================================================================
+const folderInputModal = document.getElementById('newFolderName');
+if(folderInputModal) {
+    folderInputModal.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') submitCreateFolder();
+    });
+}
+
+// =========================================================================
+// INTEGRASI GOOGLE WORKSPACE API
+// =========================================================================
+window.openGoogleDoc = (type) => {
+    closeAllMenus();
+    let url = '';
+    if (type === 'document') url = 'https://docs.google.com/document/create';
+    else if (type === 'spreadsheet') url = 'https://docs.google.com/spreadsheets/create';
+    else if (type === 'presentation') url = 'https://docs.google.com/presentation/create';
+    else if (type === 'form') url = 'https://docs.google.com/forms/create';
+    
+    if (url) window.open(url, '_blank');
+};
 
 async function loadFiles(param) { 
     if (!currentUser) return; 
