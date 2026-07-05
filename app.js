@@ -609,72 +609,90 @@ function closeAllMenus() {
 }
 
 function initAllContextMenus() {
-    const newBtn = document.getElementById('newBtnMain'); 
+    const tombolBaru = document.getElementById('newBtnMain'); 
     
-    // Auto-repair: Ambil menu terakhir dan pindahkan ke body
-    const allNewMenus = document.querySelectorAll('#dropdownNewMenu');
-    let newMenu = null;
+    // Perbaikan Otomatis: Ambil menu terakhir dan amankan ke bagian luar struktur halaman
+    const semuaMenuBaru = document.querySelectorAll('#dropdownNewMenu');
+    let menuBaru = null;
     
-    if (allNewMenus.length > 0) {
-        newMenu = allNewMenus[allNewMenus.length - 1]; 
-        document.body.appendChild(newMenu); 
+    if (semuaMenuBaru.length > 0) {
+        menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1]; 
+        document.body.appendChild(menuBaru); 
         
-        allNewMenus.forEach(menu => {
-            if (menu !== newMenu) menu.remove();
+        // Hapus menu duplikat jika tersisa di dalam file HTML
+        semuaMenuBaru.forEach(menu => {
+            if (menu !== menuBaru) menu.remove();
         });
     }
     
-    const navDrive = document.getElementById('navDrive'); 
-    const mainArea = document.querySelector('.main-content-area');
+    const navigasiDrive = document.getElementById('navDrive'); 
+    const areaUtama = document.querySelector('.main-content-area');
 
-    if (newBtn && newMenu) {
-        const newBtnClean = newBtn.cloneNode(true); 
-        newBtn.parentNode.replaceChild(newBtnClean, newBtn);
+    if (tombolBaru && menuBaru) {
+        // Ganti tombol dengan versi baru yang bersih untuk mencegah aksi klik ganda
+        const tombolBaruBersih = tombolBaru.cloneNode(true); 
+        tombolBaru.parentNode.replaceChild(tombolBaruBersih, tombolBaru);
         
-        const toggleNewMenu = (e) => { 
+        const aturMenu = (e) => { 
             e.preventDefault(); 
             e.stopPropagation(); 
             
-            const wasOpen = newMenu.classList.contains('show'); 
-            closeAllMenus(); 
+            const apakahSedangTerbuka = menuBaru.classList.contains('show'); 
+            closeAllMenus(); // Tutup menu lain yang mungkin sedang terbuka
             
-            if (!wasOpen) {
-                const rect = newBtnClean.getBoundingClientRect();
-                newMenu.style.position = 'fixed';
-                newMenu.style.top = `${rect.bottom + 8}px`; 
-                newMenu.style.left = `${rect.left}px`;
-                newMenu.style.zIndex = '999999'; 
+            if (!apakahSedangTerbuka) {
+                // Munculkan menu sesaat agar sistem bisa menghitung tinggi dan lebarnya
+                menuBaru.classList.add('show'); 
                 
-                newMenu.classList.add('show'); 
+                const posisiTombol = tombolBaruBersih.getBoundingClientRect();
+                const tinggiMenu = menuBaru.offsetHeight;
+                const lebarMenu = menuBaru.offsetWidth;
+                
+                // Deteksi jika pengguna membuka aplikasi dari HP (layar maksimal 768px)
+                const apakahLayarHP = window.innerWidth <= 768;
+                
+                menuBaru.style.setProperty('position', 'fixed', 'important');
+                menuBaru.style.setProperty('z-index', '999999', 'important');
+                
+                // Matikan paksaan gaya CSS lama yang membuat menu ke bawah
+                menuBaru.style.setProperty('bottom', 'auto', 'important');
+                menuBaru.style.setProperty('right', 'auto', 'important');
+                
+                if (apakahLayarHP) {
+                    // UNTUK HP: Tampil melayang di ATAS tombol +
+                    // Ketinggian (top) = Posisi atas tombol dikurangi tinggi menu dikurangi jarak aman 15px
+                    menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
+                    // Perataan (left) = Ujung kanan tombol dikurangi lebar menu (agar sejajar rata kanan)
+                    menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
+                } else {
+                    // UNTUK KOMPUTER: Tampil normal melayang di BAWAH tombol + (rata kiri)
+                    menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.left}px`, 'important');
+                }
             }
         };
         
-        // HANYA aktif saat tombol +Baru diklik kiri
-        newBtnClean.addEventListener('click', toggleNewMenu);
+        tombolBaruBersih.addEventListener('click', aturMenu);
     }
 
-    // ==============================================================
-    // PERBAIKAN: NONAKTIFKAN KLIK KANAN DI AREA LUAR
-    // ==============================================================
-    if (navDrive) {
-        navDrive.addEventListener('contextmenu', (e) => { 
+    // Matikan klik kanan di area luar agar menu tidak muncul sembarangan di tengah layar
+    if (navigasiDrive) {
+        navigasiDrive.addEventListener('contextmenu', (e) => { 
             e.preventDefault(); 
             e.stopPropagation(); 
             closeAllMenus(); 
-            // Fitur pemanggilan menu di luar tombol telah dihapus di sini
         });
     }
 
-    if (mainArea) {
-        mainArea.addEventListener('contextmenu', (e) => {
+    if (areaUtama) {
+        areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); 
             closeAllMenus();
-            // Fitur pemanggilan menu mengikuti kursor telah dihapus di sini
         });
     }
     
-    // Logika menutup menu ketika klik sembarang di luar layar
+    // Logika menutup menu ketika pengguna mengklik ruang kosong di luar
     window.addEventListener('click', (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
         if (e.target.closest('#newBtnMain') || e.target.closest('.new-btn-wrapper')) return;
