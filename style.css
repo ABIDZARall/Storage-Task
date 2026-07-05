@@ -209,7 +209,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 .new-btn:focus { outline: none !important; }
 
-.dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+.dropdown-content { 
+    position: absolute; top: 50px; left: 0; z-index: 20000; padding: 5px 0; width: 240px; display: none; flex-direction: column; 
+    
+    /* Efek Apple Liquid Glass Murni */
+    background: rgba(30, 41, 59, 0.55); 
+    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2); 
+}
+
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
 
 /* ANIMASI INDIKATOR UNTUK DESKTOP */
@@ -462,7 +471,15 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 /* Context Menus */
-.context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 220px; display: none; flex-direction: column; overflow-y: auto; max-height: 80vh; }
+.context-menu-modern { 
+    position: fixed; z-index: 20000; padding: 5px 0; width: 220px; display: none; flex-direction: column; overflow-y: auto; max-height: 80vh; 
+    
+    /* Efek Apple Liquid Glass Murni */
+    background: rgba(30, 41, 59, 0.55); 
+    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2); 
+}
 .context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
 .show { display: flex !important; }
 .ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 10px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.85rem; cursor: pointer; transition: 0.1s; }
