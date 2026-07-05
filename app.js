@@ -944,25 +944,25 @@ function updateStorageUI() {
     }
 }
 
-window.openModal = (id) => { el(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>el('newFolderName').focus(),100); };
-window.closeModal = (id) => el(id).classList.add('hidden');
+window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>document.getElementById('newFolderName').focus(),100); };
+window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 window.createFolder = () => window.openModal('folderModal');
 
 window.submitCreateFolder = async () => {
-    const name = el('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
-    try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
+    const name = document.getElementById('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
+    try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); document.getElementById('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); window.forceCalculateStorage = true; loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); calculateStorage(); closeAllMenus(); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
-window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa kembali!")) return; toggleLoading(true, "Menghapus..."); try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} finally { toggleLoading(false); }};
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return; toggleLoading(true, "Menghapus..."); try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} finally { toggleLoading(false); }};
 window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : openPreview(selectedItem); closeAllMenus(); };
 window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
 
 // =========================================================================
-// ENGINE UPLOAD (BERURUTAN/ANTI-GAGAL) & STRUKTUR REAL-FOLDER
+// MESIN UPLOAD (BERURUTAN/ANTI-GAGAL) & STRUKTUR FOLDER ASLI
 // =========================================================================
 let selectedUploadFiles = []; 
 let uploadMode = 'file'; 
@@ -1023,7 +1023,7 @@ function handleFileSelect(files) {
     if (selectedUploadFiles.length === 1) {
         infoText.innerText = `Terpilih: ${selectedUploadFiles[0].name}`; 
     } else {
-        infoText.innerText = `Terpilih: ${selectedUploadFiles.length} item siap diupload`; 
+        infoText.innerText = `Terpilih: ${selectedUploadFiles.length} item siap diunggah`; 
     }
     document.getElementById('fileInfoContainer').classList.remove('hidden'); 
 }
@@ -1133,10 +1133,19 @@ window.openGoogleDoc = (type) => {
     if (url) window.open(url, '_blank');
 };
 
-// INI ADALAH FUNGSI PENTING YANG SEMPAT TERHAPUS
+// =========================================================================
+// PEMULIHAN: FUNGSI YANG HILANG DIKEMBALIKAN (100% BAHASA INDONESIA)
+// =========================================================================
 async function loadFiles(param) { 
     if (!currentUser) return; 
-    const grid = document.getElementById('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); 
+    const grid = document.getElementById('fileGrid'); 
+    if (grid) grid.innerHTML = ''; 
+    
+    // Pemanggilan Antarmuka Judul yang aman
+    if (typeof updateHeaderUI === 'function') {
+        updateHeaderUI(); 
+    }
+    
     let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
     if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
     else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
@@ -1145,12 +1154,13 @@ async function loadFiles(param) {
         if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
         queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
     } 
+    
     try { 
         const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
         updatePreviewList(res.documents); 
 
         if (res.documents.length === 0) {
-            grid.innerHTML = `
+            if (grid) grid.innerHTML = `
                 <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
                     <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
                         <div class="mac-folder-back"></div>
@@ -1163,6 +1173,44 @@ async function loadFiles(param) {
         }
     } catch (e) { console.error(e); } 
 }
+
+function updateHeaderUI() { 
+    const container = document.querySelector('.breadcrumb-area'); 
+    if (!container) return;
+    
+    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    
+    if (isRoot) { 
+        const h = new Date().getHours(); 
+        // PERBAIKAN: Menggunakan Bahasa Indonesia untuk sapaan
+        const s = h < 11 ? "Pagi" : h < 15 ? "Siang" : h < 18 ? "Sore" : "Malam"; 
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Selamat Datang di Drive, Selamat ${s}</h2>`; 
+    } else { 
+        let backText = "Drive";
+        if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
+        else if (currentViewMode !== 'root') { backText = "Drive"; }
+
+        container.innerHTML = `
+            <div class="back-nav-container">
+                <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
+                </button>
+                <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
+            </div>`; 
+    } 
+}
+
+window.togglePass = (id, icon) => { 
+    const input = document.getElementById(id); 
+    if (!input) return;
+    if (input.type === "password") { 
+        input.type = "text"; 
+        icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); 
+    } else { 
+        input.type = "password"; 
+        icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); 
+    } 
+};
 
 // ======================================================
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
