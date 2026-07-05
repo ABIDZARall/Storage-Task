@@ -591,9 +591,33 @@ function initAllContextMenus() {
     const navDrive = el('navDrive'); const globalMenu = el('globalContextMenu'); const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn) {
-        const newBtnClean = newBtn.cloneNode(true); newBtn.parentNode.replaceChild(newBtnClean, newBtn);
-        const toggleNewMenu = (e) => { e.preventDefault(); e.stopPropagation(); const wasOpen = newMenu.classList.contains('show'); closeAllMenus(); if (!wasOpen) newMenu.classList.add('show'); };
-        newBtnClean.onclick = toggleNewMenu; newBtnClean.oncontextmenu = toggleNewMenu;
+        const newBtnClean = newBtn.cloneNode(true); 
+        newBtn.parentNode.replaceChild(newBtnClean, newBtn);
+        
+        const toggleNewMenu = (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            const wasOpen = newMenu.classList.contains('show'); 
+            closeAllMenus(); 
+            
+            if (!wasOpen) {
+                // Cek apakah tampilan desktop
+                if (window.innerWidth > 768) {
+                    const rect = newBtnClean.getBoundingClientRect();
+                    // Mengambil posisi ujung bawah tombol + jarak margin 8px
+                    newMenu.style.top = `${rect.bottom + 8}px`;
+                    // Sejajar persis di ujung kiri tombol
+                    newMenu.style.left = `${rect.left}px`;
+                } else {
+                    // Bersihkan gaya agar CSS mobile asli yang mengambil alih
+                    newMenu.style.top = '';
+                    newMenu.style.left = '';
+                }
+                newMenu.classList.add('show'); 
+            } 
+        };
+        newBtnClean.onclick = toggleNewMenu; 
+        newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
     if (navDrive) {
