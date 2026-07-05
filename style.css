@@ -224,18 +224,18 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transition: all 0.1s ease;
 }
 
+.dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; position: relative; padding: 5px 0; }
+
 /* ============================================================ */
 /* MENU SIDEBAR & NAV INDICATOR - APPLE LIQUID GLASS            */
 /* ============================================================ */
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; position: relative; padding: 5px 0; }
-
 .nav-indicator {
     position: absolute;
     left: 0; top: 0;
     width: 0; height: 42px; 
     border-radius: 12px;
     
-    /* EFEK LIQUID GLASS UNTUK NAV INDICATOR SAAT DIKLIK/AKTIF */
     background: rgba(255, 255, 255, 0.15); 
     backdrop-filter: blur(30px) saturate(200%);
     -webkit-backdrop-filter: blur(30px) saturate(200%);
@@ -257,7 +257,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     -webkit-tap-highlight-color: transparent; 
 }
 
-/* Hover effect liquid glass ringan saat disorot */
 .nav-item:hover { 
     color: white; 
     background: rgba(255, 255, 255, 0.08); 
@@ -265,7 +264,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border-radius: 12px;
 }
 
-/* Item aktif di dalam indicator glass */
 .nav-item.active { 
     background: transparent !important; 
     color: #ffffff; 
@@ -275,7 +273,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     transform: translateX(6px); 
 }
 
-/* Ikon Item Aktif Menyala */
 .nav-item.active i {
     color: var(--accent);
     filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.6));
@@ -864,11 +861,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .sidebar-left { width: 200px; padding-right: 10px; }
     .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
     .apple-audio-player-v2 { width: 90vw; }
-    
-    /* Penyesuaian Tablet untuk Halaman Pengelola Penyimpanan */
     .storage-manager-card { padding: 35px 30px !important; }
-    
-    /* MENYEMBUNYIKAN LOGO DI TABLET */
     .top-nav .logo-img { display: none !important; }
 }
 
@@ -885,7 +878,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         box-shadow: none;
     }
     
-    /* DASH AVATAR & LOGOUT DIPERKECIL (COMPACT) */
     .top-nav { min-height: 40px !important; margin-bottom: 5px !important; padding: 10px 15px 5px 15px !important; }
     .top-nav .logo-img { display: none !important; }
     .brand-text { font-size: 1.25rem !important; letter-spacing: -0.3px; }
@@ -894,10 +886,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .avatar { width: 32px !important; height: 32px !important; border-width: 1px !important; }
     .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
     
-    /* ============================================================== */
-    /* EFEK STICKY TRANSPARAN UNTUK AREA SEARCH-ROW & BREADCRUMB      */
-    /* File grid akan di-scroll bebas di bawahnya                     */
-    /* ============================================================== */
     .main-content-area { 
         order: 2; height: 100%; 
         overflow-y: auto !important; 
@@ -907,100 +895,61 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     }
     .main-content-area::-webkit-scrollbar { display: none; }
     
-    /* PEMBUNGKUS AREA SEARCH DAN TITLE - TRANSPARAN PENUH */
     .search-row {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 100 !important;
-        padding: 10px 15px !important;
-        margin: 0 !important;
-        background: transparent !important; /* DIBUAT TEMBUS PANDANG */
-        backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        -webkit-backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        border: none !important;
-        pointer-events: none !important; 
+        position: sticky !important; top: 0 !important; z-index: 100 !important;
+        padding: 10px 15px !important; margin: 0 !important;
+        background: transparent !important; backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
     }
     .search-row > * { pointer-events: auto !important; }
     
     .breadcrumb-area {
-        position: sticky !important;
-        top: 56px !important; 
-        z-index: 99 !important;
-        padding: 5px 15px 15px 15px !important;
-        margin: 0 !important;
-        background: transparent !important; /* DIBUAT TEMBUS PANDANG */
-        backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        -webkit-backdrop-filter: none !important; /* DIBUAT TEMBUS PANDANG */
-        border: none !important;
-        pointer-events: none !important; 
+        position: sticky !important; top: 56px !important; z-index: 99 !important;
+        padding: 5px 15px 15px 15px !important; margin: 0 !important;
+        background: transparent !important; backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
     }
     
-    /* KAPSUL SEARCH DRIVE (LIQUID GLASS STANDALONE) */
     .search-bar-pill { 
-        height: 40px !important; 
-        padding: 0 15px !important; 
-        border-radius: 20px !important; 
-        /* EFEK LIQUID GLASS BLUR KHUSUS PADA KAPSULNYA SAJA */
+        height: 40px !important; padding: 0 15px !important; border-radius: 20px !important; 
         background: rgba(30, 41, 59, 0.65) !important;
-        backdrop-filter: blur(25px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
     }
     .search-bar-pill input { font-size: 0.85rem !important; margin-left: 8px !important; }
     .search-icon { font-size: 0.85rem !important; }
     
-    /* KAPSUL JUDUL (HEADER TITLE) BARU (LIQUID GLASS STANDALONE) */
     .header-title-pill {
-        display: inline-block;
-        padding: 8px 16px;
-        border-radius: 12px;
-        margin-left: -5px; /* Menyesuaikan agar rata kiri */
-        font-size: 1.3rem !important;
-        font-weight: 700;
-        color: white;
+        display: inline-block; padding: 8px 16px; border-radius: 12px; margin-left: -5px; 
+        font-size: 1.3rem !important; font-weight: 700; color: white;
         text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        /* EFEK LIQUID GLASS BLUR KHUSUS PADA KAPSUL JUDULNYA SAJA */
         background: rgba(30, 41, 59, 0.45) !important;
-        backdrop-filter: blur(15px) saturate(200%) !important;
-        -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
     }
 
-    /* Grid file menyesuaikan area baru */
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-        gap: 12px; padding: 15px; 
-        height: auto !important; 
-        overflow-y: visible !important; 
-        padding-bottom: 0 !important;
+        gap: 12px; padding: 15px; height: auto !important; 
+        overflow-y: visible !important; padding-bottom: 0 !important;
     }
     .item-card { padding: 8px; border-radius: 10px; }
     .mac-folder-icon { transform: scale(0.85); }
     .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
     /* ============================================================== */
-    /* WIDGET PENYIMPANAN - DIBUAT TETAP, ANIMASI MENGHILANG DIHAPUS  */
+    /* WIDGET PENYIMPANAN MOBILE                                      */
     /* ============================================================== */
     .storage-widget { 
-        position: fixed !important;
-        bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
-        left: 15px !important;
-        width: auto !important; 
-        min-width: 140px !important; 
-        max-width: 180px !important; 
-        margin: 0 !important;
-        
+        position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; left: 15px !important;
+        width: auto !important; min-width: 140px !important; max-width: 180px !important; margin: 0 !important;
         background: rgba(30, 41, 59, 0.65) !important;
         backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
-        border-radius: 18px !important; 
-        padding: 10px 14px !important; 
-        z-index: 5001 !important;
+        border-radius: 18px !important; padding: 10px 14px !important; z-index: 5001 !important;
         display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
     }
     
@@ -1008,187 +957,27 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; }
     .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
-    /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
-    .sidebar-menu { 
-        position: fixed !important; 
-        bottom: calc(15px + env(safe-area-inset-bottom)) !important;
-        left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; 
-        max-width: 92vw !important; 
-        height: auto !important; 
-        padding: 6px 8px !important; 
-        border-radius: 50px !important; 
-        
-        background: rgba(30, 41, 59, 0.65) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.3) !important;
-        
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: center !important; align-items: center !important; gap: 0px !important; 
-    }
-
-    .nav-indicator {
-        display: block !important;
-        position: absolute !important;
-        top: 6px !important; 
-        height: 48px !important; 
-        border-radius: 50px !important; 
-        
-        background: rgba(255, 255, 255, 0.15) !important; 
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-top: 1px solid rgba(255,255,255,0.25) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.2) !important;
-        
-        transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        z-index: 0 !important;
-        pointer-events: none !important;
-    }
-
-    .nav-item { 
-        position: relative !important;
-        z-index: 1 !important; 
-        flex-direction: column !important; gap: 2px !important; 
-        width: auto !important; 
-        min-width: 48px !important; 
-        height: 48px !important; 
-        padding: 4px 10px !important; 
-        border-radius: 50px !important; 
-        justify-content: center !important; 
-        text-align: center !important; 
-        color: rgba(255,255,255,0.55) !important;
-        background: transparent !important;
-        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
-    }
-    
-    .nav-item.active { 
-        color: white !important; 
-        background: transparent !important; 
-        border: none !important;
-        box-shadow: none !important;
-    }
-    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 10px rgba(45, 212, 191, 0.4); transform: scale(1.05) !important; }
-    .nav-item.active span { color: white !important; font-weight: 700 !important; }
-    
-    .nav-item i { font-size: 1.25rem !important; transition: transform 0.3s ease, color 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; }
-    
-    .hide-mobile { display: none !important; }
-    
     /* ============================================================== */
     /* TOMBOL PLUS (NEW) MOBILE - APPLE LIQUID GLASS TINGKAT TINGGI   */
     /* ============================================================== */
     .new-btn-wrapper { 
-        position: fixed !important; 
-        bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
-        right: 15px !important; 
-        width: 55px !important; 
-        height: 55px !important; 
-        z-index: 5001 !important; margin: 0 !important; 
+        position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; right: 15px !important; 
+        width: 55px !important; height: 55px !important; z-index: 5001 !important; margin: 0 !important; 
     }
     .new-btn { 
-        width: 55px !important; 
-        height: 55px !important; 
-        border-radius: 50% !important; 
+        width: 55px !important; height: 55px !important; border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
-        
         background: rgba(45, 212, 191, 0.25) !important; 
         backdrop-filter: blur(40px) saturate(250%) !important; -webkit-backdrop-filter: blur(40px) saturate(250%) !important;
         border: 1px solid rgba(255, 255, 255, 0.25) !important; border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.4) !important; color: white !important;
-        
-        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important; -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important; transform: translateZ(0) !important;
     }
-    .new-btn:hover { 
-        background: rgba(45, 212, 191, 0.4) !important; 
-        box-shadow: 0 20px 45px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.6) !important;
-        transform: scale(1.08) translateZ(0) !important;
-    }
-    .new-btn:active {
-        transform: scale(0.9) translateZ(0) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2) !important;
-        transition: all 0.1s ease !important;
-    }
+    .new-btn:hover { background: rgba(45, 212, 191, 0.4) !important; box-shadow: 0 20px 45px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.6) !important; transform: scale(1.08) translateZ(0) !important; }
+    .new-btn:active { transform: scale(0.9) translateZ(0) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2) !important; transition: all 0.1s ease !important; }
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)) !important;} 
-    
-
-    /* === DESAIN SIDEBAR MENU KAPSUL MOBILE - APPLE LIQUID GLASS === */
-    .sidebar-menu { 
-        position: fixed !important; 
-        bottom: calc(15px + env(safe-area-inset-bottom)) !important;
-        left: 50% !important; transform: translateX(-50%) !important;
-        width: max-content !important; 
-        max-width: 95vw !important; 
-        height: auto !important; 
-        padding: 6px 8px !important; 
-        border-radius: 50px !important; 
-        
-        background: rgba(30, 41, 59, 0.65) !important; 
-        backdrop-filter: blur(45px) saturate(250%) !important; -webkit-backdrop-filter: blur(45px) saturate(250%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3) !important;
-        
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: center !important; align-items: center !important; gap: 2px !important; 
-    }
-
-    .nav-indicator {
-        display: block !important;
-        position: absolute !important;
-        top: 6px !important; 
-        height: 48px !important; 
-        border-radius: 50px !important; 
-        
-        background: rgba(255, 255, 255, 0.2) !important; 
-        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
-        border: 1px solid rgba(255,255,255,0.25) !important;
-        border-top: 1px solid rgba(255,255,255,0.45) !important;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.4) !important;
-        
-        transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        z-index: 0 !important;
-        pointer-events: none !important;
-    }
-
-    .nav-item { 
-        position: relative !important;
-        z-index: 1 !important; 
-        flex-direction: column !important; gap: 4px !important; 
-        width: auto !important; 
-        min-width: 52px !important; 
-        height: 48px !important; 
-        padding: 4px 12px !important; 
-        border-radius: 50px !important; 
-        justify-content: center !important; 
-        text-align: center !important; 
-        color: rgba(255,255,255,0.6) !important;
-        background: transparent !important;
-        transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important; 
-        outline: none !important; -webkit-tap-highlight-color: transparent !important;
-        transform: none !important;
-    }
-    
-    .nav-item:hover {
-        transform: scale(1.05) !important;
-        color: rgba(255,255,255,0.95) !important;
-    }
-    
-    .nav-item.active { 
-        color: white !important; 
-        background: transparent !important; 
-        border: none !important;
-        box-shadow: none !important;
-        transform: scale(1.08) translateY(-2px) !important;
-    }
-    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 12px rgba(45, 212, 191, 0.6); transform: scale(1.15) !important; }
-    .nav-item.active span { color: white !important; font-weight: 700 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-    
-    .nav-item i { font-size: 1.25rem !important; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease, text-shadow 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; transition: all 0.3s ease !important;}
     
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
@@ -1196,10 +985,51 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
 
+    /* === DESAIN SIDEBAR MENU KAPSUL MOBILE - APPLE LIQUID GLASS === */
+    .sidebar-menu { 
+        position: fixed !important; bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+        left: 50% !important; transform: translateX(-50%) !important; width: max-content !important; 
+        max-width: 95vw !important; height: auto !important; padding: 6px 8px !important; border-radius: 50px !important; 
+        background: rgba(30, 41, 59, 0.65) !important; 
+        backdrop-filter: blur(45px) saturate(250%) !important; -webkit-backdrop-filter: blur(45px) saturate(250%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3) !important;
+        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
+        justify-content: center !important; align-items: center !important; gap: 2px !important; 
+    }
+
+    .nav-indicator {
+        display: block !important; position: absolute !important; top: 6px !important; height: 48px !important; border-radius: 50px !important; 
+        background: rgba(255, 255, 255, 0.2) !important; 
+        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+        border: 1px solid rgba(255,255,255,0.25) !important; border-top: 1px solid rgba(255,255,255,0.45) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.4) !important;
+        transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        z-index: 0 !important; pointer-events: none !important;
+    }
+
+    .nav-item { 
+        position: relative !important; z-index: 1 !important; flex-direction: column !important; gap: 4px !important; 
+        width: auto !important; min-width: 52px !important; height: 48px !important; padding: 4px 12px !important; 
+        border-radius: 50px !important; justify-content: center !important; text-align: center !important; color: rgba(255,255,255,0.6) !important;
+        background: transparent !important; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; 
+        -webkit-tap-highlight-color: transparent !important; transform: none !important;
+    }
+    
+    .nav-item:hover { transform: scale(1.05) !important; color: rgba(255,255,255,0.95) !important; }
+    
+    .nav-item.active { color: white !important; background: transparent !important; border: none !important; box-shadow: none !important; transform: scale(1.08) translateY(-2px) !important; }
+    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 12px rgba(45, 212, 191, 0.6); transform: scale(1.15) !important; }
+    .nav-item.active span { color: white !important; font-weight: 700 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+    
+    .nav-item i { font-size: 1.25rem !important; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease, text-shadow 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
+    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; transition: all 0.3s ease !important;}
+    
+    .hide-mobile { display: none !important; }
+
+    /* PENYESUAIAN MODAL & STORAGE PAGE */
     .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
     .modal-actions-grid { flex-direction: row; }
-
-    /* STORAGE DETAIL POPUP RESPONSIVE */
     .storage-detail-box-wide { padding: 25px 20px !important; border-radius: 24px !important; }
     .storage-hero h1 { font-size: 2.3rem !important; }
     .storage-flex-container { display: flex !important; flex-direction: column !important; gap: 15px !important; }
@@ -1208,8 +1038,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-legend { order: 2; margin-bottom: 0 !important; background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); }
     .storage-btn-left-container { order: 3; margin-top: 10px !important; }
     .storage-btn-right-container { order: 4; }
-    
-    /* STORAGE FULL PAGE RESPONSIVE MOBILE */
     .storage-page-header { padding-bottom: 15px; margin-bottom: 20px; }
     .storage-manager-card { padding: 25px 20px !important; border-radius: 24px !important; margin: 0 5px; }
     .card-header-text { margin-bottom: 25px; }
@@ -1231,11 +1059,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .audio-artist-v2 { font-size: 0.95rem; text-align: center; }
     .audio-airplay-btn { position: absolute; top: 0; right: 0; margin: 0; }
     .audio-controls-v2 { gap: 30px; margin-top: 5px; }
-    
     .apple-glass-btn { width: 50px; height: 50px; font-size: 1.2rem; }
     .apple-glass-btn.play-pause-btn { width: 65px; height: 65px; font-size: 2rem; }
     .apple-bottom-pill { width: 95%; padding: 0 15px; bottom: 20px; }
-    
     .preview-body-container { padding: 0; position: relative; }
     .nav-button-container { position: absolute; top: 50%; transform: translateY(-50%); width: auto; z-index: 30050; }
     .nav-left { left: 10px; }
