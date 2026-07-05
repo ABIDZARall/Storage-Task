@@ -7,7 +7,7 @@ const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
-const DEFAULT_AVATAR_LOCAL = 'Image/profile-default.jpeg'; 
+const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)

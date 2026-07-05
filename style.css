@@ -218,7 +218,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2); 
 }
-
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
 
 /* ANIMASI INDIKATOR UNTUK DESKTOP */
