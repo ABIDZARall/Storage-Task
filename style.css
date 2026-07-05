@@ -185,63 +185,103 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
 .new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
 
-/* UPDATE: PERBAIKAN BUG TABRAKAN & JEJAK PADA TOMBOL + BARU DESKTOP */
+/* ============================================================ */
+/* TOMBOL + BARU (DESKTOP) - APPLE LIQUID GLASS TERBARU         */
+/* ============================================================ */
 .new-btn { 
-    width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
-    padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    width: 100%; justify-content: flex-start; 
+    padding-left: 20px; gap: 12px; height: 46px; border-radius: 14px; font-size: 1rem; font-weight: 600;
+    
+    /* APPLE LIQUID GLASS MURNI */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(35px) saturate(250%);
+    -webkit-backdrop-filter: blur(35px) saturate(250%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.3); 
+    
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
     outline: none !important; 
     -webkit-tap-highlight-color: transparent;
-    border: none;
     -webkit-backface-visibility: hidden; 
     backface-visibility: hidden;
     transform: translateZ(0); 
 }
+
 .new-btn:hover { 
-    background: #f8fafc;
-    box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4); 
 }
+
 .new-btn:active { 
-    transform: scale(0.96) translateZ(0) !important; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    transform: scale(0.96) translateY(0) translateZ(0) !important; 
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1); 
+    transition: all 0.1s ease;
 }
-.new-btn:focus { outline: none !important; }
 
-.dropdown-content { 
-    position: absolute; top: 50px; left: 0; z-index: 20000; padding: 5px 0; width: 240px; display: none; flex-direction: column; 
-    
-    /* Efek Apple Liquid Glass Murni */
-    background: rgba(30, 41, 59, 0.55); 
-    backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2); 
-}
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
+/* ============================================================ */
+/* MENU SIDEBAR & NAV INDICATOR - APPLE LIQUID GLASS            */
+/* ============================================================ */
+.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; position: relative; padding: 5px 0; }
 
-/* ANIMASI INDIKATOR UNTUK DESKTOP */
 .nav-indicator {
     position: absolute;
     left: 0; top: 0;
-    width: 0; height: 40px; 
-    border-radius: 8px;
-    background: rgba(45, 212, 191, 0.15); 
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    width: 0; height: 42px; 
+    border-radius: 12px;
+    
+    /* EFEK LIQUID GLASS UNTUK NAV INDICATOR SAAT DIKLIK/AKTIF */
+    background: rgba(255, 255, 255, 0.15); 
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     z-index: 0;
     pointer-events: none;
 }
 
 .nav-item { 
-    display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; 
-    border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; 
-    font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; 
-    position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
+    display: flex; align-items: center; gap: 14px; padding: 0 15px; height: 42px; 
+    border-radius: 12px; color: rgba(255, 255, 255, 0.65); text-decoration: none; 
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    position: relative; z-index: 1; outline: none; user-select: none; 
+    -webkit-tap-highlight-color: transparent; 
 }
-.nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
 
-/* HAPUS BACKGROUND DARI ACTIVE ITEM, BIARKAN INDIKATOR YANG MENGISI */
-.nav-item.active { background: transparent !important; color: var(--accent); font-weight: 700; border: none !important; box-shadow: none !important; }
+/* Hover effect liquid glass ringan saat disorot */
+.nav-item:hover { 
+    color: white; 
+    background: rgba(255, 255, 255, 0.08); 
+    transform: translateX(6px);
+    border-radius: 12px;
+}
+
+/* Item aktif di dalam indicator glass */
+.nav-item.active { 
+    background: transparent !important; 
+    color: #ffffff; 
+    font-weight: 700; 
+    border: none !important; 
+    box-shadow: none !important; 
+    transform: translateX(6px); 
+}
+
+/* Ikon Item Aktif Menyala */
+.nav-item.active i {
+    color: var(--accent);
+    filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.6));
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
 
 .storage-widget { padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
 .storage-widget:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.2); }
@@ -1036,41 +1076,119 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .hide-mobile { display: none !important; }
     
     /* ============================================================== */
-    /* TOMBOL PLUS (NEW) - DIBUAT TETAP, ANIMASI MENGHILANG DIHAPUS   */
+    /* TOMBOL PLUS (NEW) MOBILE - APPLE LIQUID GLASS TINGKAT TINGGI   */
     /* ============================================================== */
     .new-btn-wrapper { 
         position: fixed !important; 
         bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
         right: 15px !important; 
-        width: 50px !important; 
-        height: 50px !important; 
+        width: 55px !important; 
+        height: 55px !important; 
         z-index: 5001 !important; margin: 0 !important; 
     }
     .new-btn { 
-        width: 50px !important; 
-        height: 50px !important; 
+        width: 55px !important; 
+        height: 55px !important; 
         border-radius: 50% !important; 
         padding: 0 !important; justify-content: center !important; align-items: center !important; 
-        background: rgba(30, 41, 59, 0.65) !important; 
-        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important; color: white !important;
-        transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        
+        background: rgba(45, 212, 191, 0.25) !important; 
+        backdrop-filter: blur(40px) saturate(250%) !important; -webkit-backdrop-filter: blur(40px) saturate(250%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important; border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.4) !important; color: white !important;
+        
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
         -webkit-backface-visibility: hidden !important;
         backface-visibility: hidden !important;
         transform: translateZ(0) !important;
     }
     .new-btn:hover { 
-        background: rgba(255, 255, 255, 0.15) !important; 
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important;
+        background: rgba(45, 212, 191, 0.4) !important; 
+        box-shadow: 0 20px 45px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.6) !important;
+        transform: scale(1.08) translateZ(0) !important;
     }
     .new-btn:active {
-        transform: scale(0.92) translateZ(0) !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important;
-        transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+        transform: scale(0.9) translateZ(0) !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2) !important;
+        transition: all 0.1s ease !important;
     }
     .new-btn-text { display: none !important; }
-    .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
+    .new-btn i { font-size: 1.5rem !important; margin: 0 !important; color: white !important; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)) !important;} 
+    
+
+    /* === DESAIN SIDEBAR MENU KAPSUL MOBILE - APPLE LIQUID GLASS === */
+    .sidebar-menu { 
+        position: fixed !important; 
+        bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+        left: 50% !important; transform: translateX(-50%) !important;
+        width: max-content !important; 
+        max-width: 95vw !important; 
+        height: auto !important; 
+        padding: 6px 8px !important; 
+        border-radius: 50px !important; 
+        
+        background: rgba(30, 41, 59, 0.65) !important; 
+        backdrop-filter: blur(45px) saturate(250%) !important; -webkit-backdrop-filter: blur(45px) saturate(250%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3) !important;
+        
+        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
+        justify-content: center !important; align-items: center !important; gap: 2px !important; 
+    }
+
+    .nav-indicator {
+        display: block !important;
+        position: absolute !important;
+        top: 6px !important; 
+        height: 48px !important; 
+        border-radius: 50px !important; 
+        
+        background: rgba(255, 255, 255, 0.2) !important; 
+        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+        border: 1px solid rgba(255,255,255,0.25) !important;
+        border-top: 1px solid rgba(255,255,255,0.45) !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.4) !important;
+        
+        transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        z-index: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .nav-item { 
+        position: relative !important;
+        z-index: 1 !important; 
+        flex-direction: column !important; gap: 4px !important; 
+        width: auto !important; 
+        min-width: 52px !important; 
+        height: 48px !important; 
+        padding: 4px 12px !important; 
+        border-radius: 50px !important; 
+        justify-content: center !important; 
+        text-align: center !important; 
+        color: rgba(255,255,255,0.6) !important;
+        background: transparent !important;
+        transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important; 
+        outline: none !important; -webkit-tap-highlight-color: transparent !important;
+        transform: none !important;
+    }
+    
+    .nav-item:hover {
+        transform: scale(1.05) !important;
+        color: rgba(255,255,255,0.95) !important;
+    }
+    
+    .nav-item.active { 
+        color: white !important; 
+        background: transparent !important; 
+        border: none !important;
+        box-shadow: none !important;
+        transform: scale(1.08) translateY(-2px) !important;
+    }
+    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 12px rgba(45, 212, 191, 0.6); transform: scale(1.15) !important; }
+    .nav-item.active span { color: white !important; font-weight: 700 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+    
+    .nav-item i { font-size: 1.25rem !important; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease, text-shadow 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
+    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; transition: all 0.3s ease !important;}
     
     .dropdown-content.extended-menu { 
         top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
