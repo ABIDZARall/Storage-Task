@@ -1062,6 +1062,85 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
     }
 
+    /* ============================================================ */
+/* DESAIN DROPDOWN "+ BARU" (APPLE LIQUID GLASS & G-DRIVE STYLE)*/
+/* ============================================================ */
+
+/* 1. Pastikan pembungkus tombol menjadi acuan koordinat (relative) */
+.new-btn-wrapper {
+    position: relative; 
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 2. Styling letak dan efek tembus pandang (Liquid Glass) untuk Desktop */
+.dropdown-content.extended-menu {
+    /* Menggeser menu ke bawah tombol persis (tinggi tombol 45px + 10px jarak) */
+    position: absolute;
+    top: 55px; 
+    left: 0;
+    
+    /* Ukuran layout dan kelegaan ala Google Drive */
+    width: 260px;
+    padding: 10px 0;
+    
+    /* Mempertahankan gaya Apple Glass original */
+    background: rgba(30, 41, 59, 0.65);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    
+    z-index: 20000;
+    
+    /* Animasi Pop-up dari sudut atas khas macOS */
+    transform-origin: top left;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+    display: none;
+    flex-direction: column;
+}
+
+/* 3. Perilaku saat menu sedang dibuka */
+.dropdown-content.extended-menu.show {
+    display: flex !important;
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 4. Menyesuaikan padding, tipografi SF Pro, dan perataan ikon */
+.dropdown-content.extended-menu a {
+    padding: 12px 20px !important;
+    font-size: 0.95rem !important;
+    font-weight: 500;
+    color: #f1f5f9 !important;
+    display: flex !important;
+    align-items: center;
+    gap: 15px; /* Memberi ruang antara ikon dan teks agar lega */
+    transition: background 0.2s ease;
+}
+
+.dropdown-content.extended-menu a i {
+    font-size: 1.15rem;
+    width: 24px; /* Menyamakan lebar blok ikon agar seluruh teks rata kiri dengan rapi */
+    text-align: center;
+}
+
+.dropdown-content.extended-menu a:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 5. Garis pembatas tipis yang elegan */
+.menu-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 8px 0;
+    border: none;
+}
+
     .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
     .modal-actions-grid { flex-direction: row; }
 
