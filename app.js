@@ -156,7 +156,7 @@ if (el('signupForm')) {
     });
 }
 
-// PERBAIKAN: Login Logic Dipercepat & Disederhanakan untuk Hemat Request
+// PERBAIKAN: Login Logic Dipercepat & Penanganan Sesi Hantu
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -170,6 +170,13 @@ if (el('loginForm')) {
                 else throw new Error("Username tidak ditemukan.");
             }
             
+            // 🚀 PERBAIKAN AUTENTIKASI: Bersihkan "Sesi Hantu" sebelum membuat sesi baru
+            try { 
+                await account.deleteSession('current'); 
+            } catch (err) { 
+                // Abaikan tanpa error jika memang tidak ada sesi aktif
+            }
+            
             // Langsung tembak Session ke Appwrite, hemat 2 API Request
             await account.createEmailPasswordSession(inputId, pass); 
             
@@ -181,7 +188,20 @@ if (el('loginForm')) {
             await initializeDashboard(user); 
         } catch (error) { 
             toggleLoading(false); 
-            alert("Login Gagal: " + error.message); 
+            
+            // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
+            if (error.message.includes('prohibited when a session is active')) {
+                try {
+                    let user = await account.get();
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    await initializeDashboard(user);
+                    return;
+                } catch (fallbackErr) {
+                    alert("Gagal memulihkan sesi: " + fallbackErr.message);
+                }
+            } else {
+                alert("Login Gagal: " + error.message); 
+            }
         }
     });
 }
