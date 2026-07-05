@@ -594,8 +594,6 @@ function initAllContextMenus() {
         const newBtnClean = newBtn.cloneNode(true); newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         const toggleNewMenu = (e) => { e.preventDefault(); e.stopPropagation(); const wasOpen = newMenu.classList.contains('show'); closeAllMenus(); if (!wasOpen) newMenu.classList.add('show'); };
         newBtnClean.onclick = toggleNewMenu; newBtnClean.oncontextmenu = toggleNewMenu;
-        dropdownNewMenu.style.top = e.clientY + "px";
-        dropdownNewMenu.style.left = e.clientX + "px";
     }
 
     if (navDrive) {
