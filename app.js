@@ -1019,13 +1019,51 @@ function handleFileSelect(files) {
     if (!files || files.length === 0) return;
     selectedUploadFiles = Array.from(files); 
     
+    // Menghitung jumlah file nyata dan folder kosong
+    const realFiles = selectedUploadFiles.filter(f => f.name !== '.emptyFolder');
+    const folderCount = selectedUploadFiles.filter(f => f.name === '.emptyFolder').length;
+    
     const infoText = document.getElementById('fileInfoText');
-    if (selectedUploadFiles.length === 1) {
-        infoText.innerText = `Terpilih: ${selectedUploadFiles[0].name}`; 
+    if (realFiles.length === 1 && folderCount === 0) {
+        infoText.innerText = `Terpilih: ${realFiles[0].name}`; 
     } else {
-        infoText.innerText = `Terpilih: ${selectedUploadFiles.length} item siap diunggah`; 
+        let msg = `Terpilih: `;
+        if (realFiles.length > 0) msg += `${realFiles.length} file `;
+        if (folderCount > 0) msg += `(${folderCount} folder kosong)`;
+        infoText.innerText = msg;
     }
     document.getElementById('fileInfoContainer').classList.remove('hidden'); 
+}
+
+// 🚀 FUNGSI PINTAR MEMBACA STRUKTUR FOLDER DARI DRAG & DROP
+async function traverseFileTree(item, path, allFiles) {
+    path = path || "";
+    if (item.isFile) {
+        return new Promise((resolve) => {
+            item.file((file) => {
+                file.customPath = path + file.name;
+                allFiles.push(file);
+                resolve();
+            });
+        });
+    } else if (item.isDirectory) {
+        let dirReader = item.createReader();
+        return new Promise((resolve) => {
+            dirReader.readEntries(async (entries) => {
+                if (entries.length === 0) {
+                    // Jika folder kosong, buat file penanda agar foldernya tetap dibuat di database
+                    const emptyFile = new File([""], ".emptyFolder", { type: "text/plain" });
+                    emptyFile.customPath = path + item.name + "/.emptyFolder";
+                    allFiles.push(emptyFile);
+                } else {
+                    for (let i = 0; i < entries.length; i++) {
+                        await traverseFileTree(entries[i], path + item.name + "/", allFiles);
+                    }
+                }
+                resolve();
+            });
+        });
+    }
 }
 
 function initDragAndDrop() {
@@ -1036,20 +1074,49 @@ function initDragAndDrop() {
     if (!zone) return;
     zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
     zone.addEventListener('dragleave', () => { zone.classList.remove('active'); }); 
-    zone.addEventListener('drop', (e) => { 
+    
+    // Perbaikan: Dukungan Penuh Drag & Drop Folder Kosong
+    zone.addEventListener('drop', async (e) => { 
         e.preventDefault(); 
         zone.classList.remove('active'); 
-        if(e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files); 
+        
+        let allFiles = [];
+        let items = e.dataTransfer.items;
+        
+        if (items) {
+            toggleLoading(true, "Membaca struktur folder...");
+            for (let i = 0; i < items.length; i++) {
+                let item = items[i].webkitGetAsEntry();
+                if (item) {
+                    await traverseFileTree(item, "", allFiles);
+                }
+            }
+            toggleLoading(false);
+        }
+        
+        if (allFiles.length > 0) {
+            handleFileSelect(allFiles);
+        } else {
+            alert("Sistem tidak mendeteksi file yang dapat diolah.");
+        }
     });
     
     if(fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
-    if(folderInput) folderInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
+    
+    // Perbaikan: Peringatan sistematis jika browser memblokir folder kosong via klik
+    if(folderInput) folderInput.addEventListener('change', (e) => { 
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files); 
+        } else {
+            alert("Peringatan Browser: Browser tidak mengizinkan unggah folder kosong melalui tombol klik. \n\nSolusi: Gunakan fitur Seret dan Lepas (Drag & Drop) kotak di atas untuk mengunggah folder kosong.");
+        }
+    });
 }
 
 window.submitUploadFile = async () => {
     if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!"); 
     closeModal('uploadModal'); 
-    toggleLoading(true, `Memproses ${selectedUploadFiles.length} item...`);
+    toggleLoading(true, `Memulai pemrosesan...`);
     
     try {
         let folderCache = { [currentFolderId]: currentFolderId }; 
@@ -1079,18 +1146,31 @@ window.submitUploadFile = async () => {
         };
 
         const uploadQueue = [];
+        let foldersCreated = 0;
+        
+        // Membangun struktur hierarki folder terlebih dahulu
         for (const file of selectedUploadFiles) {
             let targetParentId = currentFolderId;
-            if (file.webkitRelativePath) {
-                const pathParts = file.webkitRelativePath.split('/');
-                pathParts.pop(); 
+            
+            // Mengambil jalur (path) yang dihasilkan oleh Drag&Drop atau file input
+            const fullPath = file.customPath || file.webkitRelativePath;
+            
+            if (fullPath) {
+                const pathParts = fullPath.split('/');
+                pathParts.pop(); // Sisihkan nama file
                 if (pathParts.length > 0) {
                     targetParentId = await ensureFolderExists(pathParts.join('/'));
+                    foldersCreated++;
                 }
             }
-            uploadQueue.push({ fileObj: file, parentId: targetParentId });
+            
+            // JIKA ini adalah file sungguhan (bukan penanda folder kosong), masukkan antrean upload
+            if (file.name !== '.emptyFolder') {
+                uploadQueue.push({ fileObj: file, parentId: targetParentId });
+            }
         }
 
+        // Tembak ke storage dengan Berurutan agar menghindari "Failed to Fetch"
         for (let i = 0; i < uploadQueue.length; i++) {
             const item = uploadQueue[i];
             toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
@@ -1108,6 +1188,13 @@ window.submitUploadFile = async () => {
         window.forceCalculateStorage = true;
         loadFiles(currentFolderId); 
         calculateStorage();
+        
+        // Notifikasi visual jika pengguna hanya mengunggah folder kosong
+        if (uploadQueue.length === 0 && foldersCreated > 0) {
+            toggleLoading(false);
+            setTimeout(() => alert("Struktur folder kosong berhasil dibuat!"), 500);
+        }
+        
     } catch (e) { 
         alert("Terjadi kesalahan saat mengunggah: " + e.message); 
     } finally { 
@@ -1132,73 +1219,6 @@ window.openGoogleDoc = (type) => {
     
     if (url) window.open(url, '_blank');
 };
-
-// =========================================================================
-// PEMULIHAN: FUNGSI YANG HILANG DIKEMBALIKAN (100% BAHASA INDONESIA)
-// =========================================================================
-async function loadFiles(param) { 
-    if (!currentUser) return; 
-    const grid = document.getElementById('fileGrid'); 
-    if (grid) grid.innerHTML = ''; 
-    
-    // Pemanggilan Antarmuka Judul yang aman
-    if (typeof updateHeaderUI === 'function') {
-        updateHeaderUI(); 
-    }
-    
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
-    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
-    else { 
-        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
-    } 
-    
-    try { 
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        updatePreviewList(res.documents); 
-
-        if (res.documents.length === 0) {
-            if (grid) grid.innerHTML = `
-                <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
-                    <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
-                        <div class="mac-folder-back"></div>
-                        <div class="mac-folder-front"></div>
-                    </div>
-                    <p>Folder Kosong</p>
-                </div>`; 
-        } else {
-            res.documents.forEach(doc => renderItem(doc)); 
-        }
-    } catch (e) { console.error(e); } 
-}
-
-function updateHeaderUI() { 
-    const container = document.querySelector('.breadcrumb-area'); 
-    if (!container) return;
-    
-    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
-    
-    if (isRoot) { 
-        const h = new Date().getHours(); 
-        // Mengembalikan sapaan ke bahasa Inggris seperti versi awal
-        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
-    } else { 
-        let backText = "Drive";
-        if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
-        else if (currentViewMode !== 'root') { backText = "Drive"; }
-
-        container.innerHTML = `
-            <div class="back-nav-container">
-                <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
-                </button>
-                <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
-            </div>`; 
-    } 
-}
 
 window.togglePass = (id, icon) => { 
     const input = document.getElementById(id); 
