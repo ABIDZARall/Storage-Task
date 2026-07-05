@@ -593,18 +593,48 @@ function closeAllMenus() {
     });
 }
 
+function closeAllMenus() {
+    // Tutup paksa semua jenis menu
+    document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed, #dropdownNewMenu, #fileContextMenu').forEach(menu => {
+        if(menu) {
+            menu.classList.remove('show');
+            if(menu.id === 'fileContextMenu' || menu.id === 'previewContextMenu') {
+                menu.classList.add('hidden');
+            }
+        }
+    });
+    
+    const storageModal = document.getElementById('storageModal');
+    if(storageModal) storageModal.classList.add('hidden');
+}
+
 function initAllContextMenus() {
-    const newBtn = el('newBtnMain'); 
+    const newBtn = document.getElementById('newBtnMain'); 
     
-    // PERBAIKAN 2: Secara spesifik memanggil menu utama yang ada di luar sidebar
-    const newMenu = document.querySelector('.context-menu-fixed#dropdownNewMenu'); 
+    // ==============================================================
+    // KUNCI PERBAIKAN: AUTO-REPAIR MENU KE BODY
+    // ==============================================================
+    // Kita cari semua menu kembar, ambil yang paling akhir,
+    // dan pindahkan paksa ke ujung <body> agar lolos dari jebakan efek blur
+    const allNewMenus = document.querySelectorAll('#dropdownNewMenu');
+    let newMenu = null;
     
-    const navDrive = el('navDrive'); 
-    const globalMenu = el('globalContextMenu'); 
+    if (allNewMenus.length > 0) {
+        newMenu = allNewMenus[allNewMenus.length - 1]; 
+        document.body.appendChild(newMenu); // Pindahkan secara otomatis!
+        
+        // Jika HTML kamu masih ada menu duplikat, JS akan menghapusnya otomatis
+        allNewMenus.forEach(menu => {
+            if (menu !== newMenu) menu.remove();
+        });
+    }
+    
+    const navDrive = document.getElementById('navDrive'); 
+    const globalMenu = document.getElementById('globalContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn && newMenu) {
-        // Hapus event listener lama agar tidak terjadi penumpukan klik
+        // Reset tombol untuk mencegah bug "diklik di text tidak merespon"
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         
@@ -616,44 +646,48 @@ function initAllContextMenus() {
             closeAllMenus(); 
             
             if (!wasOpen) {
-                // Ambil koordinat akurat dari tombol di layar
+                // Kalkulasi layar sekarang dijamin 100% akurat
                 const rect = newBtnClean.getBoundingClientRect();
-                
-                // Gunakan position fixed agar layout tidak terganggu oleh sidebar
                 newMenu.style.position = 'fixed';
                 newMenu.style.top = `${rect.bottom + 8}px`; 
                 newMenu.style.left = `${rect.left}px`;
-                newMenu.style.zIndex = '999999';
+                newMenu.style.zIndex = '999999'; // Pastikan di lapisan paling depan
                 
                 newMenu.classList.add('show'); 
             }
         };
         
-        // Pasang trigger saat diklik
-        newBtnClean.onclick = toggleNewMenu; 
-        newBtnClean.oncontextmenu = toggleNewMenu;
+        // Memastikan seluruh area tombol merespon (termasuk icon dan textnya)
+        newBtnClean.addEventListener('click', toggleNewMenu);
+        newBtnClean.addEventListener('contextmenu', toggleNewMenu);
     }
 
     if (navDrive) {
-        navDrive.oncontextmenu = (e) => { 
+        navDrive.addEventListener('contextmenu', (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
-            if(globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
-        };
+            if(globalMenu && typeof positionMenuInsideWindow === 'function') {
+                positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
+            }
+        });
     }
 
     if (mainArea) {
-        mainArea.oncontextmenu = (e) => {
+        mainArea.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); closeAllMenus();
-            if(globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
-        };
+            if(globalMenu && typeof positionMenuInsideWindow === 'function') {
+                positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
+            }
+        });
     }
     
-    window.onclick = (e) => {
+    // Logika menutup menu ketika klik sembarang di luar layar
+    window.addEventListener('click', (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
+        // Jangan biarkan klik pada area tombol +Baru menutup menunya sendiri
+        if (e.target.closest('#newBtnMain') || e.target.closest('.new-btn-wrapper')) return;
         closeAllMenus();
-        if(el('previewContextMenu')) el('previewContextMenu').classList.add('hidden');
-    };
+    });
 }
 
 // ======================================================
