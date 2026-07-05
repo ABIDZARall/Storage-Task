@@ -17,26 +17,41 @@ button, a { outline: none !important; }
 
 /* VARIABEL & TEMA */
 :root {
-    --bg-color: #0f172a;
-    --glass-bg: rgba(255, 255, 255, 0.08);
+    --bg-color: #0B0F19; /* Midnight Blue Premium */
+    --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.15);
     --text-main: #ffffff;
-    --accent: #2dd4bf;
+    --accent: #2dd4bf; /* Vibrant Teal */
     --danger: #ef4444;
     --clr-blue: #4285f4;
     --clr-red: #ea4335;
     --clr-yellow: #fbbc04;
     --clr-green: #34a853;
-    --clr-grey: #5f6368;
+    --clr-grey: #94a3b8;
     --clr-purple: #a855f7; 
-    --popup-bg: #1e293b; 
-    --popup-border: #334155;
-    --track-bg: #334155; 
+    --popup-bg: rgba(30, 41, 59, 0.65); 
+    --popup-border: rgba(255, 255, 255, 0.2);
+    --track-bg: rgba(255, 255, 255, 0.1); 
 }
 
-/* Menggunakan 100dvh (Dynamic Viewport Height) mencegah terpotong oleh Browser UI Bar di Mobile */
-body { font-family: 'Inter', '-apple-system', 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; height: 100dvh; width: 100vw; }
-.liquid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top left, #134e4a, #0f172a); z-index: -1; }
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; height: 100dvh; width: 100vw; }
+
+/* MESH GRADIENT ANIMATED BACKGROUND ALA VISIONOS */
+.liquid-bg { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+    background-color: #0B0F19;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.25), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(79, 70, 229, 0.25), transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.15), transparent 50%);
+    animation: meshBreath 15s ease-in-out infinite alternate;
+}
+
+@keyframes meshBreath {
+    0% { background-position: 0% 0%; background-size: 100% 100%; }
+    50% { background-position: 100% 50%; background-size: 120% 120%; }
+    100% { background-position: 0% 100%; background-size: 100% 100%; }
+}
 .hidden { display: none !important; }
 
 /* ============================================================ */
@@ -159,27 +174,22 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 /* APPLE ORIGINAL LIQUID GLASS EFFECT UPDATE (MAIN PANEL)       */
 /* ============================================================ */
+/* Ganti class .main-glass-panel milikmu dengan ini */
 .main-glass-panel { 
     flex: 1; 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
-    backdrop-filter: blur(40px) saturate(200%); 
-    -webkit-backdrop-filter: blur(40px) saturate(200%); 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)); 
+    backdrop-filter: blur(50px) saturate(220%); 
+    -webkit-backdrop-filter: blur(50px) saturate(220%); 
     border-radius: 32px; 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
     border-top: 1px solid rgba(255, 255, 255, 0.4); 
-    border-left: 1px solid rgba(255, 255, 255, 0.3); 
+    border-left: 1px solid rgba(255, 255, 255, 0.25); 
     box-shadow: 
-        0 30px 60px -12px rgba(0, 0, 0, 0.5),
-        inset 0 1px 2px rgba(255, 255, 255, 0.4),
+        0 40px 80px -20px rgba(0, 0, 0, 0.8),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
         inset 0 -1px 2px rgba(0, 0, 0, 0.1);
-    
-    padding: 20px; 
-    display: flex; 
-    gap: 20px; 
-    overflow: hidden; 
-    max-width: 2560px; 
-    margin: 0 auto; 
-    width: 100%; 
+    padding: 20px; display: flex; gap: 20px; overflow: hidden; 
+    max-width: 2560px; margin: 0 auto; width: 100%; 
 }
 
 .sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
@@ -246,25 +256,24 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 
+/* Ganti class .search-bar-pill dan hover-nya dengan ini */
 .search-bar-pill { 
     width: 100%; max-width: 600px; 
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01));
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(50px) saturate(220%);
+    -webkit-backdrop-filter: blur(50px) saturate(220%);
     border-radius: 40px; height: 48px; padding: 0 20px; display: flex; align-items: center; 
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform: translateZ(0); 
+    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); 
 }
 .search-bar-pill:focus-within, .search-bar-pill:hover { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
     border-color: rgba(255, 255, 255, 0.5); 
-    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 45px -5px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 .search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
 .search-icon { color: rgba(255, 255, 255, 0.6); font-size: 1rem; transition: color 0.3s ease; }
@@ -287,6 +296,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 /* ============================================================ */
 /* GRID ITEM STYLING (DIKUNCI AGAR PERFECT SQUARE ANTI GEPENG)  */
 /* ============================================================ */
+/* ============================================================ */
+/* GRID ITEM STYLING (FROSTED GLASS ALA VISIONOS)               */
+/* ============================================================ */
 .file-grid-area { 
     flex: 1; overflow-y: auto; display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
@@ -295,26 +307,32 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 }
 
 .item-card { 
-    background: rgba(255, 255, 255, 0.04); 
-    border-radius: 12px; 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)); 
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 16px; 
     display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-    cursor: pointer; position: relative; transition: all 0.3s ease; 
-    border: 1px solid rgba(255,255,255,0.05); 
-    padding: 12px; 
+    cursor: pointer; position: relative; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    border: 1px solid rgba(255,255,255,0.08); 
+    border-top: 1px solid rgba(255,255,255,0.25);
+    border-left: 1px solid rgba(255,255,255,0.15);
+    padding: 15px 12px 12px 12px; 
     box-sizing: border-box; width: 100%;
     aspect-ratio: 1 / 1 !important; 
     overflow: hidden; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1);
 }
 .item-card:hover { 
-    background: rgba(255, 255, 255, 0.08); transform: translateY(-4px); 
-    border-color: rgba(255,255,255,0.15); box-shadow: 0 12px 25px rgba(0,0,0,0.3); 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)); 
+    transform: translateY(-5px) scale(1.02); 
+    border-color: rgba(255,255,255,0.3); 
+    border-top: 1px solid rgba(255,255,255,0.5);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.3); 
 }
 
 .mac-folder-container, .thumb-box {
-    width: 100%;
-    height: calc(100% - 24px); 
-    flex: none !important; 
-    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: calc(100% - 24px); 
+    flex: none !important; display: flex; align-items: center; justify-content: center;
     margin-bottom: 8px; position: relative;
 }
 .mac-folder-container { pointer-events: none; overflow: visible; }
@@ -323,50 +341,60 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 .item-name { 
     font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    color: #f1f5f9; flex: none; 
-    height: 16px; line-height: 16px; margin-top: auto; 
+    color: #f1f5f9; flex: none; height: 16px; line-height: 16px; margin-top: auto; 
 }
 
 /* ============================================================ */
-/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON                      */
+/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON (FROSTED WHITE)      */
 /* ============================================================ */
 .item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
 
 .mac-folder-icon {
     position: relative; width: 76px; height: 58px; margin: auto;
-    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+    transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); 
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
-.item-card:hover .mac-folder-icon { transform: scale(1.05) translateY(-3px); }
+.item-card:hover .mac-folder-icon { transform: scale(1.08) translateY(-4px); }
 
 .mac-folder-back {
     position: absolute; bottom: 0; left: 0; width: 100%; height: 82%;
-    background: linear-gradient(180deg, #007aff, #0056d6);
-    border-radius: 0 8px 8px 8px; box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    background: linear-gradient(180deg, rgba(235, 235, 245, 0.8), rgba(235, 235, 245, 0.5));
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-radius: 0 8px 8px 8px; 
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.5);
 }
 .mac-folder-back::before {
-    content: ''; position: absolute; top: -10px; left: 0; width: 32px; height: 12px;
-    background: linear-gradient(180deg, #007aff, #006ae0); border-radius: 8px 8px 0 0;
+    content: ''; position: absolute; top: -11px; left: -1px; width: 32px; height: 12px;
+    background: linear-gradient(180deg, rgba(235, 235, 245, 0.9), rgba(235, 235, 245, 0.7)); 
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: none;
 }
 .mac-folder-back::after {
-    content: ''; position: absolute; top: -6px; left: 32px; width: 10px; height: 6px;
-    background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 #006ae0;
+    content: ''; position: absolute; top: -6px; left: 30px; width: 10px; height: 6px;
+    background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 rgba(235, 235, 245, 0.7);
 }
 
 .mac-folder-front {
     position: absolute; bottom: 0; left: 0; width: 100%; height: 74%;
-    background: linear-gradient(180deg, #3aa0ff, #0062ff); border-radius: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)); 
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 1);
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.6);
     display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom;
+    transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom;
 }
 
 .mac-folder-front::after {
-    content: ''; width: 22px; height: 4px; background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    content: ''; width: 24px; height: 4px; background: rgba(255, 255, 255, 1);
+    border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(0,0,0,0.1);
 }
 
-.item-card:hover .mac-folder-front { transform: skewX(-3deg) scaleY(0.96); filter: brightness(1.1); }
+.item-card:hover .mac-folder-front { transform: skewX(-4deg) scaleY(0.94); filter: brightness(1.15); }
 
 /* ============================================================ */
 /* FILE THUMBNAILS (WARNA & EXTS)                               */
