@@ -953,7 +953,6 @@ window.submitCreateFolder = async () => {
     try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); el('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
-
 window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
 window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); window.forceCalculateStorage = true; loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); calculateStorage(); closeAllMenus(); } catch(e){} };
 window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
@@ -968,7 +967,6 @@ window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", se
 let selectedUploadFiles = []; 
 let uploadMode = 'file'; 
 
-// 🚀 AUTO-PATCH MODAL UPLOAD: Menyisipkan input folder tanpa perlu edit file index.html
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const dropZone = document.getElementById('dropZone');
@@ -1051,8 +1049,6 @@ function initDragAndDrop() {
 window.submitUploadFile = async () => {
     if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!"); 
     closeModal('uploadModal'); 
-    
-    // Memberikan indikator aman
     toggleLoading(true, `Memproses ${selectedUploadFiles.length} item...`);
     
     try {
@@ -1095,7 +1091,6 @@ window.submitUploadFile = async () => {
             uploadQueue.push({ fileObj: file, parentId: targetParentId });
         }
 
-        // PERBAIKAN FATAL: Upload Berurutan (Sequential) Mencegah "Failed to Fetch"
         for (let i = 0; i < uploadQueue.length; i++) {
             const item = uploadQueue[i];
             toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
@@ -1127,7 +1122,6 @@ if(folderInputModal) {
     });
 }
 
-// INTEGRASI GOOGLE WORKSPACE API
 window.openGoogleDoc = (type) => {
     closeAllMenus();
     let url = '';
@@ -1138,6 +1132,37 @@ window.openGoogleDoc = (type) => {
     
     if (url) window.open(url, '_blank');
 };
+
+// INI ADALAH FUNGSI PENTING YANG SEMPAT TERHAPUS
+async function loadFiles(param) { 
+    if (!currentUser) return; 
+    const grid = document.getElementById('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); 
+    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
+    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
+    else { 
+        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
+    } 
+    try { 
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
+        updatePreviewList(res.documents); 
+
+        if (res.documents.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
+                    <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
+                        <div class="mac-folder-back"></div>
+                        <div class="mac-folder-front"></div>
+                    </div>
+                    <p>Folder Kosong</p>
+                </div>`; 
+        } else {
+            res.documents.forEach(doc => renderItem(doc)); 
+        }
+    } catch (e) { console.error(e); } 
+}
 
 // ======================================================
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
