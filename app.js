@@ -7,7 +7,7 @@ const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
-const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
+const DEFAULT_AVATAR_LOCAL = 'Image/profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
@@ -611,30 +611,23 @@ function closeAllMenus() {
 function initAllContextMenus() {
     const newBtn = document.getElementById('newBtnMain'); 
     
-    // ==============================================================
-    // KUNCI PERBAIKAN: AUTO-REPAIR MENU KE BODY
-    // ==============================================================
-    // Kita cari semua menu kembar, ambil yang paling akhir,
-    // dan pindahkan paksa ke ujung <body> agar lolos dari jebakan efek blur
+    // Auto-repair: Ambil menu terakhir dan pindahkan ke body
     const allNewMenus = document.querySelectorAll('#dropdownNewMenu');
     let newMenu = null;
     
     if (allNewMenus.length > 0) {
         newMenu = allNewMenus[allNewMenus.length - 1]; 
-        document.body.appendChild(newMenu); // Pindahkan secara otomatis!
+        document.body.appendChild(newMenu); 
         
-        // Jika HTML kamu masih ada menu duplikat, JS akan menghapusnya otomatis
         allNewMenus.forEach(menu => {
             if (menu !== newMenu) menu.remove();
         });
     }
     
     const navDrive = document.getElementById('navDrive'); 
-    const globalMenu = document.getElementById('globalContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn && newMenu) {
-        // Reset tombol untuk mencegah bug "diklik di text tidak merespon"
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         
@@ -646,45 +639,44 @@ function initAllContextMenus() {
             closeAllMenus(); 
             
             if (!wasOpen) {
-                // Kalkulasi layar sekarang dijamin 100% akurat
                 const rect = newBtnClean.getBoundingClientRect();
                 newMenu.style.position = 'fixed';
                 newMenu.style.top = `${rect.bottom + 8}px`; 
                 newMenu.style.left = `${rect.left}px`;
-                newMenu.style.zIndex = '999999'; // Pastikan di lapisan paling depan
+                newMenu.style.zIndex = '999999'; 
                 
                 newMenu.classList.add('show'); 
             }
         };
         
-        // Memastikan seluruh area tombol merespon (termasuk icon dan textnya)
+        // HANYA aktif saat tombol +Baru diklik kiri
         newBtnClean.addEventListener('click', toggleNewMenu);
-        newBtnClean.addEventListener('contextmenu', toggleNewMenu);
     }
 
+    // ==============================================================
+    // PERBAIKAN: NONAKTIFKAN KLIK KANAN DI AREA LUAR
+    // ==============================================================
     if (navDrive) {
         navDrive.addEventListener('contextmenu', (e) => { 
-            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
-            if(globalMenu && typeof positionMenuInsideWindow === 'function') {
-                positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
-            }
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            closeAllMenus(); 
+            // Fitur pemanggilan menu di luar tombol telah dihapus di sini
         });
     }
 
     if (mainArea) {
         mainArea.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAllMenus();
-            if(globalMenu && typeof positionMenuInsideWindow === 'function') {
-                positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
-            }
+            e.preventDefault(); 
+            closeAllMenus();
+            // Fitur pemanggilan menu mengikuti kursor telah dihapus di sini
         });
     }
     
     // Logika menutup menu ketika klik sembarang di luar layar
     window.addEventListener('click', (e) => {
         if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
-        // Jangan biarkan klik pada area tombol +Baru menutup menunya sendiri
         if (e.target.closest('#newBtnMain') || e.target.closest('.new-btn-wrapper')) return;
         closeAllMenus();
     });
