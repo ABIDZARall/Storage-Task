@@ -700,6 +700,96 @@ function initAllContextMenus() {
     });
 }
 
+function initAllContextMenus() {
+    const tombolBaru = document.getElementById('newBtnMain'); 
+    
+    // Auto-repair: Ambil menu terakhir dan pindahkan ke area aman
+    const semuaMenuBaru = document.querySelectorAll('#dropdownNewMenu');
+    let menuBaru = null;
+    
+    if (semuaMenuBaru.length > 0) {
+        menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1]; 
+        document.body.appendChild(menuBaru); 
+        
+        // 🚀 AUTO-PATCH: Memperbaiki tautan HTML secara otomatis agar Google & Folder bekerja
+        menuBaru.innerHTML = `
+            <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+            <hr class="menu-divider">
+            <a href="javascript:void(0)" onclick="triggerUploadModal('file')"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+            <a href="javascript:void(0)" onclick="triggerUploadModal('folder')"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+            <hr class="menu-divider">
+            <a href="javascript:void(0)" onclick="openGoogleDoc('document')"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('spreadsheet')"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('presentation')"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
+        `;
+        
+        // Bersihkan duplikat jika ada
+        semuaMenuBaru.forEach(menu => {
+            if (menu !== menuBaru) menu.remove();
+        });
+    }
+    
+    const navigasiDrive = document.getElementById('navDrive'); 
+    const areaUtama = document.querySelector('.main-content-area');
+
+    if (tombolBaru && menuBaru) {
+        const tombolBaruBersih = tombolBaru.cloneNode(true); 
+        tombolBaru.parentNode.replaceChild(tombolBaruBersih, tombolBaru);
+        
+        const aturMenu = (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            
+            const apakahSedangTerbuka = menuBaru.classList.contains('show'); 
+            closeAllMenus(); 
+            
+            if (!apakahSedangTerbuka) {
+                menuBaru.classList.add('show'); 
+                
+                const posisiTombol = tombolBaruBersih.getBoundingClientRect();
+                const tinggiMenu = menuBaru.offsetHeight;
+                const lebarMenu = menuBaru.offsetWidth;
+                const apakahLayarHP = window.innerWidth <= 768;
+                
+                menuBaru.style.setProperty('position', 'fixed', 'important');
+                menuBaru.style.setProperty('z-index', '999999', 'important');
+                menuBaru.style.setProperty('bottom', 'auto', 'important');
+                menuBaru.style.setProperty('right', 'auto', 'important');
+                
+                if (apakahLayarHP) {
+                    menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
+                } else {
+                    menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.left}px`, 'important');
+                }
+            }
+        };
+        
+        tombolBaruBersih.addEventListener('click', aturMenu);
+    }
+
+    if (navigasiDrive) {
+        navigasiDrive.addEventListener('contextmenu', (e) => { 
+            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
+        });
+    }
+
+    if (areaUtama) {
+        areaUtama.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.item-card')) return;
+            e.preventDefault(); closeAllMenus();
+        });
+    }
+    
+    window.addEventListener('click', (e) => {
+        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
+        if (e.target.closest('#newBtnMain') || e.target.closest('.new-btn-wrapper')) return;
+        closeAllMenus();
+    });
+}
+
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
 // ======================================================
@@ -853,32 +943,49 @@ window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='fol
 window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
 
 // =========================================================================
-// ENGINE UPLOAD PARALEL & STRUKTUR REAL-FOLDER
+// ENGINE UPLOAD (BERURUTAN/ANTI-GAGAL) & STRUKTUR REAL-FOLDER
 // =========================================================================
-
 let selectedUploadFiles = []; 
 let uploadMode = 'file'; 
 
-// 1. Modifikasi pemicu Modal Upload
+// 🚀 AUTO-PATCH MODAL UPLOAD: Menyisipkan input folder tanpa perlu edit file index.html
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const dropZone = document.getElementById('dropZone');
+        if (dropZone) {
+            dropZone.outerHTML = `
+                <div id="dropZone" class="drag-drop-area">
+                    <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
+                    <h4 id="uploadModalDesc">Seret item ke sini atau klik</h4>
+                    <input type="file" id="fileInputHidden" hidden multiple>
+                    <input type="file" id="folderInputHidden" hidden webkitdirectory directory multiple>
+                </div>
+            `;
+            initDragAndDrop(); 
+        }
+    }, 500);
+});
+
 window.triggerUploadModal = (mode = 'file') => { 
     resetUploadUI(); 
     uploadMode = mode;
     const dropZone = document.getElementById('dropZone');
+    const folderInput = document.getElementById('folderInputHidden');
+    const fileInput = document.getElementById('fileInputHidden');
     
     if (mode === 'folder') {
         document.getElementById('uploadModalTitle').innerText = "Upload Folder";
         document.getElementById('uploadModalDesc').innerText = "Klik untuk pilih folder dari perangkat Anda";
-        dropZone.onclick = () => document.getElementById('folderInputHidden').click();
+        if (dropZone && folderInput) dropZone.onclick = () => folderInput.click();
     } else {
         document.getElementById('uploadModalTitle').innerText = "Upload File";
         document.getElementById('uploadModalDesc').innerText = "Seret file ke sini atau klik";
-        dropZone.onclick = () => document.getElementById('fileInputHidden').click();
+        if (dropZone && fileInput) dropZone.onclick = () => fileInput.click();
     }
     
     window.openModal('uploadModal'); 
 };
 
-// 2. Pembacaan Array (File Jamak) untuk Drag & Drop dan Klik
 function resetUploadUI() { 
     selectedUploadFiles = []; 
     const fileContainer = document.getElementById('fileInfoContainer');
@@ -910,7 +1017,7 @@ function initDragAndDrop() {
     
     if (!zone) return;
     zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('active')); 
+    zone.addEventListener('dragleave', () => { zone.classList.remove('active'); }); 
     zone.addEventListener('drop', (e) => { 
         e.preventDefault(); 
         zone.classList.remove('active'); 
@@ -921,20 +1028,18 @@ function initDragAndDrop() {
     if(folderInput) folderInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
 }
 
-// 3. Eksekusi Upload Serentak (Concurrent) & Pembuat Struktur Folder Otomatis
 window.submitUploadFile = async () => {
     if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!"); 
     closeModal('uploadModal'); 
-    toggleLoading(true, `Mengunggah ${selectedUploadFiles.length} item secara paralel...`);
+    
+    // Memberikan indikator aman
+    toggleLoading(true, `Memproses ${selectedUploadFiles.length} item...`);
     
     try {
-        // Cache memori agar sistem tidak berulang kali membuat folder yang sama
         let folderCache = { [currentFolderId]: currentFolderId }; 
         
-        // Logika AI untuk memetakan "path" (jalur file) menjadi struktur folder sungguhan di Database
         const ensureFolderExists = async (pathStr) => {
             if (folderCache[pathStr]) return folderCache[pathStr];
-            
             let parts = pathStr.split('/');
             let currentPath = '';
             let parentId = currentFolderId;
@@ -957,33 +1062,32 @@ window.submitUploadFile = async () => {
             return parentId;
         };
 
-        // STEP 1: Analisa & Bangun Hierarki Foldernya (Synchronous)
+        const uploadQueue = [];
         for (const file of selectedUploadFiles) {
             let targetParentId = currentFolderId;
-            
-            // "webkitRelativePath" adalah DNA struktur real-folder dari perangkat (contoh: Gambar/Liburan/foto1.jpg)
             if (file.webkitRelativePath) {
                 const pathParts = file.webkitRelativePath.split('/');
-                pathParts.pop(); // Buang nama filenya, simpan sisanya sebagai folder parent
+                pathParts.pop(); 
                 if (pathParts.length > 0) {
-                    const folderPath = pathParts.join('/');
-                    targetParentId = await ensureFolderExists(folderPath);
+                    targetParentId = await ensureFolderExists(pathParts.join('/'));
                 }
             }
-            // Sisipkan ID tujuannya ke dalam properti file untuk siap tembak
-            file.targetParentId = targetParentId;
+            uploadQueue.push({ fileObj: file, parentId: targetParentId });
         }
 
-        // STEP 2: Tembak Semua File Serentak Tanpa Menunggu (Asynchronous / Promise.all)
-        const uploadPromises = selectedUploadFiles.map(async (file) => {
-            const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), file);
-            return databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { 
-                name: file.name, type: 'file', parentId: file.targetParentId || currentFolderId, owner: currentUser.$id, 
-                url: storage.getFileView(CONFIG.BUCKET_ID, up.$id).href, fileId: up.$id, size: file.size, starred: false, trashed: false 
+        // PERBAIKAN FATAL: Upload Berurutan (Sequential) Mencegah "Failed to Fetch"
+        for (let i = 0; i < uploadQueue.length; i++) {
+            const item = uploadQueue[i];
+            toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
+            
+            const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), item.fileObj);
+            const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
+            
+            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { 
+                name: item.fileObj.name, type: 'file', parentId: item.parentId, owner: currentUser.$id, 
+                url: viewUrl, fileId: up.$id, size: item.fileObj.size, starred: false, trashed: false 
             });
-        });
-        
-        await Promise.all(uploadPromises); // Semua file berjalan bersamaan menghemat waktu 90%
+        }
         
         resetUploadUI(); 
         window.forceCalculateStorage = true;
@@ -996,9 +1100,6 @@ window.submitUploadFile = async () => {
     }
 };
 
-// =========================================================================
-// OPTIMASI: FOLDER BARU BISA PAKE TOMBOL ENTER DARI KEYBOARD
-// =========================================================================
 const folderInputModal = document.getElementById('newFolderName');
 if(folderInputModal) {
     folderInputModal.addEventListener('keypress', function (e) {
@@ -1006,9 +1107,7 @@ if(folderInputModal) {
     });
 }
 
-// =========================================================================
 // INTEGRASI GOOGLE WORKSPACE API
-// =========================================================================
 window.openGoogleDoc = (type) => {
     closeAllMenus();
     let url = '';
@@ -1019,60 +1118,6 @@ window.openGoogleDoc = (type) => {
     
     if (url) window.open(url, '_blank');
 };
-
-async function loadFiles(param) { 
-    if (!currentUser) return; 
-    const grid = el('fileGrid'); grid.innerHTML = ''; updateHeaderUI(); 
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
-    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
-    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
-    else { 
-        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
-    } 
-    try { 
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
-        updatePreviewList(res.documents); 
-
-        if (res.documents.length === 0) {
-            grid.innerHTML = `
-                <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;opacity:0.6;margin-top:50px;">
-                    <div class="mac-folder-icon" style="transform: scale(1.2); margin-bottom:25px; filter: grayscale(100%); opacity: 0.5;">
-                        <div class="mac-folder-back"></div>
-                        <div class="mac-folder-front"></div>
-                    </div>
-                    <p>Folder Kosong</p>
-                </div>`; 
-        } else {
-            res.documents.forEach(doc => renderItem(doc)); 
-        }
-    } catch (e) { console.error(e); } 
-}
-
-function updateHeaderUI() { 
-    const container = document.querySelector('.breadcrumb-area'); 
-    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
-    
-    if (isRoot) { 
-        const h = new Date().getHours(); const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
-    } else { 
-        let backText = "Drive";
-        if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
-        else if (currentViewMode !== 'root') { backText = "Drive"; }
-
-        container.innerHTML = `
-            <div class="back-nav-container">
-                <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
-                </button>
-                <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
-            </div>`; 
-    } 
-}
-
-window.togglePass = (id, icon) => { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); } else { input.type = "password"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } };
 
 // ======================================================
 // 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
