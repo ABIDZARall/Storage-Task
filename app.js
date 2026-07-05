@@ -587,10 +587,17 @@ function closeAllMenus() {
 }
 
 function initAllContextMenus() {
-    const newBtn = el('newBtnMain'); const newMenu = el('dropdownNewMenu'); 
-    const navDrive = el('navDrive'); const globalMenu = el('globalContextMenu'); const mainArea = document.querySelector('.main-content-area');
+    const newBtn = el('newBtnMain'); 
+    const newMenu = el('dropdownNewMenu'); 
+    const navDrive = el('navDrive'); 
+    const globalMenu = el('globalContextMenu'); 
+    const mainArea = document.querySelector('.main-content-area');
 
-    if (newBtn) {
+    if (newBtn && newMenu) {
+        // 1. KUNCI UTAMA: Pindahkan elemen menu ke root body secara otomatis via JS
+        document.body.appendChild(newMenu);
+        newMenu.classList.add('context-menu-fixed'); // Paksa jadi floating global
+
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         
@@ -601,15 +608,12 @@ function initAllContextMenus() {
             closeAllMenus(); 
             
             if (!wasOpen) {
-                // Cek apakah tampilan desktop
+                // 2. Kalkulasi letak menu agar presisi di bawah tombol
                 if (window.innerWidth > 768) {
                     const rect = newBtnClean.getBoundingClientRect();
-                    // Mengambil posisi ujung bawah tombol + jarak margin 8px
                     newMenu.style.top = `${rect.bottom + 8}px`;
-                    // Sejajar persis di ujung kiri tombol
                     newMenu.style.left = `${rect.left}px`;
                 } else {
-                    // Bersihkan gaya agar CSS mobile asli yang mengambil alih
                     newMenu.style.top = '';
                     newMenu.style.left = '';
                 }
@@ -620,6 +624,7 @@ function initAllContextMenus() {
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
+    // === Sisa logika klik kanan lainnya tetap sama ===
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
@@ -641,6 +646,7 @@ function initAllContextMenus() {
         if(el('previewContextMenu')) el('previewContextMenu').classList.add('hidden');
     };
 }
+
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
