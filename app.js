@@ -1182,9 +1182,9 @@ function updateHeaderUI() {
     
     if (isRoot) { 
         const h = new Date().getHours(); 
-        // PERBAIKAN: Menggunakan Bahasa Indonesia untuk sapaan
-        const s = h < 11 ? "Pagi" : h < 15 ? "Siang" : h < 18 ? "Sore" : "Malam"; 
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Selamat Datang di Drive, Selamat ${s}</h2>`; 
+        // Mengembalikan sapaan ke bahasa Inggris seperti versi awal
+        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
     } else { 
         let backText = "Drive";
         if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
