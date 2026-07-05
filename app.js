@@ -582,39 +582,42 @@ function renderItem(doc) {
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('dropdownNewMenu')) el('dropdownNewMenu').classList.remove('show');
+    
+    // PERBAIKAN 1: Paksa tutup SEMUA menu kembar agar tidak terjadi bug saat klik di luar
+    document.querySelectorAll('#dropdownNewMenu, .dropdown-content').forEach(menu => {
+        menu.classList.remove('show');
+    });
+    
     if(el('fileContextMenu')) { el('fileContextMenu').classList.add('hidden'); el('fileContextMenu').classList.remove('show'); }
 }
 
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     
-    // 1. Hapus paksa menu duplikat yang terjebak di dalam sidebar
-    const duplicateMenu = document.querySelector('.new-btn-wrapper #dropdownNewMenu');
-    if (duplicateMenu) duplicateMenu.remove(); 
+    // PERBAIKAN 2: Bidik secara spesifik menu global yang ada di luar sidebar
+    // dengan memanfaatkan class .context-menu-fixed
+    const newMenu = document.querySelector('.context-menu-fixed#dropdownNewMenu'); 
     
-    // 2. Sekarang JS hanya akan menggunakan menu global yang aman di luar sidebar
-    const newMenu = el('dropdownNewMenu'); 
-
     const navDrive = el('navDrive'); 
     const globalMenu = el('globalContextMenu'); 
     const mainArea = document.querySelector('.main-content-area');
 
-    if (newBtn) {
+    if (newBtn && newMenu) {
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         
         const toggleNewMenu = (e) => { 
             e.preventDefault(); 
             e.stopPropagation(); 
+            
             const wasOpen = newMenu.classList.contains('show'); 
             closeAllMenus(); 
             
             if (!wasOpen) {
-                // Ambil titik koordinat asli dari tombol + Baru di layar
                 const rect = newBtnClean.getBoundingClientRect();
                 
-                // Gunakan position fixed agar posisinya mutlak ke layar, bukan ke sidebar
+                // Gunakan position: fixed agar menu mengacu pada layar utama,
+                // sehingga posisinya langsung pas di bawah tombol khas Apple UI
                 newMenu.style.position = 'fixed';
                 newMenu.style.top = `${rect.bottom + 8}px`; 
                 newMenu.style.left = `${rect.left}px`;
