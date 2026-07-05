@@ -591,9 +591,28 @@ function initAllContextMenus() {
     const navDrive = el('navDrive'); const globalMenu = el('globalContextMenu'); const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn) {
-        const newBtnClean = newBtn.cloneNode(true); newBtn.parentNode.replaceChild(newBtnClean, newBtn);
-        const toggleNewMenu = (e) => { e.preventDefault(); e.stopPropagation(); const wasOpen = newMenu.classList.contains('show'); closeAllMenus(); if (!wasOpen) newMenu.classList.add('show'); };
-        newBtnClean.onclick = toggleNewMenu; newBtnClean.oncontextmenu = toggleNewMenu;
+        const newBtnClean = newBtn.cloneNode(true); 
+        newBtn.parentNode.replaceChild(newBtnClean, newBtn);
+        
+        const toggleNewMenu = (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            const wasOpen = newMenu.classList.contains('show'); 
+            closeAllMenus(); 
+            
+            if (!wasOpen) {
+                // Mendapatkan koordinat dan ukuran tombol di layar (viewport)
+                const rect = newBtnClean.getBoundingClientRect();
+                
+                // Menempatkan dropdown langsung di bawah sudut kiri tombol
+                newMenu.style.top = `${rect.bottom + 8}px`; // 8px untuk jarak vertikal
+                newMenu.style.left = `${rect.left}px`;
+                
+                newMenu.classList.add('show'); 
+            }
+        };
+        newBtnClean.onclick = toggleNewMenu; 
+        newBtnClean.oncontextmenu = toggleNewMenu;
     }
 
     if (navDrive) {
