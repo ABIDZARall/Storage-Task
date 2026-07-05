@@ -582,20 +582,21 @@ function renderItem(doc) {
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
     if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
+    if(el('fileContextMenu')) { 
+        el('fileContextMenu').classList.add('hidden'); 
+        el('fileContextMenu').classList.remove('show'); 
+    }
     
-    // PERBAIKAN 1: Paksa tutup SEMUA menu kembar agar tidak terjadi bug saat klik di luar
-    document.querySelectorAll('#dropdownNewMenu, .dropdown-content').forEach(menu => {
+    // PERBAIKAN 1: Pastikan SEMUA elemen dropdown dibersihkan saat klik di luar
+    document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed').forEach(menu => {
         menu.classList.remove('show');
     });
-    
-    if(el('fileContextMenu')) { el('fileContextMenu').classList.add('hidden'); el('fileContextMenu').classList.remove('show'); }
 }
 
 function initAllContextMenus() {
     const newBtn = el('newBtnMain'); 
     
-    // PERBAIKAN 2: Bidik secara spesifik menu global yang ada di luar sidebar
-    // dengan memanfaatkan class .context-menu-fixed
+    // PERBAIKAN 2: Secara spesifik memanggil menu utama yang ada di luar sidebar
     const newMenu = document.querySelector('.context-menu-fixed#dropdownNewMenu'); 
     
     const navDrive = el('navDrive'); 
@@ -603,6 +604,7 @@ function initAllContextMenus() {
     const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn && newMenu) {
+        // Hapus event listener lama agar tidak terjadi penumpukan klik
         const newBtnClean = newBtn.cloneNode(true); 
         newBtn.parentNode.replaceChild(newBtnClean, newBtn);
         
@@ -614,18 +616,20 @@ function initAllContextMenus() {
             closeAllMenus(); 
             
             if (!wasOpen) {
+                // Ambil koordinat akurat dari tombol di layar
                 const rect = newBtnClean.getBoundingClientRect();
                 
-                // Gunakan position: fixed agar menu mengacu pada layar utama,
-                // sehingga posisinya langsung pas di bawah tombol khas Apple UI
+                // Gunakan position fixed agar layout tidak terganggu oleh sidebar
                 newMenu.style.position = 'fixed';
                 newMenu.style.top = `${rect.bottom + 8}px`; 
                 newMenu.style.left = `${rect.left}px`;
-                newMenu.style.zIndex = '99999';
+                newMenu.style.zIndex = '999999';
                 
                 newMenu.classList.add('show'); 
             }
         };
+        
+        // Pasang trigger saat diklik
         newBtnClean.onclick = toggleNewMenu; 
         newBtnClean.oncontextmenu = toggleNewMenu;
     }
@@ -633,7 +637,7 @@ function initAllContextMenus() {
     if (navDrive) {
         navDrive.oncontextmenu = (e) => { 
             e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
-            positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
+            if(globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY); 
         };
     }
 
@@ -641,7 +645,7 @@ function initAllContextMenus() {
         mainArea.oncontextmenu = (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); closeAllMenus();
-            positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
+            if(globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         };
     }
     
