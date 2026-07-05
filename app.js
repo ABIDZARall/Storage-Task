@@ -587,8 +587,18 @@ function closeAllMenus() {
 }
 
 function initAllContextMenus() {
-    const newBtn = el('newBtnMain'); const newMenu = el('dropdownNewMenu'); 
-    const navDrive = el('navDrive'); const globalMenu = el('globalContextMenu'); const mainArea = document.querySelector('.main-content-area');
+    const newBtn = el('newBtnMain'); 
+    
+    // 1. Hapus paksa menu duplikat yang terjebak di dalam sidebar
+    const duplicateMenu = document.querySelector('.new-btn-wrapper #dropdownNewMenu');
+    if (duplicateMenu) duplicateMenu.remove(); 
+    
+    // 2. Sekarang JS hanya akan menggunakan menu global yang aman di luar sidebar
+    const newMenu = el('dropdownNewMenu'); 
+
+    const navDrive = el('navDrive'); 
+    const globalMenu = el('globalContextMenu'); 
+    const mainArea = document.querySelector('.main-content-area');
 
     if (newBtn) {
         const newBtnClean = newBtn.cloneNode(true); 
@@ -601,12 +611,14 @@ function initAllContextMenus() {
             closeAllMenus(); 
             
             if (!wasOpen) {
-                // Mendapatkan koordinat dan ukuran tombol di layar (viewport)
+                // Ambil titik koordinat asli dari tombol + Baru di layar
                 const rect = newBtnClean.getBoundingClientRect();
                 
-                // Menempatkan dropdown langsung di bawah sudut kiri tombol
-                newMenu.style.top = `${rect.bottom + 8}px`; // 8px untuk jarak vertikal
+                // Gunakan position fixed agar posisinya mutlak ke layar, bukan ke sidebar
+                newMenu.style.position = 'fixed';
+                newMenu.style.top = `${rect.bottom + 8}px`; 
                 newMenu.style.left = `${rect.left}px`;
+                newMenu.style.zIndex = '99999';
                 
                 newMenu.classList.add('show'); 
             }
