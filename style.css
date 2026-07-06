@@ -1027,50 +1027,102 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
     /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
-    /* === DESAIN SIDEBAR MENU KAPSUL MOBILE - APPLE LIQUID GLASS === */
+    /* === DESAIN SIDEBAR MENU KAPSUL MOBILE - NICEGRAM STYLE === */
     .sidebar-menu { 
-        position: fixed !important; bottom: calc(15px + env(safe-area-inset-bottom)) !important;
-        left: 50% !important; transform: translateX(-50%) !important; width: max-content !important; 
-        max-width: 95vw !important; height: auto !important; padding: 6px 8px !important; border-radius: 50px !important; 
-        background: rgba(30, 41, 59, 0.65) !important; 
-        backdrop-filter: blur(45px) saturate(250%) !important; -webkit-backdrop-filter: blur(45px) saturate(250%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.3) !important;
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: center !important; align-items: center !important; gap: 2px !important; 
+        position: fixed !important; 
+        bottom: calc(15px + env(safe-area-inset-bottom)) !important;
+        left: 50% !important; 
+        transform: translateX(-50%) !important; 
+        width: max-content !important; 
+        max-width: 95vw !important; 
+        height: auto !important; 
+        padding: 8px 8px !important; /* Padding seimbang untuk margin presisi */
+        border-radius: 40px !important; 
+        
+        /* Latar belakang gelap solid dan bersih ala Nicegram */
+        background: rgba(23, 28, 41, 0.95) !important; 
+        backdrop-filter: blur(20px) saturate(150%) !important; 
+        -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
+        
+        z-index: 5000 !important; 
+        display: flex !important; 
+        flex-direction: row !important; 
+        justify-content: space-between !important; 
+        align-items: center !important; 
+        gap: 4px !important; 
     }
 
     .nav-indicator {
-        display: block !important; position: absolute !important; height: 48px !important; border-radius: 50px !important; 
-        background: rgba(255, 255, 255, 0.2) !important; 
-        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
-        border: 1px solid rgba(255,255,255,0.25) !important; border-top: 1px solid rgba(255,255,255,0.45) !important;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.4) !important;
-        transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s ease !important;
-        z-index: 0 !important; pointer-events: none !important;
+        display: block !important; 
+        position: absolute !important; 
+        /* TIDAK ADA !important PADA TOP, LEFT, WIDTH, & HEIGHT AGAR JS 100% AKURAT */
+        border-radius: 30px !important; 
+        
+        /* Kapsul indikator warna solid/bersih, bebas buram */
+        background: rgba(45, 212, 191, 0.2) !important; 
+        border: 1px solid rgba(45, 212, 191, 0.5) !important;
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        z-index: 0 !important; 
+        pointer-events: none !important;
     }
 
-    /* KUNCI KOTAK MENU AGAR TIDAK BERGERAK, MEMBANTU JS MENGHITUNG POSISI PAS 100% TENGAH */
     .nav-item { 
-        position: relative !important; z-index: 1 !important; flex-direction: column !important; gap: 4px !important; 
-        width: auto !important; min-width: 54px !important; height: 48px !important; padding: 4px 12px !important; 
-        border-radius: 50px !important; justify-content: center !important; text-align: center !important; color: rgba(255,255,255,0.6) !important;
-        background: transparent !important; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; 
-        -webkit-tap-highlight-color: transparent !important; transform: none !important; margin: 0 !important;
+        position: relative !important; 
+        z-index: 1 !important; 
+        flex-direction: column !important; 
+        gap: 4px !important; 
+        width: auto !important; 
+        min-width: 62px !important; 
+        height: 52px !important; 
+        padding: 6px 10px !important; 
+        border-radius: 30px !important; 
+        justify-content: center !important; 
+        text-align: center !important; 
+        
+        /* Warna Item Tidak Aktif (Abu-abu rapi) */
+        color: rgba(255, 255, 255, 0.5) !important;
+        background: transparent !important; 
+        transition: all 0.3s ease !important; 
+        outline: none !important; 
+        -webkit-tap-highlight-color: transparent !important; 
+        margin: 0 !important;
     }
     
-    .nav-item:hover { color: rgba(255,255,255,0.95) !important; }
-    .nav-item:hover i { transform: scale(1.1) translateY(-2px) !important; }
+    .nav-item.active { 
+        /* Warna Item Aktif (Menyala elegan di dalam kapsul) */
+        color: var(--accent) !important; 
+        background: transparent !important; 
+    }
     
-    /* HILANGKAN TRANSFORM DARI WRAPPER UTAMA */
-    .nav-item.active { color: white !important; background: transparent !important; border: none !important; box-shadow: none !important; transform: none !important; }
+    .nav-item i { 
+        font-size: 1.35rem !important; 
+        margin: 0 !important; 
+        color: inherit !important;
+        transition: transform 0.3s ease !important;
+    }
     
-    /* BERIKAN EFEK ANIMASI LOMPATAN LANGSUNG KE IKON DAN TEKSNYA SAJA */
-    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 12px rgba(45, 212, 191, 0.8); transform: scale(1.2) translateY(-2px) !important; }
-    .nav-item.active span { color: white !important; font-weight: 700 !important; text-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; transform: scale(1.05) !important; }
+    .nav-item span { 
+        font-size: 0.65rem !important; 
+        font-weight: 600 !important; 
+        letter-spacing: 0.2px !important; 
+        color: inherit !important;
+    }
     
-    .nav-item i { font-size: 1.25rem !important; transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease, text-shadow 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; transition: all 0.3s ease !important; display: inline-block !important; }
+    /* Animasi icon saat aktif - Dibuat sangat mulus dan bebas distorsi */
+    .nav-item.active i {
+        transform: scale(1.1) translateY(-1px) !important;
+        text-shadow: none !important;
+        filter: none !important;
+    }
+    .nav-item.active span {
+        text-shadow: none !important;
+    }
     
     .hide-mobile { display: none !important; }
     
