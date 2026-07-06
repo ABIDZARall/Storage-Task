@@ -918,11 +918,20 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* LAPTOP KECIL & TABLET LANDSCAPE (<= 1024px) */
 @media screen and (max-width: 1024px) {
-    .sidebar-left { width: 200px; padding-right: 10px; }
-    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-    .apple-audio-player-v2 { width: 90vw; }
-    .storage-manager-card { padding: 35px 30px !important; }
-    .top-nav .logo-img { display: none !important; }
+    /* ============================================================ */
+    /* MATIKAN BINGKAI KACA DESKTOP AGAR TIDAK BOCOR KE MOBILE      */
+    /* ============================================================ */
+    .sidebar-left { 
+        width: 0 !important; 
+        height: 0 !important; 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        background: transparent !important; 
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+    }
 }
 
 /* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
