@@ -833,125 +833,104 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
 
 /* LAPTOP KECIL & TABLET LANDSCAPE (<= 1024px) */
 @media screen and (max-width: 1024px) {
-/* ============================================================ */
-/* SIDEBAR KIRI - APPLE LIQUID GLASS TINGKAT TINGGI (DESKTOP)   */
-/* ============================================================ */
-.sidebar-left { 
-    width: 270px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-    padding: 24px 20px; 
-    flex-shrink: 0; 
-    overflow-y: auto; 
+    .sidebar-left { width: 200px; padding-right: 10px; }
+    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+    .apple-audio-player-v2 { width: 90vw; }
+    .storage-manager-card { padding: 35px 30px !important; }
+    .top-nav .logo-img { display: none !important; }
+}
+
+/* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
+@media screen and (max-width: 768px) {
+    .dashboard-layout { padding: 0; }
     
-    /* APPLE LIQUID GLASS MURNI */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: blur(50px) saturate(220%);
-    -webkit-backdrop-filter: blur(50px) saturate(220%);
+    .main-glass-panel { 
+        flex: 1; flex-direction: column; 
+        border-radius: 0; border: none; padding: 0; 
+        height: auto; gap: 0;
+        background: rgba(255, 255, 255, 0.02); 
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        box-shadow: none;
+    }
     
-    border-radius: 32px; 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    border-top: 1px solid rgba(255, 255, 255, 0.4); 
-    border-left: 1px solid rgba(255, 255, 255, 0.25); 
-    box-shadow: 0 35px 65px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3);
-    z-index: 10; 
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    margin-right: 10px;
-}
-
-.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 5px; }
-
-/* TOMBOL + BARU DESKTOP - APPLE LIQUID GLASS */
-.new-btn { 
-    width: 100%; justify-content: flex-start; 
-    padding-left: 20px; gap: 12px; height: 48px; border-radius: 16px; font-size: 1rem; font-weight: 600;
+    .top-nav { min-height: 40px !important; margin-bottom: 5px !important; padding: 10px 15px 5px 15px !important; }
+    .top-nav .logo-img { display: none !important; }
+    .brand-text { font-size: 1.25rem !important; letter-spacing: -0.3px; }
+    .brand-area { gap: 0; padding: 4px 8px; }
     
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(35px) saturate(250%);
-    -webkit-backdrop-filter: blur(35px) saturate(250%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-top: 1px solid rgba(255, 255, 255, 0.35);
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.3); 
+    .avatar { width: 32px !important; height: 32px !important; border-width: 1px !important; }
+    .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
     
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
-    outline: none !important; 
-    -webkit-tap-highlight-color: transparent;
-    -webkit-backface-visibility: hidden; 
-    backface-visibility: hidden;
-    transform: translateZ(0); 
-}
-.new-btn:hover { 
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: scale(1.03) translateY(-2px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4); 
-}
-.new-btn:active { 
-    transform: scale(0.96) translateY(0) translateZ(0) !important; 
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1); 
-    transition: all 0.1s ease;
-}
-.new-btn:focus { outline: none !important; }
-
-.dropdown-content { position: absolute; top: 60px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
-
-/* MENU SIDEBAR & NAV INDICATOR - APPLE LIQUID GLASS */
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; position: relative; padding: 5px 0; }
-
-.nav-indicator {
-    position: absolute;
-    left: 0; top: 0;
-    width: 0; height: 46px; 
-    border-radius: 14px;
+    .main-content-area { 
+        order: 2; height: 100%; 
+        overflow-y: auto !important; 
+        padding-bottom: 230px !important; 
+        position: relative;
+        scrollbar-width: none; 
+    }
+    .main-content-area::-webkit-scrollbar { display: none; }
     
-    background: rgba(255, 255, 255, 0.15); 
-    backdrop-filter: blur(30px) saturate(200%);
-    -webkit-backdrop-filter: blur(30px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    .search-row {
+        position: sticky !important; top: 0 !important; z-index: 100 !important;
+        padding: 10px 15px !important; margin: 0 !important;
+        background: transparent !important; backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
+    }
+    .search-row > * { pointer-events: auto !important; }
     
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    z-index: 0;
-    pointer-events: none;
-}
+    .breadcrumb-area {
+        position: sticky !important; top: 56px !important; z-index: 99 !important;
+        padding: 5px 15px 15px 15px !important; margin: 0 !important;
+        background: transparent !important; backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
+    }
+    
+    .search-bar-pill { 
+        height: 40px !important; padding: 0 15px !important; border-radius: 20px !important; 
+        background: rgba(30, 41, 59, 0.65) !important;
+        backdrop-filter: blur(25px) saturate(200%) !important; -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+    }
+    .search-bar-pill input { font-size: 0.85rem !important; margin-left: 8px !important; }
+    .search-icon { font-size: 0.85rem !important; }
+    
+    .header-title-pill {
+        display: inline-block; padding: 8px 16px; border-radius: 12px; margin-left: -5px; 
+        font-size: 1.3rem !important; font-weight: 700; color: white;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        background: rgba(30, 41, 59, 0.45) !important;
+        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+    }
 
-.nav-item { 
-    display: flex; align-items: center; gap: 14px; padding: 0 15px; height: 46px; 
-    border-radius: 14px; color: rgba(255, 255, 255, 0.65); text-decoration: none; 
-    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
-    position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
-}
-.nav-item:hover { 
-    background: rgba(255,255,255,0.08); color: white; transform: translateX(6px); border-radius: 14px; 
-}
-.nav-item.active { 
-    background: transparent !important; color: #ffffff; font-weight: 700; border: none !important; box-shadow: none !important; transform: translateX(6px); 
-}
-.nav-item.active i {
-    color: var(--accent); filter: drop-shadow(0 0 8px rgba(45, 212, 191, 0.8)); transform: scale(1.1); transition: transform 0.3s ease;
-}
-
-/* WIDGET PENYIMPANAN - EFEK CEKUNGAN KACA (INSET) */
-.storage-widget { 
-    margin-top: auto; 
-    background: rgba(0, 0, 0, 0.2); 
-    border-radius: 24px; 
-    padding: 20px 18px; 
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.4);
-    display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: 0.3s;
-}
-.storage-widget:hover { background: rgba(0, 0, 0, 0.3); border-color: rgba(255,255,255,0.1); }
-.storage-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: rgba(255, 255, 255, 0.9); display: flex; align-items: center; gap: 8px; }
-.progress-track { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin: 0; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
-.progress-fill { height: 100%; width: 0%; background: var(--accent); transition: 0.5s; border-radius: 10px; box-shadow: 0 0 12px rgba(45, 212, 191, 0.6); }
-.storage-text { font-size: 0.75rem; text-align: left; color: rgba(255, 255, 255, 0.6); font-weight: 500; }
+    .file-grid-area { 
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+        gap: 12px; padding: 15px; height: auto !important; 
+        overflow-y: visible !important; padding-bottom: 0 !important;
+    }
+    .item-card { padding: 8px; border-radius: 10px; }
+    .mac-folder-icon { transform: scale(0.85); }
+    .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
+    
+    /* ============================================================== */
+    /* WIDGET PENYIMPANAN MOBILE                                      */
+    /* ============================================================== */
+    .storage-widget { 
+        position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; left: 15px !important;
+        width: auto !important; min-width: 140px !important; max-width: 180px !important; margin: 0 !important;
+        background: rgba(30, 41, 59, 0.65) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.2) !important;
+        border-radius: 18px !important; padding: 10px 14px !important; z-index: 5001 !important;
+        display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
+    }
+    
+    .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
+    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; }
+    .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
     
     /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
     .sidebar-menu { 

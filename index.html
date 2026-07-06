@@ -452,14 +452,15 @@
             const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
 
             function updateIndicator() {
+                if(window.innerWidth > 768) {
+                    if(indicator) indicator.style.display = 'none';
+                    return;
+                }
+                
                 const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
                 if (activeItem && indicator) {
                     indicator.style.display = 'block';
-                    
-                    // Membuat kapsul Liquid Glass meluncur secara ajaib di Desktop maupun Mobile
                     indicator.style.width = `${activeItem.offsetWidth}px`;
-                    indicator.style.height = `${activeItem.offsetHeight}px`;
-                    indicator.style.top = `${activeItem.offsetTop}px`;
                     indicator.style.left = `${activeItem.offsetLeft}px`;
                 }
             }
