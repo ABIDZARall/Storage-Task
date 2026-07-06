@@ -192,30 +192,115 @@ form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
     max-width: 2560px; margin: 0 auto; width: 100%; 
 }
 
-.sidebar-left { width: 230px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; flex-shrink: 0; overflow-y: auto; }
-.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
+/* ============================================================ */
+/* SIDEBAR KIRI - INTENSITAS LIQUID GLASS EKSTREM (DESKTOP)     */
+/* ============================================================ */
+.sidebar-left { 
+    width: 270px; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    padding: 26px 22px; 
+    flex-shrink: 0; 
+    
+    /* EFEK LIQUID GLASS TRANSPARAN & SATURASI TINGGI */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(45px) saturate(230%) !important;
+    -webkit-backdrop-filter: blur(45px) saturate(230%) !important;
+    
+    /* STRUKTUR CURVED CORNER KHAS APPLE OVERHAUL */
+    border-radius: 28px !important; 
+    
+    /* BIAS CAHAYA PADA TEPI KACA UNTUK ILUSI 3D YANG MENONJOL */
+    border: 1px solid rgba(255, 255, 255, 0.08) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.45) !important; 
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important; 
+    
+    /* KOMBINASI BAYANGAN LUAR DAN PANTULAN CAHAYA DALAM */
+    box-shadow: 
+        0 40px 70px -15px rgba(0, 0, 0, 0.65), 
+        inset 0 1px 3px rgba(255, 255, 255, 0.35) !important;
+        
+    z-index: 10; 
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    margin-right: 12px;
+}
 
-/* UPDATE: PERBAIKAN BUG TABRAKAN & JEJAK PADA TOMBOL + BARU DESKTOP */
+/* CONTAINER TOMBOL UTAMA */
+.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 5px; }
+
+/* TOMBOL + BARU DENGAN MATERIAL KACA KRISTAL MELAYANG */
 .new-btn { 
-    width: 100%; background: white; color: #0f172a; justify-content: flex-start; 
-    padding-left: 20px; gap: 12px; height: 45px; border-radius: 10px; font-size: 1rem; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+    width: 100%; justify-content: flex-start; 
+    padding-left: 20px; gap: 12px; height: 48px; border-radius: 16px; font-size: 1rem; font-weight: 600;
+    
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(30px) saturate(250%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(250%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important; 
+    
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
     outline: none !important; 
-    -webkit-tap-highlight-color: transparent;
-    border: none;
-    -webkit-backface-visibility: hidden; 
-    backface-visibility: hidden;
-    transform: translateZ(0); 
 }
 .new-btn:hover { 
-    background: #f8fafc;
-    box-shadow: 0 8px 25px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.5); 
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 18px 35px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.5) !important; 
 }
 .new-btn:active { 
-    transform: scale(0.96) translateZ(0) !important; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1), inset 0 2px 4px rgba(0,0,0,0.1); 
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    transform: scale(0.96) translateY(0) !important; 
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1) !important; 
+}
+
+/* DROPDOWN MENU KACA COKLAT/GELAP DI ATAS SIDEBAR */
+.dropdown-content { 
+    position: absolute; top: 60px; left: 0; z-index: 20000; 
+    background: rgba(23, 28, 41, 0.75) !important; 
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 16px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6); 
+    padding: 6px 0; width: 240px; display: none; flex-direction: column; 
+}
+
+/* STRUKTUR LIST NAVIGASI SIDEBAR */
+.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; position: relative; padding: 5px 0; }
+
+/* KAPSUL KACA INDIKATOR AKTIF YANG MELUNCUR */
+.nav-indicator {
+    position: absolute; left: 0; top: 0; width: 0; height: 44px; border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14) !important; 
+    backdrop-filter: blur(30px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3) !important;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 0; pointer-events: none;
+}
+
+/* ITEM MENU DI DALAM SIDEBAR */
+.nav-item { 
+    display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 44px; 
+    border-radius: 14px; color: rgba(255, 255, 255, 0.6); text-decoration: none; 
+    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    position: relative; z-index: 1; outline: none; user-select: none;
+}
+.nav-item:hover { 
+    background: rgba(255, 255, 255, 0.06) !important; color: #ffffff; transform: translateX(4px); 
+}
+.nav-item.active { 
+    background: transparent !important; color: #ffffff !important; font-weight: 700; transform: translateX(4px); 
+}
+.nav-item.active i {
+    color: var(--accent) !important; filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.85)); transform: scale(1.05);
 }
 .new-btn:focus { outline: none !important; }
 
