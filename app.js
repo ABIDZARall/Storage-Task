@@ -273,43 +273,11 @@ async function initializeDashboard(userObj) {
     updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
-// // PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
-// async function checkSession() {
-//     if(!el('loginPage').classList.contains('hidden')) return;
-//     toggleLoading(true, "Memuat Ruang Kerja...");
-//     try {
-//         const cachedUser = sessionStorage.getItem('currentUser');
-//         if (cachedUser) {
-//             currentUser = JSON.parse(cachedUser);
-//             await syncUserData(currentUser);
-//         } else {
-//             currentUser = await account.get();
-//             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-//             await syncUserData(currentUser);
-//         }
-        
-//         folderHistory = [{ id: 'root', name: 'Drive' }];
-//         updateProfileUI(); window.nav('dashboardPage'); 
-//         calculateStorage(); loadFiles('root');
-//     } catch (e) { 
-//         sessionStorage.clear();
-//         window.nav('loginPage'); 
-//     } finally { 
-//         toggleLoading(false); 
-//     }
-// }
-
+// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
     toggleLoading(true, "Memuat Ruang Kerja...");
     try {
-        // SUNTIKAN KODE BYPASS:
-        sessionStorage.setItem('currentUser', JSON.stringify({ 
-            $id: "local-dev", 
-            name: "Local Dev", 
-            email: "local@dev" 
-        }));
-
         const cachedUser = sessionStorage.getItem('currentUser');
         if (cachedUser) {
             currentUser = JSON.parse(cachedUser);
@@ -319,7 +287,7 @@ async function checkSession() {
             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
             await syncUserData(currentUser);
         }
-
+        
         folderHistory = [{ id: 'root', name: 'Drive' }];
         updateProfileUI(); window.nav('dashboardPage'); 
         calculateStorage(); loadFiles('root');
@@ -330,6 +298,38 @@ async function checkSession() {
         toggleLoading(false); 
     }
 }
+
+// async function checkSession() {
+//     if(!el('loginPage').classList.contains('hidden')) return;
+//     toggleLoading(true, "Memuat Ruang Kerja...");
+//     try {
+//         // SUNTIKAN KODE BYPASS:
+//         sessionStorage.setItem('currentUser', JSON.stringify({ 
+//             $id: "local-dev", 
+//             name: "Local Dev", 
+//             email: "local@dev" 
+//         }));
+
+//         const cachedUser = sessionStorage.getItem('currentUser');
+//         if (cachedUser) {
+//             currentUser = JSON.parse(cachedUser);
+//             await syncUserData(currentUser);
+//         } else {
+//             currentUser = await account.get();
+//             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+//             await syncUserData(currentUser);
+//         }
+
+//         folderHistory = [{ id: 'root', name: 'Drive' }];
+//         updateProfileUI(); window.nav('dashboardPage'); 
+//         calculateStorage(); loadFiles('root');
+//     } catch (e) { 
+//         sessionStorage.clear();
+//         window.nav('loginPage'); 
+//     } finally { 
+//         toggleLoading(false); 
+//     }
+// }
 
 // PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
