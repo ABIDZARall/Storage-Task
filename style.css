@@ -58,19 +58,90 @@ body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe 
 /* AUTHENTICATION (LOGIN, REGISTER, RESET)                      */
 /* ============================================================ */
 .full-screen-center { height: 100dvh; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5000; position: relative; }
-.glass-card { background: rgba(20, 25, 40, 0.7); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6); }
-.auth-card { width: 100%; max-width: 360px; padding: 30px 25px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-.auth-logo { width: 90px; margin-bottom: 15px; }
-.auth-header h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.5px; }
-form { width: 100%; display: flex; flex-direction: column; gap: 15px; }
-.pill-input { width: 100%; height: 42px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0 15px; display: flex; align-items: center; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease; }
-.pill-input:focus-within { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15); }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 0.9rem; margin-left: 10px; }
-.pill-input i { color: #94a3b8; font-size: 0.9rem; min-width: 20px; text-align: center; }
-.toggle-eye { cursor: pointer; color: #94a3b8; font-size: 0.9rem; }
-.btn-pill { border-radius: 8px; border: none; cursor: pointer; font-weight: 600; height: 42px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 0.95rem; }
-.primary { background: linear-gradient(135deg, var(--accent), #0d9488); color: white; width: 100%; box-shadow: 0 4px 10px rgba(45, 212, 191, 0.2); }
-.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(45, 212, 191, 0.3); }
+/* EFEK LIQUID GLASS APPLE ORIGINAL UNTUK KARTU AUTH */
+.glass-card { 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
+    backdrop-filter: blur(40px) saturate(220%); 
+    -webkit-backdrop-filter: blur(40px) saturate(220%); 
+    
+    /* Garis tepi bercahaya tipis khas Apple */
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-top: 1px solid rgba(255, 255, 255, 0.4); 
+    border-left: 1px solid rgba(255, 255, 255, 0.25); 
+    
+    border-radius: 28px; /* Lengkungan mulus yang lebih besar */
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3); 
+}
+
+.auth-card { 
+    width: 100%; 
+    max-width: 400px; /* Sedikit dilebarkan untuk proporsi radius baru */
+    padding: 40px 32px; 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+.auth-logo { width: 96px; margin-bottom: 18px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+.auth-header h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
+form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+
+/* INPUT FIELD GAYA MACOS/IOS (TENGGELAM KE DALAM KACA) */
+.pill-input { 
+    width: 100%; 
+    height: 48px; /* Touch target yang lebih nyaman */
+    background: rgba(0, 0, 0, 0.2); 
+    border-radius: 14px; 
+    padding: 0 16px; 
+    display: flex; 
+    align-items: center; 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+}
+.pill-input:focus-within { 
+    border-color: rgba(255, 255, 255, 0.4); 
+    background: rgba(0, 0, 0, 0.35); 
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.1); 
+}
+.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 0.95rem; margin-left: 10px; font-weight: 500; }
+.pill-input i { color: #cbd5e1; font-size: 1rem; min-width: 20px; text-align: center; }
+.toggle-eye { cursor: pointer; color: #cbd5e1; font-size: 1rem; transition: color 0.2s; }
+.toggle-eye:hover { color: white; }
+
+/* TOMBOL UTAMA DENGAN EFEK KACA KRISTAL APPLE */
+.btn-pill { 
+    border-radius: 14px; 
+    border: none; 
+    cursor: pointer; 
+    font-weight: 600; 
+    height: 48px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    font-size: 1rem; 
+    letter-spacing: 0.3px;
+}
+.primary { 
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.8), rgba(13, 148, 136, 0.8));
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    color: white; 
+    width: 100%; 
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+.primary:hover { 
+    background: linear-gradient(135deg, rgba(45, 212, 191, 1), rgba(13, 148, 136, 1)); 
+    transform: translateY(-2px) scale(1.02); 
+    box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.5); 
+}
+.primary:active {
+    transform: scale(0.96) translateY(0);
+    box-shadow: 0 5px 10px rgba(13, 148, 136, 0.4);
+}
 .auth-footer { margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
 .link-text { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
 .forgot-pass-container { width: 100%; text-align: right; margin-top: -10px; margin-bottom: 5px; }
