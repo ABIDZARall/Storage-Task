@@ -410,7 +410,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 }
 .new-btn:focus { outline: none !important; }
 
-.dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
+/* .dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; } */
 .sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
 
 /* ANIMASI INDIKATOR UNTUK DESKTOP */
