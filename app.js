@@ -626,12 +626,13 @@ function renderItem(doc) {
         if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
-        // MENGHILANGKAN TOP ACTION BAR SEKETIKA
+        // ---> GANTI BAGIAN INI DI DALAM triggerFileContextMenu() <---
+        // MUNCULKAN TOP BAR BERSAMAAN SECARA INSTAN (TANPA DELAY)
         const sab = document.getElementById('selectionActionBar');
         if (sab) {
-            sab.classList.add('hidden'); // Langsung disembunyikan
+            sab.classList.remove('hidden');
+            sab.classList.add('show-bar');
         }
-        document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
     };
 
     // 1. KLIK KANAN (DESKTOP)
@@ -685,11 +686,14 @@ function closeAllMenus() {
     const storageModal = document.getElementById('storageModal');
     if(storageModal) storageModal.classList.add('hidden');
 
-    // MUNCULKAN TOP BAR BERSAMAAN SECARA SEKETIKA
+    // ---> GANTI BAGIAN INI DI DALAM closeAllMenus() <---
+    // MENGHILANGKAN TOP ACTION BAR SEKETIKA
     const sab = document.getElementById('selectionActionBar');
     if (sab) {
-        sab.classList.remove('hidden'); // Menghapus delay setTimeout
+        sab.classList.add('hidden');
+        sab.classList.remove('show-bar');
     }
+    document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
 }
 
 function initAllContextMenus() {
