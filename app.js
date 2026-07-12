@@ -690,7 +690,6 @@ function closeAllMenus() {
     if (sab) {
         sab.classList.remove('hidden'); // Menghapus delay setTimeout
     }
-    document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
 }
 
 function initAllContextMenus() {
