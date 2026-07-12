@@ -354,13 +354,38 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 /* DROPDOWN MENU KACA COKLAT/GELAP DI ATAS SIDEBAR */
 .dropdown-content { 
     position: absolute; top: 60px; left: 0; z-index: 20000; 
-    background: rgba(23, 28, 41, 0.75) !important; 
-    backdrop-filter: blur(40px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    
+    /* RAHASIA APPLE: Background hampir tak terlihat, biarkan background asli yang tembus */
+    background: rgba(10, 10, 10, 0.15) !important; 
+    
+    /* Engine Pembias Kaca: Blur tinggi & Saturasi ditingkatkan agar warna di belakangnya "hidup" */
+    backdrop-filter: blur(50px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+    
+    /* Edge Lighting: Pantulan cahaya di ujung potongan kaca */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; 
     border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-    border-radius: 16px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6); 
-    padding: 6px 0; width: 240px; display: none; flex-direction: column; 
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 16px !important; /* Lengkungan khas iOS */
+    
+    /* Bayangan lembut di luar & pantulan cahaya di dalam kaca */
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.25), 
+        inset 0 1px 2px rgba(255, 255, 255, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important; 
+        
+    padding: 8px 0 !important; 
+    width: 220px !important; /* Ringkas dan compact */
+    display: none; flex-direction: column; 
+    
+    /* Animasi Bouncy halus ala Apple */
+    transform-origin: top left;
+    animation: iosMenuPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+}
+
+@keyframes iosMenuPop {
+    0% { opacity: 0; transform: scale(0.9) translateY(-5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* STRUKTUR LIST NAVIGASI SIDEBAR */
@@ -541,6 +566,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
 .breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
 .back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.breadcrumb-area .header-title-pill {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 50px; /* Membuat bentuk pill */
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    
+    /* Efek Kaca (Glassmorphism) seperti versi mobile */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)); 
+    backdrop-filter: blur(40px) saturate(220%); 
+    -webkit-backdrop-filter: blur(40px) saturate(220%);
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
+}
+/* ----------------------------------- */
+
+.back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+
 
 .back-btn { 
     display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; 
@@ -752,10 +799,44 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 220px; display: none; flex-direction: column; overflow-y: auto; max-height: 80vh; }
 .context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
 .show { display: flex !important; }
-.ctx-item, .dropdown-content a { display: flex !important; align-items: center; padding: 10px 15px; color: #e2e8f0; text-decoration: none; font-size: 0.85rem; cursor: pointer; transition: 0.1s; }
-.ctx-item:hover, .dropdown-content a:hover { background: rgba(255, 255, 255, 0.05); }
-.ctx-item i, .dropdown-content a i { width: 20px; margin-right: 10px; color: #94a3b8; }
-.menu-divider, .ctx-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0; border: none; }
+.ctx-item, .dropdown-content a { 
+    display: flex !important; align-items: center; 
+    padding: 8px 14px !important; 
+    margin: 1px 8px !important; /* Jarak agar berbentuk kapsul saat di-hover */
+    color: #ffffff !important; /* Teks putih solid agar kontras di atas kaca bening */
+    text-decoration: none; 
+    font-size: 0.85rem !important; 
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    border-radius: 10px !important; 
+    cursor: pointer; 
+    transition: all 0.2s ease !important; 
+}
+.ctx-item:hover, .dropdown-content a:hover { 
+    background: rgba(255, 255, 255, 0.15) !important; 
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+}
+.ctx-item i, .dropdown-content a i { 
+    width: 20px !important; 
+    margin-right: 12px !important; 
+    font-size: 1rem !important;
+    color: rgba(255, 255, 255, 0.7); 
+    transition: 0.2s ease;
+}
+.ctx-item:hover i, .dropdown-content a:hover i { color: #ffffff !important; }
+
+/* Warna Ikon (Pastel Bening) */
+.dropdown-content a i.text-blue { color: #8ab4f8 !important; }
+.dropdown-content a i.text-green { color: #81c995 !important; }
+.dropdown-content a i.text-yellow { color: #fde293 !important; }
+.dropdown-content a i.text-purple { color: #c58af9 !important; }
+
+/* Garis Pembatas (Divider) Sangat Tipis */
+.menu-divider, .ctx-divider { 
+    height: 1px !important; 
+    background: rgba(255, 255, 255, 0.12) !important; 
+    margin: 5px 0 !important; border: none !important; 
+}
 
 @keyframes modalPopSmooth { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 .modal-box.animate-open { animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -1152,6 +1233,13 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         background: transparent !important; backdrop-filter: none !important; 
         -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
     }
+
+    /* ---> TAMBAHKAN KODE INI UNTUK MEMPERBAIKI UKURAN PILL DI MOBILE <--- */
+    .breadcrumb-area .header-title-pill {
+        font-size: 1.2rem !important; /* Mengecilkan teks ke ukuran asal mobile */
+        padding: 6px 16px !important; /* Mengurangi padding agar tidak terlalu lebar */
+        margin-left: -5px !important; /* Menyesuaikan posisi kiri seperti sebelumnya */
+    }
     
     /* === 2. SEARCH BAR PILL (KOLOM PENCARIAN) === */
     .search-bar-pill { 
@@ -1166,7 +1254,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     }
 
     /* === 3. HEADER TITLE PILL (JUDUL HALAMAN/FOLDER) === */
-    .header-title-pill {
+    /* .header-title-pill {
         display: inline-block; padding: 8px 18px !important; border-radius: 50px !important; margin-left: -5px; 
         font-size: 1.25rem !important; font-weight: 700; color: white;
         text-shadow: 0 2px 5px rgba(0,0,0,0.3);
@@ -1188,7 +1276,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-    }
+    } */
 
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
@@ -1354,16 +1442,59 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
     
     .dropdown-content.extended-menu { 
-        top: auto !important; bottom: 65px !important; right: 0 !important; left: auto !important; transform: none !important; 
-        background: rgba(30, 41, 59, 0.85) !important; backdrop-filter: blur(40px) saturate(200%) !important; -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.15) !important;
+        top: auto !important; 
+        bottom: calc(75px + env(safe-area-inset-bottom)) !important; 
+        right: 15px !important; left: auto !important; 
+        transform: none !important; 
+        
+        transform-origin: bottom right !important; 
+        animation: iosMenuPopMobile 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards !important;
+        
+        /* Tingkat transparansi disamakan agar membiaskan wallpaper di belakangnya */
+        background: rgba(10, 10, 10, 0.15) !important; 
+        backdrop-filter: blur(50px) saturate(220%) !important; 
+        -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+        
+        border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+        border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.3), 
+            inset 0 1px 2px rgba(255, 255, 255, 0.2),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    }
+
+    @keyframes iosMenuPopMobile {
+        0% { opacity: 0; transform: scale(0.9) translateY(15px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
     .modal-actions-grid { flex-direction: row; }
 
     /* STORAGE DETAIL POPUP RESPONSIVE */
-    .storage-detail-box-wide { padding: 25px 20px !important; border-radius: 24px !important; }
+    .storage-detail-box-wide { width: 100%; max-width: 650px; padding: 30px; 
+    
+    /* Apple Liquid Glass Effect */
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.45)) !important; 
+    backdrop-filter: blur(40px) saturate(220%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+    
+    /* Edge Lighting and Borders */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 28px !important; 
+    
+    /* Deep Shadows for Elevated 3D Look */
+    box-shadow: 
+        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
+        
+    display: flex; flex-direction: column; 
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; }
     .storage-hero h1 { font-size: 2.3rem !important; }
     .storage-flex-container { display: flex !important; flex-direction: column !important; gap: 15px !important; }
     .storage-col-left, .storage-col-right { display: contents !important; }
@@ -1374,7 +1505,27 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     
     /* STORAGE FULL PAGE RESPONSIVE MOBILE */
     .storage-page-header { padding-bottom: 15px; margin-bottom: 20px; }
-    .storage-manager-card { padding: 25px 20px !important; border-radius: 24px !important; margin: 0 5px; }
+    .storage-manager-card { width: 100%; max-width: 800px; 
+    padding: 40px 50px; 
+    
+    /* Apple Liquid Glass Effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important; 
+    backdrop-filter: blur(50px) saturate(220%) !important; 
+    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+    
+    /* Edge Lighting and Borders */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 32px !important; 
+    
+    /* Deep Shadows for Elevated 3D Look */
+    box-shadow: 
+        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
+    
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; }
     .card-header-text { margin-bottom: 25px; }
     .card-header-text h1 { font-size: 1.7rem; margin-bottom: 8px; }
     .card-header-text p { font-size: 0.85rem; }
@@ -1425,3 +1576,57 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
 
+/* ============================================================ */
+/* SELECTION ACTION BAR (TOP BAR) - EFEK MUNCUL DARI ATAS       */
+/* ============================================================ */
+.selection-action-bar {
+    position: fixed; 
+    top: 15px; 
+    left: 50%; 
+    transform: translateX(-50%) translateY(-150%);
+    width: 90%; 
+    max-width: 800px;
+    background: #1e293b; /* Warna gelap matching referensi */
+    border-radius: 50px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 8px 16px; 
+    z-index: 40000;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+    color: #e2e8f0; 
+    opacity: 0; 
+    pointer-events: none;
+}
+
+.selection-action-bar.show-bar {
+    transform: translateX(-50%) translateY(0); 
+    opacity: 1; 
+    pointer-events: auto;
+}
+
+.sab-left, .sab-right { display: flex; align-items: center; gap: 12px; }
+.sab-left span { font-weight: 500; font-size: 1rem; margin-left: 5px; color: white; }
+
+.icon-btn-sab {
+    background: transparent; border: none; color: #cbd5e1; font-size: 1.15rem;
+    cursor: pointer; width: 38px; height: 38px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; transition: 0.2s;
+}
+.icon-btn-sab:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.sab-gemini-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px; padding: 6px 14px; color: white;
+    display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s;
+    font-size: 0.85rem; font-weight: 500;
+}
+.sab-gemini-btn:hover { background: rgba(255,255,255,0.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+@media screen and (max-width: 768px) {
+    .selection-action-bar { width: 95%; padding: 6px 12px; gap: 10px; top: 10px; }
+    .sab-right { gap: 4px; }
+    .sab-gemini-btn { padding: 6px 10px; }
+    .hide-mobile-sm { display: none !important; } /* Sembunyikan ikon yg kurang penting di layar sempit */
+}

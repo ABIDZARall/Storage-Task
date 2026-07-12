@@ -7,7 +7,7 @@ const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
-const DEFAULT_AVATAR_LOCAL = 'Image/profile-default.jpeg'; 
+const DEFAULT_AVATAR_LOCAL = 'profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
@@ -273,11 +273,43 @@ async function initializeDashboard(userObj) {
     updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
-// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
+// // PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
+// async function checkSession() {
+//     if(!el('loginPage').classList.contains('hidden')) return;
+//     toggleLoading(true, "Memuat Ruang Kerja...");
+//     try {
+//         const cachedUser = sessionStorage.getItem('currentUser');
+//         if (cachedUser) {
+//             currentUser = JSON.parse(cachedUser);
+//             await syncUserData(currentUser);
+//         } else {
+//             currentUser = await account.get();
+//             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+//             await syncUserData(currentUser);
+//         }
+        
+//         folderHistory = [{ id: 'root', name: 'Drive' }];
+//         updateProfileUI(); window.nav('dashboardPage'); 
+//         calculateStorage(); loadFiles('root');
+//     } catch (e) { 
+//         sessionStorage.clear();
+//         window.nav('loginPage'); 
+//     } finally { 
+//         toggleLoading(false); 
+//     }
+// }
+
 async function checkSession() {
     if(!el('loginPage').classList.contains('hidden')) return;
     toggleLoading(true, "Memuat Ruang Kerja...");
     try {
+        // SUNTIKAN KODE BYPASS:
+        sessionStorage.setItem('currentUser', JSON.stringify({ 
+            $id: "local-dev", 
+            name: "Local Dev", 
+            email: "local@dev" 
+        }));
+
         const cachedUser = sessionStorage.getItem('currentUser');
         if (cachedUser) {
             currentUser = JSON.parse(cachedUser);
@@ -287,7 +319,7 @@ async function checkSession() {
             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
             await syncUserData(currentUser);
         }
-        
+
         folderHistory = [{ id: 'root', name: 'Drive' }];
         updateProfileUI(); window.nav('dashboardPage'); 
         calculateStorage(); loadFiles('root');
@@ -574,9 +606,11 @@ function renderItem(doc) {
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     div.onclick = () => { if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); } };
     
-    div.oncontextmenu = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        closeAllMenus(); selectedItem = doc;
+    // (GANTI div.oncontextmenu lama Anda dengan kode ini)
+    const triggerFileContextMenu = (clientX, clientY) => {
+        closeAllMenus(); 
+        selectedItem = doc;
+        div.classList.add('selected-item'); // Memberi tanda visual sedang dipilih
         const menu = el('fileContextMenu');
         
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
@@ -587,17 +621,45 @@ function renderItem(doc) {
             }
         });
 
-        positionMenuInsideWindow(menu, e.clientX, e.clientY);
+        positionMenuInsideWindow(menu, clientX, clientY);
         
         const isTrash = doc.trashed;
         el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+
+        // Tampilkan Top Bar bersamaan dengan Context Menu
+        showSelectionBar();
     };
+
+    // Deteksi Klik Kanan (PC/Laptop)
+    div.oncontextmenu = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        triggerFileContextMenu(e.clientX, e.clientY);
+    };
+
+    // Deteksi Tahan/Long-Press (Mobile)
+    let itemTouchTimer;
+    div.addEventListener('touchstart', (e) => {
+        itemTouchTimer = setTimeout(() => {
+            const touch = e.touches[0];
+            triggerFileContextMenu(touch.clientX, touch.clientY);
+            
+            // Memberikan efek getar kecil pada HP jika didukung
+            if (navigator.vibrate) navigator.vibrate(50);
+        }, 500); // Waktu tahan: 500ms
+    });
+    div.addEventListener('touchend', () => clearTimeout(itemTouchTimer));
+    div.addEventListener('touchmove', () => clearTimeout(itemTouchTimer));
 
     grid.appendChild(div);
 }
+
+
+
+
+
 
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
@@ -782,7 +844,7 @@ function initAllContextMenus() {
                     menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
                 } else {
                     menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
-                    menuBaru.style.setProperty('left', `${posisiTombol.left}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); // Tambahkan + 15 di sini
                 }
             }
         };
@@ -797,10 +859,36 @@ function initAllContextMenus() {
     }
 
     if (areaUtama) {
+        // Deteksi Klik Kanan Desktop di area kosong
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAllMenus();
+            e.preventDefault(); 
+            closeAllMenus();
+            
+            // Tampilkan menu umum (Upload, Folder Baru) di posisi mouse
+            const globalMenu = document.getElementById('globalContextMenu');
+            if (globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         });
+
+        // Deteksi Tahan/Long-Press Mobile di area kosong
+        let gridTouchTimer;
+        areaUtama.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.item-card')) return;
+            
+            gridTouchTimer = setTimeout(() => {
+                const touch = e.touches[0];
+                closeAllMenus();
+                
+                // Tampilkan menu umum (Upload, Folder Baru) di posisi jari
+                const globalMenu = document.getElementById('globalContextMenu');
+                if (globalMenu) {
+                    positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                }
+            }, 500);
+        });
+        areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
+        areaUtama.addEventListener('touchmove', () => clearTimeout(gridTouchTimer));
     }
     
     window.addEventListener('click', (e) => {
@@ -1787,3 +1875,4 @@ window.openPreviewInNewTab = () => {
         closePreview();
     }
 };
+
