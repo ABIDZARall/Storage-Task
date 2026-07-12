@@ -178,7 +178,8 @@
                 <!-- SELECTION ACTION BAR (MUNCUL SAAT ITEM DITAHAN/DIKLIK KANAN) -->
                 <div id="selectionActionBar" class="selection-action-bar hidden">
                     <div class="sab-left">
-                        <button class="icon-btn-sab" onclick="closeAllMenus()"><i class="fa-solid fa-xmark"></i></button>
+                        <!-- UBAH BARIS INI: -->
+                         <button class="icon-btn-sab" onclick="clearSelection()"><i class="fa-solid fa-xmark"></i></button>
                         <span id="sabCount">1 dipilih</span>
                         <!-- Tombol Minta Gemini sesuai gambar referensi Anda -->
                         <button class="sab-gemini-btn" onclick="alert('Fitur Gemini AI segera hadir!')">
