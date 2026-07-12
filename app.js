@@ -626,12 +626,12 @@ function renderItem(doc) {
         if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
-        // MUNCULKAN TOP BAR BERSAMAAN
+        // MENGHILANGKAN TOP ACTION BAR SEKETIKA
         const sab = document.getElementById('selectionActionBar');
         if (sab) {
-            sab.classList.remove('hidden');
-            setTimeout(() => sab.classList.add('show-bar'), 10);
+            sab.classList.add('hidden'); // Langsung disembunyikan
         }
+        document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
     };
 
     // 1. KLIK KANAN (DESKTOP)
@@ -685,11 +685,10 @@ function closeAllMenus() {
     const storageModal = document.getElementById('storageModal');
     if(storageModal) storageModal.classList.add('hidden');
 
-    // MENGHILANGKAN TOP ACTION BAR & SOROTAN FILE
+    // MUNCULKAN TOP BAR BERSAMAAN SECARA SEKETIKA
     const sab = document.getElementById('selectionActionBar');
     if (sab) {
-        sab.classList.remove('show-bar');
-        setTimeout(() => sab.classList.add('hidden'), 300);
+        sab.classList.remove('hidden'); // Menghapus delay setTimeout
     }
     document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
 }
