@@ -661,15 +661,13 @@ function renderItem(doc) {
         }
     }
 
-    div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
-    div.onclick = () => { if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); } };
-    
     // 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN
     div.setAttribute('data-id', doc.$id);
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     
-    // 2. KLIK KIRI SEKALI (PILIH ITEM SEPERTI GDRIVE)
+    // 2. KLIK KIRI SEKALI (MUNCULKAN ACTION BAR SAJA)
     div.onclick = (e) => {
+        e.stopPropagation(); // Mencegah klik bentrok
         if(doc.trashed) return;
         
         if (e.ctrlKey || e.metaKey) {
@@ -681,13 +679,14 @@ function renderItem(doc) {
                 selectedItem = doc;
             }
         } else {
-            // Single Select
+            // Single Select (Pilih 1 item)
             selectedFileIds.clear();
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
         }
-        updateSelectionUI();
-        closeAllMenus(); // Tutup menu jika terbuka, tapi biarkan Action Bar
+        
+        updateSelectionUI(); // Memunculkan Top Bar secara instan
+        closeAllMenus(); // Memastikan Context Menu tertutup
     };
 
     // 3. KLIK KIRI DUA KALI (BUKA ITEM)
@@ -698,18 +697,19 @@ function renderItem(doc) {
         closeAllMenus();
     };
 
-    // 4. KLIK KANAN ATAU TAHAN LAMA (PILIH + MUNCULKAN MENU KONTEKS)
+    // 4. KLIK KANAN ATAU TAHAN LAMA (PILIH + MUNCULKAN KEDUANYA)
     const triggerFileContextMenu = (clientX, clientY) => {
-        closeAllMenus(); 
+        closeAllMenus(); // Tutup menu lain yang mungkin sedang terbuka
         
-        // Jika file belum terseleksi, seleksi secara otomatis
+        // Cek jika file belum terseleksi, maka seleksi dan munculkan Action Bar
         if (!selectedFileIds.has(doc.$id)) {
             selectedFileIds.clear();
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
-            updateSelectionUI();
+            updateSelectionUI(); // Action Bar muncul otomatis di sini
         }
         
+        // Memunculkan Menu Konteks
         const menu = el('fileContextMenu');
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
             const btn = el(id);
@@ -722,7 +722,7 @@ function renderItem(doc) {
         if(el('ctxTrashBtn')) el('ctxTrashBtn').classList.toggle('hidden', isTrash);
         if(el('ctxRestoreBtn')) el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
         if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        if(el('ctxStarText')) el('ctxStarTextinnerText') = doc.starred ? "Hapus Bintang" : "Bintangi";
     };
 
     // Pemicu Klik Kanan PC
@@ -731,7 +731,7 @@ function renderItem(doc) {
         triggerFileContextMenu(e.clientX, e.clientY);
     });
 
-    // Pemicu Tahan/Long-Press Mobile
+    // Pemicu Tahan/Long-Press Mobile Cerdas
     let touchTimer;
     let isTouchMoved = false;
     div.addEventListener('touchstart', (e) => {
@@ -750,7 +750,7 @@ function renderItem(doc) {
     div.addEventListener('touchend', () => clearTimeout(touchTimer));
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
-    grid.appendChild(div);
+    grid.appendChild(div); // Pastikan kode ini berada di paling bawah blok renderItem
 }
 
 function closeAllMenus() {
