@@ -607,11 +607,10 @@ function renderItem(doc) {
     div.onclick = () => { if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); } };
     
     // FUNGSI MEMUNCULKAN MENU & TOP BAR
-    // FUNGSI MEMUNCULKAN MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
         closeAllMenus(); 
         selectedItem = doc;
-        div.classList.add('selected-item'); // Sorot file
+        div.classList.add('selected-item'); // Sorot file ala GDrive
         
         const menu = el('fileContextMenu');
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
@@ -627,11 +626,12 @@ function renderItem(doc) {
         if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
         if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
-        // ---> MUNCULKAN TOP BAR SECARA BERSAMAAN DAN INSTAN <---
+        // ---> GANTI BAGIAN INI DI DALAM triggerFileContextMenu() <---
+        // MUNCULKAN TOP BAR BERSAMAAN SECARA INSTAN (TANPA DELAY)
         const sab = document.getElementById('selectionActionBar');
         if (sab) {
             sab.classList.remove('hidden');
-            sab.classList.add('show-bar'); // Tampil secara instan!
+            sab.classList.add('show-bar');
         }
     };
 
@@ -686,11 +686,12 @@ function closeAllMenus() {
     const storageModal = document.getElementById('storageModal');
     if(storageModal) storageModal.classList.add('hidden');
 
-    // ---> MENGHILANGKAN TOP BAR SEKETIKA (Tanpa setTimeout) <---
+    // ---> GANTI BAGIAN INI DI DALAM closeAllMenus() <---
+    // MENGHILANGKAN TOP ACTION BAR SEKETIKA
     const sab = document.getElementById('selectionActionBar');
     if (sab) {
-        sab.classList.remove('show-bar');
         sab.classList.add('hidden');
+        sab.classList.remove('show-bar');
     }
     document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
 }
