@@ -1577,56 +1577,57 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 }
 
 /* ============================================================ */
-/* SELECTION ACTION BAR (TOP BAR) - EFEK MUNCUL DARI ATAS       */
+/* SELECTION ACTION BAR (TOP BAR ALA GOOGLE DRIVE)              */
 /* ============================================================ */
 .selection-action-bar {
-    position: fixed; 
-    top: 15px; 
-    left: 50%; 
-    transform: translateX(-50%) translateY(-150%);
-    width: 90%; 
-    max-width: 800px;
-    background: #1e293b; /* Warna gelap matching referensi */
-    border-radius: 50px;
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    padding: 8px 16px; 
-    z-index: 40000;
+    position: fixed; top: 15px; left: 50%; transform: translateX(-50%) translateY(-150%);
+    width: 95%; max-width: 900px; height: 56px;
+    background: #1e293b; border-radius: 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 16px; z-index: 40000;
     box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1);
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
-    color: #e2e8f0; 
-    opacity: 0; 
-    pointer-events: none;
+    opacity: 0; pointer-events: none;
 }
 
 .selection-action-bar.show-bar {
     transform: translateX(-50%) translateY(0); 
-    opacity: 1; 
-    pointer-events: auto;
+    opacity: 1; pointer-events: auto;
 }
 
 .sab-left, .sab-right { display: flex; align-items: center; gap: 12px; }
-.sab-left span { font-weight: 500; font-size: 1rem; margin-left: 5px; color: white; }
+.sab-left span { color: white; font-weight: 500; font-size: 0.95rem; }
 
 .icon-btn-sab {
-    background: transparent; border: none; color: #cbd5e1; font-size: 1.15rem;
-    cursor: pointer; width: 38px; height: 38px; border-radius: 50%;
-    display: flex; justify-content: center; align-items: center; transition: 0.2s;
+    background: transparent; border: none; color: #cbd5e1; font-size: 1.1rem;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center;
 }
 .icon-btn-sab:hover { background: rgba(255,255,255,0.1); color: white; }
 
 .sab-gemini-btn {
     background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50px; padding: 6px 14px; color: white;
-    display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s;
-    font-size: 0.85rem; font-weight: 500;
+    border-radius: 40px; padding: 6px 14px; color: white; display: flex; align-items: center; 
+    gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: 0.2s;
 }
-.sab-gemini-btn:hover { background: rgba(255,255,255,0.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.sab-gemini-btn:hover { background: rgba(255,255,255,0.15); }
+
+/* Menyorot item yang ditahan/diklik kanan */
+.selected-item {
+    background: rgba(66, 133, 244, 0.15) !important;
+    border-color: rgba(66, 133, 244, 0.5) !important;
+}
+
+/* ANTI-ERROR MOBILE: Mencegah popup menu dan blok teks bawaan HP */
+.item-card, .main-content-area {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
 
 @media screen and (max-width: 768px) {
-    .selection-action-bar { width: 95%; padding: 6px 12px; gap: 10px; top: 10px; }
-    .sab-right { gap: 4px; }
-    .sab-gemini-btn { padding: 6px 10px; }
-    .hide-mobile-sm { display: none !important; } /* Sembunyikan ikon yg kurang penting di layar sempit */
+    .selection-action-bar { top: 10px; width: 96%; padding: 0 10px; gap: 5px; height: 50px; }
+    .sab-left, .sab-right { gap: 4px; }
+    .sab-gemini-btn { padding: 5px 10px; font-size: 0.75rem; }
+    .hide-mobile-sm { display: none !important; }
 }

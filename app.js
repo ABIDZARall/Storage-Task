@@ -606,60 +606,57 @@ function renderItem(doc) {
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
     div.onclick = () => { if(!doc.trashed) { isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); } };
     
-    // (GANTI div.oncontextmenu lama Anda dengan kode ini)
+    // FUNGSI MEMUNCULKAN MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
         closeAllMenus(); 
         selectedItem = doc;
-        div.classList.add('selected-item'); // Memberi tanda visual sedang dipilih
-        const menu = el('fileContextMenu');
+        div.classList.add('selected-item'); // Sorot file ala GDrive
         
+        const menu = el('fileContextMenu');
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
             const btn = el(id);
-            if (btn) {
-                if ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) { btn.style.display = 'flex'; } 
-                else { btn.style.display = 'none'; }
-            }
+            if (btn) btn.style.display = ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) ? 'flex' : 'none';
         });
 
         positionMenuInsideWindow(menu, clientX, clientY);
         
         const isTrash = doc.trashed;
-        el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        if(el('ctxTrashBtn')) el('ctxTrashBtn').classList.toggle('hidden', isTrash);
+        if(el('ctxRestoreBtn')) el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
+        if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+        if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
 
-        // Tampilkan Top Bar bersamaan dengan Context Menu
-        showSelectionBar();
+        // MUNCULKAN TOP BAR BERSAMAAN
+        const sab = document.getElementById('selectionActionBar');
+        if (sab) {
+            sab.classList.remove('hidden');
+            setTimeout(() => sab.classList.add('show-bar'), 10);
+        }
     };
 
-    // Deteksi Klik Kanan (PC/Laptop)
-    div.oncontextmenu = (e) => {
+    // 1. KLIK KANAN (DESKTOP)
+    div.addEventListener('contextmenu', (e) => {
         e.preventDefault(); e.stopPropagation();
         triggerFileContextMenu(e.clientX, e.clientY);
-    };
-
-    // Deteksi Tahan/Long-Press (Mobile)
-    let itemTouchTimer;
-    div.addEventListener('touchstart', (e) => {
-        itemTouchTimer = setTimeout(() => {
-            const touch = e.touches[0];
-            triggerFileContextMenu(touch.clientX, touch.clientY);
-            
-            // Memberikan efek getar kecil pada HP jika didukung
-            if (navigator.vibrate) navigator.vibrate(50);
-        }, 500); // Waktu tahan: 500ms
     });
-    div.addEventListener('touchend', () => clearTimeout(itemTouchTimer));
-    div.addEventListener('touchmove', () => clearTimeout(itemTouchTimer));
+
+    // 2. LONG PRESS / TAHAN (MOBILE) - LOGIKA BEBAS ERROR
+    let touchTimer;
+    div.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        touchTimer = setTimeout(() => {
+            triggerFileContextMenu(touch.clientX, touch.clientY);
+            if (navigator.vibrate) navigator.vibrate(50); // Getar saat berhasil ditahan
+        }, 500); // Waktu ditahan 500ms
+    }, { passive: true });
+
+    // Batalkan memunculkan menu jika jari tergeser atau diangkat
+    div.addEventListener('touchmove', () => clearTimeout(touchTimer), { passive: true });
+    div.addEventListener('touchend', () => clearTimeout(touchTimer));
+    div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
     grid.appendChild(div);
 }
-
-
-
-
-
 
 function closeAllMenus() {
     if(el('storageModal')) el('storageModal').classList.add('hidden');
@@ -676,7 +673,6 @@ function closeAllMenus() {
 }
 
 function closeAllMenus() {
-    // Tutup paksa semua jenis menu
     document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed, #dropdownNewMenu, #fileContextMenu').forEach(menu => {
         if(menu) {
             menu.classList.remove('show');
@@ -688,6 +684,14 @@ function closeAllMenus() {
     
     const storageModal = document.getElementById('storageModal');
     if(storageModal) storageModal.classList.add('hidden');
+
+    // MENGHILANGKAN TOP ACTION BAR & SOROTAN FILE
+    const sab = document.getElementById('selectionActionBar');
+    if (sab) {
+        sab.classList.remove('show-bar');
+        setTimeout(() => sab.classList.add('hidden'), 300);
+    }
+    document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
 }
 
 function initAllContextMenus() {
@@ -767,11 +771,32 @@ function initAllContextMenus() {
     }
 
     if (areaUtama) {
+        // Klik Kanan Area Kosong
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault(); 
-            closeAllMenus();
+            e.preventDefault(); closeAllMenus();
+            const globalMenu = document.getElementById('globalContextMenu');
+            if (globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         });
+
+        // Tahan / Long-Press Area Kosong (Mobile)
+        let gridTouchTimer;
+        areaUtama.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.item-card')) return;
+            const touch = e.touches[0];
+            gridTouchTimer = setTimeout(() => {
+                closeAllMenus();
+                const globalMenu = document.getElementById('globalContextMenu');
+                if (globalMenu) {
+                    positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                }
+            }, 500);
+        }, { passive: true });
+
+        areaUtama.addEventListener('touchmove', () => clearTimeout(gridTouchTimer), { passive: true });
+        areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
+        areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
     }
     
     // Logika menutup menu ketika pengguna mengklik ruang kosong di luar
@@ -843,9 +868,9 @@ function initAllContextMenus() {
                     menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
                     menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
                 } else {
-                    menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
-                    menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); // Tambahkan + 15 di sini
-                }
+                menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
+                menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); // Tambahkan + 15 di sini
+            }
             }
         };
         
@@ -859,36 +884,10 @@ function initAllContextMenus() {
     }
 
     if (areaUtama) {
-        // Deteksi Klik Kanan Desktop di area kosong
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault(); 
-            closeAllMenus();
-            
-            // Tampilkan menu umum (Upload, Folder Baru) di posisi mouse
-            const globalMenu = document.getElementById('globalContextMenu');
-            if (globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
+            e.preventDefault(); closeAllMenus();
         });
-
-        // Deteksi Tahan/Long-Press Mobile di area kosong
-        let gridTouchTimer;
-        areaUtama.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.item-card')) return;
-            
-            gridTouchTimer = setTimeout(() => {
-                const touch = e.touches[0];
-                closeAllMenus();
-                
-                // Tampilkan menu umum (Upload, Folder Baru) di posisi jari
-                const globalMenu = document.getElementById('globalContextMenu');
-                if (globalMenu) {
-                    positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
-            }, 500);
-        });
-        areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
-        areaUtama.addEventListener('touchmove', () => clearTimeout(gridTouchTimer));
     }
     
     window.addEventListener('click', (e) => {
