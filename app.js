@@ -879,13 +879,13 @@ function initAllContextMenus() {
         });
     }
 
-if (areaUtama) {
+    if (areaUtama) {
         // KLIK KANAN AREA KOSONG
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); 
             
-            clearSelection(); // Hilangkan Top Bar
+            if (typeof window.clearSelection === 'function') window.clearSelection();
             closeAllMenus();
             
             const globalMenu = document.getElementById('globalContextMenu');
@@ -898,8 +898,9 @@ if (areaUtama) {
             if (e.target.closest('.item-card')) return;
             const touch = e.touches[0];
             gridTouchTimer = setTimeout(() => {
-                clearSelection(); // Hilangkan Top Bar
+                if (typeof window.clearSelection === 'function') window.clearSelection();
                 closeAllMenus();
+                
                 const globalMenu = document.getElementById('globalContextMenu');
                 if (globalMenu) {
                     positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
@@ -911,17 +912,48 @@ if (areaUtama) {
         areaUtama.addEventListener('touchmove', () => clearTimeout(gridTouchTimer), { passive: true });
         areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
         areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
-        
-        // KLIK KIRI AREA KOSONG UNTUK MENGHILANGKAN BAR & MENU
-        areaUtama.addEventListener('click', (e) => {
-            // Abaikan jika klik terjadi di dalam item-card
-            if (e.target.closest('.item-card')) return; 
-            
-            clearSelection(); // Hilangkan Seleksi & SAB seketika
-            closeAllMenus();  // Tutup semua dropdown menu
-        });
     }
-} // <--- Akhir fungsi initAllContextMenus (Pastikan Anda menghapus blok window.click yang lama)
+    
+    // ====================================================================
+    // LOGIKA KLIK GLOBAL: MENGATUR HILANGNYA MENU / ACTION BAR
+    // ====================================================================
+    window.addEventListener('click', (e) => {
+        // 1. Abaikan klik jika yang diklik adalah bagian menu atau bar itu sendiri
+        if (e.target.closest('.dropdown-content') ||
+            e.target.closest('.context-menu-modern') ||
+            e.target.closest('.modal-overlay') ||
+            e.target.closest('.storage-widget') ||
+            e.target.closest('#newBtnMain') ||
+            e.target.closest('.new-btn-wrapper') ||
+            e.target.closest('.selection-action-bar')) {
+            return;
+        }
+
+        // 2. Cek apakah ada Menu Konteks / Dropdown yang sedang terbuka SEBELUM ditutup
+        const ctxMenu = document.getElementById('fileContextMenu');
+        const globalCtxMenu = document.getElementById('globalContextMenu');
+        const newMenu = document.getElementById('dropdownNewMenu');
+        
+        const isMenuOpen = (ctxMenu && ctxMenu.classList.contains('show')) || 
+                           (globalCtxMenu && globalCtxMenu.classList.contains('show')) ||
+                           (newMenu && newMenu.classList.contains('show'));
+
+        // 3. Selalu tutup semua popup menu saat area kosong diklik
+        closeAllMenus(); 
+        
+        // 4. Jika yang diklik benar-benar area kosong (BUKAN file/folder)
+        if (!e.target.closest('.item-card')) {
+            
+            // HANYA bersihkan seleksi (hilangkan Action Bar) jika sebelumnya TIDAK ADA menu yang terbuka.
+            // (Artinya: Jika tadi ada menu terbuka, klik ini hanya berfungsi menutup menu saja).
+            if (!isMenuOpen) {
+                if (typeof window.clearSelection === 'function') {
+                    window.clearSelection(); 
+                }
+            }
+        }
+    });
+} // <--- AKHIR FUNGSI initAllContextMenus
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
