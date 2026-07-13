@@ -1091,7 +1091,12 @@ function updateStorageUI() {
 
 window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>document.getElementById('newFolderName').focus(),100); };
 window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
-window.createFolder = () => window.openModal('folderModal');
+
+// MENGUBAH BARIS INI: Tambahkan closeAllMenus() agar dropdown tertutup
+window.createFolder = () => { 
+    closeAllMenus(); 
+    window.openModal('folderModal'); 
+};
 
 window.submitCreateFolder = async () => {
     const name = document.getElementById('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
@@ -1130,6 +1135,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.triggerUploadModal = (mode = 'file') => { 
+    closeAllMenus(); // <--- TAMBAHKAN BARIS INI DI SINI
+    
     resetUploadUI(); 
     uploadMode = mode;
     const dropZone = document.getElementById('dropZone');
