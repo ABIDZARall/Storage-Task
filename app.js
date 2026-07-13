@@ -115,7 +115,7 @@ document.addEventListener('keydown', (e) => {
                 if (id) selectedFileIds.add(id);
             });
             updateSelectionUI(); // Memunculkan SAB Otomatis
-            closeAllMenus();
+            if (typeof closeAllMenus === 'function') closeAllMenus();
         }
     }
 });
@@ -673,6 +673,7 @@ function renderItem(doc) {
     let longPressTriggered = false;
     let touchTimer;
     let isTouchMoved = false;
+    let clickTimeout = null; // Menahan klik agar tidak bocor ke Double Click
 
     // 2. FUNGSI PEMICU MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
@@ -705,12 +706,12 @@ function renderItem(doc) {
     div.addEventListener('touchstart', (e) => {
         isTouch = true;
         isTouchMoved = false;
-        longPressTriggered = false; // Reset status
+        longPressTriggered = false; 
         const touch = e.touches[0];
         
         touchTimer = setTimeout(() => {
             if (!isTouchMoved) {
-                longPressTriggered = true; // Tandai bahwa ini adalah Long Press
+                longPressTriggered = true; // Tandai ini adalah Long Press
                 if (e.cancelable) e.preventDefault();
                 triggerFileContextMenu(touch.clientX, touch.clientY);
                 if (navigator.vibrate) navigator.vibrate(50);
@@ -721,18 +722,16 @@ function renderItem(doc) {
     div.addEventListener('touchmove', () => { isTouchMoved = true; clearTimeout(touchTimer); }, { passive: true });
     div.addEventListener('touchend', (e) => { 
         clearTimeout(touchTimer); 
-        // Cegah klik bayangan sistem HP setelah Long Press selesai
-        if (longPressTriggered && e.cancelable) {
-            e.preventDefault(); 
-        }
+        // Cegah klik bayangan jika Long Press selesai
+        if (longPressTriggered && e.cancelable) e.preventDefault(); 
     });
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
     // 4. EVENT KLIK (KLIK KIRI DESKTOP / TAP SEKALI MOBILE)
     div.addEventListener('click', (e) => {
-        e.stopPropagation(); // Jangan tembus ke klik area kosong
+        e.stopPropagation(); 
         
-        // Abaikan jika klik ini berasal dari ujung Long Press HP
+        // Abaikan jika klik ini adalah ujung dari proses Long Press HP
         if (longPressTriggered) {
             longPressTriggered = false;
             return;
@@ -740,40 +739,53 @@ function renderItem(doc) {
 
         if(doc.trashed) return;
         
-        // LOGIKA MOBILE: Jika 1x Tap di HP dan belum ada file yang diseleksi -> LANGSUNG BUKA FILE
-        if (isTouch && selectedFileIds.size === 0) {
-            clearSelection(); // Pastikan bar hilang
-            closeAllMenus();
-            if(!doc.trashed) { 
+        // LOGIKA MOBILE: 1x Tap langsung buka file tanpa memunculkan bar
+        if (isTouch) {
+            if (selectedFileIds.size === 0) {
+                clearSelection(); 
+                closeAllMenus();
                 isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
+                setTimeout(() => { isTouch = false; }, 300);
+                return; 
+            } else {
+                // Jika sedang mode seleksi, tap = pilih file
+                if (selectedFileIds.has(doc.$id)) {
+                    selectedFileIds.delete(doc.$id);
+                } else {
+                    selectedFileIds.add(doc.$id);
+                    selectedItem = doc;
+                }
+                updateSelectionUI();
+                closeAllMenus();
+                setTimeout(() => { isTouch = false; }, 300);
+                return;
             }
-            setTimeout(() => { isTouch = false; }, 300);
-            return; 
         }
 
-        // LOGIKA DESKTOP (Atau Mobile saat sedang mode seleksi): PILIH FILE SAJA
-        if (e.ctrlKey || e.metaKey) {
-            if (selectedFileIds.has(doc.$id)) {
-                selectedFileIds.delete(doc.$id);
+        // LOGIKA DESKTOP: Beri jeda 250ms untuk melihat apakah user berniat Klik Ganda
+        if (clickTimeout) clearTimeout(clickTimeout);
+        clickTimeout = setTimeout(() => {
+            if (e.ctrlKey || e.metaKey) {
+                if (selectedFileIds.has(doc.$id)) {
+                    selectedFileIds.delete(doc.$id);
+                } else {
+                    selectedFileIds.add(doc.$id);
+                    selectedItem = doc;
+                }
             } else {
+                selectedFileIds.clear();
                 selectedFileIds.add(doc.$id);
                 selectedItem = doc;
             }
-        } else {
-            selectedFileIds.clear();
-            selectedFileIds.add(doc.$id);
-            selectedItem = doc;
-        }
-        
-        updateSelectionUI(); // Memunculkan SAB
-        closeAllMenus(); // Menutup Menu Konteks
-        
-        setTimeout(() => { isTouch = false; }, 300);
+            updateSelectionUI(); 
+            closeAllMenus(); 
+        }, 250); 
     });
 
     // 5. EVENT DBLCLICK (KLIK 2X DESKTOP)
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
+        if (clickTimeout) clearTimeout(clickTimeout); // BATALKAN KLIK KIRI AGAR SAB TIDAK MUNCUL
         if (isTouch) return; // Dblclick desktop diabaikan di HP
         
         clearSelection(); // BERSIHKAN SAB SAAT BUKA FILE
@@ -787,26 +799,12 @@ function renderItem(doc) {
     // 6. EVENT CONTEXT MENU (KLIK KANAN DESKTOP)
     div.addEventListener('contextmenu', (e) => {
         e.preventDefault(); 
-        e.stopPropagation(); // Mencegah klik kanan tembus ke area kosong
+        e.stopPropagation(); 
         triggerFileContextMenu(e.clientX, e.clientY);
     });
 
     grid.appendChild(div);
 } // <--- AKHIR FUNGSI renderItem
-
-function closeAllMenus() {
-    if(el('storageModal')) el('storageModal').classList.add('hidden');
-    if(el('globalContextMenu')) el('globalContextMenu').classList.remove('show');
-    if(el('fileContextMenu')) { 
-        el('fileContextMenu').classList.add('hidden'); 
-        el('fileContextMenu').classList.remove('show'); 
-    }
-    
-    // PERBAIKAN 1: Pastikan SEMUA elemen dropdown dibersihkan saat klik di luar
-    document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed').forEach(menu => {
-        menu.classList.remove('show');
-    });
-}
 
 function closeAllMenus() {
     // HANYA TUTUP DROPDOWN DAN MENU KONTEKS
@@ -834,8 +832,6 @@ function closeAllMenus() {
 
 function initAllContextMenus() {
     const tombolBaru = document.getElementById('newBtnMain'); 
-    
-    // Perbaikan Otomatis: Ambil menu terakhir dan amankan ke bagian luar struktur halaman
     const semuaMenuBaru = document.querySelectorAll('#dropdownNewMenu');
     let menuBaru = null;
     
@@ -843,78 +839,70 @@ function initAllContextMenus() {
         menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1]; 
         document.body.appendChild(menuBaru); 
         
-        // Hapus menu duplikat jika tersisa di dalam file HTML
-        semuaMenuBaru.forEach(menu => {
-            if (menu !== menuBaru) menu.remove();
-        });
+        menuBaru.innerHTML = `
+            <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
+            <hr class="menu-divider">
+            <a href="javascript:void(0)" onclick="triggerUploadModal('file')"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
+            <a href="javascript:void(0)" onclick="triggerUploadModal('folder')"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
+            <hr class="menu-divider">
+            <a href="javascript:void(0)" onclick="openGoogleDoc('document')"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('spreadsheet')"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('presentation')"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
+            <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
+        `;
+        
+        semuaMenuBaru.forEach(menu => { if (menu !== menuBaru) menu.remove(); });
     }
     
     const navigasiDrive = document.getElementById('navDrive'); 
     const areaUtama = document.querySelector('.main-content-area');
 
     if (tombolBaru && menuBaru) {
-        // Ganti tombol dengan versi baru yang bersih untuk mencegah aksi klik ganda
         const tombolBaruBersih = tombolBaru.cloneNode(true); 
         tombolBaru.parentNode.replaceChild(tombolBaruBersih, tombolBaru);
         
-        const aturMenu = (e) => { 
+        tombolBaruBersih.addEventListener('click', (e) => { 
             e.preventDefault(); 
             e.stopPropagation(); 
-            
             const apakahSedangTerbuka = menuBaru.classList.contains('show'); 
-            closeAllMenus(); // Tutup menu lain yang mungkin sedang terbuka
+            closeAllMenus(); 
             
             if (!apakahSedangTerbuka) {
-                // Munculkan menu sesaat agar sistem bisa menghitung tinggi dan lebarnya
                 menuBaru.classList.add('show'); 
-                
                 const posisiTombol = tombolBaruBersih.getBoundingClientRect();
                 const tinggiMenu = menuBaru.offsetHeight;
                 const lebarMenu = menuBaru.offsetWidth;
-                
-                // Deteksi jika pengguna membuka aplikasi dari HP (layar maksimal 768px)
                 const apakahLayarHP = window.innerWidth <= 768;
                 
                 menuBaru.style.setProperty('position', 'fixed', 'important');
                 menuBaru.style.setProperty('z-index', '999999', 'important');
-                
-                // Matikan paksaan gaya CSS lama yang membuat menu ke bawah
                 menuBaru.style.setProperty('bottom', 'auto', 'important');
                 menuBaru.style.setProperty('right', 'auto', 'important');
                 
                 if (apakahLayarHP) {
-                    // UNTUK HP: Tampil melayang di ATAS tombol +
-                    // Ketinggian (top) = Posisi atas tombol dikurangi tinggi menu dikurangi jarak aman 15px
                     menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
-                    // Perataan (left) = Ujung kanan tombol dikurangi lebar menu (agar sejajar rata kanan)
                     menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
                 } else {
-                    // UNTUK KOMPUTER: Tampil normal melayang di BAWAH tombol + (rata kiri)
                     menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
-                    menuBaru.style.setProperty('left', `${posisiTombol.left}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); 
                 }
             }
-        };
-        
-        tombolBaruBersih.addEventListener('click', aturMenu);
-    }
-
-    // Matikan klik kanan di area luar agar menu tidak muncul sembarangan di tengah layar
-    if (navigasiDrive) {
-        navigasiDrive.addEventListener('contextmenu', (e) => { 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            closeAllMenus(); 
         });
     }
 
-if (areaUtama) {
+    if (navigasiDrive) {
+        navigasiDrive.addEventListener('contextmenu', (e) => { 
+            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
+        });
+    }
+
+    if (areaUtama) {
         // KLIK KANAN AREA KOSONG
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); 
             
-            clearSelection(); // Hilangkan Top Bar & Seleksi
+            clearSelection(); // Hilangkan Top Bar
             closeAllMenus();
             
             const globalMenu = document.getElementById('globalContextMenu');
@@ -927,7 +915,7 @@ if (areaUtama) {
             if (e.target.closest('.item-card')) return;
             const touch = e.touches[0];
             gridTouchTimer = setTimeout(() => {
-                clearSelection(); // Hilangkan Top Bar & Seleksi
+                clearSelection(); // Hilangkan Top Bar
                 closeAllMenus();
                 const globalMenu = document.getElementById('globalContextMenu');
                 if (globalMenu) {
@@ -942,12 +930,9 @@ if (areaUtama) {
         areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
     }
     
-
-    // ... (di dalam fungsi initAllContextMenus) ...
-    
-    // KLIK KIRI GLOBAL DI AREA KOSONG (MENGHILANGKAN BAR & MENU)
+    // KLIK KIRI GLOBAL DI AREA MANAPUN
     window.addEventListener('click', (e) => {
-        // 1. Abaikan klik jika mengenai elemen-elemen UI ini (termasuk SAB)
+        // Abaikan jika yang diklik adalah bagian menu atau bar itu sendiri
         if (e.target.closest('.dropdown-content') ||
             e.target.closest('.context-menu-modern') ||
             e.target.closest('.modal-overlay') ||
@@ -958,106 +943,15 @@ if (areaUtama) {
             return;
         }
 
-        // 2. Jika klik jatuh pada area kosong (BUKAN di atas file/folder)
-        if (!e.target.closest('.item-card')) {
-            clearSelection(); // Bersihkan pilihan (SAB akan otomatis hilang)
-        }
-        
-        // 3. Selalu tutup menu konteks jika klik sembarang
+        // Tutup context menu
         closeAllMenus(); 
+        
+        // JIKA KLIK JATUH DI AREA KOSONG (Bukan di Item Card), MENGHILANGKAN BAR & SELEKSI
+        if (!e.target.closest('.item-card')) {
+            clearSelection(); 
+        }
     });
-} // <--- Akhir fungsi initAllContextMenus
-
-
-function initAllContextMenus() {
-    const tombolBaru = document.getElementById('newBtnMain'); 
-    
-    // Auto-repair: Ambil menu terakhir dan pindahkan ke area aman
-    const semuaMenuBaru = document.querySelectorAll('#dropdownNewMenu');
-    let menuBaru = null;
-    
-    if (semuaMenuBaru.length > 0) {
-        menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1]; 
-        document.body.appendChild(menuBaru); 
-        
-        // 🚀 AUTO-PATCH: Memperbaiki tautan HTML secara otomatis agar Google & Folder bekerja
-        menuBaru.innerHTML = `
-            <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
-            <hr class="menu-divider">
-            <a href="javascript:void(0)" onclick="triggerUploadModal('file')"><i class="fa-solid fa-file-arrow-up"></i> Upload file</a>
-            <a href="javascript:void(0)" onclick="triggerUploadModal('folder')"><i class="fa-solid fa-folder-arrow-up"></i> Upload folder</a>
-            <hr class="menu-divider">
-            <a href="javascript:void(0)" onclick="openGoogleDoc('document')"><i class="fa-solid fa-file-word text-blue"></i> Google Dokumen</a>
-            <a href="javascript:void(0)" onclick="openGoogleDoc('spreadsheet')"><i class="fa-solid fa-file-excel text-green"></i> Google Spreadsheet</a>
-            <a href="javascript:void(0)" onclick="openGoogleDoc('presentation')"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
-            <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
-        `;
-        
-        // Bersihkan duplikat jika ada
-        semuaMenuBaru.forEach(menu => {
-            if (menu !== menuBaru) menu.remove();
-        });
-    }
-    
-    const navigasiDrive = document.getElementById('navDrive'); 
-    const areaUtama = document.querySelector('.main-content-area');
-
-    if (tombolBaru && menuBaru) {
-        const tombolBaruBersih = tombolBaru.cloneNode(true); 
-        tombolBaru.parentNode.replaceChild(tombolBaruBersih, tombolBaru);
-        
-        const aturMenu = (e) => { 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            
-            const apakahSedangTerbuka = menuBaru.classList.contains('show'); 
-            closeAllMenus(); 
-            
-            if (!apakahSedangTerbuka) {
-                menuBaru.classList.add('show'); 
-                
-                const posisiTombol = tombolBaruBersih.getBoundingClientRect();
-                const tinggiMenu = menuBaru.offsetHeight;
-                const lebarMenu = menuBaru.offsetWidth;
-                const apakahLayarHP = window.innerWidth <= 768;
-                
-                menuBaru.style.setProperty('position', 'fixed', 'important');
-                menuBaru.style.setProperty('z-index', '999999', 'important');
-                menuBaru.style.setProperty('bottom', 'auto', 'important');
-                menuBaru.style.setProperty('right', 'auto', 'important');
-                
-                if (apakahLayarHP) {
-                    menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
-                    menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
-                } else {
-                menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
-                menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); // Tambahkan + 15 di sini
-            }
-            }
-        };
-        
-        tombolBaruBersih.addEventListener('click', aturMenu);
-    }
-
-    if (navigasiDrive) {
-        navigasiDrive.addEventListener('contextmenu', (e) => { 
-            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
-        });
-    }
-
-    if (areaUtama) {
-        areaUtama.addEventListener('contextmenu', (e) => {
-            if (e.target.closest('.item-card')) return;
-            e.preventDefault(); closeAllMenus();
-        });
-    }
-    
-    window.addEventListener('click', (e) => {
-        if (e.target.closest('.modal-box') || e.target.closest('.storage-widget') || e.target.closest('.preview-header-right')) return;
-        if (e.target.closest('#newBtnMain') || e.target.closest('.new-btn-wrapper')) return;
-        closeAllMenus();
-    });
-}
+} // <--- AKHIR FUNGSI initAllContextMenus
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
