@@ -662,29 +662,26 @@ function renderItem(doc) {
         }
     }
 
-// ... (kode HTML konten sebelum ini tetap sama) ...
-    
-    // 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
+// 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
     div.setAttribute('data-id', doc.$id);
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
 
-    // VARIABEL PELACAKAN SISTEM
     let isTouch = false;
     let longPressTriggered = false;
     let touchTimer;
     let isTouchMoved = false;
-    let clickTimeout = null; // Menahan klik agar tidak bocor ke Double Click
+    let clickTimeout = null;
 
-    // 2. FUNGSI PEMICU MENU & TOP BAR
+    // FUNGSI MEMUNCULKAN MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
-        closeAllMenus(); 
+        closeAllMenus();
         
         // Pilih file otomatis jika belum terpilih
         if (!selectedFileIds.has(doc.$id)) {
             selectedFileIds.clear();
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
-            updateSelectionUI(); // Otomatis munculkan SAB
+            updateSelectionUI(); // Memunculkan SAB
         }
         
         const menu = el('fileContextMenu');
@@ -702,7 +699,7 @@ function renderItem(doc) {
         if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
     };
 
-    // 3. EVENT TOUCH (MOBILE)
+    // EVENT TOUCH (MOBILE)
     div.addEventListener('touchstart', (e) => {
         isTouch = true;
         isTouchMoved = false;
@@ -711,8 +708,9 @@ function renderItem(doc) {
         
         touchTimer = setTimeout(() => {
             if (!isTouchMoved) {
-                longPressTriggered = true; // Tandai ini adalah Long Press
+                longPressTriggered = true; 
                 if (e.cancelable) e.preventDefault();
+                e.stopPropagation(); // Mencegah event bubbling ke klik sembarang
                 triggerFileContextMenu(touch.clientX, touch.clientY);
                 if (navigator.vibrate) navigator.vibrate(50);
             }
@@ -722,16 +720,14 @@ function renderItem(doc) {
     div.addEventListener('touchmove', () => { isTouchMoved = true; clearTimeout(touchTimer); }, { passive: true });
     div.addEventListener('touchend', (e) => { 
         clearTimeout(touchTimer); 
-        // Cegah klik bayangan jika Long Press selesai
         if (longPressTriggered && e.cancelable) e.preventDefault(); 
     });
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
-    // 4. EVENT KLIK (KLIK KIRI DESKTOP / TAP SEKALI MOBILE)
+    // EVENT KLIK (DESKTOP & MOBILE TAP)
     div.addEventListener('click', (e) => {
-        e.stopPropagation(); 
+        e.stopPropagation(); // Mencegah event bubbling ke klik sembarang
         
-        // Abaikan jika klik ini adalah ujung dari proses Long Press HP
         if (longPressTriggered) {
             longPressTriggered = false;
             return;
@@ -739,16 +735,14 @@ function renderItem(doc) {
 
         if(doc.trashed) return;
         
-        // LOGIKA MOBILE: 1x Tap langsung buka file tanpa memunculkan bar
         if (isTouch) {
+            // MOBILE: Buka langsung jika tidak ada yang terseleksi
             if (selectedFileIds.size === 0) {
                 clearSelection(); 
                 closeAllMenus();
                 isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
-                setTimeout(() => { isTouch = false; }, 300);
-                return; 
             } else {
-                // Jika sedang mode seleksi, tap = pilih file
+                 // MOBILE: Mode Seleksi Aktif
                 if (selectedFileIds.has(doc.$id)) {
                     selectedFileIds.delete(doc.$id);
                 } else {
@@ -757,12 +751,12 @@ function renderItem(doc) {
                 }
                 updateSelectionUI();
                 closeAllMenus();
-                setTimeout(() => { isTouch = false; }, 300);
-                return;
             }
+            setTimeout(() => { isTouch = false; }, 300);
+            return;
         }
 
-        // LOGIKA DESKTOP: Beri jeda 250ms untuk melihat apakah user berniat Klik Ganda
+        // DESKTOP: Menunggu potensi double click
         if (clickTimeout) clearTimeout(clickTimeout);
         clickTimeout = setTimeout(() => {
             if (e.ctrlKey || e.metaKey) {
@@ -779,14 +773,14 @@ function renderItem(doc) {
             }
             updateSelectionUI(); 
             closeAllMenus(); 
-        }, 250); 
+        }, 250); // Jeda untuk membedakan single click dan double click
     });
 
-    // 5. EVENT DBLCLICK (KLIK 2X DESKTOP)
+    // EVENT DBLCLICK (KLIK 2X DESKTOP)
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        if (clickTimeout) clearTimeout(clickTimeout); // BATALKAN KLIK KIRI AGAR SAB TIDAK MUNCUL
-        if (isTouch) return; // Dblclick desktop diabaikan di HP
+        if (clickTimeout) clearTimeout(clickTimeout); // Batalkan single click
+        if (isTouch) return; 
         
         clearSelection(); // BERSIHKAN SAB SAAT BUKA FILE
         closeAllMenus();
@@ -796,7 +790,7 @@ function renderItem(doc) {
         }
     });
 
-    // 6. EVENT CONTEXT MENU (KLIK KANAN DESKTOP)
+    // EVENT CONTEXT MENU (KLIK KANAN DESKTOP)
     div.addEventListener('contextmenu', (e) => {
         e.preventDefault(); 
         e.stopPropagation(); 
@@ -804,7 +798,7 @@ function renderItem(doc) {
     });
 
     grid.appendChild(div);
-} // <--- AKHIR FUNGSI renderItem
+}
 
 function closeAllMenus() {
     // HANYA TUTUP DROPDOWN DAN MENU KONTEKS
@@ -932,7 +926,7 @@ function initAllContextMenus() {
     
     // KLIK KIRI GLOBAL DI AREA MANAPUN
     window.addEventListener('click', (e) => {
-        // Abaikan jika yang diklik adalah bagian menu atau bar itu sendiri
+        // Jangan lakukan apa-apa jika klik terjadi pada elemen interaktif UI lainnya
         if (e.target.closest('.dropdown-content') ||
             e.target.closest('.context-menu-modern') ||
             e.target.closest('.modal-overlay') ||
@@ -943,15 +937,17 @@ function initAllContextMenus() {
             return;
         }
 
-        // Tutup context menu
+        // Tutup semua menu dropdown/context menu
         closeAllMenus(); 
         
-        // JIKA KLIK JATUH DI AREA KOSONG (Bukan di Item Card), MENGHILANGKAN BAR & SELEKSI
+        // JIKA KLIK BUKAN PADA ITEM-CARD, BERSIHKAN SELEKSI (HILANGKAN SAB)
         if (!e.target.closest('.item-card')) {
-            clearSelection(); 
+            if (typeof window.clearSelection === 'function') {
+                window.clearSelection(); 
+            }
         }
     });
-} // <--- AKHIR FUNGSI initAllContextMenus
+}
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
