@@ -1,114 +1,89 @@
 // ======================================================
-// 1. KONFIGURASI APPWRITE & VARIABEL GLOBAL
+// 1. KONFIGURASI APPWRITE & GLOBAL
 // ======================================================
-
-// Inisialisasi SDK Appwrite
 const client = new Appwrite.Client();
 const account = new Appwrite.Account(client);
 const databases = new Appwrite.Databases(client);
 const storage = new Appwrite.Storage(client);
 
-// Konfigurasi Avatar Default (Menangani validasi URL vs File Lokal)
-const DEFAULT_AVATAR_LOCAL = 'Image/profile-default.jpeg';
+// KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
+const DEFAULT_AVATAR_LOCAL = 'Image/profile-default.jpeg'; 
 const DEFAULT_AVATAR_DB_URL = 'https://cloud.appwrite.io/v1/storage/buckets/default/files/default/view';
 
-// Konfigurasi Kredensial & Identitas Project Appwrite
+// KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
-    PROJECT_ID: '697f71b40034438bb559',
+    PROJECT_ID: '697f71b40034438bb559', 
     DB_ID: 'storagedb',
-    COLLECTION_FILES: 'files',
+    COLLECTION_FILES: 'files',   
     COLLECTION_USERS: 'users',
     BUCKET_ID: 'taskfiles'
 };
 
-// API Endpoint SheetDB untuk pencatatan log aktivitas pengguna
-const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
+// API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
+const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi'; 
 
-// Menerapkan konfigurasi ke Appwrite Client
-client
-    .setEndpoint(CONFIG.ENDPOINT)
-    .setProject(CONFIG.PROJECT_ID);
+client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
-// ------------------------------------------------------
-// State Global Aplikasi (Menyimpan data sesi & navigasi saat ini)
-// ------------------------------------------------------
+// State Global Aplikasi
 let currentUser = null;
-let userDataDB = null;
-let currentFolderId = 'root';
+let userDataDB = null; 
+let currentFolderId = 'root'; 
 let currentFolderName = "Drive";
-let currentViewMode = 'root';
+let currentViewMode = 'root'; 
 
-// Array riwayat navigasi untuk fitur 'Kembali' (Breadcrumbs)
+// ARRAY BREADCRUMB / HISTORY UNTUK FITUR KEMBALI BERTAHAP
 let folderHistory = [{ id: 'root', name: 'Drive' }];
 
-// State seleksi item dan media
-let selectedItem = null;
-let selectedUploadFile = null;
-let selectedProfileImage = null;
-
-// State detail kapasitas penyimpanan
+let selectedItem = null; 
+let selectedUploadFile = null; 
+let selectedProfileImage = null; 
 let storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
-
-// State & Timeout untuk fitur pencarian dan pratinjau media
 let searchTimeout = null;
+
+// STATE PREVIEW NAVIGATION (Untuk Media Gallery & Music Player)
 let currentPreviewList = [];
-let audioInstance = null;
+let audioInstance = null; 
 let currentPreviewDoc = null;
 let hideOverlayTimeout;
 
-// Set untuk melacak ID file yang dipilih (Multi-selection)
-let selectedFileIds = new Set();
-
-
-// ======================================================
-// 2. FUNGSI UTILITAS & HELPER DOM
-// ======================================================
-
-/**
- * Helper untuk mempersingkat pemanggilan document.getElementById
- */
+// Helper DOM untuk mempersingkat pemanggilan elemen
 const el = (id) => document.getElementById(id);
 
-/**
- * Menampilkan atau menyembunyikan layar loading global
- * @param {boolean} show - Status tampilkan (true) atau sembunyikan (false)
- * @param {string} msg - Pesan yang ditampilkan saat loading
- */
+// Fungsi Loading Global
 const toggleLoading = (show, msg = "Memproses...") => {
     const loader = el('loading');
     const text = el('loadingText');
-    
     if (show) {
-        if (text) text.innerText = msg;
-        if (loader) loader.classList.remove('hidden');
+        if(text) text.innerText = msg;
+        if(loader) loader.classList.remove('hidden');
     } else {
-        if (loader) loader.classList.add('hidden');
+        if(loader) loader.classList.add('hidden');
     }
 };
 
-/**
- * Memperbarui antarmuka pengguna berdasarkan file yang diseleksi (Action Bar)
- */
+// MENYIMPAN ID FILE YANG TERSELEKSI
+let selectedFileIds = new Set(); 
+
+// FUNGSI UNTUK MENGATUR TAMPILAN SELEKSI & TOP BAR
 window.updateSelectionUI = () => {
     const sab = document.getElementById('selectionActionBar');
     const countSpan = document.getElementById('sabCount');
 
-    // Tampilkan Action Bar jika ada file yang dipilih
     if (selectedFileIds.size > 0) {
-        if (sab) {
+        if(sab) {
             sab.classList.remove('hidden');
             sab.classList.add('show-bar');
         }
-        if (countSpan) countSpan.innerText = `${selectedFileIds.size} dipilih`;
+        if(countSpan) countSpan.innerText = `${selectedFileIds.size} dipilih`;
     } else {
-        if (sab) {
+        if(sab) {
             sab.classList.remove('show-bar');
             sab.classList.add('hidden');
         }
     }
 
-    // Perbarui sorotan warna (highlight) pada setiap item-card
+    // Perbarui sorotan warna pada item-card
     document.querySelectorAll('.item-card').forEach(card => {
         const id = card.getAttribute('data-id');
         if (selectedFileIds.has(id)) {
@@ -119,112 +94,87 @@ window.updateSelectionUI = () => {
     });
 };
 
-/**
- * Membersihkan semua seleksi file (saat klik area kosong/tombol X)
- */
+// FUNGSI MEMBERSIHKAN SELEKSI (SAAT KLIK AREA KOSONG ATAU TOMBOL X)
 window.clearSelection = () => {
     selectedFileIds.clear();
     selectedItem = null;
     updateSelectionUI();
 };
 
-/**
- * Event Listener untuk fitur 'Pilih Semua' (CTRL + A)
- */
+// FITUR CTRL + A (PILIH SEMUA FILE) DENGAN SEMPURNA
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-        // Cegah Select All jika pengguna sedang mengetik di input box
+        // Cegah Select All jika user sedang mengetik di kotak pencarian
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
+        
         e.preventDefault();
         const cards = document.querySelectorAll('.item-card');
-        
         if (cards.length > 0) {
             cards.forEach(card => {
                 const id = card.getAttribute('data-id');
                 if (id) selectedFileIds.add(id);
             });
-            updateSelectionUI(); // Tampilkan SAB otomatis
+            updateSelectionUI(); // Memunculkan SAB Otomatis
             if (typeof closeAllMenus === 'function') closeAllMenus();
         }
     }
 });
 
-/**
- * Mengatur posisi animasi indikator menu navigasi (Sliding)
- */
+
+// ======================================================
+// FUNGSI ANIMASI SLIDING NAV INDICATOR
+// ======================================================
 function updateNavIndicator(element) {
     const indicator = document.querySelector('.nav-indicator');
     if (!indicator || !element) return;
-
+    
     indicator.style.width = element.offsetWidth + 'px';
     indicator.style.height = element.offsetHeight + 'px';
     indicator.style.left = element.offsetLeft + 'px';
     indicator.style.top = element.offsetTop + 'px';
 }
 
-
 // ======================================================
-// 3. MAIN EXECUTION (Inisialisasi Saat Halaman Dimuat)
+// 2. MAIN EXECUTION (Saat Halaman Dimuat)
 // ======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    checkSession();
-    initDragAndDrop();
-    initLogout();
-    initSearchBar();
-    initAllContextMenus();
-    initStorageTooltip();
-    initProfileImageUploader();
-
-    // Set timeout ringan untuk memastikan elemen DOM siap sebelum indikator navigasi digambar
+    checkSession(); 
+    initDragAndDrop(); 
+    initLogout(); 
+    initSearchBar(); 
+    initAllContextMenus(); 
+    initStorageTooltip(); 
+    initProfileImageUploader(); 
+    
     setTimeout(() => {
         const activeItem = document.querySelector('.nav-item.active');
-        if (activeItem) updateNavIndicator(activeItem);
+        if(activeItem) updateNavIndicator(activeItem);
     }, 150);
 
-    // Perbarui indikator navigasi jika ukuran jendela diubah
     window.addEventListener('resize', () => {
         const activeItem = document.querySelector('.nav-item.active');
-        if (activeItem) updateNavIndicator(activeItem);
+        if(activeItem) updateNavIndicator(activeItem);
     });
 });
 
-
 // ======================================================
-// 4. PENCATATAN LOG AKTIVITAS (LOGGING KE SHEETDB)
+// 3. FUNGSI LOGGING KE EXCEL (SHEETDB)
 // ======================================================
-
-/**
- * Mengirim catatan aktivitas autentikasi pengguna ke SheetDB
- * @param {string} sheetName - Nama sheet target (SignUp, Login, Logout)
- * @param {object} data - Objek data pengguna
- */
 async function recordActivity(sheetName, data) {
     try {
         const now = new Date().toLocaleString('id-ID', {
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
-        }).replace(/\./g, ':');
+        }).replace(/\./g, ':'); 
 
         let payload = {};
 
         if (sheetName === 'SignUp') {
-            payload = { 
-                "ID": data.id || "-", "Nama": data.name || "-", 
-                "Email": data.email || "-", "Phone": data.phone || "-", 
-                "Password": data.password || "-", "Waktu": now 
-            };
+            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Phone": data.phone || "-", "Password": data.password || "-", "Waktu": now };
         } else if (sheetName === 'Login') {
-            payload = { 
-                "ID": data.id || "-", "Nama": data.name || "-", 
-                "Email": data.email || "-", "Password": data.password || "-", 
-                "Riwayat Waktu": now 
-            };
+            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Password": data.password || "-", "Riwayat Waktu": now };
         } else if (sheetName === 'Logout') {
-            payload = { 
-                "ID": data.id || "-", "Nama": data.name || "-", 
-                "Email": data.email || "-", "Riwayat Waktu": now 
-            };
+            payload = { "ID": data.id || "-", "Nama": data.name || "-", "Email": data.email || "-", "Riwayat Waktu": now };
         }
 
         await fetch(`${SHEETDB_API}?sheet=${sheetName}`, {
@@ -232,118 +182,73 @@ async function recordActivity(sheetName, data) {
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: payload })
         });
-    } catch (error) {
-        console.error("System Log Error:", error);
-    }
+    } catch (error) { console.error("System Log Error:", error); }
 }
 
-/**
- * Memastikan ada koneksi internet sebelum menjalankan operasi penting
- */
 function checkSystemHealth() {
-    if (!navigator.onLine) {
-        throw new Error("Tidak ada koneksi internet. Periksa jaringan Anda.");
-    }
+    if (!navigator.onLine) throw new Error("Tidak ada koneksi internet. Periksa jaringan Anda.");
     return true;
 }
 
-
 // ======================================================
-// 5. MANAJEMEN AUTENTIKASI (SIGN UP, LOGIN, LOGOUT, RESET)
+// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
 // ======================================================
 
-// Logika Pendaftaran (Sign Up)
 if (el('signupForm')) {
     el('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const name = el('regName').value.trim();
-        const email = el('regEmail').value.trim();
-        const phone = el('regPhone').value.trim();
-        const pass = el('regPass').value;
-        const verify = el('regVerify').value;
+        const name = el('regName').value.trim(); const email = el('regEmail').value.trim();
+        const phone = el('regPhone').value.trim(); const pass = el('regPass').value; const verify = el('regVerify').value;
 
         if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
-        
         toggleLoading(true, "Mendaftarkan Akun Anda...");
         try {
             checkSystemHealth();
-            const newUserId = Appwrite.ID.unique();
-            
-            // 1. Buat akun Appwrite
+            const newUserId = Appwrite.ID.unique(); 
             await account.create(newUserId, email, pass, name);
-            
-            // 2. Buat sesi sementara untuk menulis ke Database
             try { await account.createEmailPasswordSession(email, pass); } catch(e) {}
-            
-            // 3. Simpan data tambahan ke Collection Appwrite
-            try {
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { 
-                    email: email, 
-                    phone: phone, 
-                    name: name, 
-                    password: pass, 
-                    avatarUrl: DEFAULT_AVATAR_DB_URL 
-                });
-            } catch (dbError) {}
-            
-            // 4. Catat pendaftaran ke SheetDB
+            try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, newUserId, { email: email, phone: phone, name: name, password: pass, avatarUrl: DEFAULT_AVATAR_DB_URL }); } catch (dbError) {}
             recordActivity('SignUp', { id: newUserId, name: name, email: email, phone: phone, password: pass }).catch(e => {});
-            
-            // 5. Bersihkan sesi sementara
             try { await account.deleteSession('current'); } catch (e) {}
-            
-            toggleLoading(false);
-            alert("Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda.");
-            window.nav('loginPage');
-        } catch(e) {
-            toggleLoading(false);
-            alert("Error Pendaftaran: " + e.message);
-        }
+            toggleLoading(false); alert("Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda."); window.nav('loginPage');
+        } catch(e) { toggleLoading(false); alert("Error Pendaftaran: " + e.message); }
     });
 }
 
-// Logika Masuk (Login)
+// PERBAIKAN: Login Logic Dipercepat & Penanganan Sesi Hantu
 if (el('loginForm')) {
     el('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        let inputId = el('loginEmail').value.trim();
-        const pass = el('loginPass').value;
-        
+        let inputId = el('loginEmail').value.trim(); const pass = el('loginPass').value;
         try {
-            toggleLoading(true, "Memproses Login...");
-            checkSystemHealth();
+            toggleLoading(true, "Memproses Login..."); checkSystemHealth();
             
-            // Tangani jika input adalah nama pengguna (bukan email)
             if (!inputId.includes('@')) {
                 const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('name', inputId) ]);
-                if (res.documents.length > 0) {
-                    inputId = res.documents[0].email;
-                } else {
-                    throw new Error("Username tidak ditemukan.");
-                }
+                if (res.documents.length > 0) inputId = res.documents[0].email; 
+                else throw new Error("Username tidak ditemukan.");
             }
             
-            // Bersihkan "Sesi Hantu" sebelum membuat sesi baru
+            // 🚀 PERBAIKAN AUTENTIKASI: Bersihkan "Sesi Hantu" sebelum membuat sesi baru
             try { 
                 await account.deleteSession('current'); 
             } catch (err) { 
-                // Abaikan jika tidak ada sesi aktif
+                // Abaikan tanpa error jika memang tidak ada sesi aktif
             }
             
-            // Otentikasi email dan password
-            await account.createEmailPasswordSession(inputId, pass);
+            // Langsung tembak Session ke Appwrite, hemat 2 API Request
+            await account.createEmailPasswordSession(inputId, pass); 
             
             let user = await account.get();
             sessionStorage.setItem('currentUser', JSON.stringify(user));
             
-            await syncUserData(user);
+            await syncUserData(user); 
             recordActivity('Login', { id: user.$id, name: user.name, email: user.email, password: pass }).catch(e => {});
-            await initializeDashboard(user);
+            await initializeDashboard(user); 
+        } catch (error) { 
+            toggleLoading(false); 
             
-        } catch (error) {
-            toggleLoading(false);
-            
-            // Fallback: Jika sistem mendeteksi sesi masih ada, paksa tarik data pengguna
+            // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
             if (error.message.includes('prohibited when a session is active')) {
                 try {
                     let user = await account.get();
@@ -354,89 +259,49 @@ if (el('loginForm')) {
                     alert("Gagal memulihkan sesi: " + fallbackErr.message);
                 }
             } else {
-                alert("Login Gagal: " + error.message);
+                alert("Login Gagal: " + error.message); 
             }
         }
     });
 }
 
-// Inisialisasi Fungsi Keluar (Logout)
 function initLogout() {
     const btn = el('logoutBtn');
     if (btn) {
-        // Kloning tombol untuk mencegah event listener ganda
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        
+        const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn);
         newBtn.addEventListener('click', async () => {
             if (confirm("Yakin ingin keluar dari Drive?")) {
                 toggleLoading(true, "Mengakhiri Sesi...");
-                
-                if (currentUser) {
-                    await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email }).catch(e => {});
-                }
-                
+                if (currentUser) await recordActivity('Logout', { id: currentUser.$id, name: currentUser.name, email: currentUser.email }).catch(e=>{});
                 try { await account.deleteSession('current'); } catch (error) {}
-                
-                // Bersihkan cache storage agar data aman untuk sesi berikutnya
-                sessionStorage.clear();
-                window.location.reload();
+                sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
+                window.location.reload(); 
             }
         });
     }
 }
 
-// Logika Reset Password
 if (el('resetForm')) {
     el('resetForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = el('resetEmail').value.trim();
-        const newPass = el('resetNewPass').value;
-        const verifyPass = el('resetVerifyPass').value;
-        
-        if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
-        if (newPass.length < 8) return alert("Password minimal 8 karakter.");
-        
+        const email = el('resetEmail').value.trim(); const newPass = el('resetNewPass').value; const verifyPass = el('resetVerifyPass').value;
+        if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!"); if (newPass.length < 8) return alert("Password minimal 8 karakter.");
         toggleLoading(true, "Mencari Akun...");
         try {
             const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, [ Appwrite.Query.equal('email', email) ]);
             if (res.documents.length === 0) throw new Error("Email tidak ditemukan di database.");
-            
             const userDoc = res.documents[0];
-            
-            // Update di Appwrite Database
             await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, userDoc.$id, { password: newPass });
-            
-            // Update riwayat di SheetDB (SignUp & Login log)
-            await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, { 
-                method: 'PATCH', 
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ "data": { "Password": newPass } }) 
-            });
-            await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, { 
-                method: 'PATCH', 
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ "data": { "Password": newPass } }) 
-            });
-            
-            toggleLoading(false);
-            alert("Berhasil! Password telah diperbarui.");
-            window.nav('loginPage');
-        } catch (error) {
-            toggleLoading(false);
-            alert("Gagal Reset: " + error.message);
-        }
+            await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, { method: 'PATCH', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify({ "data": { "Password": newPass } }) });
+            await fetch(`${SHEETDB_API}/Email/${email}?sheet=Login`, { method: 'PATCH', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'}, body: JSON.stringify({ "data": { "Password": newPass } }) });
+            toggleLoading(false); alert("Berhasil! Password telah diperbarui."); window.nav('loginPage');
+        } catch (error) { toggleLoading(false); alert("Gagal Reset: " + error.message); }
     });
 }
 
-
 // ======================================================
-// 6. HELPER SINKRONISASI DATA PENGGUNA & CACHE
+// 5. HELPER DATA & SINKRONISASI (DIOPTIMASI DENGAN CACHE)
 // ======================================================
-
-/**
- * Sinkronisasi data pengguna auth Appwrite dengan Collection kustom
- */
 async function syncUserData(authUser) {
     if (!authUser) return;
     try {
@@ -445,59 +310,31 @@ async function syncUserData(authUser) {
             userDataDB = JSON.parse(cachedUserDataDB);
         } else {
             let userDoc;
-            try { 
-                userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id); 
-            } catch (e) { 
-                if (e.code === 404) userDoc = null; 
-            }
-            
+            try { userDoc = await databases.getDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id); } catch (e) { if (e.code === 404) userDoc = null; }
             const payload = { name: authUser.name, email: authUser.email };
-            
-            if (!userDoc) {
-                // Buat dokumen pengguna jika belum ada
-                userDoc = await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { 
-                    ...payload, 
-                    phone: '', 
-                    password: 'NULL', 
-                    avatarUrl: DEFAULT_AVATAR_DB_URL 
-                });
-            } else if (!userDoc.name || userDoc.name !== authUser.name) {
-                // Sinkronisasikan nama jika berbeda
-                userDoc = await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload);
+            if (!userDoc) { 
+                userDoc = await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, { ...payload, phone: '', password: 'NULL', avatarUrl: DEFAULT_AVATAR_DB_URL }); 
+            } else if (!userDoc.name || userDoc.name !== authUser.name) { 
+                userDoc = await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, authUser.$id, payload); 
             }
-            
             userDataDB = userDoc;
             sessionStorage.setItem('userDataDB', JSON.stringify(userDataDB));
         }
-    } catch (err) {
-        console.error("Sync Error:", err);
-    }
+    } catch (err) { console.error("Sync Error:", err); }
 }
 
-/**
- * Menyiapkan status awal dasbor setelah login
- */
 async function initializeDashboard(userObj) {
     currentUser = userObj;
     folderHistory = [{ id: 'root', name: 'Drive' }];
-    
-    // Tarik list file dan data penyimpanan secara paralel
     const filePromise = loadFiles('root');
     const storagePromise = calculateStorage();
-    
     await Promise.all([filePromise, storagePromise]);
-    
-    updateProfileUI();
-    window.nav('dashboardPage');
-    toggleLoading(false);
+    updateProfileUI(); window.nav('dashboardPage'); toggleLoading(false); 
 }
 
-/**
- * Memeriksa sesi pengguna saat halaman pertama dimuat (Refresh / Kunjungan Baru)
- */
+// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
 async function checkSession() {
-    if (!el('loginPage').classList.contains('hidden')) return;
-    
+    if(!el('loginPage').classList.contains('hidden')) return;
     toggleLoading(true, "Memuat Ruang Kerja...");
     try {
         const cachedUser = sessionStorage.getItem('currentUser');
@@ -511,15 +348,13 @@ async function checkSession() {
         }
         
         folderHistory = [{ id: 'root', name: 'Drive' }];
-        updateProfileUI();
-        window.nav('dashboardPage');
-        calculateStorage();
-        loadFiles('root');
-    } catch (e) {
+        updateProfileUI(); window.nav('dashboardPage'); 
+        calculateStorage(); loadFiles('root');
+    } catch (e) { 
         sessionStorage.clear();
-        window.nav('loginPage');
-    } finally {
-        toggleLoading(false);
+        window.nav('loginPage'); 
+    } finally { 
+        toggleLoading(false); 
     }
 }
 
@@ -555,332 +390,188 @@ async function checkSession() {
 //     }
 // }
 
-
-/**
- * Memperbarui tampilan UI Profile (Avatar)
- */
+// PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
     const dbUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : '';
     let finalSrc;
+    if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') { finalSrc = DEFAULT_AVATAR_LOCAL; } 
+    else { finalSrc = dbUrl; } 
     
-    if (!dbUrl || dbUrl === DEFAULT_AVATAR_DB_URL || dbUrl === 'NULL') {
-        finalSrc = DEFAULT_AVATAR_LOCAL;
-    } else {
-        finalSrc = dbUrl;
-    }
-    
-    // Perbarui sumber gambar di seluruh aplikasi
-    if (el('dashAvatar')) el('dashAvatar').src = finalSrc;
-    if (el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc;
-    if (el('editProfileImg')) el('editProfileImg').src = finalSrc;
+    if(el('dashAvatar')) el('dashAvatar').src = finalSrc;
+    if(el('storagePageAvatar')) el('storagePageAvatar').src = finalSrc;
+    if(el('editProfileImg')) el('editProfileImg').src = finalSrc;
 }
 
-/**
- * Fungsi Navigasi antar halaman secara manual
- */
 window.nav = (pageId) => {
-    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage']
-        .forEach(id => {
-            const element = el(id);
-            if (element) element.classList.add('hidden');
-        });
-        
-    const target = el(pageId);
-    if (target) target.classList.remove('hidden');
-    
+    ['loginPage', 'signupPage', 'dashboardPage', 'storagePage', 'profilePage', 'resetPage'].forEach(id => { const element = el(id); if(element) element.classList.add('hidden'); });
+    const target = el(pageId); if(target) target.classList.remove('hidden');
     setTimeout(() => {
         const activeItem = document.querySelector('.nav-item.active');
-        if (activeItem) updateNavIndicator(activeItem);
+        if(activeItem) updateNavIndicator(activeItem);
     }, 50);
 };
 
-
 // ======================================================
-// 7. PROFIL PENGGUNA & PENGATURAN AKUN
+// 6. PROFILE & SETTINGS
 // ======================================================
-
-/**
- * Membuka halaman dan menyuntikkan data ke form profil
- */
 window.openProfilePage = () => {
     if (!currentUser) return;
-    
-    el('editName').value = currentUser.name || '';
-    el('editEmail').value = currentUser.email || '';
-    el('editPhone').value = (userDataDB && userDataDB.phone) ? userDataDB.phone : '';
-    el('editPass').value = '';
-    
-    updateProfileUI();
-    selectedProfileImage = null;
-    window.nav('profilePage');
+    el('editName').value = currentUser.name || ''; el('editEmail').value = currentUser.email || '';
+    el('editPhone').value = (userDataDB && userDataDB.phone) ? userDataDB.phone : ''; el('editPass').value = ''; 
+    updateProfileUI(); selectedProfileImage = null; window.nav('profilePage');
 };
 
-/**
- * Menginisialisasi input unggah gambar profil
- */
 function initProfileImageUploader() {
     const input = el('profileUploadInput');
-    if (input) {
+    if(input) {
         input.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                selectedProfileImage = file;
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    el('editProfileImg').src = evt.target.result;
-                };
-                reader.readAsDataURL(file);
+            if(e.target.files.length > 0) {
+                const file = e.target.files[0]; selectedProfileImage = file;
+                const reader = new FileReader(); reader.onload = function(evt) { el('editProfileImg').src = evt.target.result; }; reader.readAsDataURL(file);
             }
         });
     }
 }
 
-/**
- * Menyimpan data perubahan dari form Profil
- */
 window.saveProfile = async () => {
     toggleLoading(true, "Menyimpan Perubahan Profil...");
     try {
-        const newName = el('editName').value.trim();
-        const newEmail = el('editEmail').value.trim();
-        const newPhone = el('editPhone').value.trim();
-        const newPass = el('editPass').value;
+        const newName = el('editName').value.trim(); const newEmail = el('editEmail').value.trim();
+        const newPhone = el('editPhone').value.trim(); const newPass = el('editPass').value;
         let newAvatarUrl = (userDataDB && userDataDB.avatarUrl) ? userDataDB.avatarUrl : DEFAULT_AVATAR_DB_URL;
         
-        // 1. Unggah Avatar Baru Jika Ada
         if (selectedProfileImage) {
             const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), selectedProfileImage);
+            // Tambahkan cache buster KHUSUS SAAT UPLOAD SAJA agar update instan di browser
             newAvatarUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href + `&t=${new Date().getTime()}`;
         }
 
-        // 2. Perbarui Identitas Akun Appwrite Auth
         if (newName && newName !== currentUser.name) await account.updateName(newName);
-        if (newEmail && newEmail !== currentUser.email) {
-            try { await account.updateEmail(newEmail, ''); } catch(e) {}
-        }
+        if (newEmail && newEmail !== currentUser.email) { try { await account.updateEmail(newEmail, ''); } catch(e) {} }
         if (newPass) await account.updatePassword(newPass);
 
-        // 3. Susun Payload untuk Appwrite Database
-        const payload = { name: newName, email: newEmail, phone: newPhone, avatarUrl: newAvatarUrl };
-        if (newPass) payload.password = newPass;
+        const payload = { name: newName, email: newEmail, phone: newPhone, avatarUrl: newAvatarUrl }; if(newPass) payload.password = newPass;
 
-        // 4. Perbarui atau Buat dokumen di Appwrite Database
-        try {
-            await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-        } catch (dbErr) {
-            if (dbErr.code === 404) {
-                await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload);
-            }
-        }
+        try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); } 
+        catch (dbErr) { if (dbErr.code === 404) await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, currentUser.$id, payload); }
 
-        // 5. Perbarui Sesi Lokal
         if (!userDataDB) userDataDB = {};
-        userDataDB.phone = newPhone;
-        userDataDB.avatarUrl = newAvatarUrl;
+        userDataDB.phone = newPhone; userDataDB.avatarUrl = newAvatarUrl;
 
         sessionStorage.setItem('userDataDB', JSON.stringify(userDataDB));
-        currentUser = await account.get();
-        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-        
-        updateProfileUI();
-        toggleLoading(false);
-        alert("Profil Berhasil Disimpan!");
-        window.nav('dashboardPage');
-        
-    } catch (error) {
-        toggleLoading(false);
-        alert("Gagal Menyimpan: " + error.message);
-    }
+        currentUser = await account.get(); sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateProfileUI(); toggleLoading(false); alert("Profil Berhasil Disimpan!"); window.nav('dashboardPage');
+    } catch (error) { toggleLoading(false); alert("Gagal Menyimpan: " + error.message); }
 };
 
-
 // ======================================================
-// 8. LOGIKA MANAJER FILE (BREADCRUMB, PENCARIAN, RENDER)
+// 7. FILE MANAGER LOGIC
 // ======================================================
 
-/**
- * Menyaring daftar dokumen pratinjau yang valid (hanya file & belum dihapus)
- */
 function updatePreviewList(documentsArray) {
     currentPreviewList = documentsArray.filter(d => d.type === 'file' && !d.trashed);
 }
 
-/**
- * Penanganan klik menu Sidebar
- */
 window.handleMenuClick = (element, mode) => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
     element.classList.add('active');
     updateNavIndicator(element);
 
-    currentFolderId = 'root';
-    currentViewMode = mode;
-    
-    if (mode === 'root') currentFolderName = "Drive";
-    else if (mode === 'recent') currentFolderName = "Terbaru";
-    else if (mode === 'starred') currentFolderName = "Berbintang";
-    else if (mode === 'trash') currentFolderName = "Sampah";
+    currentFolderId = 'root'; currentViewMode = mode;
+    if(mode === 'root') currentFolderName = "Drive";
+    else if(mode === 'recent') currentFolderName = "Terbaru";
+    else if(mode === 'starred') currentFolderName = "Berbintang";
+    else if(mode === 'trash') currentFolderName = "Sampah";
     else currentFolderName = element.innerText.trim();
     
     folderHistory = [{ id: currentFolderId, name: currentFolderName }];
     loadFiles(mode);
 };
 
-/**
- * Fitur navigasi "Kembali" untuk hirarki folder
- */
 window.goBack = () => {
     if (folderHistory.length > 1) {
-        folderHistory.pop();
+        folderHistory.pop(); 
         const parent = folderHistory[folderHistory.length - 1];
-        
-        currentFolderId = parent.id;
+        currentFolderId = parent.id; 
         currentFolderName = parent.name;
-        currentViewMode = 'root';
+        currentViewMode = 'root'; 
         loadFiles(currentFolderId);
     } else {
-        // Kembali ke root utama jika histori habis
-        currentFolderId = 'root';
-        currentFolderName = "Drive";
-        currentViewMode = 'root';
+        currentFolderId = 'root'; currentFolderName = "Drive"; currentViewMode = 'root';
         folderHistory = [{ id: 'root', name: 'Drive' }];
-        
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         const navDriveEl = document.querySelectorAll('.nav-item')[0];
-        navDriveEl.classList.add('active');
-        updateNavIndicator(navDriveEl);
-        
+        navDriveEl.classList.add('active'); 
+        updateNavIndicator(navDriveEl); 
         loadFiles('root');
     }
 };
 
-/**
- * Masuk ke dalam sebuah folder tertentu
- */
-window.openFolder = (id, name) => {
+window.openFolder = (id, name) => { 
     folderHistory.push({ id, name });
-    currentFolderId = id;
-    currentFolderName = name;
-    loadFiles(id);
+    currentFolderId = id; 
+    currentFolderName = name; 
+    loadFiles(id); 
 };
 
-/**
- * Menginisialisasi input pencarian dan debounce mekanik
- */
 function initSearchBar() {
-    const input = el('searchInput');
-    if (!input) return;
-    
+    const input = el('searchInput'); if (!input) return;
     input.addEventListener('input', (e) => {
         const query = e.target.value.trim();
-        if (query.length === 0) {
-            el('clearSearchBtn').classList.add('hidden');
-            loadFiles(currentFolderId);
-            return;
-        }
-        
-        el('clearSearchBtn').classList.remove('hidden');
-        clearTimeout(searchTimeout);
-        
-        el('fileGrid').innerHTML = `
-            <div style="grid-column:1/-1;text-align:center;margin-top:50px;">
-                <div class="spinner"></div><p>Mencari "${query}"...</p>
-            </div>
-        `;
-        
-        // Debounce pencarian selama 600ms
+        if (query.length === 0) { el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); return; }
+        el('clearSearchBtn').classList.remove('hidden'); clearTimeout(searchTimeout);
+        el('fileGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;margin-top:50px;"><div class="spinner"></div><p>Mencari "${query}"...</p></div>`;
         searchTimeout = setTimeout(() => performSearch(query), 600);
     });
 }
 
-/**
- * Mencari file dengan kueri native Appwrite
- */
 async function performSearch(keyword) {
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.search('name', keyword),
-            Appwrite.Query.limit(50)
-        ]);
-        
-        updatePreviewList(res.documents);
-        const grid = el('fileGrid');
-        grid.innerHTML = '';
-        
-        if (res.documents.length === 0) {
-            grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`;
-        } else {
-            res.documents.forEach(doc => renderItem(doc));
-        }
-    } catch (e) {
-        fallbackSearch(keyword);
-    }
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.search('name', keyword), Appwrite.Query.limit(50) ]);
+        updatePreviewList(res.documents); 
+        const grid = el('fileGrid'); grid.innerHTML = '';
+        if (res.documents.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else res.documents.forEach(doc => renderItem(doc));
+    } catch (e) { fallbackSearch(keyword); }
 }
 
-/**
- * Metode cadangan (fallback) jika Appwrite Search Index belum siap
- */
 async function fallbackSearch(keyword) {
     try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.limit(100)
-        ]);
-        
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.limit(100)]);
         const filtered = res.documents.filter(doc => doc.name.toLowerCase().includes(keyword.toLowerCase()));
-        updatePreviewList(filtered);
-        
-        const grid = el('fileGrid');
-        grid.innerHTML = '';
-        
-        if (filtered.length === 0) {
-            grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`;
-        } else {
-            filtered.forEach(doc => renderItem(doc));
-        }
-    } catch (err) {}
+        updatePreviewList(filtered); 
+        const grid = el('fileGrid'); grid.innerHTML = '';
+        if (filtered.length === 0) grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`; else filtered.forEach(doc => renderItem(doc));
+    } catch(err){}
 }
 
-window.clearSearch = () => {
-    el('searchInput').value = '';
-    el('clearSearchBtn').classList.add('hidden');
-    loadFiles(currentFolderId);
-};
+window.clearSearch = () => { el('searchInput').value = ''; el('clearSearchBtn').classList.add('hidden'); loadFiles(currentFolderId); };
 
-/**
- * Memastikan Context Menu muncul pada batas layar (Viewport) yang aman
- */
 function positionMenuInsideWindow(menu, clientX, clientY) {
-    menu.classList.remove('hidden');
+    menu.classList.remove('hidden'); 
     menu.classList.add('show');
-
+    
     const menuWidth = menu.offsetWidth;
     const menuHeight = menu.offsetHeight;
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-
+    
     let left = clientX;
     let top = clientY;
-
+    
     if (left + menuWidth > windowWidth) left = windowWidth - menuWidth - 10;
     if (top + menuHeight > windowHeight) top = windowHeight - menuHeight - 10;
     if (left < 0) left = 10;
     if (top < 0) top = 10;
-
+    
     menu.style.left = `${left}px`;
     menu.style.top = `${top}px`;
 }
 
-/**
- * Menggambar elemen UI untuk File dan Folder ke dalam Grid Layar
- */
 function renderItem(doc) {
-    const grid = el('fileGrid');
-    const div = document.createElement('div');
-    div.className = 'item-card';
-
-    // Tambahkan referensi pelacakan ID ke elemen
+    const grid = el('fileGrid'); 
+    const div = document.createElement('div'); div.className = 'item-card';
+    
+    // 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
     div.setAttribute('data-id', doc.$id);
 
     const isFolder = doc.type === 'folder';
@@ -899,29 +590,22 @@ function renderItem(doc) {
         const ext = doc.name.split('.').pop().toLowerCase();
         const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
 
-        // Kategori ekstensi file
         const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'heif', 'heic', 'raw', 'cr2', 'nef', 'orf', 'arw', 'dng', 'jfif', 'pjp', 'pjpeg', 'webp', 'svg', 'ico'];
         const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
-        const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma'];
+        const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
         const docExts = ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx'];
         const pdfExt = ['pdf'];
 
-        // Helper: Pembuatan icon fallback saat file tidak bisa dimuat
         const createFallback = (ext, forOnError = false) => {
             let iconClass = "fa-file"; let colorClass = "icon-grey";
-            
-            if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) {
-                if (ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; }
-                else if (['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; }
-                else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; }
-            }
-            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; }
-            else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; }
-            else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; }
-            else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; }
+            if (['psd', 'indd', 'tiff', 'tif', 'ai', 'eps', 'pdf'].includes(ext)) { if(ext === 'pdf') { iconClass = "fa-file-pdf"; colorClass = "icon-red"; } else if(['psd', 'indd'].includes(ext)) { iconClass = "fa-file-image"; colorClass = "icon-blue"; } else { iconClass = "fa-pen-nib"; colorClass = "icon-orange"; } }
+            else if (ext.includes('doc')) { iconClass = "fa-file-word"; colorClass = "icon-blue"; } 
+            else if (ext.includes('xls') || ext.includes('csv')) { iconClass = "fa-file-excel"; colorClass = "icon-green"; } 
+            else if (ext.includes('ppt')) { iconClass = "fa-file-powerpoint"; colorClass = "icon-orange"; } 
+            else if (['html', 'css', 'js', 'php'].includes(ext)) { iconClass = "fa-file-code"; colorClass = "icon-grey"; } 
             else if (['zip', 'rar'].includes(ext)) { iconClass = "fa-file-zipper"; colorClass = "icon-yellow"; }
-            else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; }
-
+            else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } 
+            
             const htmlStr = `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`;
             return forOnError ? htmlStr.replace(/"/g, "&quot;") : htmlStr;
         };
@@ -933,10 +617,9 @@ function renderItem(doc) {
         } else if (audioExts.includes(ext)) {
             content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            // Thumbnailing pintar menggunakan Cache Lokal atau API eksternal
             let thumbUrlToUse = '';
             let localCache = JSON.parse(localStorage.getItem('hfThumbCache') || '{}');
-
+            
             if (doc.thumbUrl && doc.thumbUrl !== 'NULL' && doc.thumbUrl !== '') {
                 thumbUrlToUse = doc.thumbUrl;
             } else if (localCache[doc.fileId]) {
@@ -945,8 +628,7 @@ function renderItem(doc) {
                 thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
                 localCache[doc.fileId] = thumbUrlToUse;
                 localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
-                // Lakukan pembaruan ke Appwrite secara async di background
-                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e => {});
+                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>{});
             }
 
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -970,99 +652,86 @@ function renderItem(doc) {
 
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
 
-    // ----------------------------------------------------
-    // VARIABEL PELACAKAN SISTEM & EVENT LISTENER (MOBILE & DESKTOP)
-    // ----------------------------------------------------
+    // VARIABEL PELACAKAN SISTEM
     let isTouch = false;
     let longPressTriggered = false;
     let touchTimer;
     let isTouchMoved = false;
     let clickTimeout = null;
 
+    // FUNGSI MEMUNCULKAN MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
         closeAllMenus();
         
-        // Pilih file otomatis jika belum terpilih sebelumnya
+        // Pilih file otomatis jika belum terpilih
         if (!selectedFileIds.has(doc.$id)) {
             selectedFileIds.clear();
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
-            updateSelectionUI(); // Tampilkan SAB
+            updateSelectionUI(); // Memunculkan SAB
         } else {
             selectedItem = doc;
         }
-
-        const menu = el('fileContextMenu');
         
-        // Atur tampilan tombol Open/Preview berdasarkan tipe file
+        const menu = el('fileContextMenu');
         ['ctxBtnOpenFolder', 'ctxBtnPreview', 'ctxBtnDownload', 'ctxBtnOpenWith'].forEach(id => {
             const btn = el(id);
-            if (btn) {
-                btn.style.display = ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) ? 'flex' : 'none';
-            }
+            if (btn) btn.style.display = ((isFolder && id === 'ctxBtnOpenFolder') || (!isFolder && id !== 'ctxBtnOpenFolder')) ? 'flex' : 'none';
         });
 
         positionMenuInsideWindow(menu, clientX, clientY);
-
-        // Atur tampilan tombol Sampah / Restore
+        
         const isTrash = doc.trashed;
-        if (el('ctxTrashBtn')) el('ctxTrashBtn').classList.toggle('hidden', isTrash);
-        if (el('ctxRestoreBtn')) el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
-        if (el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
-        if (el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
+        if(el('ctxTrashBtn')) el('ctxTrashBtn').classList.toggle('hidden', isTrash);
+        if(el('ctxRestoreBtn')) el('ctxRestoreBtn').classList.toggle('hidden', !isTrash);
+        if(el('ctxPermDeleteBtn')) el('ctxPermDeleteBtn').classList.toggle('hidden', !isTrash);
+        if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
     };
 
-    // --- EVENT TOUCH (MOBILE) ---
+    // EVENT TOUCH (MOBILE)
     div.addEventListener('touchstart', (e) => {
         isTouch = true;
         isTouchMoved = false;
-        longPressTriggered = false;
+        longPressTriggered = false; 
         const touch = e.touches[0];
-
+        
         touchTimer = setTimeout(() => {
             if (!isTouchMoved) {
-                longPressTriggered = true;
+                longPressTriggered = true; 
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
                 triggerFileContextMenu(touch.clientX, touch.clientY);
                 if (navigator.vibrate) navigator.vibrate(50);
             }
-        }, 500);
+        }, 500); 
     }, { passive: false });
 
-    div.addEventListener('touchmove', () => { 
-        isTouchMoved = true; 
+    div.addEventListener('touchmove', () => { isTouchMoved = true; clearTimeout(touchTimer); }, { passive: true });
+    div.addEventListener('touchend', (e) => { 
         clearTimeout(touchTimer); 
-    }, { passive: true });
-    
-    div.addEventListener('touchend', (e) => {
-        clearTimeout(touchTimer);
-        if (longPressTriggered && e.cancelable) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        if (longPressTriggered && e.cancelable) { e.preventDefault(); e.stopPropagation(); }
     });
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
-    // --- EVENT KLIK (DESKTOP & MOBILE TAP) ---
+    // EVENT KLIK (DESKTOP & MOBILE TAP)
     div.addEventListener('click', (e) => {
-        e.stopPropagation();
-
+        e.stopPropagation(); 
+        
         if (longPressTriggered) {
             longPressTriggered = false;
             return;
         }
 
-        if (doc.trashed) return; // Non-interaktif jika berada di trash
-
+        if(doc.trashed) return;
+        
         if (isTouch || e.pointerType === 'touch') {
-            // Logika Mobile: Buka langsung jika tidak ada status multi-seleksi
+            // MOBILE: Buka langsung jika tidak ada yang terseleksi
             if (selectedFileIds.size === 0) {
-                clearSelection();
+                clearSelection(); 
                 closeAllMenus();
-                isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc);
+                isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
             } else {
-                // Logika Mobile: Mode seleksi
+                 // MOBILE: Mode Seleksi Aktif (Pilih file)
                 if (selectedFileIds.has(doc.$id)) {
                     selectedFileIds.delete(doc.$id);
                 } else {
@@ -1076,7 +745,7 @@ function renderItem(doc) {
             return;
         }
 
-        // Logika Desktop: Penundaan klik untuk memeriksa double-click
+        // DESKTOP: Menunggu potensi double click
         if (clickTimeout) clearTimeout(clickTimeout);
         clickTimeout = setTimeout(() => {
             if (e.ctrlKey || e.metaKey) {
@@ -1091,74 +760,68 @@ function renderItem(doc) {
                 selectedFileIds.add(doc.$id);
                 selectedItem = doc;
             }
-            updateSelectionUI();
-            closeAllMenus();
-        }, 250);
+            updateSelectionUI(); 
+            closeAllMenus(); 
+        }, 250); 
     });
 
-    // --- EVENT DBLCLICK (KLIK DUA KALI DESKTOP) ---
+    // EVENT DBLCLICK (KLIK 2X DESKTOP)
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
+        if (clickTimeout) clearTimeout(clickTimeout); // BATALKAN KLIK KIRI AGAR SAB TIDAK MUNCUL
+        if (isTouch || e.pointerType === 'touch') return; 
         
-        // Batalkan klik tunggal agar SAB/Selection tidak muncul sesaat
-        if (clickTimeout) clearTimeout(clickTimeout);
-        if (isTouch || e.pointerType === 'touch') return;
-
-        clearSelection();
+        clearSelection(); // BERSIHKAN SAB SEBELUM BUKA FILE
         closeAllMenus();
-
-        if (!doc.trashed) {
-            isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc);
+        
+        if(!doc.trashed) { 
+            isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
         }
     });
 
-    // --- EVENT CONTEXT MENU (KLIK KANAN DESKTOP) ---
+    // EVENT CONTEXT MENU (KLIK KANAN DESKTOP)
     div.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); 
+        e.stopPropagation(); 
         triggerFileContextMenu(e.clientX, e.clientY);
     });
 
     grid.appendChild(div);
 }
 
-/**
- * Menutup semua Dropdown, Menu Konteks, dan Modal secara bersamaan
- */
 function closeAllMenus() {
+    // HANYA TUTUP DROPDOWN DAN MENU KONTEKS
     document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed, #dropdownNewMenu, #fileContextMenu').forEach(menu => {
-        if (menu) {
+        if(menu) {
             menu.classList.remove('show');
-            if (menu.id === 'fileContextMenu' || menu.id === 'previewContextMenu') {
+            if(menu.id === 'fileContextMenu' || menu.id === 'previewContextMenu') {
                 menu.classList.add('hidden');
             }
         }
     });
-
+    
     const storageModal = document.getElementById('storageModal');
-    if (storageModal) storageModal.classList.add('hidden');
+    if(storageModal) storageModal.classList.add('hidden');
+}
 
-    // MENGHILANGKAN TOP ACTION BAR SECARA SEKETIKA
+    // ---> GANTI BAGIAN INI DI DALAM closeAllMenus() <---
+    // MENGHILANGKAN TOP ACTION BAR SEKETIKA
     const sab = document.getElementById('selectionActionBar');
     if (sab) {
         sab.classList.add('hidden');
         sab.classList.remove('show-bar');
     }
     document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
-}
 
-/**
- * Inisialisasi Context Menu dan Navigasi Lanjutan
- */
 function initAllContextMenus() {
-    const tombolBaru = document.getElementById('newBtnMain');
+    const tombolBaru = document.getElementById('newBtnMain'); 
     const semuaMenuBaru = document.querySelectorAll('#dropdownNewMenu');
     let menuBaru = null;
-
+    
     if (semuaMenuBaru.length > 0) {
-        menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1];
-        document.body.appendChild(menuBaru);
-
+        menuBaru = semuaMenuBaru[semuaMenuBaru.length - 1]; 
+        document.body.appendChild(menuBaru); 
+        
         menuBaru.innerHTML = `
             <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
             <hr class="menu-divider">
@@ -1170,79 +833,74 @@ function initAllContextMenus() {
             <a href="javascript:void(0)" onclick="openGoogleDoc('presentation')"><i class="fa-solid fa-file-powerpoint text-yellow"></i> Google Slide</a>
             <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
         `;
-
-        // Bersihkan menu duplikat
+        
         semuaMenuBaru.forEach(menu => { if (menu !== menuBaru) menu.remove(); });
     }
-
-    const navigasiDrive = document.getElementById('navDrive');
+    
+    const navigasiDrive = document.getElementById('navDrive'); 
     const areaUtama = document.querySelector('.main-content-area');
 
-    // Reattach event dengan cloning tombol untuk mencegah memory leaks
     if (tombolBaru && menuBaru) {
-        const tombolBaruBersih = tombolBaru.cloneNode(true);
+        const tombolBaruBersih = tombolBaru.cloneNode(true); 
         tombolBaru.parentNode.replaceChild(tombolBaruBersih, tombolBaru);
-
-        tombolBaruBersih.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const apakahSedangTerbuka = menuBaru.classList.contains('show');
-            closeAllMenus();
-
+        
+        tombolBaruBersih.addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            const apakahSedangTerbuka = menuBaru.classList.contains('show'); 
+            closeAllMenus(); 
+            
             if (!apakahSedangTerbuka) {
-                menuBaru.classList.add('show');
+                menuBaru.classList.add('show'); 
                 const posisiTombol = tombolBaruBersih.getBoundingClientRect();
                 const tinggiMenu = menuBaru.offsetHeight;
                 const lebarMenu = menuBaru.offsetWidth;
                 const apakahLayarHP = window.innerWidth <= 768;
-
+                
                 menuBaru.style.setProperty('position', 'fixed', 'important');
                 menuBaru.style.setProperty('z-index', '999999', 'important');
                 menuBaru.style.setProperty('bottom', 'auto', 'important');
                 menuBaru.style.setProperty('right', 'auto', 'important');
-
+                
                 if (apakahLayarHP) {
                     menuBaru.style.setProperty('top', `${posisiTombol.top - tinggiMenu - 15}px`, 'important');
                     menuBaru.style.setProperty('left', `${posisiTombol.right - lebarMenu}px`, 'important');
                 } else {
                     menuBaru.style.setProperty('top', `${posisiTombol.bottom + 8}px`, 'important');
-                    menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important');
+                    menuBaru.style.setProperty('left', `${posisiTombol.left + 15}px`, 'important'); 
                 }
             }
         });
     }
 
     if (navigasiDrive) {
-        navigasiDrive.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            closeAllMenus();
+        navigasiDrive.addEventListener('contextmenu', (e) => { 
+            e.preventDefault(); e.stopPropagation(); closeAllMenus(); 
         });
     }
 
     if (areaUtama) {
-        // Klik kanan pada area grid kosong
+        // KLIK KANAN AREA KOSONG
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
-            e.preventDefault();
-
+            e.preventDefault(); 
+            
             if (typeof window.clearSelection === 'function') window.clearSelection();
             closeAllMenus();
-
+            
             const globalMenu = document.getElementById('globalContextMenu');
             if (globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         });
 
-        // Sentuh dan Tahan (Long Press) untuk mobile pada grid
+        // TAHAN AREA KOSONG (MOBILE)
         let gridTouchTimer;
         areaUtama.addEventListener('touchstart', (e) => {
             if (e.target.closest('.item-card')) return;
             const touch = e.touches[0];
-            
             gridTouchTimer = setTimeout(() => {
                 if (typeof window.clearSelection === 'function') window.clearSelection();
                 closeAllMenus();
-
+                
                 const globalMenu = document.getElementById('globalContextMenu');
                 if (globalMenu) {
                     positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
@@ -1255,12 +913,12 @@ function initAllContextMenus() {
         areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
         areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
     }
-
+    
     // ====================================================================
-    // LOGIKA KLIK GLOBAL: Menutup Dropdown atau Membersihkan Seleksi File
+    // LOGIKA KLIK GLOBAL: MENGATUR HILANGNYA MENU / ACTION BAR
     // ====================================================================
     window.addEventListener('click', (e) => {
-        // 1. Abaikan klik di dalam elemen menu/SAB
+        // 1. Abaikan klik jika yang diklik adalah bagian menu atau bar itu sendiri
         if (e.target.closest('.dropdown-content') ||
             e.target.closest('.context-menu-modern') ||
             e.target.closest('.modal-overlay') ||
@@ -1271,48 +929,41 @@ function initAllContextMenus() {
             return;
         }
 
-        // 2. Cek apakah ada Menu Konteks / Dropdown terbuka
+        // 2. Cek apakah ada Menu Konteks / Dropdown yang sedang terbuka SEBELUM ditutup
         const ctxMenu = document.getElementById('fileContextMenu');
         const globalCtxMenu = document.getElementById('globalContextMenu');
         const newMenu = document.getElementById('dropdownNewMenu');
-
-        const isMenuOpen = (ctxMenu && ctxMenu.classList.contains('show')) ||
+        
+        const isMenuOpen = (ctxMenu && ctxMenu.classList.contains('show')) || 
                            (globalCtxMenu && globalCtxMenu.classList.contains('show')) ||
                            (newMenu && newMenu.classList.contains('show'));
 
-        // 3. Selalu tutup popup
-        closeAllMenus();
-
-        // 4. Bersihkan SAB/seleksi jika tidak mengklik kartu item ATAU jika tidak sedang menutup menu lain
+        // 3. Selalu tutup semua popup menu saat area kosong diklik
+        closeAllMenus(); 
+        
+        // 4. Jika yang diklik benar-benar area kosong (BUKAN file/folder)
         if (!e.target.closest('.item-card')) {
+            
+            // HANYA bersihkan seleksi (hilangkan Action Bar) jika sebelumnya TIDAK ADA menu yang terbuka.
+            // (Artinya: Jika tadi ada menu terbuka, klik ini hanya berfungsi menutup menu saja).
             if (!isMenuOpen) {
                 if (typeof window.clearSelection === 'function') {
-                    window.clearSelection();
+                    window.clearSelection(); 
                 }
             }
         }
     });
-} // Akhir dari fungsi initAllContextMenus
-
+} // <--- AKHIR FUNGSI initAllContextMenus
 
 // ======================================================
-// 9. LOGIKA KALKULASI & UI STORAGE (PENYIMPANAN)
+// 8. STORAGE LOGIC & MODAL
 // ======================================================
-
-/**
- * Memformat output byte penyimpanan (Bytes, MB, GB, dst)
- */
 function formatSize(bytes) {
     if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-/**
- * Menyiapkan tooltip hover yang menampilkan detail bar kapasitas
- */
 function initStorageTooltip() {
     const segments = document.querySelectorAll('.bar-segment');
     const tooltip = el('customTooltip');
@@ -1322,325 +973,150 @@ function initStorageTooltip() {
 
     segments.forEach(seg => {
         seg.addEventListener('mouseenter', (e) => {
-            const cat = e.target.getAttribute('data-category');
-            const size = e.target.getAttribute('data-size');
+            const cat = e.target.getAttribute('data-category'); const size = e.target.getAttribute('data-size');
             const formattedSize = formatSize(parseInt(size || 0));
 
-            ttHeader.innerText = cat || "LAINNYA";
-            ttSize.innerText = formattedSize;
-            
+            ttHeader.innerText = cat || "LAINNYA"; ttSize.innerText = formattedSize;
             if (cat === 'GAMBAR') ttDesc.innerText = "Foto dan gambar yang tersimpan.";
             else if (cat === 'VIDEO') ttDesc.innerText = "Video dan rekaman yang tersimpan.";
             else if (cat === 'DOKUMEN') ttDesc.innerText = "Dokumen PDF, Word, Excel.";
             else if (cat === 'TERSEDIA') ttDesc.innerText = "Sisa penyimpanan yang tersedia.";
             else ttDesc.innerText = "File lain yang tidak dikategorikan.";
-            
             tooltip.classList.remove('hidden');
         });
 
-        seg.addEventListener('mousemove', (e) => {
-            tooltip.style.left = `${e.clientX}px`;
-            tooltip.style.top = `${e.clientY - 15}px`;
-        });
-        
-        seg.addEventListener('mouseleave', () => {
-            tooltip.classList.add('hidden');
-        });
+        seg.addEventListener('mousemove', (e) => { tooltip.style.left = `${e.clientX}px`; tooltip.style.top = `${e.clientY - 15}px`; });
+        seg.addEventListener('mouseleave', () => { tooltip.classList.add('hidden'); });
     });
 }
 
-/**
- * Membuka halaman penyimpanan spesifik
- */
 window.openStoragePage = async () => {
     await calculateStorage();
-    window.closeModal('storageModal');
-    window.nav('storagePage');
+    window.closeModal('storageModal'); window.nav('storagePage');
 
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // Batas Kuota (2 GB)
-
+    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; 
+    
     const percentUsed = Math.min((totalBytes / limitBytes) * 100, 100).toFixed(0);
     el('pageStoragePercent').innerText = `Ruang penyimpanan ${percentUsed}% penuh`;
     el('pageStorageUsedText').innerText = `${formatSize(totalBytes)} dari 2 GB`;
 
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
+    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100;
+    const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100;
     const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
 
-    const barImg = el('pageBarImages');
-    const barVid = el('pageBarVideos');
-    const barDoc = el('pageBarDocs');
-    const barOth = el('pageBarOthers');
-    const barFree = el('pageBarFree');
+    const barImg = el('pageBarImages'); const barVid = el('pageBarVideos'); const barDoc = el('pageBarDocs'); const barOth = el('pageBarOthers'); const barFree = el('pageBarFree');
 
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
+    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
 
-    // Pasang metadata untuk tooltip hover
     barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
     barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
     barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
     barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
     barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
 
-    el('pageValImages').innerText = formatSize(storageDetail.images);
-    el('pageValVideos').innerText = formatSize(storageDetail.videos);
-    el('pageValDocs').innerText = formatSize(storageDetail.docs);
-    el('pageValOthers').innerText = formatSize(storageDetail.others);
+    el('pageValImages').innerText = formatSize(storageDetail.images); el('pageValVideos').innerText = formatSize(storageDetail.videos);
+    el('pageValDocs').innerText = formatSize(storageDetail.docs); el('pageValOthers').innerText = formatSize(storageDetail.others);
     el('pageValFree').innerText = formatSize(limitBytes - totalBytes);
-    
     initStorageTooltip();
 };
 
 window.closeStoragePage = () => { window.nav('dashboardPage'); };
 
-/**
- * Membuka Modal Informasi Storage Cepat
- */
 window.openStorageModal = async () => {
     closeAllMenus();
     await calculateStorage();
-    
-    const totalBytes = storageDetail.total || 0;
-    const limitBytes = 2 * 1024 * 1024 * 1024; // 2 GB Kuota limit
+    const totalBytes = storageDetail.total || 0; const limitBytes = 2 * 1024 * 1024 * 1024; 
 
     el('storageBigText').innerText = formatSize(totalBytes);
-    
-    const pctImages = (storageDetail.images / limitBytes) * 100;
-    const pctVideos = (storageDetail.videos / limitBytes) * 100;
-    const pctDocs = (storageDetail.docs / limitBytes) * 100;
-    const pctOthers = (storageDetail.others / limitBytes) * 100;
+    const pctImages = (storageDetail.images / limitBytes) * 100; const pctVideos = (storageDetail.videos / limitBytes) * 100;
+    const pctDocs = (storageDetail.docs / limitBytes) * 100; const pctOthers = (storageDetail.others / limitBytes) * 100;
     const pctFree = 100 - (pctImages + pctVideos + pctDocs + pctOthers);
 
-    const barImg = el('barImages');
-    const barVid = el('barVideos');
-    const barDoc = el('barDocs');
-    const barOth = el('barOthers');
-    const barFree = el('barFree');
+    const barImg = el('barImages'); const barVid = el('barVideos'); const barDoc = el('barDocs'); const barOth = el('barOthers'); const barFree = el('barFree');
 
-    barImg.style.width = `${pctImages}%`;
-    barVid.style.width = `${pctVideos}%`;
-    barDoc.style.width = `${pctDocs}%`;
-    barOth.style.width = `${pctOthers}%`;
-    barFree.style.width = `${pctFree}%`;
+    barImg.style.width = `${pctImages}%`; barVid.style.width = `${pctVideos}%`; barDoc.style.width = `${pctDocs}%`; barOth.style.width = `${pctOthers}%`; barFree.style.width = `${pctFree}%`;
 
-    // Metadata Modal Tooltip
     barImg.setAttribute('data-category', 'GAMBAR'); barImg.setAttribute('data-size', storageDetail.images);
     barVid.setAttribute('data-category', 'VIDEO'); barVid.setAttribute('data-size', storageDetail.videos);
     barDoc.setAttribute('data-category', 'DOKUMEN'); barDoc.setAttribute('data-size', storageDetail.docs);
     barOth.setAttribute('data-category', 'LAINNYA'); barOth.setAttribute('data-size', storageDetail.others);
     barFree.setAttribute('data-category', 'TERSEDIA'); barFree.setAttribute('data-size', limitBytes - totalBytes);
 
-    el('valImages').innerText = formatSize(storageDetail.images);
-    el('valVideos').innerText = formatSize(storageDetail.videos);
-    el('valDocs').innerText = formatSize(storageDetail.docs);
-    el('valOthers').innerText = formatSize(storageDetail.others);
+    el('valImages').innerText = formatSize(storageDetail.images); el('valVideos').innerText = formatSize(storageDetail.videos);
+    el('valDocs').innerText = formatSize(storageDetail.docs); el('valOthers').innerText = formatSize(storageDetail.others);
 
     const modalBox = el('storageModal').querySelector('.modal-box');
-    modalBox.classList.remove('animate-open');
-    void modalBox.offsetWidth; // Memicu reflow layout DOM
-    modalBox.classList.add('animate-open');
+    modalBox.classList.remove('animate-open'); void modalBox.offsetWidth; modalBox.classList.add('animate-open');
     window.openModal('storageModal');
 };
 
-/**
- * Kalkulator Storage Berbasis Caching (Untuk meminimalisir API request)
- */
+// PERBAIKAN: Fungsi Cache Storage untuk Menghindari Request Berlebihan
 async function calculateStorage() {
     if (!currentUser) return;
     try {
         const cachedStorage = sessionStorage.getItem('storageDetail');
-        
-        // Memaksa kalkulasi ulang (force calculate) saat item ditambah/dihapus
         if (cachedStorage && !window.forceCalculateStorage) {
             storageDetail = JSON.parse(cachedStorage);
             updateStorageUI();
             return;
         }
 
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [
-            Appwrite.Query.equal('owner', currentUser.$id),
-            Appwrite.Query.equal('type', 'file')
-        ]);
-
-        storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 };
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, [ Appwrite.Query.equal('owner', currentUser.$id), Appwrite.Query.equal('type', 'file') ]);
+        
+        storageDetail = { images: 0, videos: 0, docs: 0, others: 0, total: 0 }; const limit = 2 * 1024 * 1024 * 1024; 
 
         res.documents.forEach(doc => {
-            const size = doc.size || 0;
-            const name = doc.name.toLowerCase();
-            storageDetail.total += size;
-
-            // Klasifikasi berdasarkan ekstensi
-            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp|tiff|tif|heif|heic|raw|ico)$/)) {
-                storageDetail.images += size;
-            } else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm|3gp|mpg|mpeg|avchd|m2ts)$/)) {
-                storageDetail.videos += size;
-            } else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv|odt|ods|odp)$/)) {
-                storageDetail.docs += size;
-            } else {
-                storageDetail.others += size;
-            }
+            const size = doc.size || 0; const name = doc.name.toLowerCase(); storageDetail.total += size;
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|jfif|svg|bmp|tiff|tif|heif|heic|raw|ico)$/)) storageDetail.images += size;
+            else if (name.match(/\.(mp4|mkv|mov|avi|wmv|flv|webm|3gp|mpg|mpeg|avchd|m2ts)$/)) storageDetail.videos += size;
+            else if (name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|csv|odt|ods|odp)$/)) storageDetail.docs += size;
+            else storageDetail.others += size;
         });
 
         sessionStorage.setItem('storageDetail', JSON.stringify(storageDetail));
         window.forceCalculateStorage = false;
         updateStorageUI();
-    } catch (e) {
-        console.error("Gagal hitung storage:", e);
-    }
+    } catch (e) { console.error("Gagal hitung storage:", e); }
 }
 
-/**
- * Menerapkan data storage terbaru ke Sidebar UI
- */
 function updateStorageUI() {
-    const limit = 2 * 1024 * 1024 * 1024; // 2 GB
-    
-    if (el('storageUsed')) el('storageUsed').innerText = formatSize(storageDetail.total);
-    
+    const limit = 2 * 1024 * 1024 * 1024;
+    if(el('storageUsed')) el('storageUsed').innerText = formatSize(storageDetail.total);
     const totalPct = Math.min((storageDetail.total / limit) * 100, 100);
-    
-    if (el('storageBar')) {
+    if(el('storageBar')) {
         el('storageBar').style.width = `${totalPct}%`;
-        
-        // Menampilkan bar warna merah apabila kapasitas sudah kritis
-        if (totalPct > 90) {
-            el('storageBar').style.backgroundColor = '#ef4444';
-        } else {
-            el('storageBar').style.backgroundColor = '';
-        }
+        if(totalPct > 90) el('storageBar').style.backgroundColor = '#ef4444'; else el('storageBar').style.backgroundColor = '';
     }
 }
 
-// ------------------------------------------------------
-// ACTION METODE (Pembuatan, Modifikasi & Penghapusan Folder/File)
-// ------------------------------------------------------
-window.openModal = (id) => {
-    document.getElementById(id).classList.remove('hidden');
-    // Memfokuskan input langsung jika membuka modal folder
-    if (id === 'folderModal') {
-        setTimeout(() => document.getElementById('newFolderName').focus(), 100);
-    }
-};
-
+window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); if(id==='folderModal') setTimeout(()=>document.getElementById('newFolderName').focus(),100); };
 window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 
-window.createFolder = () => {
-    closeAllMenus();
-    window.openModal('folderModal');
+// MENGUBAH BARIS INI: Tambahkan closeAllMenus() agar dropdown tertutup
+window.createFolder = () => { 
+    closeAllMenus(); 
+    window.openModal('folderModal'); 
 };
 
 window.submitCreateFolder = async () => {
-    const name = document.getElementById('newFolderName').value.trim();
-    if (!name) return;
-    
-    closeModal('folderModal');
-    toggleLoading(true);
-    
-    try {
-        await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-            name,
-            type: 'folder',
-            parentId: currentFolderId,
-            owner: currentUser.$id,
-            size: 0,
-            starred: false,
-            trashed: false
-        });
-        
-        loadFiles(currentFolderId);
-        document.getElementById('newFolderName').value = '';
-    } catch (e) {
-        alert(e.message);
-    } finally {
-        toggleLoading(false);
-    }
+    const name = document.getElementById('newFolderName').value.trim(); if (!name) return; closeModal('folderModal'); toggleLoading(true);
+    try { await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { name, type: 'folder', parentId: currentFolderId, owner: currentUser.$id, size: 0, starred: false, trashed: false }); loadFiles(currentFolderId); document.getElementById('newFolderName').value = ''; } catch (e) { alert(e.message); } finally { toggleLoading(false); }
 };
 
-window.toggleStarItem = async () => {
-    try {
-        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred });
-        loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
-        closeAllMenus();
-    } catch (e) {}
-};
-
-window.moveItemToTrash = async () => {
-    try {
-        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true });
-        window.forceCalculateStorage = true;
-        loadFiles(currentViewMode === 'root' ? currentFolderId : currentViewMode);
-        calculateStorage();
-        closeAllMenus();
-    } catch (e) {}
-};
-
-window.restoreFromTrash = async () => {
-    try {
-        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false });
-        window.forceCalculateStorage = true;
-        loadFiles('trash');
-        calculateStorage();
-        closeAllMenus();
-    } catch (e) {}
-};
-
-window.deleteItemPermanently = async () => {
-    if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
-    toggleLoading(true, "Menghapus...");
-    
-    try {
-        if (selectedItem.type === 'file') {
-            await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId);
-        }
-        await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id);
-        
-        window.forceCalculateStorage = true;
-        loadFiles('trash');
-        calculateStorage();
-        closeAllMenus();
-    } catch (e) {} finally {
-        toggleLoading(false);
-    }
-};
-
-window.openCurrentItem = () => {
-    if (selectedItem) {
-        selectedItem.type === 'folder' ? openFolder(selectedItem.$id, selectedItem.name) : openPreview(selectedItem);
-    }
-    closeAllMenus();
-};
-
-window.downloadCurrentItem = () => {
-    if (selectedItem && selectedItem.type !== 'folder') {
-        window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank');
-    }
-    closeAllMenus();
-};
-
-window.renameCurrentItem = async () => {
-    const newName = prompt("Nama baru:", selectedItem.name);
-    if (newName) {
-        await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { name: newName });
-        loadFiles(currentFolderId);
-    }
-    closeAllMenus();
-};
-
+window.toggleStarItem = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { starred: !selectedItem.starred }); loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); closeAllMenus(); } catch(e){} };
+window.moveItemToTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: true }); window.forceCalculateStorage = true; loadFiles(currentViewMode==='root'?currentFolderId:currentViewMode); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.restoreFromTrash = async () => { try { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, { trashed: false }); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} };
+window.deleteItemPermanently = async () => { if(!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return; toggleLoading(true, "Menghapus..."); try { if(selectedItem.type==='file') await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId); await databases.deleteDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id); window.forceCalculateStorage = true; loadFiles('trash'); calculateStorage(); closeAllMenus(); } catch(e){} finally { toggleLoading(false); }};
+window.openCurrentItem = () => { if(selectedItem) selectedItem.type==='folder' ? openFolder(selectedItem.$id, selectedItem.name) : openPreview(selectedItem); closeAllMenus(); };
+window.downloadCurrentItem = () => { if(selectedItem && selectedItem.type!=='folder') window.open(storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId), '_blank'); closeAllMenus(); };
+window.renameCurrentItem = async () => { const newName = prompt("Nama baru:", selectedItem.name); if(newName) { await databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, selectedItem.$id, {name: newName}); loadFiles(currentFolderId); } closeAllMenus(); };
 
 // =========================================================================
-// 10. ENGINE UPLOAD (DRAG & DROP BERURUTAN DAN PEMBACAAN STRUKTUR FOLDER)
+// MESIN UPLOAD (BERURUTAN/ANTI-GAGAL) & STRUKTUR FOLDER ASLI
 // =========================================================================
-let selectedUploadFiles = [];
-let uploadMode = 'file';
+let selectedUploadFiles = []; 
+let uploadMode = 'file'; 
 
-// Setup Modal Inisialisasi DOM Untuk Drag & Drop
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const dropZone = document.getElementById('dropZone');
@@ -1653,23 +1129,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="file" id="folderInputHidden" hidden webkitdirectory directory multiple>
                 </div>
             `;
-            initDragAndDrop();
+            initDragAndDrop(); 
         }
     }, 500);
 });
 
-/**
- * Pemicu Tampilan Upload (Bergantung pada mode File/Folder)
- */
-window.triggerUploadModal = (mode = 'file') => {
-    closeAllMenus();
-    resetUploadUI();
-    uploadMode = mode;
+window.triggerUploadModal = (mode = 'file') => { 
+    closeAllMenus(); // <--- TAMBAHKAN BARIS INI DI SINI
     
+    resetUploadUI(); 
+    uploadMode = mode;
     const dropZone = document.getElementById('dropZone');
     const folderInput = document.getElementById('folderInputHidden');
     const fileInput = document.getElementById('fileInputHidden');
-
+    
     if (mode === 'folder') {
         document.getElementById('uploadModalTitle').innerText = "Upload Folder";
         document.getElementById('uploadModalDesc').innerText = "Klik untuk pilih folder dari perangkat Anda";
@@ -1679,55 +1152,43 @@ window.triggerUploadModal = (mode = 'file') => {
         document.getElementById('uploadModalDesc').innerText = "Seret file ke sini atau klik";
         if (dropZone && fileInput) dropZone.onclick = () => fileInput.click();
     }
-
-    window.openModal('uploadModal');
+    
+    window.openModal('uploadModal'); 
 };
 
-/**
- * Reset UI Upload setelah pemrosesan selesai
- */
-function resetUploadUI() {
-    selectedUploadFiles = [];
+function resetUploadUI() { 
+    selectedUploadFiles = []; 
     const fileContainer = document.getElementById('fileInfoContainer');
-    if (fileContainer) fileContainer.classList.add('hidden');
-
+    if(fileContainer) fileContainer.classList.add('hidden'); 
+    
     const fileInput = document.getElementById('fileInputHidden');
     const folderInput = document.getElementById('folderInputHidden');
-    
-    if (fileInput) fileInput.value = '';
-    if (folderInput) folderInput.value = '';
+    if (fileInput) fileInput.value = ''; 
+    if (folderInput) folderInput.value = ''; 
 }
 
-/**
- * Membaca data item ke state seleksi dan memperbarui Teks UI
- */
-function handleFileSelect(files) {
+function handleFileSelect(files) { 
     if (!files || files.length === 0) return;
+    selectedUploadFiles = Array.from(files); 
     
-    selectedUploadFiles = Array.from(files);
-
     const realFiles = selectedUploadFiles.filter(f => f.name !== '.emptyFolder');
     const folderCount = selectedUploadFiles.filter(f => f.name === '.emptyFolder').length;
-
+    
     const infoText = document.getElementById('fileInfoText');
     if (realFiles.length === 1 && folderCount === 0) {
-        infoText.innerText = `Terpilih: ${realFiles[0].name}`;
+        infoText.innerText = `Terpilih: ${realFiles[0].name}`; 
     } else {
         let msg = `Terpilih: `;
         if (realFiles.length > 0) msg += `${realFiles.length} file `;
         if (folderCount > 0) msg += `(${folderCount} folder kosong)`;
         infoText.innerText = msg;
     }
-    
-    document.getElementById('fileInfoContainer').classList.remove('hidden');
+    document.getElementById('fileInfoContainer').classList.remove('hidden'); 
 }
 
-/**
- * Mesin rekursif untuk membaca seluruh hierarki folder di Drop Zone
- */
+// FUNGSI PINTAR MEMBACA STRUKTUR FOLDER DARI DRAG & DROP
 async function traverseFileTree(item, path, allFiles) {
     path = path || "";
-    
     if (item.isFile) {
         return new Promise((resolve) => {
             item.file((file) => {
@@ -1741,7 +1202,6 @@ async function traverseFileTree(item, path, allFiles) {
         return new Promise((resolve) => {
             dirReader.readEntries(async (entries) => {
                 if (entries.length === 0) {
-                    // Buat representasi file dummy jika foldernya kosong
                     const emptyFile = new File([""], ".emptyFolder", { type: "text/plain" });
                     emptyFile.customPath = path + item.name + "/.emptyFolder";
                     allFiles.push(emptyFile);
@@ -1756,32 +1216,22 @@ async function traverseFileTree(item, path, allFiles) {
     }
 }
 
-/**
- * Inisialisasi API Drag & Drop File
- */
 function initDragAndDrop() {
-    const zone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInputHidden');
-    const folderInput = document.getElementById('folderInputHidden');
-
+    const zone = document.getElementById('dropZone'); 
+    const fileInput = document.getElementById('fileInputHidden'); 
+    const folderInput = document.getElementById('folderInputHidden'); 
+    
     if (!zone) return;
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('active'); });
+    zone.addEventListener('dragleave', () => { zone.classList.remove('active'); }); 
     
-    zone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        zone.classList.add('active');
-    });
-    
-    zone.addEventListener('dragleave', () => {
-        zone.classList.remove('active');
-    });
-
-    zone.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        zone.classList.remove('active');
-
+    zone.addEventListener('drop', async (e) => { 
+        e.preventDefault(); 
+        zone.classList.remove('active'); 
+        
         let allFiles = [];
         let items = e.dataTransfer.items;
-
+        
         if (items) {
             toggleLoading(true, "Membaca struktur folder...");
             for (let i = 0; i < items.length; i++) {
@@ -1792,62 +1242,49 @@ function initDragAndDrop() {
             }
             toggleLoading(false);
         }
-
+        
         if (allFiles.length > 0) {
             handleFileSelect(allFiles);
         } else {
             alert("Sistem tidak mendeteksi file yang dapat diolah.");
         }
     });
-
-    if (fileInput) fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) handleFileSelect(e.target.files);
-    });
-
-    if (folderInput) folderInput.addEventListener('change', (e) => {
+    
+    if(fileInput) fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files); });
+    
+    if(folderInput) folderInput.addEventListener('change', (e) => { 
         if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files);
+            handleFileSelect(e.target.files); 
         } else {
             alert("Peringatan Browser: Browser tidak mengizinkan unggah folder kosong melalui tombol klik. \n\nSolusi: Gunakan fitur Seret dan Lepas (Drag & Drop) kotak di atas untuk mengunggah folder kosong.");
         }
     });
 }
 
-/**
- * Eksekusi Unggah Berurutan ke Appwrite Storage & Database
- */
 window.submitUploadFile = async () => {
-    if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!");
-    
-    closeModal('uploadModal');
+    if (selectedUploadFiles.length === 0) return alert("Pilih item terlebih dahulu!"); 
+    closeModal('uploadModal'); 
     toggleLoading(true, `Memulai pemrosesan...`);
-
+    
     try {
-        let folderCache = { [currentFolderId]: currentFolderId };
-
-        // Helper untuk memetakan dan membuat tree folder Appwrite Database
+        let folderCache = { [currentFolderId]: currentFolderId }; 
+        
         const ensureFolderExists = async (pathStr) => {
             if (folderCache[pathStr]) return folderCache[pathStr];
             let parts = pathStr.split('/');
             let currentPath = '';
             let parentId = currentFolderId;
-
+            
             for (let part of parts) {
                 if (!part) continue;
                 currentPath = currentPath ? `${currentPath}/${part}` : part;
-
+                
                 if (folderCache[currentPath]) {
                     parentId = folderCache[currentPath];
                 } else {
                     const newFolderId = Appwrite.ID.unique();
-                    await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, newFolderId, {
-                        name: part,
-                        type: 'folder',
-                        parentId: parentId,
-                        owner: currentUser.$id,
-                        size: 0,
-                        starred: false,
-                        trashed: false
+                    await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, newFolderId, { 
+                        name: part, type: 'folder', parentId: parentId, owner: currentUser.$id, size: 0, starred: false, trashed: false 
                     });
                     folderCache[currentPath] = newFolderId;
                     parentId = newFolderId;
@@ -1858,125 +1295,101 @@ window.submitUploadFile = async () => {
 
         const uploadQueue = [];
         let foldersCreated = 0;
-
-        // Siapkan Queue / Antrean Eksekusi Unggah
+        
         for (const file of selectedUploadFiles) {
             let targetParentId = currentFolderId;
             const fullPath = file.customPath || file.webkitRelativePath;
-
+            
             if (fullPath) {
                 const pathParts = fullPath.split('/');
-                pathParts.pop(); // Hapus nama file dari bagian path
+                pathParts.pop(); 
                 if (pathParts.length > 0) {
                     targetParentId = await ensureFolderExists(pathParts.join('/'));
                     foldersCreated++;
                 }
             }
-
+            
             if (file.name !== '.emptyFolder') {
                 uploadQueue.push({ fileObj: file, parentId: targetParentId });
             }
         }
 
-        // Loop melalui file fisik yang perlu diproses secara sequential
         for (let i = 0; i < uploadQueue.length; i++) {
             const item = uploadQueue[i];
             toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
-
+            
             const up = await storage.createFile(CONFIG.BUCKET_ID, Appwrite.ID.unique(), item.fileObj);
             const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
-
-            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
-                name: item.fileObj.name,
-                type: 'file',
-                parentId: item.parentId,
-                owner: currentUser.$id,
-                url: viewUrl,
-                fileId: up.$id,
-                size: item.fileObj.size,
-                starred: false,
-                trashed: false
+            
+            await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), { 
+                name: item.fileObj.name, type: 'file', parentId: item.parentId, owner: currentUser.$id, 
+                url: viewUrl, fileId: up.$id, size: item.fileObj.size, starred: false, trashed: false 
             });
         }
-
-        resetUploadUI();
+        
+        resetUploadUI(); 
         window.forceCalculateStorage = true;
-        loadFiles(currentFolderId);
+        loadFiles(currentFolderId); 
         calculateStorage();
-
+        
         if (uploadQueue.length === 0 && foldersCreated > 0) {
             toggleLoading(false);
             setTimeout(() => alert("Struktur folder kosong berhasil dibuat!"), 500);
         }
-
-    } catch (e) {
-        alert("Terjadi kesalahan saat mengunggah: " + e.message);
-    } finally {
-        toggleLoading(false);
+        
+    } catch (e) { 
+        alert("Terjadi kesalahan saat mengunggah: " + e.message); 
+    } finally { 
+        toggleLoading(false); 
     }
 };
 
-// Listener untuk enter saat membuat folder
 const folderInputModal = document.getElementById('newFolderName');
-if (folderInputModal) {
+if(folderInputModal) {
     folderInputModal.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') submitCreateFolder();
     });
 }
 
-// Pintasan ke Integrasi Google Docs
+// INTEGRASI GOOGLE DOCS YANG SEMPAT TERHAPUS
 window.openGoogleDoc = (type) => {
     closeAllMenus();
     let url = '';
-    
     if (type === 'document') url = 'https://docs.google.com/document/create';
     else if (type === 'spreadsheet') url = 'https://docs.google.com/spreadsheets/create';
     else if (type === 'presentation') url = 'https://docs.google.com/presentation/create';
     else if (type === 'form') url = 'https://docs.google.com/forms/create';
-
+    
     if (url) window.open(url, '_blank');
 };
 
-
-// ======================================================
-// 11. MUAT DATABASE DAN RENDER (FILE MANAGER)
-// ======================================================
-
-/**
- * Menarik metadata isi Folder/Dashboard pengguna (Appwrite Queries)
- */
-async function loadFiles(param) {
-    if (!currentUser) return;
-
-    // Bersihkan status seleksi saat mengubah direktori/tampilan UI
-    if (typeof window.clearSelection === 'function') window.clearSelection();
-
-    const grid = document.getElementById('fileGrid');
-    if (grid) grid.innerHTML = '';
-
-    if (typeof updateHeaderUI === 'function') {
-        updateHeaderUI();
-    }
-
-    // Bangun Filter Query Appwrite (Base: berdasarkan kepemilikan)
-    let queries = [Appwrite.Query.equal('owner', currentUser.$id)];
+// LOADFILES (PENGAMAN AGAR BISA LOGIN)
+async function loadFiles(param) { 
+    if (!currentUser) return; 
     
-    if (param === 'recent') {
-        queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false));
-    } else if (param === 'starred') {
-        queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false));
-    } else if (param === 'trash') {
-        queries.push(Appwrite.Query.equal('trashed', true));
-    } else {
-        if (typeof param === 'string' && !['root', 'recent', 'starred', 'trash'].includes(param)) {
-            currentFolderId = param;
-        }
-        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false));
+    // TAMBAHKAN BARIS INI: Bersihkan seleksi saat pindah layar
+    if (typeof window.clearSelection === 'function') window.clearSelection();
+    
+    const grid = document.getElementById('fileGrid'); 
+    // ... sisa kode loadFiles ... 
+    if (grid) grid.innerHTML = ''; 
+    
+    if (typeof updateHeaderUI === 'function') {
+        updateHeaderUI(); 
     }
-
-    try {
-        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries);
-        if (typeof updatePreviewList === 'function') updatePreviewList(res.documents);
+    
+    let queries = [Appwrite.Query.equal('owner', currentUser.$id)]; 
+    if (param === 'recent') queries.push(Appwrite.Query.orderDesc('$createdAt'), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'starred') queries.push(Appwrite.Query.equal('starred', true), Appwrite.Query.equal('trashed', false)); 
+    else if (param === 'trash') queries.push(Appwrite.Query.equal('trashed', true)); 
+    else { 
+        if (typeof param === 'string' && !['root','recent','starred','trash'].includes(param)) currentFolderId = param; 
+        queries.push(Appwrite.Query.equal('parentId', currentFolderId), Appwrite.Query.equal('trashed', false)); 
+    } 
+    
+    try { 
+        const res = await databases.listDocuments(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, queries); 
+        if (typeof updatePreviewList === 'function') updatePreviewList(res.documents); 
 
         if (res.documents.length === 0) {
             if (grid) grid.innerHTML = `
@@ -1986,37 +1399,30 @@ async function loadFiles(param) {
                         <div class="mac-folder-front"></div>
                     </div>
                     <p>Folder Kosong</p>
-                </div>`;
+                </div>`; 
         } else {
             res.documents.forEach(doc => {
                 if (typeof renderItem === 'function') renderItem(doc);
-            });
+            }); 
         }
-    } catch (e) {
-        console.error(e);
-    }
+    } catch (e) { console.error(e); } 
 }
 
-/**
- * Memperbarui Teks Judul dan Button Back
- */
-function updateHeaderUI() {
-    const container = document.querySelector('.breadcrumb-area');
+// HEADER UI - MENGGUNAKAN BAHASA INGGRIS
+function updateHeaderUI() { 
+    const container = document.querySelector('.breadcrumb-area'); 
     if (!container) return;
-
-    const isRoot = currentFolderId === 'root' && currentViewMode === 'root';
-
-    if (isRoot) {
-        const h = new Date().getHours();
-        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
-        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`;
-    } else {
+    
+    const isRoot = currentFolderId === 'root' && currentViewMode === 'root'; 
+    
+    if (isRoot) { 
+        const h = new Date().getHours(); 
+        const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night"; 
+        container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`; 
+    } else { 
         let backText = "Drive";
-        if (folderHistory.length > 1) { 
-            backText = folderHistory[folderHistory.length - 2].name; 
-        } else if (currentViewMode !== 'root') { 
-            backText = "Drive"; 
-        }
+        if (folderHistory.length > 1) { backText = folderHistory[folderHistory.length - 2].name; } 
+        else if (currentViewMode !== 'root') { backText = "Drive"; }
 
         container.innerHTML = `
             <div class="back-nav-container">
@@ -2024,68 +1430,53 @@ function updateHeaderUI() {
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
                 </button>
                 <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
-            </div>`;
-    }
+            </div>`; 
+    } 
 }
 
-/**
- * Mata untuk menyembunyikan/menampilkan form sandi
- */
-window.togglePass = (id, icon) => {
-    const input = document.getElementById(id);
+window.togglePass = (id, icon) => { 
+    const input = document.getElementById(id); 
     if (!input) return;
-    
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-    } else {
-        input.type = "password";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-    }
+    if (input.type === "password") { 
+        input.type = "text"; 
+        icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); 
+    } else { 
+        input.type = "password"; 
+        icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); 
+    } 
 };
 
-
 // ======================================================
-// 12. LOGIKA PRATINJAU FILE MULTIMEDIA (AUDIO, VIDEO, GAMBAR, DOKUMEN)
+// 9. LOGIKA PRATINJAU FILE (AUDIO, VIDEO, GAMBAR, DLL)
 // ======================================================
 
 function getDisplayedDocuments() {
     const items = document.querySelectorAll('.item-card');
     let docs = [];
-    
     items.forEach(item => {
-        if (item.querySelector('.mac-folder-container')) return; // Lewati folder
+        if (item.querySelector('.mac-folder-container')) return;
         const nameEl = item.querySelector('.item-name');
         if (!nameEl) return;
         docs.push({ name: nameEl.innerText, element: item });
     });
-    
     return docs;
 }
 
-/**
- * Logika Modal Pratinjau Sentral 
- */
 window.openPreview = (doc) => {
-    currentPreviewDoc = doc;
+    currentPreviewDoc = doc; 
     const ext = doc.name.split('.').pop().toLowerCase();
-    
-    // Tarik URL langsung ke Appwrite Bucket
     const fileViewUrl = storage.getFileView(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileView(CONFIG.BUCKET_ID, doc.fileId);
     const fileDownloadUrl = storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId).href || storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
 
     el('previewFileName').innerText = doc.name;
 
-    // Persiapan Ikon Dinamis berdasarkan Kategori File
     let iconClass = "fa-file"; let iconColor = "#ffffff";
-    const pdfExt = ['pdf'];
-    const msOfficeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+    const pdfExt = ['pdf']; 
+    const msOfficeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']; 
     const otherDocs = ['csv', 'txt', 'rtf'];
-    const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico'];
+    const familiarImages = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'tiff', 'tif', 'heif', 'heic', 'raw', 'ico']; 
     const vidExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'wmv', 'flv', '3gp', 'mpg', 'mpeg', 'avchd', 'm2ts'];
-    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac', 'wma']; 
 
     if (pdfExt.includes(ext)) { iconClass = "fa-file-pdf"; iconColor = "#ea4335"; }
     else if (ext.includes('doc')) { iconClass = "fa-file-word"; iconColor = "#4285f4"; }
@@ -2100,35 +1491,30 @@ window.openPreview = (doc) => {
     iconEl.style.color = iconColor;
 
     const contentArea = el('previewContent');
-    contentArea.innerHTML = '<div class="spinner"></div>';
+    contentArea.innerHTML = '<div class="spinner"></div>'; 
 
-    // Buka Modal dengan transisi CSS
     const overlay = el('previewModal');
     overlay.classList.remove('hidden');
     setTimeout(() => overlay.classList.add('show-preview'), 10);
 
     let currentIndex = currentPreviewList.findIndex(d => d.$id === doc.$id);
-    if (currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; }
+    if(currentIndex === -1) { currentPreviewList = [doc]; currentIndex = 0; } 
 
-    // Evaluasi Tombol Navigasi Berikutnya/Sebelumnya (Kiri Kanan)
     const prevBtn = el('previewPrevBtn');
     const nextBtn = el('previewNextBtn');
-
-    if (currentPreviewList.length <= 1) {
+    
+    if(currentPreviewList.length <= 1) {
         prevBtn.classList.add('hidden'); nextBtn.classList.add('hidden');
     } else {
         currentIndex > 0 ? prevBtn.classList.remove('hidden') : prevBtn.classList.add('hidden');
         currentIndex < currentPreviewList.length - 1 ? nextBtn.classList.remove('hidden') : nextBtn.classList.add('hidden');
     }
 
-    // Eksekusi Logika Pratinjau Sesuai Tipe
     setTimeout(() => {
         if (familiarImages.includes(ext)) {
-            // Render Pratinjau Gambar Biasa
             contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
         } 
         else if (vidExts.includes(ext)) {
-            // Render Media Player Custom Kaca (Liquid Glass UI) untuk Video
             contentArea.innerHTML = `
                 <div class="apple-video-wrapper" id="vidContainer">
                     <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
@@ -2172,10 +1558,9 @@ window.openPreview = (doc) => {
                     </div>
                 </div>
             `;
-            setTimeout(initCustomVideoPlayer, 50);
+            setTimeout(initCustomVideoPlayer, 50); 
         } 
         else if (audioExts.includes(ext)) {
-            // Render Custom Player v2 untuk Audio (Mirip Apple UI)
             contentArea.innerHTML = `
                 <div class="apple-audio-player-v2">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
@@ -2220,11 +1605,9 @@ window.openPreview = (doc) => {
             setTimeout(initAppleAudioPlayer, 50);
         }
         else if (pdfExt.includes(ext)) {
-            // Gunakan Iframe Ikonik Browser untuk PDF
             contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
         } 
         else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-            // Gunakan penampil daring MS/Google Embed untuk dokumen korporat
             let viewerUrl = '';
             if (msOfficeExts.includes(ext)) {
                 viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
@@ -2234,7 +1617,6 @@ window.openPreview = (doc) => {
             contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${viewerUrl}"></iframe></div>`;
         } 
         else {
-            // Kategori Fallback - Berikan tawaran download jika tidak ada pratinjau yang didukung
             contentArea.innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
                     <i class="fa-solid ${iconClass}" style="font-size:4rem; margin-bottom:20px; color:rgba(255,255,255,0.3);"></i>
@@ -2243,15 +1625,15 @@ window.openPreview = (doc) => {
                 </div>
             `;
         }
-    }, 400); // Sinkronisasi transisi CSS
+    }, 400); 
 };
 
-// ------------------------------------------------------------------------------
-// FUNGSI INISIALISASI AUDIO PLAYER (APPLE LIQUID UI V2)
-// ------------------------------------------------------------------------------
+// ==============================================================================
+// FUNGSI INISIALISASI AUDIO PLAYER LIQUID GLASS v2
+// ==============================================================================
 function initAppleAudioPlayer() {
     const audio = el('customAudio');
-    audioInstance = audio;
+    audioInstance = audio; 
     const playPauseBtn = el('audioPlayPause');
     const prevBtn = el('audioPrevBtn');
     const nextBtn = el('audioNextBtn');
@@ -2264,7 +1646,6 @@ function initAppleAudioPlayer() {
     if (!audio) return;
     let isDraggingAudio = false;
 
-    // Helper Pembuat Format Waktu Menit:Detik
     const formatTime = (seconds) => {
         if (isNaN(seconds) || seconds < 0) return "0:00";
         const m = Math.floor(seconds / 60);
@@ -2272,12 +1653,11 @@ function initAppleAudioPlayer() {
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    // Sinkronisasi Waktu dan Bar
     audio.addEventListener('timeupdate', () => {
         if (!isDraggingAudio && !isNaN(audio.duration)) {
             const percent = (audio.currentTime / audio.duration) * 100;
             progressSlider.value = percent;
-            progressSlider.style.setProperty('--prog', percent + '%');
+            progressSlider.style.setProperty('--prog', percent + '%'); 
             currentTimeEl.innerText = formatTime(audio.currentTime);
             const timeRemaining = audio.duration - audio.currentTime;
             durationEl.innerText = `-${formatTime(timeRemaining)}`;
@@ -2289,26 +1669,24 @@ function initAppleAudioPlayer() {
         durationEl.innerText = `-${formatTime(audio.duration)}`;
     });
 
-    // Menarik SeekBar Audio
     progressSlider.addEventListener('input', (e) => {
         isDraggingAudio = true;
         const percent = parseFloat(e.target.value);
         progressSlider.style.setProperty('--prog', percent + '%');
-        if (!isNaN(audio.duration)) {
+        if(!isNaN(audio.duration)) {
             currentTimeEl.innerText = formatTime((percent / 100) * audio.duration);
         }
     });
 
     progressSlider.addEventListener('change', (e) => {
-        if (!isNaN(audio.duration)) {
+        if(!isNaN(audio.duration)) {
             audio.currentTime = (parseFloat(e.target.value) / 100) * audio.duration;
         }
         isDraggingAudio = false;
     });
 
-    // Mixer Volume
     if (volumeSlider) {
-        audio.volume = 1;
+        audio.volume = 1; 
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
             audio.volume = vol;
@@ -2316,7 +1694,6 @@ function initAppleAudioPlayer() {
         });
     }
 
-    // Eksekusi Play/Pause Toggle
     const togglePlay = () => {
         if (audio.paused) {
             audio.play();
@@ -2338,10 +1715,9 @@ function initAppleAudioPlayer() {
         coverArt.classList.remove('playing');
     });
 
-    // Logika Auto-Next (Perpindahan ke File Berikutnya)
     const triggerTrackChange = (direction) => {
         const displayedDocs = getDisplayedDocuments();
-        if (displayedDocs.length <= 1) return;
+        if (displayedDocs.length <= 1) return; 
 
         const currentIndex = displayedDocs.findIndex(d => d.name === currentPreviewDoc.name);
         if (currentIndex === -1) return;
@@ -2351,10 +1727,10 @@ function initAppleAudioPlayer() {
         if (nextIndex >= displayedDocs.length) nextIndex = 0;
 
         const nextDocName = displayedDocs[nextIndex].name;
-
+        
         displayedDocs.forEach(docObj => {
-            if (docObj.name === nextDocName && docObj.element) {
-                docObj.element.click();
+            if(docObj.name === nextDocName && docObj.element) {
+                docObj.element.click(); 
             }
         });
     };
@@ -2362,32 +1738,31 @@ function initAppleAudioPlayer() {
     audio.addEventListener('ended', () => {
         playPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         coverArt.classList.remove('playing');
-        triggerTrackChange(1); // Memicu Lagu Berikutnya
+        triggerTrackChange(1); 
     });
 
-    // Navigasi Double-tap Pintar
     function attachSmartNav(element, skipTime, navDir) {
-        if (!element) return;
+        if(!element) return;
         let timer = null;
         let clickCount = 0;
 
         element.addEventListener('click', (e) => {
             e.preventDefault();
             clickCount++;
-
+            
             element.classList.add('glow');
             setTimeout(() => element.classList.remove('glow'), 500);
 
             if (clickCount === 1) {
                 timer = setTimeout(() => {
-                    if (audio && !isNaN(audio.duration)) {
+                    if(audio && !isNaN(audio.duration)) {
                         let newTime = audio.currentTime + skipTime;
-                        if (newTime < 0) newTime = 0;
-                        if (newTime > audio.duration) newTime = audio.duration;
+                        if(newTime < 0) newTime = 0;
+                        if(newTime > audio.duration) newTime = audio.duration;
                         audio.currentTime = newTime;
                     }
                     clickCount = 0;
-                }, 280);
+                }, 280); 
             } else if (clickCount === 2) {
                 clearTimeout(timer);
                 triggerTrackChange(navDir);
@@ -2396,34 +1771,26 @@ function initAppleAudioPlayer() {
         });
     }
 
-    attachSmartNav(prevBtn, -10, -1);
-    attachSmartNav(nextBtn, 10, 1);
+    attachSmartNav(prevBtn, -10, -1); 
+    attachSmartNav(nextBtn, 10, 1); 
 }
 
-/**
- * Logika Navigasi Kiri & Kanan antar file pada Layar Pratinjau Terbuka
- */
 window.navigatePreview = (direction) => {
     if (!currentPreviewDoc) return;
     const currentIndex = currentPreviewList.findIndex(d => d.$id === currentPreviewDoc.$id);
     const newIndex = currentIndex + direction;
-
+    
     if (newIndex >= 0 && newIndex < currentPreviewList.length) {
-        // Matikan Video Jika Ada
         const video = el('customVideo');
-        if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
-
-        // Matikan Audio Jika Ada
-        if (audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
-
+        if(video) { video.pause(); video.removeAttribute('src'); video.load(); }
+        
+        if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
+        
         el('previewContent').innerHTML = '<div class="spinner"></div>';
-        openPreview(currentPreviewList[newIndex]); // Muat item selanjutnya
+        openPreview(currentPreviewList[newIndex]);
     }
 };
 
-/**
- * Inisialisasi Player Video Kustom
- */
 window.initCustomVideoPlayer = () => {
     const video = el('customVideo');
     const playPauseBtn = el('vidPlayPause');
@@ -2439,18 +1806,18 @@ window.initCustomVideoPlayer = () => {
     const vidContainer = el('vidContainer');
     const overlayVid = el('vidOverlay');
 
-    if (!video) return;
+    if(!video) return;
 
     const formatTime = (seconds) => {
-        if (isNaN(seconds)) return "0:00";
-        const m = Math.floor(Math.abs(seconds) / 60);
+        if(isNaN(seconds)) return "0:00";
+        const m = Math.floor(Math.abs(seconds) / 60); 
         const s = Math.floor(Math.abs(seconds) % 60);
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    video.addEventListener('loadedmetadata', () => {
+    video.addEventListener('loadedmetadata', () => { 
         timeDisplay.innerText = "0:00";
-        durationDisplay.innerText = `-${formatTime(video.duration)}`;
+        durationDisplay.innerText = `-${formatTime(video.duration)}`; 
     });
 
     video.addEventListener('timeupdate', () => {
@@ -2468,15 +1835,14 @@ window.initCustomVideoPlayer = () => {
     });
 
     const togglePlay = () => {
-        if (video.paused || video.ended) {
-            video.play();
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        } else {
-            video.pause();
-            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>';
+        if (video.paused || video.ended) { 
+            video.play(); 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>'; 
+        } else { 
+            video.pause(); 
+            playPauseBtn.innerHTML = '<i class="fa-solid fa-play" style="margin-left: 5px;"></i>'; 
         }
     };
-    
     playPauseBtn.addEventListener('click', togglePlay);
     video.addEventListener('click', togglePlay);
 
@@ -2490,12 +1856,12 @@ window.initCustomVideoPlayer = () => {
     });
 
     const updateMuteIcon = (vol) => {
-        if (vol === 0 || video.muted) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-        else if (vol < 0.5) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
+        if(vol === 0 || video.muted) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+        else if(vol < 0.5) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
         else muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
     };
 
-    if (volumeSlider) {
+    if(volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
             const vol = parseFloat(e.target.value);
             video.volume = vol;
@@ -2507,31 +1873,27 @@ window.initCustomVideoPlayer = () => {
 
     muteBtn.addEventListener('click', () => {
         video.muted = !video.muted;
-        if (video.muted) {
-            if (volumeSlider) { volumeSlider.value = 0; volumeSlider.style.setProperty('--vol', '0%'); }
+        if(video.muted) {
+            if(volumeSlider) { volumeSlider.value = 0; volumeSlider.style.setProperty('--vol', '0%'); }
         } else {
             const currentVol = video.volume > 0 ? video.volume : 1;
             video.volume = currentVol;
-            if (volumeSlider) { volumeSlider.value = currentVol; volumeSlider.style.setProperty('--vol', (currentVol * 100) + '%'); }
+            if(volumeSlider) { volumeSlider.value = currentVol; volumeSlider.style.setProperty('--vol', (currentVol * 100) + '%'); }
         }
         updateMuteIcon(video.muted ? 0 : video.volume);
     });
 
     fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            vidContainer.requestFullscreen().catch(err => {});
-        } else {
-            document.exitFullscreen();
-        }
+        if (!document.fullscreenElement) { vidContainer.requestFullscreen().catch(err => {}); }
+        else { document.exitFullscreen(); }
     });
 
-    // Menghilangkan Antarmuka saat Tidak Ada Interaksi (Fading)
     const resetHideTimeout = () => {
-        if (!overlayVid) return;
+        if(!overlayVid) return;
         overlayVid.style.opacity = '1';
         clearTimeout(hideOverlayTimeout);
         hideOverlayTimeout = setTimeout(() => {
-            if (!video.paused) overlayVid.style.opacity = '0';
+            if(!video.paused) overlayVid.style.opacity = '0';
         }, 2500);
     };
 
@@ -2539,33 +1901,28 @@ window.initCustomVideoPlayer = () => {
     vidContainer.addEventListener('touchstart', resetHideTimeout);
     vidContainer.addEventListener('click', resetHideTimeout);
     video.addEventListener('play', resetHideTimeout);
-    video.addEventListener('pause', () => {
-        overlayVid.style.opacity = '1';
-        clearTimeout(hideOverlayTimeout);
+    video.addEventListener('pause', () => { 
+        overlayVid.style.opacity = '1'; 
+        clearTimeout(hideOverlayTimeout); 
     });
 };
 
-/**
- * Menutup Modal Pratinjau secara Bersih (Memory-Leak safe)
- */
 window.closePreview = () => {
     const overlay = el('previewModal');
-
-    // Hentikan Video
+    
     const video = el('customVideo');
-    if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
-
-    // Hentikan Audio
-    if (audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
+    if(video) { video.pause(); video.removeAttribute('src'); video.load(); } 
+    
+    if(audioInstance) { audioInstance.pause(); audioInstance.removeAttribute('src'); audioInstance.load(); audioInstance = null; }
 
     overlay.classList.remove('show-preview');
-
+    
     setTimeout(() => {
         overlay.classList.add('hidden');
-        el('previewContent').innerHTML = '';
+        el('previewContent').innerHTML = ''; 
         currentPreviewDoc = null;
         clearTimeout(hideOverlayTimeout);
-    }, 350);
+    }, 350); 
 };
 
 window.downloadPreviewItem = () => {
@@ -2587,3 +1944,4 @@ window.openPreviewInNewTab = () => {
         closePreview();
     }
 };
+
