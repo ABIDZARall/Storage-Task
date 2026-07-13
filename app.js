@@ -767,6 +767,7 @@ function closeAllMenus() {
     });
 }
 
+// HANYA GUNAKAN KODE INI UNTUK closeAllMenus (TIDAK ADA KODE LAIN)
 function closeAllMenus() {
     document.querySelectorAll('.dropdown-content, .context-menu-modern, .context-menu-fixed, #dropdownNewMenu, #fileContextMenu').forEach(menu => {
         if(menu) {
@@ -780,6 +781,10 @@ function closeAllMenus() {
     const storageModal = document.getElementById('storageModal');
     if(storageModal) storageModal.classList.add('hidden');
 
+    // CATATAN: Kode penyembunyi "selectionActionBar" DIHAPUS dari sini.
+    // Selection Bar sekarang bebas dan tidak akan hilang jika area kosong diklik.
+}
+
     // ---> GANTI BAGIAN INI DI DALAM closeAllMenus() <---
     // MENGHILANGKAN TOP ACTION BAR SEKETIKA
     const sab = document.getElementById('selectionActionBar');
@@ -788,7 +793,6 @@ function closeAllMenus() {
         sab.classList.remove('show-bar');
     }
     document.querySelectorAll('.item-card').forEach(card => card.classList.remove('selected-item'));
-}
 
 function initAllContextMenus() {
     const tombolBaru = document.getElementById('newBtnMain'); 
