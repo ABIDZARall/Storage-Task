@@ -101,10 +101,10 @@ window.clearSelection = () => {
     updateSelectionUI();
 };
 
-// FITUR CTRL + A (PILIH SEMUA FILE)
+// FITUR CTRL + A (PILIH SEMUA FILE) DENGAN SEMPURNA
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-        // Cegah select all teks jika sedang mengetik di kotak pencarian
+        // Cegah Select All jika user sedang mengetik di kotak pencarian
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         
         e.preventDefault();
@@ -114,7 +114,7 @@ document.addEventListener('keydown', (e) => {
                 const id = card.getAttribute('data-id');
                 if (id) selectedFileIds.add(id);
             });
-            updateSelectionUI();
+            updateSelectionUI(); // Memunculkan SAB Otomatis
             closeAllMenus();
         }
     }
@@ -667,51 +667,23 @@ function renderItem(doc) {
     // 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
     div.setAttribute('data-id', doc.$id);
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
-    
-    // 2. KLIK KIRI SEKALI (PILIH ITEM & MUNCULKAN TOP BAR)
-    div.addEventListener('click', (e) => {
-        e.stopPropagation(); // MENCEGAH KLIK DIBACA OLEH AREA KOSONG
-        if(doc.trashed) return;
-        
-        if (e.ctrlKey || e.metaKey) {
-            // Multi-Select (Tahan Ctrl)
-            if (selectedFileIds.has(doc.$id)) {
-                selectedFileIds.delete(doc.$id);
-            } else {
-                selectedFileIds.add(doc.$id);
-                selectedItem = doc;
-            }
-        } else {
-            // Single Select
-            selectedFileIds.clear();
-            selectedFileIds.add(doc.$id);
-            selectedItem = doc;
-        }
-        
-        updateSelectionUI(); // Top Bar Muncul
-        closeAllMenus();     // Menu Konteks Tertutup
-    });
 
-    // 3. KLIK GANDA (BUKA FILE/FOLDER & HILANGKAN TOP BAR)
-    div.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        clearSelection(); // Hilangkan Top Bar
-        closeAllMenus();
-        if(!doc.trashed) { 
-            isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
-        }
-    });
+    // VARIABEL PELACAKAN SISTEM
+    let isTouch = false;
+    let longPressTriggered = false;
+    let touchTimer;
+    let isTouchMoved = false;
 
-    // 4. KLIK KANAN / TAHAN (PILIH ITEM + TOP BAR + MENU KONTEKS)
+    // 2. FUNGSI PEMICU MENU & TOP BAR
     const triggerFileContextMenu = (clientX, clientY) => {
         closeAllMenus(); 
         
-        // Jika file belum terpilih, pilih otomatis
+        // Pilih file otomatis jika belum terpilih
         if (!selectedFileIds.has(doc.$id)) {
             selectedFileIds.clear();
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
-            updateSelectionUI(); 
+            updateSelectionUI(); // Otomatis munculkan SAB
         }
         
         const menu = el('fileContextMenu');
@@ -729,23 +701,17 @@ function renderItem(doc) {
         if(el('ctxStarText')) el('ctxStarText').innerText = doc.starred ? "Hapus Bintang" : "Bintangi";
     };
 
-    // Pemicu Klik Kanan PC
-    div.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); 
-        e.stopPropagation(); // MENCEGAH MENU GLOBAL MUNCUL
-        triggerFileContextMenu(e.clientX, e.clientY);
-    });
-
-    // Pemicu Tahan/Long-Press Mobile
-    let touchTimer;
-    let isTouchMoved = false;
+    // 3. EVENT TOUCH (MOBILE)
     div.addEventListener('touchstart', (e) => {
+        isTouch = true;
         isTouchMoved = false;
+        longPressTriggered = false; // Reset status
         const touch = e.touches[0];
+        
         touchTimer = setTimeout(() => {
             if (!isTouchMoved) {
+                longPressTriggered = true; // Tandai bahwa ini adalah Long Press
                 if (e.cancelable) e.preventDefault();
-                e.stopPropagation();
                 triggerFileContextMenu(touch.clientX, touch.clientY);
                 if (navigator.vibrate) navigator.vibrate(50);
             }
@@ -753,8 +719,77 @@ function renderItem(doc) {
     }, { passive: false });
 
     div.addEventListener('touchmove', () => { isTouchMoved = true; clearTimeout(touchTimer); }, { passive: true });
-    div.addEventListener('touchend', () => clearTimeout(touchTimer));
+    div.addEventListener('touchend', (e) => { 
+        clearTimeout(touchTimer); 
+        // Cegah klik bayangan sistem HP setelah Long Press selesai
+        if (longPressTriggered && e.cancelable) {
+            e.preventDefault(); 
+        }
+    });
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
+
+    // 4. EVENT KLIK (KLIK KIRI DESKTOP / TAP SEKALI MOBILE)
+    div.addEventListener('click', (e) => {
+        e.stopPropagation(); // Jangan tembus ke klik area kosong
+        
+        // Abaikan jika klik ini berasal dari ujung Long Press HP
+        if (longPressTriggered) {
+            longPressTriggered = false;
+            return;
+        }
+
+        if(doc.trashed) return;
+        
+        // LOGIKA MOBILE: Jika 1x Tap di HP dan belum ada file yang diseleksi -> LANGSUNG BUKA FILE
+        if (isTouch && selectedFileIds.size === 0) {
+            clearSelection(); // Pastikan bar hilang
+            closeAllMenus();
+            if(!doc.trashed) { 
+                isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
+            }
+            setTimeout(() => { isTouch = false; }, 300);
+            return; 
+        }
+
+        // LOGIKA DESKTOP (Atau Mobile saat sedang mode seleksi): PILIH FILE SAJA
+        if (e.ctrlKey || e.metaKey) {
+            if (selectedFileIds.has(doc.$id)) {
+                selectedFileIds.delete(doc.$id);
+            } else {
+                selectedFileIds.add(doc.$id);
+                selectedItem = doc;
+            }
+        } else {
+            selectedFileIds.clear();
+            selectedFileIds.add(doc.$id);
+            selectedItem = doc;
+        }
+        
+        updateSelectionUI(); // Memunculkan SAB
+        closeAllMenus(); // Menutup Menu Konteks
+        
+        setTimeout(() => { isTouch = false; }, 300);
+    });
+
+    // 5. EVENT DBLCLICK (KLIK 2X DESKTOP)
+    div.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        if (isTouch) return; // Dblclick desktop diabaikan di HP
+        
+        clearSelection(); // BERSIHKAN SAB SAAT BUKA FILE
+        closeAllMenus();
+        
+        if(!doc.trashed) { 
+            isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
+        }
+    });
+
+    // 6. EVENT CONTEXT MENU (KLIK KANAN DESKTOP)
+    div.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); 
+        e.stopPropagation(); // Mencegah klik kanan tembus ke area kosong
+        triggerFileContextMenu(e.clientX, e.clientY);
+    });
 
     grid.appendChild(div);
 } // <--- AKHIR FUNGSI renderItem
@@ -907,28 +942,32 @@ if (areaUtama) {
         areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
     }
     
-    // KLIK KIRI GLOBAL DI AREA KOSONG
+
+    // ... (di dalam fungsi initAllContextMenus) ...
+    
+    // KLIK KIRI GLOBAL DI AREA KOSONG (MENGHILANGKAN BAR & MENU)
     window.addEventListener('click', (e) => {
-        // Jangan lakukan apapun jika mengeklik area menu, modal, tombol new, ATAU TOP BAR
-        if (e.target.closest('.modal-box') || 
-            e.target.closest('.storage-widget') || 
-            e.target.closest('.preview-header-right') ||
-            e.target.closest('#newBtnMain') || 
+        // 1. Abaikan klik jika mengenai elemen-elemen UI ini (termasuk SAB)
+        if (e.target.closest('.dropdown-content') ||
+            e.target.closest('.context-menu-modern') ||
+            e.target.closest('.modal-overlay') ||
+            e.target.closest('.storage-widget') ||
+            e.target.closest('#newBtnMain') ||
             e.target.closest('.new-btn-wrapper') ||
             e.target.closest('.selection-action-bar')) {
             return;
         }
 
-        // Jika mengeklik area kosong, tutup menu DAN hilangkan seleksi file (Top Bar hilang)
-        closeAllMenus();
-        
-        // Pengecualian: Jangan hilangkan seleksi jika yang diklik adalah item-card itu sendiri 
-        // (karena item-card punya event click sendiri di atas)
+        // 2. Jika klik jatuh pada area kosong (BUKAN di atas file/folder)
         if (!e.target.closest('.item-card')) {
-            clearSelection();
+            clearSelection(); // Bersihkan pilihan (SAB akan otomatis hilang)
         }
+        
+        // 3. Selalu tutup menu konteks jika klik sembarang
+        closeAllMenus(); 
     });
-} // <--- AKHIR FUNGSI initAllContextMenus
+} // <--- Akhir fungsi initAllContextMenus
+
 
 function initAllContextMenus() {
     const tombolBaru = document.getElementById('newBtnMain'); 
