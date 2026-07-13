@@ -570,6 +570,9 @@ function positionMenuInsideWindow(menu, clientX, clientY) {
 function renderItem(doc) {
     const grid = el('fileGrid'); 
     const div = document.createElement('div'); div.className = 'item-card';
+    
+    // 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
+    div.setAttribute('data-id', doc.$id);
 
     const isFolder = doc.type === 'folder';
     const starHTML = doc.starred ? `<i class="fa-solid fa-star" style="position:absolute;top:10px;left:10px;color:#ffd700;z-index:15;text-shadow:0 0 5px rgba(0,0,0,0.5);"></i>` : '';
@@ -604,19 +607,16 @@ function renderItem(doc) {
             else if (audioExts.includes(ext)) { iconClass = "fa-music"; colorClass = "icon-purple"; } 
             
             const htmlStr = `<div class="thumb-fallback-card"><i class="icon fa-solid ${iconClass} huge-icon ${colorClass}"></i></div>`;
-            // PERBAIKAN: Gunakan &quot; untuk atribut HTML agar terhindar dari Syntax Error di onerror=''
             return forOnError ? htmlStr.replace(/"/g, "&quot;") : htmlStr;
         };
 
         if (familiarImages.includes(ext)) {
             content = `<div class="thumb-box"><img src="${fileViewUrl}" class="thumb-image" loading="lazy" onerror="this.parentElement.innerHTML='${createFallback(ext, true)}'"></div>`;
         } else if (vidExts.includes(ext)) {
-            // PERBAIKAN: preload diubah ke "none" agar tidak menyedot kuota Cached Egress Appwrite
             content = `<div class="thumb-box" style="background:#000;"><video src="${fileViewUrl}" class="thumb-video" preload="none" muted loop onmouseover="this.play()" onmouseout="this.pause()" onerror="this.parentElement.innerHTML='${createFallback(ext, true)}'"></video><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.5rem; pointer-events:none;"></i></div>`;
         } else if (audioExts.includes(ext)) {
             content = `<div class="thumb-box bg-purple" style="display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-music huge-icon icon-purple" style="font-size:2.5rem;"></i><i class="fa-solid fa-play" style="position:absolute; color:rgba(255,255,255,0.8); font-size:1.2rem; pointer-events:none;"></i></div>`;
         } else if (docExts.includes(ext) || pdfExt.includes(ext)) {
-            // PERBAIKAN: Smart Thumbnail Cache untuk Dokumen HuggingFace
             let thumbUrlToUse = '';
             let localCache = JSON.parse(localStorage.getItem('hfThumbCache') || '{}');
             
@@ -628,18 +628,7 @@ function renderItem(doc) {
                 thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
                 localCache[doc.fileId] = thumbUrlToUse;
                 localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
-            }
-            
-            if (doc.thumbUrl && doc.thumbUrl !== 'NULL' && doc.thumbUrl !== '') {
-                thumbUrlToUse = doc.thumbUrl;
-            } else if (localCache[doc.fileId]) {
-                thumbUrlToUse = localCache[doc.fileId];
-            } else {
-                thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
-                localCache[doc.fileId] = thumbUrlToUse;
-                localStorage.setItem('hfThumbCache', JSON.stringify(localCache));
-                // Opsional: Coba update ke Appwrite jika Anda sudah buat attribute 'thumbUrl' di database
-                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>console.log("Tambahkan atribut 'thumbUrl' bertipe String di Appwrite untuk efisiensi cloud."));
+                databases.updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, { thumbUrl: thumbUrlToUse }).catch(e=>{});
             }
 
             let badgeIcon = "fa-file"; let badgeColor = "#ffffff";
@@ -657,15 +646,13 @@ function renderItem(doc) {
                 </div>
             `;
         } else {
-            // Jika elemen langsung dirender via DOM (bukan via onerror), tidak perlu parameter true
             content = `<div class="thumb-box">${createFallback(ext)}</div>`;
         }
     }
 
-// 1. TAMBAHKAN DATA-ID UNTUK PELACAKAN SELEKSI
-    div.setAttribute('data-id', doc.$id);
     div.innerHTML = `${starHTML}${content}<div class="item-name" title="${doc.name}">${doc.name}</div>`;
 
+    // VARIABEL PELACAKAN SISTEM
     let isTouch = false;
     let longPressTriggered = false;
     let touchTimer;
@@ -682,6 +669,8 @@ function renderItem(doc) {
             selectedFileIds.add(doc.$id);
             selectedItem = doc;
             updateSelectionUI(); // Memunculkan SAB
+        } else {
+            selectedItem = doc;
         }
         
         const menu = el('fileContextMenu');
@@ -710,7 +699,7 @@ function renderItem(doc) {
             if (!isTouchMoved) {
                 longPressTriggered = true; 
                 if (e.cancelable) e.preventDefault();
-                e.stopPropagation(); // Mencegah event bubbling ke klik sembarang
+                e.stopPropagation();
                 triggerFileContextMenu(touch.clientX, touch.clientY);
                 if (navigator.vibrate) navigator.vibrate(50);
             }
@@ -720,13 +709,13 @@ function renderItem(doc) {
     div.addEventListener('touchmove', () => { isTouchMoved = true; clearTimeout(touchTimer); }, { passive: true });
     div.addEventListener('touchend', (e) => { 
         clearTimeout(touchTimer); 
-        if (longPressTriggered && e.cancelable) e.preventDefault(); 
+        if (longPressTriggered && e.cancelable) { e.preventDefault(); e.stopPropagation(); }
     });
     div.addEventListener('touchcancel', () => clearTimeout(touchTimer));
 
     // EVENT KLIK (DESKTOP & MOBILE TAP)
     div.addEventListener('click', (e) => {
-        e.stopPropagation(); // Mencegah event bubbling ke klik sembarang
+        e.stopPropagation(); 
         
         if (longPressTriggered) {
             longPressTriggered = false;
@@ -735,14 +724,14 @@ function renderItem(doc) {
 
         if(doc.trashed) return;
         
-        if (isTouch) {
+        if (isTouch || e.pointerType === 'touch') {
             // MOBILE: Buka langsung jika tidak ada yang terseleksi
             if (selectedFileIds.size === 0) {
                 clearSelection(); 
                 closeAllMenus();
                 isFolder ? openFolder(doc.$id, doc.name) : openPreview(doc); 
             } else {
-                 // MOBILE: Mode Seleksi Aktif
+                 // MOBILE: Mode Seleksi Aktif (Pilih file)
                 if (selectedFileIds.has(doc.$id)) {
                     selectedFileIds.delete(doc.$id);
                 } else {
@@ -773,16 +762,16 @@ function renderItem(doc) {
             }
             updateSelectionUI(); 
             closeAllMenus(); 
-        }, 250); // Jeda untuk membedakan single click dan double click
+        }, 250); 
     });
 
     // EVENT DBLCLICK (KLIK 2X DESKTOP)
     div.addEventListener('dblclick', (e) => {
         e.stopPropagation();
-        if (clickTimeout) clearTimeout(clickTimeout); // Batalkan single click
-        if (isTouch) return; 
+        if (clickTimeout) clearTimeout(clickTimeout); // BATALKAN KLIK KIRI AGAR SAB TIDAK MUNCUL
+        if (isTouch || e.pointerType === 'touch') return; 
         
-        clearSelection(); // BERSIHKAN SAB SAAT BUKA FILE
+        clearSelection(); // BERSIHKAN SAB SEBELUM BUKA FILE
         closeAllMenus();
         
         if(!doc.trashed) { 
@@ -890,7 +879,7 @@ function initAllContextMenus() {
         });
     }
 
-    if (areaUtama) {
+if (areaUtama) {
         // KLIK KANAN AREA KOSONG
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
@@ -922,32 +911,17 @@ function initAllContextMenus() {
         areaUtama.addEventListener('touchmove', () => clearTimeout(gridTouchTimer), { passive: true });
         areaUtama.addEventListener('touchend', () => clearTimeout(gridTouchTimer));
         areaUtama.addEventListener('touchcancel', () => clearTimeout(gridTouchTimer));
-    }
-    
-    // KLIK KIRI GLOBAL DI AREA MANAPUN
-    window.addEventListener('click', (e) => {
-        // Jangan lakukan apa-apa jika klik terjadi pada elemen interaktif UI lainnya
-        if (e.target.closest('.dropdown-content') ||
-            e.target.closest('.context-menu-modern') ||
-            e.target.closest('.modal-overlay') ||
-            e.target.closest('.storage-widget') ||
-            e.target.closest('#newBtnMain') ||
-            e.target.closest('.new-btn-wrapper') ||
-            e.target.closest('.selection-action-bar')) {
-            return;
-        }
-
-        // Tutup semua menu dropdown/context menu
-        closeAllMenus(); 
         
-        // JIKA KLIK BUKAN PADA ITEM-CARD, BERSIHKAN SELEKSI (HILANGKAN SAB)
-        if (!e.target.closest('.item-card')) {
-            if (typeof window.clearSelection === 'function') {
-                window.clearSelection(); 
-            }
-        }
-    });
-}
+        // KLIK KIRI AREA KOSONG UNTUK MENGHILANGKAN BAR & MENU
+        areaUtama.addEventListener('click', (e) => {
+            // Abaikan jika klik terjadi di dalam item-card
+            if (e.target.closest('.item-card')) return; 
+            
+            clearSelection(); // Hilangkan Seleksi & SAB seketika
+            closeAllMenus();  // Tutup semua dropdown menu
+        });
+    }
+} // <--- Akhir fungsi initAllContextMenus (Pastikan Anda menghapus blok window.click yang lama)
 
 // ======================================================
 // 8. STORAGE LOGIC & MODAL
