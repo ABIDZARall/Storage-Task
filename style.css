@@ -1,21 +1,59 @@
-/* ================= GLOBAL & RESET ================= */
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-button, a { outline: none !important; }
+/* ============================================================ */
+/* 1. GLOBAL & RESET STYLES                                     */
+/* ============================================================ */
 
-/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR */
-::-webkit-scrollbar { width: 14px; height: 14px; background-color: transparent; }
-::-webkit-scrollbar-track { background-color: transparent; }
+/* Reset dasar untuk margin, padding, dan box-sizing pada semua elemen */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+/* Menghilangkan outline bawaan browser pada tombol dan tautan */
+button, a { 
+    outline: none !important; 
+}
+
+/* ------------------------------------------------------------ */
+/* PREMIUM MACOS "LIQUID GLASS" SCROLLBAR                       */
+/* ------------------------------------------------------------ */
+::-webkit-scrollbar { 
+    width: 14px; 
+    height: 14px; 
+    background-color: transparent; 
+}
+
+::-webkit-scrollbar-track { 
+    background-color: transparent; 
+}
+
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2); border-radius: 10px;
-    border: 4px solid transparent; background-clip: padding-box; 
+    background-color: rgba(255, 255, 255, 0.2); 
+    border-radius: 10px;
+    border: 4px solid transparent; 
+    background-clip: padding-box; 
 }
-::-webkit-scrollbar-thumb:hover, ::-webkit-scrollbar-thumb:active {
-    background-color: rgba(255, 255, 255, 0.4); border: 3px solid transparent; 
-}
-::-webkit-scrollbar-corner { background: transparent; }
-* { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
 
-/* VARIABEL & TEMA */
+::-webkit-scrollbar-thumb:hover, 
+::-webkit-scrollbar-thumb:active {
+    background-color: rgba(255, 255, 255, 0.4); 
+    border: 3px solid transparent; 
+}
+
+::-webkit-scrollbar-corner { 
+    background: transparent; 
+}
+
+/* Dukungan scrollbar untuk browser non-webkit (Firefox) */
+* { 
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent; 
+}
+
+/* ============================================================ */
+/* 2. VARIABEL TEMA (CSS CUSTOM PROPERTIES)                     */
+/* ============================================================ */
 :root {
     --bg-color: #0B0F19; /* Midnight Blue Premium */
     --glass-bg: rgba(255, 255, 255, 0.05);
@@ -34,11 +72,26 @@ button, a { outline: none !important; }
     --track-bg: rgba(255, 255, 255, 0.1); 
 }
 
-body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; height: 100dvh; width: 100vw; }
+/* Konfigurasi Body Utama */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    overflow: hidden; 
+    height: 100dvh; 
+    width: 100vw; 
+}
 
-/* MESH GRADIENT ANIMATED BACKGROUND ALA VISIONOS */
+/* ============================================================ */
+/* 3. MESH GRADIENT ANIMATED BACKGROUND ALA VISIONOS            */
+/* ============================================================ */
 .liquid-bg { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: -1; 
     background-color: #0B0F19;
     background-image: 
         radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.25), transparent 50%),
@@ -52,44 +105,74 @@ body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe 
     50% { background-position: 100% 50%; background-size: 120% 120%; }
     100% { background-position: 0% 100%; background-size: 100% 100%; }
 }
-.hidden { display: none !important; }
+
+/* Utility class untuk menyembunyikan elemen */
+.hidden { 
+    display: none !important; 
+}
 
 /* ============================================================ */
-/* AUTHENTICATION (LOGIN, REGISTER, RESET)                      */
+/* 4. AUTHENTICATION (LOGIN, REGISTER, RESET)                   */
 /* ============================================================ */
-.full-screen-center { height: 100dvh; display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 5000; position: relative; }
+
+/* Wrapper untuk menengahkan layar penuh */
+.full-screen-center { 
+    height: 100dvh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 15px; 
+    z-index: 5000; 
+    position: relative; 
+}
+
 /* EFEK LIQUID GLASS APPLE ORIGINAL UNTUK KARTU AUTH */
 .glass-card { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
     backdrop-filter: blur(40px) saturate(220%); 
     -webkit-backdrop-filter: blur(40px) saturate(220%); 
-    
     /* Garis tepi bercahaya tipis khas Apple */
     border: 1px solid rgba(255, 255, 255, 0.15); 
     border-top: 1px solid rgba(255, 255, 255, 0.4); 
     border-left: 1px solid rgba(255, 255, 255, 0.25); 
-    
-    border-radius: 28px; /* Lengkungan mulus yang lebih besar */
+    border-radius: 28px; 
     box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.3); 
 }
 
 .auth-card { 
     width: 100%; 
-    max-width: 400px; /* Sedikit dilebarkan untuk proporsi radius baru */
+    max-width: 400px; 
     padding: 40px 32px; 
     text-align: center; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
 }
-.auth-logo { width: 96px; margin-bottom: 18px; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
-.auth-header h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
-form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+
+.auth-logo { 
+    width: 96px; 
+    margin-bottom: 18px; 
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); 
+}
+
+.auth-header h3 { 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    margin-bottom: 24px; 
+    letter-spacing: -0.5px; 
+}
+
+form { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+}
 
 /* INPUT FIELD GAYA MACOS/IOS (TENGGELAM KE DALAM KACA) */
 .pill-input { 
     width: 100%; 
-    height: 48px; /* Touch target yang lebih nyaman */
+    height: 48px; 
     background: rgba(0, 0, 0, 0.2); 
     border-radius: 14px; 
     padding: 0 16px; 
@@ -99,15 +182,41 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
 }
+
 .pill-input:focus-within { 
     border-color: rgba(255, 255, 255, 0.4); 
     background: rgba(0, 0, 0, 0.35); 
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.1); 
 }
-.pill-input input { background: transparent; border: none; outline: none; color: white; width: 100%; font-size: 0.95rem; margin-left: 10px; font-weight: 500; }
-.pill-input i { color: #cbd5e1; font-size: 1rem; min-width: 20px; text-align: center; }
-.toggle-eye { cursor: pointer; color: #cbd5e1; font-size: 1rem; transition: color 0.2s; }
-.toggle-eye:hover { color: white; }
+
+.pill-input input { 
+    background: transparent; 
+    border: none; 
+    outline: none; 
+    color: white; 
+    width: 100%; 
+    font-size: 0.95rem; 
+    margin-left: 10px; 
+    font-weight: 500; 
+}
+
+.pill-input i { 
+    color: #cbd5e1; 
+    font-size: 1rem; 
+    min-width: 20px; 
+    text-align: center; 
+}
+
+.toggle-eye { 
+    cursor: pointer; 
+    color: #cbd5e1; 
+    font-size: 1rem; 
+    transition: color 0.2s; 
+}
+
+.toggle-eye:hover { 
+    color: white; 
+}
 
 /* TOMBOL UTAMA DENGAN EFEK KACA KRISTAL APPLE */
 .btn-pill { 
@@ -123,6 +232,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     font-size: 1rem; 
     letter-spacing: 0.3px;
 }
+
 .primary { 
     background: linear-gradient(135deg, rgba(45, 212, 191, 0.8), rgba(13, 148, 136, 0.8));
     backdrop-filter: blur(10px) saturate(150%);
@@ -133,97 +243,248 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-top: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
+
 .primary:hover { 
     background: linear-gradient(135deg, rgba(45, 212, 191, 1), rgba(13, 148, 136, 1)); 
     transform: translateY(-2px) scale(1.02); 
     box-shadow: 0 15px 30px -5px rgba(13, 148, 136, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.5); 
 }
+
 .primary:active {
     transform: scale(0.96) translateY(0);
     box-shadow: 0 5px 10px rgba(13, 148, 136, 0.4);
 }
-.auth-footer { margin-top: 20px; font-size: 0.85rem; color: #94a3b8; }
-.link-text { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
-.forgot-pass-container { width: 100%; text-align: right; margin-top: -10px; margin-bottom: 5px; }
-.small-link { font-size: 0.8rem; opacity: 0.9; } .small-link:hover { text-decoration: underline; opacity: 1; }
 
-/* PROFILE PAGE STYLES */
-.profile-card { width: 100%; max-width: 420px; padding: 25px; display: flex; flex-direction: column; align-items: center; }
-.profile-header { width: 100%; text-align: center; margin-bottom: 25px; position: relative; }
-.profile-header h3 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.profile-avatar-container { position: relative; margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
-.profile-avatar-wrapper { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); position: relative; cursor: pointer; transition: 0.3s; }
-.profile-avatar-wrapper:hover { border-color: var(--accent); }
-.profile-img-lg { width: 100%; height: 100%; object-fit: cover; }
-.avatar-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
-.profile-avatar-wrapper:hover .avatar-overlay { opacity: 1; }
-.avatar-overlay i { color: white; font-size: 1.5rem; }
-.profile-hint { font-size: 0.8rem; color: var(--accent); margin-top: 8px; font-weight: 500; cursor: pointer; }
-.separator-line { width: 100%; height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0 10px 0; }
-.profile-actions { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
+.auth-footer { 
+    margin-top: 20px; 
+    font-size: 0.85rem; 
+    color: #94a3b8; 
+}
+
+.link-text { 
+    color: var(--accent); 
+    cursor: pointer; 
+    font-weight: 600; 
+    text-decoration: none; 
+}
+
+.forgot-pass-container { 
+    width: 100%; 
+    text-align: right; 
+    margin-top: -10px; 
+    margin-bottom: 5px; 
+}
+
+.small-link { 
+    font-size: 0.8rem; 
+    opacity: 0.9; 
+} 
+
+.small-link:hover { 
+    text-decoration: underline; 
+    opacity: 1; 
+}
 
 /* ============================================================ */
-/* DASHBOARD LAYOUT & SIDEBAR - BRAND LOGO & TEXT UPDATE        */
+/* 5. PROFILE PAGE STYLES                                       */
 /* ============================================================ */
-.dashboard-layout { height: 100dvh; padding: 15px; display: flex; flex-direction: column; }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 55px; flex-shrink: 0; }
+.profile-card { 
+    width: 100%; 
+    max-width: 420px; 
+    padding: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+.profile-header { 
+    width: 100%; 
+    text-align: center; 
+    margin-bottom: 25px; 
+    position: relative; 
+}
+
+.profile-header h3 { 
+    font-size: 1.3rem; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.profile-avatar-container { 
+    position: relative; 
+    margin-bottom: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+.profile-avatar-wrapper { 
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%; 
+    overflow: hidden; 
+    border: 2px solid rgba(255,255,255,0.2); 
+    position: relative; 
+    cursor: pointer; 
+    transition: 0.3s; 
+}
+
+.profile-avatar-wrapper:hover { 
+    border-color: var(--accent); 
+}
+
+.profile-img-lg { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+}
+
+.avatar-overlay { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    opacity: 0; 
+    transition: 0.3s; 
+}
+
+.profile-avatar-wrapper:hover .avatar-overlay { 
+    opacity: 1; 
+}
+
+.avatar-overlay i { 
+    color: white; 
+    font-size: 1.5rem; 
+}
+
+.profile-hint { 
+    font-size: 0.8rem; 
+    color: var(--accent); 
+    margin-top: 8px; 
+    font-weight: 500; 
+    cursor: pointer; 
+}
+
+.separator-line { 
+    width: 100%; 
+    height: 1px; 
+    background: rgba(255,255,255,0.1); 
+    margin: 15px 0 10px 0; 
+}
+
+.profile-actions { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 15px; 
+    width: 100%; 
+}
+
+
+/* ============================================================ */
+/* 6. DASHBOARD LAYOUT & SIDEBAR - BRAND LOGO & TEXT UPDATE     */
+/* ============================================================ */
+.dashboard-layout { 
+    height: 100dvh; 
+    padding: 15px; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.top-nav { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 15px; 
+    min-height: 55px; 
+    flex-shrink: 0; 
+}
 
 /* UPDATE: LIQUID GLASS LOGO & TYPOGRAPHY - DIPERBESAR DI DESKTOP */
 .brand-area { 
-    display: flex; align-items: center; gap: 14px; cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 14px; 
+    cursor: pointer; 
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    padding: 5px 15px 5px 5px; border-radius: 14px; 
+    padding: 5px 15px 5px 5px; 
+    border-radius: 14px; 
 }
+
 .brand-area:hover { 
     background: rgba(255, 255, 255, 0.08); 
     box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.1); 
     transform: scale(1.02); 
 }
+
 .logo-img { 
-    height: 54px; /* Logo diperbesar di laptop/komputer */
+    height: 54px; 
     filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); 
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    display: block; /* Menampilkan logo di layar besar */
+    display: block; 
 }
+
 .brand-text { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; 
-    font-size: 1.55rem; /* Teks Cloud Storage diperbesar di laptop/komputer */
-    font-weight: 700; color: #ffffff; 
+    font-size: 1.55rem; 
+    font-weight: 700; 
+    color: #ffffff; 
     letter-spacing: -0.5px; 
     text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); 
     user-select: none; 
 }
 
-/* === 1. PROFILE AREA (KAPSUL KACA KANAN ATAS) === */
-    .profile-area { 
-        display: flex !important;
-        flex-direction: row !important; /* Memaksa elemen sejajar horizontal */
-        align-items: center !important;
-        width: max-content !important; /* Mencegah elemen terlipat ke bawah */
-        
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important; 
-        backdrop-filter: blur(40px) saturate(220%) !important; 
-        -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.3) !important;
-        padding: 4px 6px !important; 
-        border-radius: 50px !important; 
-        gap: 6px !important; 
-    }
-    
-    .profile-area .avatar { border: none !important; box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important; width: 34px !important; height: 34px !important; }
-    .profile-area .logout-btn { background: transparent !important; border: none !important; box-shadow: none !important; width: 34px !important; height: 34px !important;
-    }
-    
+/* === PROFILE AREA (KAPSUL KACA KANAN ATAS) === */
+.profile-area { 
+    display: flex !important;
+    flex-direction: row !important; 
+    align-items: center !important;
+    width: max-content !important; 
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important; 
+    backdrop-filter: blur(40px) saturate(220%) !important; 
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.3) !important;
+    padding: 4px 6px !important; 
+    border-radius: 50px !important; 
+    gap: 6px !important; 
+}
+
+.profile-area .avatar { 
+    border: none !important; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important; 
+    width: 34px !important; 
+    height: 34px !important; 
+}
+
+.profile-area .logout-btn { 
+    background: transparent !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    width: 34px !important; 
+    height: 34px !important;
+}
+
 /* DESAIN AVATAR PROFIL LIQUID GLASS APPLE ORIGINAL */
 .avatar { 
-    width: 42px; height: 42px; border-radius: 50%; object-fit: cover; 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    object-fit: cover; 
     border: 2px solid rgba(255, 255, 255, 0.15); 
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
 }
+
 .avatar:hover { 
     border-color: rgba(255, 255, 255, 0.4); 
     transform: scale(1.05);
@@ -232,7 +493,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 
 /* UPDATE: PERBAIKAN BUG GHOSTING/JEJAK PADA TOMBOL LOGOUT KACA */
 .logout-btn { 
-    padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; 
+    padding: 0; 
+    width: 42px; 
+    height: 42px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -250,23 +516,28 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     backface-visibility: hidden;
     transform: translateZ(0); 
 }
+
 .logout-btn:hover { 
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
     border-color: rgba(239, 68, 68, 0.4);
     color: #f87171;
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
+
 .logout-btn:active {
     transform: scale(0.92) translateZ(0) !important; 
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-.logout-btn:focus { outline: none !important; }
+
+.logout-btn:focus { 
+    outline: none !important; 
+}
+
 
 /* ============================================================ */
-/* APPLE ORIGINAL LIQUID GLASS EFFECT UPDATE (MAIN PANEL)       */
+/* 7. APPLE ORIGINAL LIQUID GLASS EFFECT UPDATE (MAIN PANEL)    */
 /* ============================================================ */
-/* Ganti class .main-glass-panel milikmu dengan ini */
 .main-glass-panel { 
     flex: 1; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)); 
@@ -280,13 +551,16 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         0 40px 80px -20px rgba(0, 0, 0, 0.8),
         inset 0 1px 2px rgba(255, 255, 255, 0.3),
         inset 0 -1px 2px rgba(0, 0, 0, 0.1);
-    padding: 20px; display: flex; gap: 20px; overflow: hidden; 
-    max-width: 2560px; margin: 0 auto; width: 100%; 
+    padding: 20px; 
+    display: flex; 
+    gap: 20px; 
+    overflow: hidden; 
+    max-width: 2560px; 
+    margin: 0 auto; 
+    width: 100%; 
 }
 
-/* ============================================================ */
-/* SIDEBAR KIRI - INTENSITAS LIQUID GLASS EKSTREM (DESKTOP)     */
-/* ============================================================ */
+/* SIDEBAR KIRI - INTENSITAS LIQUID GLASS EKSTREM (DESKTOP) */
 .sidebar-left { 
     width: 270px; 
     height: 100%; 
@@ -295,38 +569,38 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     gap: 20px; 
     padding: 26px 22px; 
     flex-shrink: 0; 
-    
-    /* EFEK LIQUID GLASS TRANSPARAN & SATURASI TINGGI */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)) !important;
     backdrop-filter: blur(45px) saturate(230%) !important;
     -webkit-backdrop-filter: blur(45px) saturate(230%) !important;
-    
-    /* STRUKTUR CURVED CORNER KHAS APPLE OVERHAUL */
     border-radius: 28px !important; 
-    
-    /* BIAS CAHAYA PADA TEPI KACA UNTUK ILUSI 3D YANG MENONJOL */
     border: 1px solid rgba(255, 255, 255, 0.08) !important; 
     border-top: 1px solid rgba(255, 255, 255, 0.45) !important; 
     border-left: 1px solid rgba(255, 255, 255, 0.25) !important; 
-    
-    /* KOMBINASI BAYANGAN LUAR DAN PANTULAN CAHAYA DALAM */
     box-shadow: 
         0 40px 70px -15px rgba(0, 0, 0, 0.65), 
         inset 0 1px 3px rgba(255, 255, 255, 0.35) !important;
-        
     z-index: 10; 
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     margin-right: 12px;
 }
 
 /* CONTAINER TOMBOL UTAMA */
-.new-btn-wrapper { position: relative; width: 100%; margin-bottom: 5px; }
+.new-btn-wrapper { 
+    position: relative; 
+    width: 100%; 
+    margin-bottom: 5px; 
+}
 
 /* TOMBOL + BARU DENGAN MATERIAL KACA KRISTAL MELAYANG */
 .new-btn { 
-    width: 100%; justify-content: flex-start; 
-    padding-left: 20px; gap: 12px; height: 48px; border-radius: 16px; font-size: 1rem; font-weight: 600;
-    
+    width: 100%; 
+    justify-content: flex-start; 
+    padding-left: 20px; 
+    gap: 12px; 
+    height: 48px; 
+    border-radius: 16px; 
+    font-size: 1rem; 
+    font-weight: 600;
     background: rgba(255, 255, 255, 0.12) !important;
     backdrop-filter: blur(30px) saturate(250%) !important;
     -webkit-backdrop-filter: blur(30px) saturate(250%) !important;
@@ -335,50 +609,53 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
     color: #ffffff !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important; 
-    
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
     outline: none !important; 
 }
+
 .new-btn:hover { 
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: rgba(255, 255, 255, 0.45) !important;
     transform: scale(1.03) translateY(-2px);
     box-shadow: 0 18px 35px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.5) !important; 
 }
+
 .new-btn:active { 
     transform: scale(0.96) translateY(0) !important; 
     background: rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1) !important; 
 }
 
+.new-btn:focus { 
+    outline: none !important; 
+}
+
+
+/* ============================================================ */
+/* 8. DROPDOWN & SIDEBAR MENU NAVIGATION                        */
+/* ============================================================ */
+
 /* DROPDOWN MENU KACA COKLAT/GELAP DI ATAS SIDEBAR */
 .dropdown-content { 
-    position: absolute; top: 60px; left: 0; z-index: 20000; 
-    
-    /* RAHASIA APPLE: Background hampir tak terlihat, biarkan background asli yang tembus */
+    position: absolute; 
+    top: 60px; 
+    left: 0; 
+    z-index: 20000; 
     background: rgba(10, 10, 10, 0.15) !important; 
-    
-    /* Engine Pembias Kaca: Blur tinggi & Saturasi ditingkatkan agar warna di belakangnya "hidup" */
     backdrop-filter: blur(50px) saturate(220%) !important;
     -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
-    
-    /* Edge Lighting: Pantulan cahaya di ujung potongan kaca */
     border: 1px solid rgba(255, 255, 255, 0.1) !important; 
     border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 16px !important; /* Lengkungan khas iOS */
-    
-    /* Bayangan lembut di luar & pantulan cahaya di dalam kaca */
+    border-radius: 16px !important; 
     box-shadow: 
         0 15px 35px rgba(0, 0, 0, 0.25), 
         inset 0 1px 2px rgba(255, 255, 255, 0.2),
         inset 0 0 0 1px rgba(255, 255, 255, 0.05) !important; 
-        
     padding: 8px 0 !important; 
-    width: 220px !important; /* Ringkas dan compact */
-    display: none; flex-direction: column; 
-    
-    /* Animasi Bouncy halus ala Apple */
+    width: 220px !important; 
+    display: none; 
+    flex-direction: column; 
     transform-origin: top left;
     animation: iosMenuPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
 }
@@ -392,95 +669,94 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .sidebar-menu { 
     flex: 1; 
     overflow-y: auto; 
-    overflow-x: hidden; /* Mencegah bocor ke samping */
+    overflow-x: hidden; 
     display: flex; 
     flex-direction: column; 
     gap: 4px; 
     position: relative; 
-    scrollbar-width: none; /* Menyembunyikan scrollbar di Firefox */
-    -ms-overflow-style: none; /* Menyembunyikan scrollbar di IE/Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
 }
-/* Menyembunyikan scrollbar di Chrome, Safari, dan Opera khusus untuk menu ini */
+
 .sidebar-menu::-webkit-scrollbar { 
     display: none; 
 }
 
-/* KAPSUL KACA INDIKATOR AKTIF YANG MELUNCUR */
+/* KAPSUL KACA INDIKATOR AKTIF YANG MELUNCUR (DESKTOP) */
 .nav-indicator {
-    position: absolute; left: 0; top: 0; width: 0; height: 44px; border-radius: 14px;
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    width: 0; 
+    height: 44px; 
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.14) !important; 
     backdrop-filter: blur(30px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3) !important;
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 0; pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+    z-index: 0; 
+    pointer-events: none;
 }
 
 /* ITEM MENU DI DALAM SIDEBAR */
 .nav-item { 
-    display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 44px; 
-    border-radius: 14px; color: rgba(255, 255, 255, 0.6); text-decoration: none; 
-    font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
-    position: relative; z-index: 1; outline: none; user-select: none;
+    display: flex; 
+    align-items: center; 
+    gap: 14px; 
+    padding: 0 16px; 
+    height: 44px; 
+    border-radius: 14px; 
+    color: rgba(255, 255, 255, 0.6); 
+    text-decoration: none; 
+    font-size: 0.95rem; 
+    font-weight: 500; 
+    cursor: pointer; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    position: relative; 
+    z-index: 1; 
+    outline: none; 
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
+
 .nav-item:hover { 
-    background: rgba(255, 255, 255, 0.06) !important; color: #ffffff; transform: translateX(4px); 
+    background: rgba(255, 255, 255, 0.06) !important; 
+    color: #ffffff; 
+    transform: translateX(4px); 
 }
+
 .nav-item.active { 
-    background: transparent !important; color: #ffffff !important; font-weight: 700; transform: translateX(4px); 
+    background: transparent !important; 
+    color: #ffffff !important; 
+    font-weight: 700; 
+    transform: translateX(4px); 
+    border: none !important; 
+    box-shadow: none !important;
 }
+
 .nav-item.active i {
-    color: var(--accent) !important; filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.85)); transform: scale(1.05);
-}
-.new-btn:focus { outline: none !important; }
-
-.dropdown-content { position: absolute; top: 50px; left: 0; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 240px; display: none; flex-direction: column; }
-.sidebar-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
-
-/* ANIMASI INDIKATOR UNTUK DESKTOP */
-.nav-indicator {
-    position: absolute;
-    left: 0; top: 0;
-    width: 0; height: 40px; 
-    border-radius: 8px;
-    background: rgba(45, 212, 191, 0.15); 
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-    z-index: 0;
-    pointer-events: none;
+    color: var(--accent) !important; 
+    filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.85)); 
+    transform: scale(1.05);
 }
 
-.nav-item { 
-    display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 40px; 
-    border-radius: 8px; color: rgba(255, 255, 255, 0.7); text-decoration: none; 
-    font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; 
-    position: relative; z-index: 1; outline: none; user-select: none; -webkit-tap-highlight-color: transparent; 
-}
-.nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
 
-/* HAPUS BACKGROUND DARI ACTIVE ITEM, BIARKAN INDIKATOR YANG MENGISI */
-.nav-item.active { background: transparent !important; color: var(--accent); font-weight: 700; border: none !important; box-shadow: none !important; }
-
-/* EFEK LIQUID GLASS APPLE ORIGINAL UNTUK WIDGET PENYIMPANAN */
+/* ============================================================ */
+/* 9. WIDGET PENYIMPANAN PADA SIDEBAR                           */
+/* ============================================================ */
 .storage-widget { 
     padding: 16px; 
     border-radius: 20px; 
-    
-    /* Material Kaca Translucent (Blur + Saturasi Tinggi) */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)); 
     backdrop-filter: blur(40px) saturate(220%);
     -webkit-backdrop-filter: blur(40px) saturate(220%);
-    
-    /* Inner glow (bias cahaya di tepi) untuk ilusi 3D */
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: 1px solid rgba(255, 255, 255, 0.4);
     border-left: 1px solid rgba(255, 255, 255, 0.25);
-    
-    /* Bayangan berlapis agar widget tampak melayang dan menonjol */
-    box-shadow: 
-        0 15px 35px -5px rgba(0, 0, 0, 0.4), 
-        inset 0 1px 3px rgba(255, 255, 255, 0.3);
-        
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4), inset 0 1px 3px rgba(255, 255, 255, 0.3);
     transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
     cursor: pointer;
     margin-bottom: 5px;
@@ -490,9 +766,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
     transform: translateY(-2px) scale(1.02);
     border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 
-        0 20px 40px -5px rgba(0, 0, 0, 0.5), 
-        inset 0 2px 4px rgba(255, 255, 255, 0.4); 
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4); 
 }
 
 .storage-label { 
@@ -505,7 +779,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     gap: 8px; 
 }
 
-/* Track progres bar direbahkan ke dalam kaca */
 .progress-track { 
     width: 100%; 
     height: 6px; 
@@ -517,7 +790,6 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border: 1px solid rgba(255, 255, 255, 0.05); 
 }
 
-/* Isi progres bar bergaya premium */
 .progress-fill { 
     height: 100%; 
     width: 0%; 
@@ -536,46 +808,103 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     letter-spacing: 0.2px;
 }
 
-/* MAIN CONTENT AREA */
-.main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 
-/* Ganti class .search-bar-pill dan hover-nya dengan ini */
+/* ============================================================ */
+/* 10. MAIN CONTENT AREA & SEARCH BAR                           */
+/* ============================================================ */
+.main-content-area { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+}
+
+.search-row { 
+    display: flex; 
+    justify-content: center; 
+    margin-bottom: 15px; 
+    flex-shrink: 0; 
+}
+
 .search-bar-pill { 
-    width: 100%; max-width: 600px; 
+    width: 100%; 
+    max-width: 600px; 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
     backdrop-filter: blur(50px) saturate(220%);
     -webkit-backdrop-filter: blur(50px) saturate(220%);
-    border-radius: 40px; height: 48px; padding: 0 20px; display: flex; align-items: center; 
+    border-radius: 40px; 
+    height: 48px; 
+    padding: 0 20px; 
+    display: flex; 
+    align-items: center; 
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.4);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.2);
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-    -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); 
+    -webkit-backface-visibility: hidden; 
+    backface-visibility: hidden; 
+    transform: translateZ(0); 
 }
-.search-bar-pill:focus-within, .search-bar-pill:hover { 
+
+.search-bar-pill:focus-within, 
+.search-bar-pill:hover { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)); 
     border-color: rgba(255, 255, 255, 0.5); 
     box-shadow: 0 20px 45px -5px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
-.search-bar-pill input { background: transparent; border: none; outline: none; color: white; width: 100%; margin-left: 10px; font-size: 0.95rem; }
-.search-icon { color: rgba(255, 255, 255, 0.6); font-size: 1rem; transition: color 0.3s ease; }
-.search-bar-pill:focus-within .search-icon { color: white; }
 
-.breadcrumb-area { margin-bottom: 15px; padding-left: 25px; flex-shrink: 0; }
-.breadcrumb-area h2 { font-size: 1.5rem; font-weight: 700; color: white; }
-.back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.search-bar-pill input { 
+    background: transparent; 
+    border: none; 
+    outline: none; 
+    color: white; 
+    width: 100%; 
+    margin-left: 10px; 
+    font-size: 0.95rem; 
+}
+
+.search-icon { 
+    color: rgba(255, 255, 255, 0.6); 
+    font-size: 1rem; 
+    transition: color 0.3s ease; 
+}
+
+.search-bar-pill:focus-within .search-icon { 
+    color: white; 
+}
+
+
+/* ============================================================ */
+/* 11. BREADCRUMB & HEADER TITLE AREA                           */
+/* ============================================================ */
+.breadcrumb-area { 
+    margin-bottom: 15px; 
+    padding-left: 25px; 
+    flex-shrink: 0; 
+}
+
+.breadcrumb-area h2 { 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    color: white; 
+}
+
+.back-nav-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    align-items: flex-start; 
+}
+
 .breadcrumb-area .header-title-pill {
     display: inline-block;
     padding: 8px 18px;
-    border-radius: 50px; /* Membuat bentuk pill */
+    border-radius: 50px; 
     font-size: 1.5rem;
     font-weight: 700;
     color: white;
     text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    
-    /* Efek Kaca (Glassmorphism) seperti versi mobile */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)); 
     backdrop-filter: blur(40px) saturate(220%); 
     -webkit-backdrop-filter: blur(40px) saturate(220%);
@@ -584,32 +913,52 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-left: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 15px 30px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3);
 }
-/* ----------------------------------- */
-
-.back-nav-container { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-
 
 .back-btn { 
-    display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; 
-    background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); 
-    border-radius: 50px; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; 
-    cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px); 
-    max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: inline-flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 8px 16px; 
+    background: rgba(255, 255, 255, 0.08); 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 50px; 
+    color: #e2e8f0; 
+    font-size: 0.9rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    backdrop-filter: blur(5px); 
+    max-width: 100%; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
-.back-btn:hover { background: rgba(45, 212, 191, 0.15); border-color: var(--accent); color: white; transform: translateX(-3px); }
-.back-btn i { font-size: 0.9rem; flex-shrink: 0; }
+
+.back-btn:hover { 
+    background: rgba(45, 212, 191, 0.15); 
+    border-color: var(--accent); 
+    color: white; 
+    transform: translateX(-3px); 
+}
+
+.back-btn i { 
+    font-size: 0.9rem; 
+    flex-shrink: 0; 
+}
+
 
 /* ============================================================ */
-/* GRID ITEM STYLING (DIKUNCI AGAR PERFECT SQUARE ANTI GEPENG)  */
-/* ============================================================ */
-/* ============================================================ */
-/* GRID ITEM STYLING (FROSTED GLASS ALA VISIONOS)               */
+/* 12. GRID ITEM STYLING (FILE/FOLDER CARDS)                    */
 /* ============================================================ */
 .file-grid-area { 
-    flex: 1; overflow-y: auto; display: grid; 
+    flex: 1; 
+    overflow-y: auto; 
+    display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     grid-auto-rows: max-content; 
-    align-content: start; gap: 20px; padding: 10px 15px; 
+    align-content: start; 
+    gap: 20px; 
+    padding: 10px 15px; 
 }
 
 .item-card { 
@@ -617,17 +966,24 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     backdrop-filter: blur(25px) saturate(180%);
     -webkit-backdrop-filter: blur(25px) saturate(180%);
     border-radius: 16px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between; 
-    cursor: pointer; position: relative; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: space-between; 
+    cursor: pointer; 
+    position: relative; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
     border: 1px solid rgba(255,255,255,0.08); 
     border-top: 1px solid rgba(255,255,255,0.25);
     border-left: 1px solid rgba(255,255,255,0.15);
     padding: 15px 12px 12px 12px; 
-    box-sizing: border-box; width: 100%;
+    box-sizing: border-box; 
+    width: 100%;
     aspect-ratio: 1 / 1 !important; 
     overflow: hidden; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.1);
 }
+
 .item-card:hover { 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)); 
     transform: translateY(-5px) scale(1.02); 
@@ -636,81 +992,179 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.3); 
 }
 
-.mac-folder-container, .thumb-box {
-    width: 100%; height: calc(100% - 24px); 
-    flex: none !important; display: flex; align-items: center; justify-content: center;
-    margin-bottom: 8px; position: relative;
+.mac-folder-container, 
+.thumb-box {
+    width: 100%; 
+    height: calc(100% - 24px); 
+    flex: none !important; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    margin-bottom: 8px; 
+    position: relative;
 }
-.mac-folder-container { pointer-events: none; overflow: visible; }
-.thumb-box { border-radius: 8px; background: rgba(0,0,0,0.2); overflow: hidden; }
+
+.mac-folder-container { 
+    pointer-events: none; 
+    overflow: visible; 
+}
+
+.thumb-box { 
+    border-radius: 8px; 
+    background: rgba(0,0,0,0.2); 
+    overflow: hidden; 
+}
 
 .item-name { 
-    font-size: 0.85rem; font-weight: 500; text-align: center; width: 100%; 
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    color: #f1f5f9; flex: none; height: 16px; line-height: 16px; margin-top: auto; 
+    font-size: 0.85rem; 
+    font-weight: 500; 
+    text-align: center; 
+    width: 100%; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    color: #f1f5f9; 
+    flex: none; 
+    height: 16px; 
+    line-height: 16px; 
+    margin-top: auto; 
 }
 
+
 /* ============================================================ */
-/* NEW, MODERN, ELEGANT MAC OS FOLDER ICON (FROSTED WHITE)      */
+/* 13. MAC OS FOLDER ICON (FROSTED WHITE ANIMATED)              */
 /* ============================================================ */
-.item-card:has(.mac-folder-icon) i.fa-folder { display: none !important; }
+.item-card:has(.mac-folder-icon) i.fa-folder { 
+    display: none !important; 
+}
 
 .mac-folder-icon {
-    position: relative; width: 76px; height: 58px; margin: auto;
+    position: relative; 
+    width: 76px; 
+    height: 58px; 
+    margin: auto;
     transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); 
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
-.item-card:hover .mac-folder-icon { transform: scale(1.08) translateY(-4px); }
+
+.item-card:hover .mac-folder-icon { 
+    transform: scale(1.08) translateY(-4px); 
+}
 
 .mac-folder-back {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 82%;
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 82%;
     background: linear-gradient(180deg, rgba(235, 235, 245, 0.8), rgba(235, 235, 245, 0.5));
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 0 8px 8px 8px; 
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.5);
 }
+
 .mac-folder-back::before {
-    content: ''; position: absolute; top: -11px; left: -1px; width: 32px; height: 12px;
+    content: ''; 
+    position: absolute; 
+    top: -11px; 
+    left: -1px; 
+    width: 32px; 
+    height: 12px;
     background: linear-gradient(180deg, rgba(235, 235, 245, 0.9), rgba(235, 235, 245, 0.7)); 
     border-radius: 8px 8px 0 0;
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-bottom: none;
 }
+
 .mac-folder-back::after {
-    content: ''; position: absolute; top: -6px; left: 30px; width: 10px; height: 6px;
-    background: transparent; border-bottom-left-radius: 6px; box-shadow: -4px 3px 0 0 rgba(235, 235, 245, 0.7);
+    content: ''; 
+    position: absolute; 
+    top: -6px; 
+    left: 30px; 
+    width: 10px; 
+    height: 6px;
+    background: transparent; 
+    border-bottom-left-radius: 6px; 
+    box-shadow: -4px 3px 0 0 rgba(235, 235, 245, 0.7);
 }
 
 .mac-folder-front {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 74%;
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 74%;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)); 
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-top: 1px solid rgba(255, 255, 255, 1);
     border-left: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.6);
-    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px;
-    transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); transform-origin: bottom;
+    display: flex; 
+    align-items: flex-end; 
+    justify-content: center; 
+    padding-bottom: 12px;
+    transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); 
+    transform-origin: bottom;
 }
 
 .mac-folder-front::after {
-    content: ''; width: 24px; height: 4px; background: rgba(255, 255, 255, 1);
-    border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(0,0,0,0.1);
+    content: ''; 
+    width: 24px; 
+    height: 4px; 
+    background: rgba(255, 255, 255, 1);
+    border-radius: 4px; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(0,0,0,0.1);
 }
 
-.item-card:hover .mac-folder-front { transform: skewX(-4deg) scaleY(0.94); filter: brightness(1.15); }
+.item-card:hover .mac-folder-front { 
+    transform: skewX(-4deg) scaleY(0.94); 
+    filter: brightness(1.15); 
+}
+
 
 /* ============================================================ */
-/* FILE THUMBNAILS (WARNA & EXTS)                               */
+/* 14. FILE THUMBNAILS & EXTENSIONS (ICONS & COLORS)            */
 /* ============================================================ */
-.thumb-image, .thumb-video { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-.thumb-fallback-card { width: 100%; height: 100%; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 5px; text-align: center; }
-.huge-icon { font-size: 3rem !important; margin: 0 !important; }
+.thumb-image, 
+.thumb-video { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 8px; 
+}
 
-/* Warna Ikon & Background Extensions */
-.icon-blue { color: var(--clr-blue); } .icon-red { color: var(--clr-red); } .icon-green { color: var(--clr-green); } .icon-yellow { color: var(--clr-yellow); } .icon-grey { color: var(--clr-grey); } .icon-orange { color: #f97316; } .icon-purple { color: var(--clr-purple); }
+.thumb-fallback-card { 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    padding: 5px; 
+    text-align: center; 
+}
+
+.huge-icon { 
+    font-size: 3rem !important; 
+    margin: 0 !important; 
+}
+
+/* Warna Ikon & Background Extensions Berdasarkan Tipe File */
+.icon-blue { color: var(--clr-blue); } 
+.icon-red { color: var(--clr-red); } 
+.icon-green { color: var(--clr-green); } 
+.icon-yellow { color: var(--clr-yellow); } 
+.icon-grey { color: var(--clr-grey); } 
+.icon-orange { color: #f97316; } 
+.icon-purple { color: var(--clr-purple); }
+
 .bg-blue { background: rgba(66, 133, 244, 0.2); border: 1px solid rgba(66, 133, 244, 0.3); }
 .bg-red { background: rgba(234, 67, 53, 0.2); border: 1px solid rgba(234, 67, 53, 0.3); }
 .bg-green { background: rgba(52, 168, 83, 0.2); border: 1px solid rgba(52, 168, 83, 0.2); }
@@ -719,22 +1173,60 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .bg-orange { background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3); }
 .bg-grey { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.3); }
 
-/* ============================================================ */
-/* MODALS & OVERLAYS (LOADING, DEFAULTS)                        */
-/* ============================================================ */
-.loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-.spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 10000; display: flex; justify-content: center; align-items: center; }
 
 /* ============================================================ */
-/* UPDATE: Responsif Modal Box (Folder Baru & Upload) - LIQUID GLASS APPLE ORIGINAL */
+/* 15. MODALS, OVERLAYS & LOADING SCREEN                        */
 /* ============================================================ */
+.loading-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(15, 23, 42, 0.9); 
+    z-index: 99999; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    color: white; 
+}
+
+.spinner { 
+    width: 40px; 
+    height: 40px; 
+    border: 3px solid rgba(255,255,255,0.1); 
+    border-top: 3px solid var(--accent); 
+    border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+    margin-bottom: 15px; 
+}
+
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+.modal-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.7); 
+    backdrop-filter: blur(5px); 
+    z-index: 10000; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+/* Modal Box Responsif dengan Efek Liquid Glass Apple */
 .modal-box { 
-    width: 100%; max-width: 380px; margin: 0 15px; padding: 25px; 
-    
-    /* LIQUID GLASS EFEK MURNI */
+    width: 100%; 
+    max-width: 380px; 
+    margin: 0 15px; 
+    padding: 25px; 
     background: rgba(30, 41, 59, 0.55) !important; 
     backdrop-filter: blur(40px) saturate(200%) !important; 
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
@@ -743,67 +1235,167 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 24px !important; 
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
-    
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; 
 }
 
-.modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
-.modal-header h3 { font-size: 1.15rem; color: white; font-weight: 700; letter-spacing: -0.3px; }
-.close-icon { cursor: pointer; color: #cbd5e1; transition: 0.3s; padding: 5px; border-radius: 50%; } 
-.close-icon:hover { color: white; background: rgba(255,255,255,0.1); }
+.modal-header { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 20px; 
+    align-items: center; 
+}
+
+.modal-header h3 { 
+    font-size: 1.15rem; 
+    color: white; 
+    font-weight: 700; 
+    letter-spacing: -0.3px; 
+}
+
+.close-icon { 
+    cursor: pointer; 
+    color: #cbd5e1; 
+    transition: 0.3s; 
+    padding: 5px; 
+    border-radius: 50%; 
+} 
+
+.close-icon:hover { 
+    color: white; 
+    background: rgba(255,255,255,0.1); 
+}
 
 /* Penyesuaian Input Kaca (Untuk Modal Folder) */
 .modal-box .pill-input {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-    height: 48px; border-radius: 12px;
+    height: 48px; 
+    border-radius: 12px;
 }
+
 .modal-box .pill-input:focus-within {
     border-color: var(--accent);
     background: rgba(0, 0, 0, 0.3);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(45, 212, 191, 0.15);
 }
 
-.modal-actions-grid { display: flex; gap: 15px; margin-top: 25px; width: 100%; }
-.modal-actions-grid button { flex: 1; height: 44px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; }
-.modal-actions .btn-pill { height: 44px; border-radius: 12px; margin-top: 15px; font-weight: 600; font-size: 0.95rem; }
+.modal-actions-grid { 
+    display: flex; 
+    gap: 15px; 
+    margin-top: 25px; 
+    width: 100%; 
+}
+
+.modal-actions-grid button { 
+    flex: 1; 
+    height: 44px; 
+    border-radius: 12px; 
+    font-weight: 600; 
+    font-size: 0.95rem; 
+}
+
+.modal-actions .btn-pill { 
+    height: 44px; 
+    border-radius: 12px; 
+    margin-top: 15px; 
+    font-weight: 600; 
+    font-size: 0.95rem; 
+}
 
 .secondary { 
-    background: rgba(255,255,255,0.1); color: white; 
+    background: rgba(255,255,255,0.1); 
+    color: white; 
     border: 1px solid rgba(255,255,255,0.05);
     box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
 }
-.secondary:hover { background: rgba(255,255,255,0.15); }
-.full-width { width: 100%; }
+
+.secondary:hover { 
+    background: rgba(255,255,255,0.15); 
+}
+
+.full-width { 
+    width: 100%; 
+}
 
 /* Penyesuaian Drag & Drop Area Apple Glass (Untuk Modal Upload) */
 .drag-drop-area { 
     border: 2px dashed rgba(255, 255, 255, 0.2); 
     border-radius: 16px; 
-    padding: 35px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; 
+    padding: 35px 20px; 
+    text-align: center; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
     background: rgba(255, 255, 255, 0.03); 
     box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
 }
+
 .drag-drop-area:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.4);
 }
-.drag-drop-area.active { border-color: var(--accent); background: rgba(45, 212, 191, 0.15); }
-.animate-icon { font-size: 3rem; color: #94a3b8; margin-bottom: 15px; transition: 0.3s; }
-.drag-drop-area:hover .animate-icon { color: white; }
-.drag-drop-area.active .animate-icon { color: var(--accent); animation: bounce 1s infinite; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-/* Context Menus */
-.context-menu-modern { position: fixed; z-index: 20000; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); padding: 5px 0; width: 220px; display: none; flex-direction: column; overflow-y: auto; max-height: 80vh; }
-.context-menu-fixed { position: fixed !important; z-index: 99999 !important; }
-.show { display: flex !important; }
-.ctx-item, .dropdown-content a { 
-    display: flex !important; align-items: center; 
+.drag-drop-area.active { 
+    border-color: var(--accent); 
+    background: rgba(45, 212, 191, 0.15); 
+}
+
+.animate-icon { 
+    font-size: 3rem; 
+    color: #94a3b8; 
+    margin-bottom: 15px; 
+    transition: 0.3s; 
+}
+
+.drag-drop-area:hover .animate-icon { 
+    color: white; 
+}
+
+.drag-drop-area.active .animate-icon { 
+    color: var(--accent); 
+    animation: bounce 1s infinite; 
+}
+
+@keyframes bounce { 
+    0%, 100% { transform: translateY(0); } 
+    50% { transform: translateY(-10px); } 
+}
+
+
+/* ============================================================ */
+/* 16. CONTEXT MENUS (KLIK KANAN DESKTOP & LONG PRESS MOBILE)   */
+/* ============================================================ */
+.context-menu-modern { 
+    position: fixed; 
+    z-index: 20000; 
+    background: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 10px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+    padding: 5px 0; 
+    width: 220px; 
+    display: none; 
+    flex-direction: column; 
+    overflow-y: auto; 
+    max-height: 80vh; 
+}
+
+.context-menu-fixed { 
+    position: fixed !important; 
+    z-index: 99999 !important; 
+}
+
+.show { 
+    display: flex !important; 
+}
+
+.ctx-item, 
+.dropdown-content a { 
+    display: flex !important; 
+    align-items: center; 
     padding: 8px 14px !important; 
-    margin: 1px 8px !important; /* Jarak agar berbentuk kapsul saat di-hover */
-    color: #ffffff !important; /* Teks putih solid agar kontras di atas kaca bening */
+    margin: 1px 8px !important; 
+    color: #ffffff !important; 
     text-decoration: none; 
     font-size: 0.85rem !important; 
     font-weight: 500;
@@ -812,40 +1404,59 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     cursor: pointer; 
     transition: all 0.2s ease !important; 
 }
-.ctx-item:hover, .dropdown-content a:hover { 
+
+.ctx-item:hover, 
+.dropdown-content a:hover { 
     background: rgba(255, 255, 255, 0.15) !important; 
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
-.ctx-item i, .dropdown-content a i { 
+
+.ctx-item i, 
+.dropdown-content a i { 
     width: 20px !important; 
     margin-right: 12px !important; 
     font-size: 1rem !important;
     color: rgba(255, 255, 255, 0.7); 
     transition: 0.2s ease;
 }
-.ctx-item:hover i, .dropdown-content a:hover i { color: #ffffff !important; }
 
-/* Warna Ikon (Pastel Bening) */
+.ctx-item:hover i, 
+.dropdown-content a:hover i { 
+    color: #ffffff !important; 
+}
+
+/* Warna Ikon pada Context Menu */
 .dropdown-content a i.text-blue { color: #8ab4f8 !important; }
 .dropdown-content a i.text-green { color: #81c995 !important; }
 .dropdown-content a i.text-yellow { color: #fde293 !important; }
 .dropdown-content a i.text-purple { color: #c58af9 !important; }
 
 /* Garis Pembatas (Divider) Sangat Tipis */
-.menu-divider, .ctx-divider { 
+.menu-divider, 
+.ctx-divider { 
     height: 1px !important; 
     background: rgba(255, 255, 255, 0.12) !important; 
-    margin: 5px 0 !important; border: none !important; 
+    margin: 5px 0 !important; 
+    border: none !important; 
 }
 
-@keyframes modalPopSmooth { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-.modal-box.animate-open { animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes modalPopSmooth { 
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); } 
+    100% { opacity: 1; transform: scale(1) translateY(0); } 
+}
+
+.modal-box.animate-open { 
+    animation: modalPopSmooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+}
+
 
 /* ============================================================ */
-/* MODAL PENYIMPANAN (POPUP) - LIQUID GLASS APPLE ORIGINAL      */
+/* 17. MODAL PENYIMPANAN - LIQUID GLASS APPLE ORIGINAL          */
 /* ============================================================ */
 .storage-detail-box-wide { 
-    width: 100%; max-width: 650px; padding: 30px; 
+    width: 100%; 
+    max-width: 650px; 
+    padding: 30px; 
     background: rgba(30, 41, 59, 0.45) !important; 
     backdrop-filter: blur(40px) saturate(200%) !important; 
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
@@ -854,80 +1465,291 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 28px !important; 
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
-    display: flex; flex-direction: column; 
+    display: flex; 
+    flex-direction: column; 
 }
 
-.storage-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-.storage-modal-header h3 { font-size: 1.1rem; font-weight: 600; color: white; letter-spacing: 0.5px; }
-.close-icon-simple { color: #e2e8f0; cursor: pointer; font-size: 1rem; transition: 0.2s; padding: 5px; border-radius: 50%; }
-.close-icon-simple:hover { color: white; background: rgba(255,255,255,0.1); }
-.storage-flex-container { display: flex; gap: 40px; width: 100%; align-items: stretch; }
-.storage-col-left { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
-.storage-col-right { flex: 1; display: flex; flex-direction: column; }
-.storage-hero { margin-bottom: 20px; }
-.storage-hero h1 { font-size: 2.8rem; font-weight: 700; color: white; margin-bottom: 5px; letter-spacing: -1px; line-height: 1; }
-.storage-sub-hero { color: #cbd5e1; font-size: 0.95rem; }
-.multi-color-progress { width: 100%; height: 12px; background: transparent; border-radius: 10px; overflow: hidden; margin-top: 10px; display: flex; }
-.bar-segment { height: 100%; transition: all 0.2s ease; cursor: pointer; position: relative; border-right: 4px solid rgba(0,0,0,0.1); box-sizing: border-box; }
+.storage-modal-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 25px; 
+}
+
+.storage-modal-header h3 { 
+    font-size: 1.1rem; 
+    font-weight: 600; 
+    color: white; 
+    letter-spacing: 0.5px; 
+}
+
+.close-icon-simple { 
+    color: #e2e8f0; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    transition: 0.2s; 
+    padding: 5px; 
+    border-radius: 50%; 
+}
+
+.close-icon-simple:hover { 
+    color: white; 
+    background: rgba(255,255,255,0.1); 
+}
+
+.storage-flex-container { 
+    display: flex; 
+    gap: 40px; 
+    width: 100%; 
+    align-items: stretch; 
+}
+
+.storage-col-left { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start; 
+}
+
+.storage-col-right { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.storage-hero { 
+    margin-bottom: 20px; 
+}
+
+.storage-hero h1 { 
+    font-size: 2.8rem; 
+    font-weight: 700; 
+    color: white; 
+    margin-bottom: 5px; 
+    letter-spacing: -1px; 
+    line-height: 1; 
+}
+
+.storage-sub-hero { 
+    color: #cbd5e1; 
+    font-size: 0.95rem; 
+}
+
+.multi-color-progress { 
+    width: 100%; 
+    height: 12px; 
+    background: transparent; 
+    border-radius: 10px; 
+    overflow: hidden; 
+    margin-top: 10px; 
+    display: flex; 
+}
+
+.bar-segment { 
+    height: 100%; 
+    transition: all 0.2s ease; 
+    cursor: pointer; 
+    position: relative; 
+    border-right: 4px solid rgba(0,0,0,0.1); 
+    box-sizing: border-box; 
+}
+
 .bar-free { background-color: rgba(255,255,255,0.1); } 
 .bar-segment:last-child { border-right: none; }
 .bar-segment:hover { filter: brightness(1.2); }
-.bar-images { background-color: var(--clr-blue); } .bar-videos { background-color: var(--clr-yellow); } .bar-docs { background-color: var(--clr-red); } .bar-others { background-color: var(--clr-grey); }
+.bar-images { background-color: var(--clr-blue); } 
+.bar-videos { background-color: var(--clr-yellow); } 
+.bar-docs { background-color: var(--clr-red); } 
+.bar-others { background-color: var(--clr-grey); }
 
-.custom-tooltip { position: fixed; z-index: 20000; background: #ffffff; color: #1e293b; padding: 16px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); width: 220px; pointer-events: none; font-family: 'Inter', sans-serif; transform: translate(-50%, -120%); transition: opacity 0.15s, transform 0.1s; text-align: left; }
-.custom-tooltip::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); border-width: 6px 6px 0; border-style: solid; border-color: #ffffff transparent transparent transparent; }
-.tooltip-header { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-.tooltip-size { font-size: 1.4rem; font-weight: 600; color: #202124; margin-bottom: 6px; }
-.tooltip-desc { font-size: 0.85rem; color: #5f6368; line-height: 1.4; }
+.custom-tooltip { 
+    position: fixed; 
+    z-index: 20000; 
+    background: #ffffff; 
+    color: #1e293b; 
+    padding: 16px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25); 
+    width: 220px; 
+    pointer-events: none; 
+    font-family: 'Inter', sans-serif; 
+    transform: translate(-50%, -120%); 
+    transition: opacity 0.15s, transform 0.1s; 
+    text-align: left; 
+}
 
-.storage-legend { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
-.legend-row { display: flex; justify-content: space-between; font-size: 0.9rem; align-items: center; }
-.legend-label { display: flex; align-items: center; gap: 12px; color: #f8fafc; font-weight: 500; }
-.legend-val { color: #cbd5e1; font-family: 'Consolas', monospace; font-size: 0.85rem; }
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-images { background-color: var(--clr-blue); } .dot-videos { background-color: var(--clr-yellow); } .dot-docs { background-color: var(--clr-red); } .dot-others { background-color: var(--clr-grey); } .dot-free { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+.custom-tooltip::after { 
+    content: ''; 
+    position: absolute; 
+    bottom: -6px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    border-width: 6px 6px 0; 
+    border-style: solid; 
+    border-color: #ffffff transparent transparent transparent; 
+}
 
-.storage-btn-left-container, .storage-btn-right-container { margin-top: auto; width: 100%; }
-.btn-rect { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.secondary-dark { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.05); } .secondary-dark:hover { background: rgba(255,255,255,0.2); }
-.primary-dark { background: rgba(66, 133, 244, 0.2); color: #93c5fd; border: 1px solid rgba(66,133,244,0.1); } .primary-dark:hover { background: rgba(66, 133, 244, 0.35); }
+.tooltip-header { 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: #64748b; 
+    text-transform: uppercase; 
+    margin-bottom: 4px; 
+    letter-spacing: 0.5px; 
+}
+
+.tooltip-size { 
+    font-size: 1.4rem; 
+    font-weight: 600; 
+    color: #202124; 
+    margin-bottom: 6px; 
+}
+
+.tooltip-desc { 
+    font-size: 0.85rem; 
+    color: #5f6368; 
+    line-height: 1.4; 
+}
+
+.storage-legend { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    margin-bottom: 30px; 
+}
+
+.legend-row { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.9rem; 
+    align-items: center; 
+}
+
+.legend-label { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    color: #f8fafc; 
+    font-weight: 500; 
+}
+
+.legend-val { 
+    color: #cbd5e1; 
+    font-family: 'Consolas', monospace; 
+    font-size: 0.85rem; 
+}
+
+.dot { 
+    width: 10px; 
+    height: 10px; 
+    border-radius: 50%; 
+    display: inline-block; 
+}
+.dot-images { background-color: var(--clr-blue); } 
+.dot-videos { background-color: var(--clr-yellow); } 
+.dot-docs { background-color: var(--clr-red); } 
+.dot-others { background-color: var(--clr-grey); } 
+.dot-free { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+
+.storage-btn-left-container, 
+.storage-btn-right-container { 
+    margin-top: auto; 
+    width: 100%; 
+}
+
+.btn-rect { 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 8px; 
+    border: none; 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    text-align: center; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+
+.secondary-dark { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.05); } 
+.secondary-dark:hover { background: rgba(255,255,255,0.2); }
+
+.primary-dark { background: rgba(66, 133, 244, 0.2); color: #93c5fd; border: 1px solid rgba(66,133,244,0.1); } 
+.primary-dark:hover { background: rgba(66, 133, 244, 0.35); }
+
 
 /* ============================================================ */
-/* NEW UPDATE: STORAGE FULL PAGE - LIQUID GLASS APPLE ORIGINAL  */
+/* 18. STORAGE FULL PAGE - LIQUID GLASS APPLE ORIGINAL          */
 /* ============================================================ */
 .full-screen-layout { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    
-    /* Transparent blur overlay so the liquid-bg behind it shines through */
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
     background: rgba(15, 23, 42, 0.65); 
     backdrop-filter: blur(25px) saturate(150%);
     -webkit-backdrop-filter: blur(25px) saturate(150%);
-    
-    z-index: 9000; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; 
+    z-index: 9000; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 20px; 
+    overflow-y: auto; 
 }
 
 .storage-page-header { 
-    display: flex; align-items: center; gap: 20px; padding-bottom: 20px; margin-bottom: 30px; 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    padding-bottom: 20px; 
+    margin-bottom: 30px; 
     border-bottom: 1px solid rgba(255,255,255,0.1); 
-    position: sticky; top: 0; z-index: 9010;
+    position: sticky; 
+    top: 0; 
+    z-index: 9010;
 }
 
 .back-icon-btn { 
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-    color: white; font-size: 1.2rem; cursor: pointer; width: 42px; height: 42px; 
-    border-radius: 50%; display: flex; justify-content: center; align-items: center; 
-    transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); backdrop-filter: blur(10px); 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    color: white; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+    backdrop-filter: blur(10px); 
 }
-.back-icon-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
 
-.storage-page-header h2 { font-size: 1.4rem; font-weight: 600; color: white; letter-spacing: -0.3px; }
-.storage-page-content { flex: 1; display: flex; justify-content: center; align-items: flex-start; }
+.back-icon-btn:hover { 
+    background: rgba(255,255,255,0.15); 
+    transform: scale(1.05); 
+}
+
+.storage-page-header h2 { 
+    font-size: 1.4rem; 
+    font-weight: 600; 
+    color: white; 
+    letter-spacing: -0.3px; 
+}
+
+.storage-page-content { 
+    flex: 1; 
+    display: flex; 
+    justify-content: center; 
+    align-items: flex-start; 
+}
 
 /* LIQUID GLASS APPLE ORIGINAL - KARTU PENGELOLA PENYIMPANAN */
 .storage-manager-card { 
-    width: 100%; max-width: 800px; 
+    width: 100%; 
+    max-width: 800px; 
     padding: 40px 50px; 
-    
     background: rgba(30, 41, 59, 0.45) !important; 
     backdrop-filter: blur(40px) saturate(200%) !important; 
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
@@ -936,68 +1758,178 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 32px !important; 
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important; 
-    
     transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
-.card-header-text { text-align: center; margin-bottom: 40px; }
-.card-header-text h1 { font-size: 2.2rem; font-weight: 600; margin-bottom: 12px; color: white; letter-spacing: -0.5px; }
-.card-header-text p { color: #cbd5e1; font-size: 1rem; }
+.card-header-text { 
+    text-align: center; 
+    margin-bottom: 40px; 
+}
 
-.storage-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 1rem; font-weight: 500; color: #f8fafc; }
-.highlight-text { color: white; font-weight: 700; font-family: 'SF Pro Text', 'Consolas', monospace; font-size: 1.1rem; }
+.card-header-text h1 { 
+    font-size: 2.2rem; 
+    font-weight: 600; 
+    margin-bottom: 12px; 
+    color: white; 
+    letter-spacing: -0.5px; 
+}
+
+.card-header-text p { 
+    color: #cbd5e1; 
+    font-size: 1rem; 
+}
+
+.storage-summary-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px; 
+    font-size: 1rem; 
+    font-weight: 500; 
+    color: #f8fafc; 
+}
+
+.highlight-text { 
+    color: white; 
+    font-weight: 700; 
+    font-family: 'SF Pro Text', 'Consolas', monospace; 
+    font-size: 1.1rem; 
+}
 
 .page-progress { 
-    height: 14px; margin-bottom: 40px; 
+    height: 14px; 
+    margin-bottom: 40px; 
     background: rgba(0,0,0,0.25); 
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); 
     border: 1px solid rgba(255,255,255,0.05); 
 }
 
-.storage-detail-list { display: flex; flex-direction: column; gap: 0; }
+.storage-detail-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0; 
+}
+
 .detail-item { 
-    display: flex; justify-content: space-between; align-items: center; 
-    padding: 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 18px 10px; 
+    border-bottom: 1px solid rgba(255,255,255,0.08); 
     transition: background 0.2s ease, border-radius 0.2s ease; 
 }
-.detail-item:hover { background: rgba(255,255,255,0.04); border-radius: 12px; border-bottom-color: transparent; }
-.detail-item:last-child { border-bottom: none; }
 
-.dt-left { display: flex; align-items: center; gap: 15px; font-size: 1.05rem; color: #f1f5f9; font-weight: 500; }
-.dt-right { font-family: 'SF Pro Text', 'Consolas', monospace; color: #cbd5e1; font-weight: 600; font-size: 1rem; }
-.item-free { opacity: 0.8; }
+.detail-item:hover { 
+    background: rgba(255,255,255,0.04); 
+    border-radius: 12px; 
+    border-bottom-color: transparent; 
+}
+
+.detail-item:last-child { 
+    border-bottom: none; 
+}
+
+.dt-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    font-size: 1.05rem; 
+    color: #f1f5f9; 
+    font-weight: 500; 
+}
+
+.dt-right { 
+    font-family: 'SF Pro Text', 'Consolas', monospace; 
+    color: #cbd5e1; 
+    font-weight: 600; 
+    font-size: 1rem; 
+}
+
+.item-free { 
+    opacity: 0.8; 
+}
 
 
 /* ============================================================ */
-/* PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION FIXED     */
+/* 19. PREVIEW MODAL BARU: THEATER MODE, GLASS NAVIGATION FIXED */
 /* ============================================================ */
 .preview-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
     background: rgba(15, 23, 42, 0.85); 
-    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    z-index: 30000; display: flex; flex-direction: column;
-    opacity: 0; transition: opacity 0.3s ease;
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 30000; 
+    display: flex; 
+    flex-direction: column;
+    opacity: 0; 
+    transition: opacity 0.3s ease;
     pointer-events: none; 
 }
-.preview-overlay.show-preview { opacity: 1; pointer-events: auto; display: flex !important; }
+
+.preview-overlay.show-preview { 
+    opacity: 1; 
+    pointer-events: auto; 
+    display: flex !important; 
+}
 
 /* Header Glass Apple */
 .preview-header {
-    background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-    height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-    z-index: 30005; flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.03); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px); 
+    -webkit-backdrop-filter: blur(30px);
+    height: 60px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 20px;
+    z-index: 30005; 
+    flex-shrink: 0;
 }
-.preview-header-left, .preview-header-right { display: flex; align-items: center; gap: 10px; }
+
+.preview-header-left, 
+.preview-header-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
 .preview-file-info {
-    display: flex; align-items: center; gap: 10px; color: white; font-weight: 500; font-size: 1rem;
-    max-width: 50vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    color: white; 
+    font-weight: 500; 
+    font-size: 1rem;
+    max-width: 50vw; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
+
 .icon-btn {
-    background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.1rem; cursor: pointer;
-    width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; transition: 0.2s;
+    background: transparent; 
+    border: none; 
+    color: rgba(255,255,255,0.7); 
+    font-size: 1.1rem; 
+    cursor: pointer;
+    width: 36px; 
+    height: 36px; 
+    border-radius: 8px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: 0.2s;
 }
-.icon-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+
+.icon-btn:hover { 
+    background: rgba(255, 255, 255, 0.05); 
+    color: white; 
+}
 
 /* PURE GLASS STYLE GLOBAL */
 .pure-glass {
@@ -1008,174 +1940,685 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 2px rgba(255,255,255,0.4) !important;
 }
 
-/* ----------------------------------------------------- */
-/* CONTAINER BODY PREVIEW (FLEXBOX PRESISI UNTUK NAV)    */
-/* ----------------------------------------------------- */
+/* CONTAINER BODY PREVIEW (FLEXBOX PRESISI UNTUK NAV) */
 .preview-body-container {
-    flex: 1; display: flex; justify-content: space-between; align-items: center; 
-    width: 100%; padding: 0 20px; overflow: hidden; 
+    flex: 1; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%; 
+    padding: 0 20px; 
+    overflow: hidden; 
 }
 
 /* Pembungkus Navigasi Kiri & Kanan */
-.nav-button-container { flex-shrink: 0; width: 60px; display: flex; justify-content: center; z-index: 30010; }
+.nav-button-container { 
+    flex-shrink: 0; 
+    width: 60px; 
+    display: flex; 
+    justify-content: center; 
+    z-index: 30010; 
+}
 
 /* NAVIGATION BUTTONS (Liquid Glass Circles) */
 .nav-arrow {
-    width: 55px !important; height: 55px !important; font-size: 1.3rem !important;
-    display: flex; align-items: center; justify-content: center; border-radius: 50%;
-    color: white; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    width: 55px !important; 
+    height: 55px !important; 
+    font-size: 1.3rem !important;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 50%;
+    color: white; 
+    cursor: pointer; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
-.nav-arrow:hover { background: rgba(255, 255, 255, 0.3) !important; transform: scale(1.08) !important; box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; }
-.nav-arrow:active { transform: scale(0.95) !important; }
+.nav-arrow:hover { 
+    background: rgba(255, 255, 255, 0.3) !important; 
+    transform: scale(1.08) !important; 
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; 
+}
+
+.nav-arrow:active { 
+    transform: scale(0.95) !important; 
+}
 
 /* Area Konten Tengah */
 .preview-content-area {
-    flex: 1; display: flex; justify-content: center; align-items: center;
-    height: 100%; padding: 20px 20px; overflow: hidden; position: relative;
+    flex: 1; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    height: 100%; 
+    padding: 20px 20px; 
+    overflow: hidden; 
+    position: relative;
 }
-.preview-content-area img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; }
-.preview-unsupported { display: flex; flex-direction: column; align-items: center; color: white; text-align: center; animation: previewZoomIn 0.3s ease-out; }
-.preview-unsupported i { font-size: 4rem; margin-bottom: 20px; color: rgba(255,255,255,0.3); }
-.preview-unsupported p { margin-bottom: 20px; color: rgba(255,255,255,0.7); }
 
-@keyframes previewZoomIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+.preview-content-area img { 
+    max-width: 100%; 
+    max-height: 100%; 
+    object-fit: contain; 
+    border-radius: 8px; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+    animation: previewZoomIn 0.3s ease-out; 
+}
+
+.preview-unsupported { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    color: white; 
+    text-align: center; 
+    animation: previewZoomIn 0.3s ease-out; 
+}
+
+.preview-unsupported i { 
+    font-size: 4rem; 
+    margin-bottom: 20px; 
+    color: rgba(255,255,255,0.3); 
+}
+
+.preview-unsupported p { 
+    margin-bottom: 20px; 
+    color: rgba(255,255,255,0.7); 
+}
+
+@keyframes previewZoomIn { 
+    0% { opacity: 0; transform: scale(0.95); } 
+    100% { opacity: 1; transform: scale(1); } 
+}
 
 /* MAC OS DOCUMENT VIEWER GLASS WINDOW */
 .doc-glass-wrapper {
-    width: 100%; height: 95%; max-width: 1200px; padding: 10px; background: rgba(255, 255, 255, 0.05); 
-    backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4); display: flex; animation: previewZoomIn 0.3s ease-out;
+    width: 100%; 
+    height: 95%; 
+    max-width: 1200px; 
+    padding: 10px; 
+    background: rgba(255, 255, 255, 0.05); 
+    backdrop-filter: blur(25px) saturate(180%); 
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    border-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4); 
+    display: flex; 
+    animation: previewZoomIn 0.3s ease-out;
 }
-.doc-glass-wrapper iframe { flex: 1; width: 100%; height: 100%; border-radius: 8px; border: none; background: #f8f9fa; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+
+.doc-glass-wrapper iframe { 
+    flex: 1; 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 8px; 
+    border: none; 
+    background: #f8f9fa; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+}
+
 
 /* ============================================================ */
-/* VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL (CLEAN)      */
+/* 20. VIDEO PLAYER BARU: THEATER MODE, APPLE ORIGINAL          */
 /* ============================================================ */
 .apple-video-wrapper { 
-    position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
-    background: transparent; border-radius: 16px; overflow: hidden; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: previewZoomIn 0.3s ease-out; 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: transparent; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+    animation: previewZoomIn 0.3s ease-out; 
 }
-.apple-video-wrapper video { width: 100%; max-height: 100%; border-radius: 16px; outline: none; background-color: transparent; }
-.apple-video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.15); opacity: 1; transition: opacity 0.5s ease-in-out; pointer-events: none; }
-.apple-video-overlay * { pointer-events: auto; }
 
-.apple-center-controls { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 30px; align-items: center; }
-.apple-glass-btn { color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); width: 65px; height: 65px; font-size: 1.5rem; position: relative; }
-.apple-glass-btn.play-pause-btn { width: 85px; height: 85px; font-size: 2.5rem; }
-.apple-glass-btn:hover { background: rgba(255, 255, 255, 0.3) !important; transform: scale(1.08); box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; }
-.apple-glass-btn:active { transform: scale(0.95); transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
-.apple-glass-btn.small { width: 40px; height: 40px; font-size: 1rem; }
+.apple-video-wrapper video { 
+    width: 100%; 
+    max-height: 100%; 
+    border-radius: 16px; 
+    outline: none; 
+    background-color: transparent; 
+}
 
-.apple-skip-btn i { display: none !important; }
-.apple-skip-btn { position: relative; display: flex; align-items: center; justify-content: center; background-color: transparent; }
-.apple-skip-btn::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; background-repeat: no-repeat; background-position: center; background-size: 60%; z-index: 1; opacity: 0.9; }
-#vidSkipBack::before { background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'); }
-#vidSkipForward::before { background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>'); }
-.apple-skip-btn .skip-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.85rem; font-weight: 700; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: -0.3px; z-index: 2; margin-top: 1px; pointer-events: none; }
+.apple-video-overlay { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.15); 
+    opacity: 1; 
+    transition: opacity 0.5s ease-in-out; 
+    pointer-events: none; 
+}
 
-.apple-top-controls { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
-.top-right-group { display: flex; gap: 12px; align-items: center; }
-.apple-volume-container { display: flex; align-items: center; justify-content: flex-start; border-radius: 30px; height: 40px; width: 40px; padding: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
-.apple-volume-container:hover { width: 140px; background: rgba(255, 255, 255, 0.3) !important; }
-.volume-icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: none; background: transparent; color: white; cursor: pointer; transition: 0.2s; }
-.volume-icon-btn:hover { transform: scale(1.1); }
-.volume-slider-wrapper { width: 80px; opacity: 0; transition: opacity 0.3s ease, margin 0.3s ease; display: flex; align-items: center; margin-left: 0; }
-.apple-volume-container:hover .volume-slider-wrapper { opacity: 1; margin-left: 5px; }
-.apple-volume-slider { -webkit-appearance: none; appearance: none; background: linear-gradient(to right, #ffffff var(--vol), rgba(255,255,255,0.3) var(--vol)); width: 100%; height: 5px; border-radius: 3px; outline: none; cursor: pointer; transition: 0.1s; }
-.apple-volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s; }
-.apple-volume-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.apple-video-overlay * { 
+    pointer-events: auto; 
+}
 
-.apple-bottom-pill { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; height: 44px; border-radius: 25px; display: flex; align-items: center; padding: 0 20px; gap: 15px; }
-.apple-progress-container { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.25); border-radius: 3px; cursor: pointer; position: relative; transition: height 0.2s; display: flex; align-items: center; }
-.apple-progress-container:hover { height: 8px; }
-.apple-progress-bar { height: 100%; background: #ffffff; border-radius: 3px; width: 0%; pointer-events: none; box-shadow: 0 0 5px rgba(255,255,255,0.3); position: relative; }
-.apple-progress-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%) scale(0); width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-.apple-progress-container:hover .apple-progress-thumb { transform: translateY(-50%) scale(1); }
-.apple-time { color: white; font-size: 0.8rem; font-family: 'Inter', sans-serif; font-weight: 500; user-select: none; width: 40px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.apple-center-controls { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    display: flex; 
+    gap: 30px; 
+    align-items: center; 
+}
+
+.apple-glass-btn { 
+    color: white; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1); 
+    width: 65px; 
+    height: 65px; 
+    font-size: 1.5rem; 
+    position: relative; 
+}
+
+.apple-glass-btn.play-pause-btn { 
+    width: 85px; 
+    height: 85px; 
+    font-size: 2.5rem; 
+}
+
+.apple-glass-btn:hover { 
+    background: rgba(255, 255, 255, 0.3) !important; 
+    transform: scale(1.08); 
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.6) !important; 
+}
+
+.apple-glass-btn:active { 
+    transform: scale(0.95); 
+    transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1); 
+}
+
+.apple-glass-btn.small { 
+    width: 40px; 
+    height: 40px; 
+    font-size: 1rem; 
+}
+
+.apple-skip-btn i { 
+    display: none !important; 
+}
+
+.apple-skip-btn { 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background-color: transparent; 
+}
+
+.apple-skip-btn::before { 
+    content: ''; 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 100%; 
+    height: 100%; 
+    background-repeat: no-repeat; 
+    background-position: center; 
+    background-size: 60%; 
+    z-index: 1; 
+    opacity: 0.9; 
+}
+
+#vidSkipBack::before { 
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'); 
+}
+
+#vidSkipForward::before { 
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>'); 
+}
+
+.apple-skip-btn .skip-text { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    color: white; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    letter-spacing: -0.3px; 
+    z-index: 2; 
+    margin-top: 1px; 
+    pointer-events: none; 
+}
+
+.apple-top-controls { 
+    position: absolute; 
+    top: 20px; 
+    left: 20px; 
+    right: 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+}
+
+.top-right-group { 
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+}
+
+.apple-volume-container { 
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start; 
+    border-radius: 30px; 
+    height: 40px; 
+    width: 40px; 
+    padding: 0; 
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+    overflow: hidden; 
+}
+
+.apple-volume-container:hover { 
+    width: 140px; 
+    background: rgba(255, 255, 255, 0.3) !important; 
+}
+
+.volume-icon-btn { 
+    width: 40px; 
+    height: 40px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+    border: none; 
+    background: transparent; 
+    color: white; 
+    cursor: pointer; 
+    transition: 0.2s; 
+}
+
+.volume-icon-btn:hover { 
+    transform: scale(1.1); 
+}
+
+.volume-slider-wrapper { 
+    width: 80px; 
+    opacity: 0; 
+    transition: opacity 0.3s ease, margin 0.3s ease; 
+    display: flex; 
+    align-items: center; 
+    margin-left: 0; 
+}
+
+.apple-volume-container:hover .volume-slider-wrapper { 
+    opacity: 1; 
+    margin-left: 5px; 
+}
+
+.apple-volume-slider { 
+    -webkit-appearance: none; 
+    appearance: none; 
+    background: linear-gradient(to right, #ffffff var(--vol), rgba(255,255,255,0.3) var(--vol)); 
+    width: 100%; 
+    height: 5px; 
+    border-radius: 3px; 
+    outline: none; 
+    cursor: pointer; 
+    transition: 0.1s; 
+}
+
+.apple-volume-slider::-webkit-slider-thumb { 
+    -webkit-appearance: none; 
+    width: 12px; 
+    height: 12px; 
+    border-radius: 50%; 
+    background: #ffffff; 
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3); 
+    cursor: pointer; 
+    transition: transform 0.1s; 
+}
+
+.apple-volume-slider::-webkit-slider-thumb:hover { 
+    transform: scale(1.2); 
+}
+
+.apple-bottom-pill { 
+    position: absolute; 
+    bottom: 30px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 90%; 
+    max-width: 700px; 
+    height: 44px; 
+    border-radius: 25px; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 20px; 
+    gap: 15px; 
+}
+
+.apple-progress-container { 
+    flex: 1; 
+    height: 6px; 
+    background: rgba(255, 255, 255, 0.25); 
+    border-radius: 3px; 
+    cursor: pointer; 
+    position: relative; 
+    transition: height 0.2s; 
+    display: flex; 
+    align-items: center; 
+}
+
+.apple-progress-container:hover { 
+    height: 8px; 
+}
+
+.apple-progress-bar { 
+    height: 100%; 
+    background: #ffffff; 
+    border-radius: 3px; 
+    width: 0%; 
+    pointer-events: none; 
+    box-shadow: 0 0 5px rgba(255,255,255,0.3); 
+    position: relative; 
+}
+
+.apple-progress-thumb { 
+    position: absolute; 
+    right: -6px; 
+    top: 50%; 
+    transform: translateY(-50%) scale(0); 
+    width: 12px; 
+    height: 12px; 
+    background: white; 
+    border-radius: 50%; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+}
+
+.apple-progress-container:hover .apple-progress-thumb { 
+    transform: translateY(-50%) scale(1); 
+}
+
+.apple-time { 
+    color: white; 
+    font-size: 0.8rem; 
+    font-family: 'Inter', sans-serif; 
+    font-weight: 500; 
+    user-select: none; 
+    width: 40px; 
+    text-align: center; 
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3); 
+}
+
 
 /* ============================================================ */
-/* NEW: APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK BARU) */
+/* 21. APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK) */
 /* ============================================================ */
-.preview-content-area:has(.apple-audio-player-v2) { display: flex; justify-content: center; align-items: center; padding: 0; }
+.preview-content-area:has(.apple-audio-player-v2) { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 0; 
+}
 
 .apple-audio-player-v2 {
-    display: flex; flex-direction: row; width: 720px; max-width: 95vw; height: 320px;
-    background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.5); border-radius: 28px;
-    padding: 20px; gap: 30px; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
-    animation: previewZoomIn 0.35s ease-out; color: white; position: relative;
+    display: flex; 
+    flex-direction: row; 
+    width: 720px; 
+    max-width: 95vw; 
+    height: 320px;
+    background: rgba(255, 255, 255, 0.12); 
+    backdrop-filter: blur(40px) saturate(200%); 
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    border-top: 1px solid rgba(255, 255, 255, 0.5); 
+    border-radius: 28px;
+    padding: 20px; 
+    gap: 30px; 
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    animation: previewZoomIn 0.35s ease-out; 
+    color: white; 
+    position: relative;
 }
 
 .audio-cover-v2 {
-    width: 280px; height: 280px; border-radius: 16px;
+    width: 280px; 
+    height: 280px; 
+    border-radius: 16px;
     background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); flex-shrink: 0;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); 
+    flex-shrink: 0;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.audio-cover-v2 i { font-size: 8rem; color: rgba(255, 255, 255, 0.9); }
-.audio-cover-v2.playing { transform: scale(1.03); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
 
-.audio-right-v2 { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 10px 10px 0; min-width: 0; }
+.audio-cover-v2 i { 
+    font-size: 8rem; 
+    color: rgba(255, 255, 255, 0.9); 
+}
 
-.audio-header-v2 { display: flex; justify-content: space-between; align-items: flex-start; }
-.audio-meta-v2 { display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
-.audio-title-v2 { font-size: 1.6rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; letter-spacing: -0.3px; }
-.audio-artist-v2 { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); font-weight: 500; }
+.audio-cover-v2.playing { 
+    transform: scale(1.03); 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); 
+}
 
-.audio-airplay-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); font-size: 1.2rem; cursor: pointer; transition: 0.2s; flex-shrink: 0; margin-left: 10px;}
-.audio-airplay-btn:hover { color: white; }
+.audio-right-v2 { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    padding: 10px 10px 10px 0; 
+    min-width: 0; 
+}
 
-.audio-timeline-v2 { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+.audio-header-v2 { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+}
+
+.audio-meta-v2 { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    overflow: hidden; 
+}
+
+.audio-title-v2 { 
+    font-size: 1.6rem; 
+    font-weight: 700; 
+    color: white; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 100%; 
+    letter-spacing: -0.3px; 
+}
+
+.audio-artist-v2 { 
+    font-size: 1.1rem; 
+    color: rgba(255, 255, 255, 0.7); 
+    font-weight: 500; 
+}
+
+.audio-airplay-btn { 
+    background: transparent; 
+    border: none; 
+    color: rgba(255,255,255,0.7); 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    flex-shrink: 0; 
+    margin-left: 10px;
+}
+
+.audio-airplay-btn:hover { 
+    color: white; 
+}
+
+.audio-timeline-v2 { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    margin-top: 15px; 
+}
 
 .apple-slider-v2 {
-    -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
-    background: rgba(255, 255, 255, 0.2); border-radius: 3px; outline: none; cursor: pointer; position: relative;
+    -webkit-appearance: none; 
+    appearance: none; 
+    width: 100%; 
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2); 
+    border-radius: 3px; 
+    outline: none; 
+    cursor: pointer; 
+    position: relative;
 }
-.apple-slider-v2::-webkit-slider-runnable-track { background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog)); height: 6px; border-radius: 3px; }
+
+.apple-slider-v2::-webkit-slider-runnable-track { 
+    background: linear-gradient(to right, rgba(255,255,255,0.9) var(--prog), transparent var(--prog)); 
+    height: 6px; 
+    border-radius: 3px; 
+}
+
 .apple-slider-v2::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px; 
-    background: white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.2s ease; margin-top: -5px; opacity: 1; 
+    -webkit-appearance: none; 
+    width: 16px; 
+    height: 16px; 
+    background: white; 
+    border-radius: 50%; 
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3); 
+    transition: all 0.2s ease; 
+    margin-top: -5px; 
+    opacity: 1; 
 }
 
-.audio-time-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-family: 'SF Pro Text', 'Consolas', monospace; font-weight: 600; font-variant-numeric: tabular-nums;}
+.audio-time-row { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.75rem; 
+    color: rgba(255, 255, 255, 0.6); 
+    font-family: 'SF Pro Text', 'Consolas', monospace; 
+    font-weight: 600; 
+    font-variant-numeric: tabular-nums;
+}
 
-.audio-controls-v2 { display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 10px; }
-.audio-btn-v2 { background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
-.audio-btn-v2:hover { opacity: 0.8; transform: scale(1.05); }
-.audio-btn-v2:active { transform: scale(0.95); opacity: 1; }
-.audio-btn-v2.play { font-size: 3rem; }
+.audio-controls-v2 { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 40px; 
+    margin-top: 10px; 
+}
 
-.audio-volume-v2 { display: flex; align-items: center; gap: 15px; margin-top: 15px; }
-.audio-volume-v2 i { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); }
-.volume-slider-v2 { flex: 1; height: 4px; }
-.volume-slider-v2::-webkit-slider-runnable-track { height: 4px; }
-.volume-slider-v2::-webkit-slider-thumb { width: 12px; height: 12px; margin-top: -4px; }
+.audio-btn-v2 { 
+    background: transparent; 
+    border: none; 
+    color: white; 
+    font-size: 2rem; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
 
-.ios-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 120px; height: 5px; background: rgba(255,255,255,0.5); border-radius: 10px; }
+.audio-btn-v2:hover { 
+    opacity: 0.8; 
+    transform: scale(1.05); 
+}
+
+.audio-btn-v2:active { 
+    transform: scale(0.95); 
+    opacity: 1; 
+}
+
+.audio-btn-v2.play { 
+    font-size: 3rem; 
+}
+
+.audio-volume-v2 { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    margin-top: 15px; 
+}
+
+.audio-volume-v2 i { 
+    font-size: 0.9rem; 
+    color: rgba(255, 255, 255, 0.7); 
+}
+
+.volume-slider-v2 { 
+    flex: 1; 
+    height: 4px; 
+}
+
+.volume-slider-v2::-webkit-slider-runnable-track { 
+    height: 4px; 
+}
+
+.volume-slider-v2::-webkit-slider-thumb { 
+    width: 12px; 
+    height: 12px; 
+    margin-top: -4px; 
+}
+
+.ios-indicator { 
+    position: absolute; 
+    bottom: 8px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 120px; 
+    height: 5px; 
+    background: rgba(255,255,255,0.5); 
+    border-radius: 10px; 
+}
 
 
 /* ============================================================ */
-/* MEDIA QUERIES UNTUK RESPONSIVE SEMUA DEVICE                  */
+/* 22. MEDIA QUERIES (DESKTOP, TABLET, MOBILE)                  */
 /* ============================================================ */
 
-/* LAYAR SUPER BESAR / TV (>= 1920px) */
+/* --- LAYAR SUPER BESAR / TV (>= 1920px) --- */
 @media screen and (min-width: 1920px) {
-    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; padding: 20px 30px; }
-    .item-name { font-size: 1rem; height: 20px; line-height: 20px; }
-    .mac-folder-icon { transform: scale(1.3); }
-    .item-card:hover .mac-folder-icon { transform: scale(1.35) translateY(-3px); }
-    .search-bar-pill { max-width: 800px; height: 55px; }
+    .file-grid-area { 
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+        gap: 30px; 
+        padding: 20px 30px; 
+    }
+    
+    .item-name { 
+        font-size: 1rem; 
+        height: 20px; 
+        line-height: 20px; 
+    }
+    
+    .mac-folder-icon { 
+        transform: scale(1.3); 
+    }
+    
+    .item-card:hover .mac-folder-icon { 
+        transform: scale(1.35) translateY(-3px); 
+    }
+    
+    .search-bar-pill { 
+        max-width: 800px; 
+        height: 55px; 
+    }
 }
 
-/* LAPTOP KECIL & TABLET LANDSCAPE (<= 1024px) */
+/* --- LAPTOP KECIL & TABLET LANDSCAPE (<= 1024px) --- */
 @media screen and (max-width: 1024px) {
-    /* ============================================================ */
-    /* MATIKAN BINGKAI KACA DESKTOP AGAR TIDAK BOCOR KE MOBILE      */
-    /* ============================================================ */
+    /* Matikan bingkai kaca desktop agar tidak bocor ke layout mobile */
     .sidebar-left { 
         width: 0 !important; 
         height: 0 !important; 
@@ -1189,61 +2632,113 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     }
 }
 
-/* MOBILE / HP / IPAD PORTRAIT (<= 768px) */
+/* --- MOBILE / HP / IPAD PORTRAIT (<= 768px) --- */
 @media screen and (max-width: 768px) {
-    .dashboard-layout { padding: 0; }
+    .dashboard-layout { 
+        padding: 0; 
+    }
     
     .main-glass-panel { 
-        flex: 1; flex-direction: column; 
-        border-radius: 0; border: none; padding: 0; 
-        height: auto; gap: 0;
+        flex: 1; 
+        flex-direction: column; 
+        border-radius: 0; 
+        border: none; 
+        padding: 0; 
+        height: auto; 
+        gap: 0;
         background: rgba(255, 255, 255, 0.02); 
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px); 
+        -webkit-backdrop-filter: blur(20px);
         box-shadow: none;
     }
     
-    .top-nav { min-height: 40px !important; margin-bottom: 5px !important; padding: 10px 15px 5px 15px !important; }
-    .top-nav .logo-img { display: none !important; }
-    .brand-text { font-size: 1.25rem !important; letter-spacing: -0.3px; }
-    .brand-area { gap: 0; padding: 4px 8px; }
+    .top-nav { 
+        min-height: 40px !important; 
+        margin-bottom: 5px !important; 
+        padding: 10px 15px 5px 15px !important; 
+    }
     
-    .avatar { width: 32px !important; height: 32px !important; border-width: 1px !important; }
-    .logout-btn { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+    .top-nav .logo-img { 
+        display: none !important; 
+    }
+    
+    .brand-text { 
+        font-size: 1.25rem !important; 
+        letter-spacing: -0.3px; 
+    }
+    
+    .brand-area { 
+        gap: 0; 
+        padding: 4px 8px; 
+    }
+    
+    .avatar { 
+        width: 32px !important; 
+        height: 32px !important; 
+        border-width: 1px !important; 
+    }
+    
+    .logout-btn { 
+        width: 32px !important; 
+        height: 32px !important; 
+        font-size: 0.9rem !important; 
+    }
     
     .main-content-area { 
-        order: 2; height: 100%; 
+        order: 2; 
+        height: 100%; 
         overflow-y: auto !important; 
         padding-bottom: 230px !important; 
         position: relative;
         scrollbar-width: none; 
     }
-    .main-content-area::-webkit-scrollbar { display: none; }
+    
+    .main-content-area::-webkit-scrollbar { 
+        display: none; 
+    }
     
     .search-row {
-        position: sticky !important; top: 0 !important; z-index: 100 !important;
-        padding: 10px 15px !important; margin: 0 !important;
-        background: transparent !important; backdrop-filter: none !important; 
-        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
+        position: sticky !important; 
+        top: 0 !important; 
+        z-index: 100 !important;
+        padding: 10px 15px !important; 
+        margin: 0 !important;
+        background: transparent !important; 
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; 
+        border: none !important; 
+        pointer-events: none !important; 
     }
-    .search-row > * { pointer-events: auto !important; }
+    
+    .search-row > * { 
+        pointer-events: auto !important; 
+    }
     
     .breadcrumb-area {
-        position: sticky !important; top: 56px !important; z-index: 99 !important;
-        padding: 5px 15px 15px 15px !important; margin: 0 !important;
-        background: transparent !important; backdrop-filter: none !important; 
-        -webkit-backdrop-filter: none !important; border: none !important; pointer-events: none !important; 
+        position: sticky !important; 
+        top: 56px !important; 
+        z-index: 99 !important;
+        padding: 5px 15px 15px 15px !important; 
+        margin: 0 !important;
+        background: transparent !important; 
+        backdrop-filter: none !important; 
+        -webkit-backdrop-filter: none !important; 
+        border: none !important; 
+        pointer-events: none !important; 
     }
 
-    /* ---> TAMBAHKAN KODE INI UNTUK MEMPERBAIKI UKURAN PILL DI MOBILE <--- */
+    /* Memperbaiki Ukuran Pill di Mobile */
     .breadcrumb-area .header-title-pill {
-        font-size: 1.2rem !important; /* Mengecilkan teks ke ukuran asal mobile */
-        padding: 6px 16px !important; /* Mengurangi padding agar tidak terlalu lebar */
-        margin-left: -5px !important; /* Menyesuaikan posisi kiri seperti sebelumnya */
+        font-size: 1.2rem !important; 
+        padding: 6px 16px !important; 
+        margin-left: -5px !important; 
     }
     
-    /* === 2. SEARCH BAR PILL (KOLOM PENCARIAN) === */
+    /* SEARCH BAR PILL (KOLOM PENCARIAN) */
     .search-bar-pill { 
-        height: 44px !important; padding: 0 15px !important; border-radius: 50px !important; 
+        height: 44px !important; 
+        padding: 0 15px !important; 
+        border-radius: 50px !important; 
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important; 
         backdrop-filter: blur(40px) saturate(220%) !important; 
         -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
@@ -1253,48 +2748,37 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
     }
 
-    /* === 3. HEADER TITLE PILL (JUDUL HALAMAN/FOLDER) === */
-    /* .header-title-pill {
-        display: inline-block; padding: 8px 18px !important; border-radius: 50px !important; margin-left: -5px; 
-        font-size: 1.25rem !important; font-weight: 700; color: white;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important; 
-        backdrop-filter: blur(40px) saturate(220%) !important; 
-        -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255, 255, 255, 0.3) !important;
-    }
-    .search-icon { font-size: 0.85rem !important; }
-    
-    .header-title-pill {
-        display: inline-block; padding: 8px 16px; border-radius: 12px; margin-left: -5px; 
-        font-size: 1.3rem !important; font-weight: 700; color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        background: rgba(30, 41, 59, 0.45) !important;
-        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
-    } */
-
     .file-grid-area { 
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-        gap: 12px; padding: 15px; height: auto !important; 
-        overflow-y: visible !important; padding-bottom: 0 !important;
+        gap: 12px; 
+        padding: 15px; 
+        height: auto !important; 
+        overflow-y: visible !important; 
+        padding-bottom: 0 !important;
     }
-    .item-card { padding: 8px; border-radius: 10px; }
-    .mac-folder-icon { transform: scale(0.85); }
-    .item-card:hover .mac-folder-icon { transform: scale(0.9) translateY(-3px); }
     
-    /* ============================================================== */
-    /* WIDGET PENYIMPANAN MOBILE                                      */
-    /* ============================================================== */
-    /* === 4. STORAGE WIDGET (INDIKATOR PENYIMPANAN KIRI BAWAH) === */
+    .item-card { 
+        padding: 8px; 
+        border-radius: 10px; 
+    }
+    
+    .mac-folder-icon { 
+        transform: scale(0.85); 
+    }
+    
+    .item-card:hover .mac-folder-icon { 
+        transform: scale(0.9) translateY(-3px); 
+    }
+    
+    /* STORAGE WIDGET (INDIKATOR PENYIMPANAN KIRI BAWAH) */
     .storage-widget { 
-        position: fixed !important; bottom: calc(85px + env(safe-area-inset-bottom)) !important; left: 15px !important;
-        width: auto !important; min-width: 140px !important; max-width: 180px !important; margin: 0 !important;
-        
+        position: fixed !important; 
+        bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
+        left: 15px !important;
+        width: auto !important; 
+        min-width: 140px !important; 
+        max-width: 180px !important; 
+        margin: 0 !important;
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important; 
         backdrop-filter: blur(40px) saturate(220%) !important; 
         -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
@@ -1302,42 +2786,63 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3) !important;
-        
-        border-radius: 20px !important; padding: 12px 16px !important; z-index: 5001 !important;
-        display: flex !important; flex-direction: column !important; justify-content: center !important; order: unset !important;
+        border-radius: 20px !important; 
+        padding: 12px 16px !important; 
+        z-index: 5001 !important;
+        display: flex !important; 
+        flex-direction: column !important; 
+        justify-content: center !important; 
+        order: unset !important;
     }
     
-    .storage-widget .storage-label { font-size: 0.7rem !important; margin-bottom: 4px !important; display: flex !important; align-items: center !important; gap: 5px !important; font-weight: 600 !important; color: white !important; }
-    .storage-widget .progress-track { height: 4px !important; margin: 0 0 4px 0 !important; background: rgba(255,255,255,0.15) !important; }
-    .storage-widget .storage-text { font-size: 0.6rem !important; text-align: left !important; color: rgba(255,255,255,0.85) !important; font-weight: 500 !important; font-family: 'SF Pro Text', sans-serif !important; }
+    .storage-widget .storage-label { 
+        font-size: 0.7rem !important; 
+        margin-bottom: 4px !important; 
+        display: flex !important; 
+        align-items: center !important; 
+        gap: 5px !important; 
+        font-weight: 600 !important; 
+        color: white !important; 
+    }
     
-    /* === DESAIN SIDEBAR MENU KAPSUL PENDEK ALA NICEGRAM === */
-    /* === DESAIN SIDEBAR MENU LIQUID GLASS APPLE ORIGINAL === */
+    .storage-widget .progress-track { 
+        height: 4px !important; 
+        margin: 0 0 4px 0 !important; 
+        background: rgba(255,255,255,0.15) !important; 
+    }
+    
+    .storage-widget .storage-text { 
+        font-size: 0.6rem !important; 
+        text-align: left !important; 
+        color: rgba(255,255,255,0.85) !important; 
+        font-weight: 500 !important; 
+        font-family: 'SF Pro Text', sans-serif !important; 
+    }
+    
+    /* DESAIN SIDEBAR MENU LIQUID GLASS APPLE ORIGINAL (BOTTOM NAVIGATION) */
     .sidebar-menu { 
         position: fixed !important; 
         bottom: calc(15px + env(safe-area-inset-bottom)) !important;
-        left: 50% !important; transform: translateX(-50%) !important;
+        left: 50% !important; 
+        transform: translateX(-50%) !important;
         width: max-content !important; 
         max-width: 92vw !important; 
         height: auto !important; 
         padding: 6px 8px !important; 
         border-radius: 50px !important; 
-        
-        /* Apple Liquid Glass Effect: Transparansi bercahaya dengan saturasi warna latar */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important; 
         backdrop-filter: blur(40px) saturate(220%) !important; 
         -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-        
-        /* Edge lighting: Bias cahaya dominan dari atas dan kiri */
         border: 1px solid rgba(255, 255, 255, 0.15) !important; 
         border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-        
-        /* Kedalaman 3D: Bayangan lembut di bawah dan pantulan cahaya di dalam */
         box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3) !important;
-        
-        z-index: 5000 !important; display: flex !important; flex-direction: row !important; 
-        justify-content: center !important; align-items: center !important; gap: 0px !important; 
+        z-index: 5000 !important; 
+        display: flex !important; 
+        flex-direction: row !important; 
+        justify-content: center !important; 
+        align-items: center !important; 
+        gap: 0px !important; 
     }
 
     .nav-indicator {
@@ -1346,14 +2851,11 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         top: 6px !important; 
         height: 48px !important; 
         border-radius: 50px !important; 
-        
-        /* Apple Frosted Bubble: Kapsul yang terlihat seperti gelembung kaca tebal di dalam kaca utama */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.05)) !important; 
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 8px 25px rgba(0,0,0,0.25), inset 0 2px 5px rgba(255,255,255,0.4) !important;
-        
         transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
         z-index: 0 !important;
         pointer-events: none !important;
@@ -1362,7 +2864,8 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .nav-item { 
         position: relative !important;
         z-index: 1 !important; 
-        flex-direction: column !important; gap: 2px !important; 
+        flex-direction: column !important; 
+        gap: 2px !important; 
         width: auto !important; 
         min-width: 48px !important; 
         height: 48px !important; 
@@ -1372,9 +2875,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         text-align: center !important; 
         color: rgba(255,255,255,0.55) !important;
         background: transparent !important;
-        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; outline: none !important; -webkit-tap-highlight-color: transparent !important;
-        
-        /* Tambahkan baris ini agar menu tidak lompat/bergeser saat disentuh (hover effect dari desktop) */
+        transition: color 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important; 
+        outline: none !important; 
+        -webkit-tap-highlight-color: transparent !important;
         transform: none !important; 
     }
     
@@ -1383,26 +2886,43 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         background: transparent !important; 
         border: none !important;
         box-shadow: none !important;
-        
-        /* Tambahkan baris ini agar ikon sejajar sempurna dengan kapsul JavaScript */
         transform: none !important; 
     }
-    .nav-item.active i { color: var(--accent) !important; text-shadow: 0 0 10px rgba(45, 212, 191, 0.4); transform: scale(1.05) !important; }
-    .nav-item.active span { color: white !important; font-weight: 700 !important; }
     
-    .nav-item i { font-size: 1.25rem !important; transition: transform 0.3s ease, color 0.3s ease !important; margin: 0 !important; width: auto !important; padding: 0 !important; background: transparent !important; }
-    .nav-item span { font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.2px !important; white-space: nowrap !important; }
+    .nav-item.active i { 
+        color: var(--accent) !important; 
+        text-shadow: 0 0 10px rgba(45, 212, 191, 0.4); 
+        transform: scale(1.05) !important; 
+    }
+    
+    .nav-item.active span { 
+        color: white !important; 
+        font-weight: 700 !important; 
+    }
+    
+    .nav-item i { 
+        font-size: 1.25rem !important; 
+        transition: transform 0.3s ease, color 0.3s ease !important; 
+        margin: 0 !important; 
+        width: auto !important; 
+        padding: 0 !important; 
+        background: transparent !important; 
+    }
+    
+    .nav-item span { 
+        font-size: 0.65rem !important; 
+        font-weight: 500 !important; 
+        letter-spacing: 0.2px !important; 
+        white-space: nowrap !important; 
+    }
     
     .hide-mobile { display: none !important; }
     
-    /* ============================================================== */
-    /* TOMBOL PLUS (NEW) - DIBUAT TETAP, ANIMASI MENGHILANG DIHAPUS   */
-    /* ============================================================== */
-    /* === 5. NEW BUTTON (TOMBOL PLUS FLOATING KANAN BAWAH) === */
+    /* NEW BUTTON (TOMBOL PLUS FLOATING KANAN BAWAH) */
     .new-btn-wrapper { 
-        position: fixed !important; /* Mengembalikan posisi melayang */
+        position: fixed !important; 
         bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
-        right: 15px !important; /* Mengembalikan tombol ke kanan */
+        right: 15px !important; 
         width: 54px !important; 
         height: 54px !important; 
         z-index: 5001 !important; 
@@ -1413,8 +2933,9 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         width: 54px !important; 
         height: 54px !important; 
         border-radius: 50% !important; 
-        padding: 0 !important; justify-content: center !important; align-items: center !important; 
-        
+        padding: 0 !important; 
+        justify-content: center !important; 
+        align-items: center !important; 
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02)) !important; 
         backdrop-filter: blur(40px) saturate(220%) !important; 
         -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
@@ -1423,42 +2944,41 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4) !important; 
         color: white !important;
-        
         transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
         -webkit-backface-visibility: hidden !important;
         backface-visibility: hidden !important;
         transform: translateZ(0) !important;
     }
+    
     .new-btn:hover { 
         background: rgba(255, 255, 255, 0.15) !important; 
         box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3) !important;
     }
+    
     .new-btn:active {
         transform: scale(0.92) translateZ(0) !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1) !important;
         transition: transform 0.1s ease, box-shadow 0.1s ease !important;
     }
+    
     .new-btn-text { display: none !important; }
     .new-btn i { font-size: 1.3rem !important; margin: 0 !important; color: white !important; } 
     
+    /* DROPDOWN EXPAND MOBILE */
     .dropdown-content.extended-menu { 
         top: auto !important; 
         bottom: calc(75px + env(safe-area-inset-bottom)) !important; 
-        right: 15px !important; left: auto !important; 
+        right: 15px !important; 
+        left: auto !important; 
         transform: none !important; 
-        
         transform-origin: bottom right !important; 
         animation: iosMenuPopMobile 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards !important;
-        
-        /* Tingkat transparansi disamakan agar membiaskan wallpaper di belakangnya */
         background: rgba(10, 10, 10, 0.15) !important; 
         backdrop-filter: blur(50px) saturate(220%) !important; 
         -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
-        
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-        
         box-shadow: 
             0 20px 40px rgba(0, 0, 0, 0.3), 
             inset 0 1px 2px rgba(255, 255, 255, 0.2),
@@ -1470,62 +2990,75 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    .modal-box { padding: 25px 20px !important; margin: 0 20px !important; max-width: calc(100vw - 40px) !important; border-radius: 28px !important; }
-    .modal-actions-grid { flex-direction: row; }
+    .modal-box { 
+        padding: 25px 20px !important; 
+        margin: 0 20px !important; 
+        max-width: calc(100vw - 40px) !important; 
+        border-radius: 28px !important; 
+    }
+    
+    .modal-actions-grid { 
+        flex-direction: row; 
+    }
 
     /* STORAGE DETAIL POPUP RESPONSIVE */
-    .storage-detail-box-wide { width: 100%; max-width: 650px; padding: 30px; 
+    .storage-detail-box-wide { 
+        width: 100%; 
+        max-width: 650px; 
+        padding: 30px; 
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.45)) !important; 
+        backdrop-filter: blur(40px) saturate(220%) !important; 
+        -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 28px !important; 
+        box-shadow: 
+            0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+            inset 0 1px 3px rgba(255, 255, 255, 0.3),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
+        display: flex; 
+        flex-direction: column; 
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; 
+    }
     
-    /* Apple Liquid Glass Effect */
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.45)) !important; 
-    backdrop-filter: blur(40px) saturate(220%) !important; 
-    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-    
-    /* Edge Lighting and Borders */
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-radius: 28px !important; 
-    
-    /* Deep Shadows for Elevated 3D Look */
-    box-shadow: 
-        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
-        inset 0 1px 3px rgba(255, 255, 255, 0.3),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
-        
-    display: flex; flex-direction: column; 
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; }
     .storage-hero h1 { font-size: 2.3rem !important; }
     .storage-flex-container { display: flex !important; flex-direction: column !important; gap: 15px !important; }
     .storage-col-left, .storage-col-right { display: contents !important; }
     .storage-content-wrapper { order: 1; margin-bottom: 5px; }
-    .storage-legend { order: 2; margin-bottom: 0 !important; background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); }
+    .storage-legend { 
+        order: 2; 
+        margin-bottom: 0 !important; 
+        background: rgba(255,255,255,0.04); 
+        padding: 15px; 
+        border-radius: 16px; 
+        border: 1px solid rgba(255,255,255,0.05); 
+        box-shadow: inset 0 1px 2px rgba(255,255,255,0.05); 
+    }
     .storage-btn-left-container { order: 3; margin-top: 10px !important; }
     .storage-btn-right-container { order: 4; }
     
     /* STORAGE FULL PAGE RESPONSIVE MOBILE */
     .storage-page-header { padding-bottom: 15px; margin-bottom: 20px; }
-    .storage-manager-card { width: 100%; max-width: 800px; 
-    padding: 40px 50px; 
     
-    /* Apple Liquid Glass Effect */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important; 
-    backdrop-filter: blur(50px) saturate(220%) !important; 
-    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+    .storage-manager-card { 
+        width: 100%; 
+        max-width: 800px; 
+        padding: 40px 50px; 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important; 
+        backdrop-filter: blur(50px) saturate(220%) !important; 
+        -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+        border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 32px !important; 
+        box-shadow: 
+            0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+            inset 0 1px 3px rgba(255, 255, 255, 0.3),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; 
+    }
     
-    /* Edge Lighting and Borders */
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-radius: 32px !important; 
-    
-    /* Deep Shadows for Elevated 3D Look */
-    box-shadow: 
-        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
-        inset 0 1px 3px rgba(255, 255, 255, 0.3),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important; 
-    
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease; }
     .card-header-text { margin-bottom: 25px; }
     .card-header-text h1 { font-size: 1.7rem; margin-bottom: 8px; }
     .card-header-text p { font-size: 0.85rem; }
@@ -1537,10 +3070,26 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .dt-right { font-size: 0.9rem; }
 
     /* AUDIO & VIDEO RESPONSIVE */
-    .apple-audio-player-v2 { flex-direction: column; width: 90vw; height: auto; max-height: 85vh; padding: 20px; gap: 15px; border-radius: 24px; }
+    .apple-audio-player-v2 { 
+        flex-direction: column; 
+        width: 90vw; 
+        height: auto; 
+        max-height: 85vh; 
+        padding: 20px; 
+        gap: 15px; 
+        border-radius: 24px; 
+    }
+    
     .audio-cover-v2 { width: 100%; height: auto; aspect-ratio: 1/1; max-height: 280px; margin: 0 auto; }
     .audio-right-v2 { padding: 0; width: 100%; }
-    .audio-header-v2 { flex-direction: column; align-items: center; text-align: center; position: relative; }
+    
+    .audio-header-v2 { 
+        flex-direction: column; 
+        align-items: center; 
+        text-align: center; 
+        position: relative; 
+    }
+    
     .audio-title-v2 { font-size: 1.3rem; max-width: 100%; text-align: center; }
     .audio-artist-v2 { font-size: 0.95rem; text-align: center; }
     .audio-airplay-btn { position: absolute; top: 0; right: 0; margin: 0; }
@@ -1554,18 +3103,40 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .nav-button-container { position: absolute; top: 50%; transform: translateY(-50%); width: auto; z-index: 30050; }
     .nav-left { left: 10px; }
     .nav-right { right: 10px; }
-    .nav-arrow { width: 45px !important; height: 45px !important; font-size: 1rem !important; background: rgba(0,0,0,0.5) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
+    
+    .nav-arrow { 
+        width: 45px !important; 
+        height: 45px !important; 
+        font-size: 1rem !important; 
+        background: rgba(0,0,0,0.5) !important; 
+        border: 1px solid rgba(255,255,255,0.2) !important; 
+    }
 }
 
-/* HP LAYAR SANGAT KECIL (<= 480px) */
+/* --- HP LAYAR SANGAT KECIL (<= 480px) --- */
 @media screen and (max-width: 480px) {
-    .file-grid-area { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+    .file-grid-area { 
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+        gap: 10px; 
+    }
+    
     .audio-cover-v2 { max-height: 220px; }
     .audio-title-v2 { font-size: 1.1rem; }
     
-    .storage-widget { min-width: 120px !important; max-width: 160px !important; padding: 8px 10px !important; left: 10px !important; }
+    .storage-widget { 
+        min-width: 120px !important; 
+        max-width: 160px !important; 
+        padding: 8px 10px !important; 
+        left: 10px !important; 
+    }
     
-    .sidebar-menu { width: max-content !important; max-width: 96vw !important; padding: 5px 6px !important; justify-content: center !important; }
+    .sidebar-menu { 
+        width: max-content !important; 
+        max-width: 96vw !important; 
+        padding: 5px 6px !important; 
+        justify-content: center !important; 
+    }
+    
     .sidebar-menu .nav-item { padding: 4px 8px !important; min-width: 42px !important; } 
     .nav-item span { font-size: 0.55rem !important; letter-spacing: 0px !important; } 
     .nav-item i { font-size: 1.15rem !important; }
@@ -1573,52 +3144,87 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .top-nav .logo-img { display: none !important; }
     .brand-text { font-size: 1.2rem !important; }
     
-    .storage-summary-row { flex-direction: column; align-items: flex-start; gap: 5px; }
+    .storage-summary-row { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 5px; 
+    }
 }
 
+
 /* ============================================================ */
-/* SELECTION ACTION BAR (INLINE ALA GOOGLE DRIVE)               */
+/* 23. SELECTION ACTION BAR (INLINE ALA GOOGLE DRIVE)           */
 /* ============================================================ */
 .selection-action-bar {
-    width: calc(100% - 30px); /* Menyesuaikan padding kiri-kanan area utama */
-    margin: 0 15px 15px 15px; /* Memberikan jarak ke bawah untuk mendorong file */
+    width: calc(100% - 30px); 
+    margin: 0 15px 15px 15px; 
     height: 56px;
-    background: #1e293b; /* Tema gelap ala Google Drive */
+    background: #1e293b; 
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex; /* Menggantikan position: fixed */
+    display: flex; 
     justify-content: space-between; 
     align-items: center;
     padding: 0 16px; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     color: #e2e8f0; 
-    flex-shrink: 0; /* Mencegah bar menyusut */
+    flex-shrink: 0; 
 }
 
 /* Logika Instan (Tanpa Transisi/Delay Animasi Melayang) */
-.selection-action-bar.hidden {
-    display: none !important;
-}
-.selection-action-bar.show-bar {
-    display: flex !important;
+.selection-action-bar.hidden { display: none !important; }
+.selection-action-bar.show-bar { display: flex !important; }
+
+.sab-left, .sab-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
 }
 
-.sab-left, .sab-right { display: flex; align-items: center; gap: 12px; }
-.sab-left span { color: white; font-weight: 500; font-size: 0.95rem; }
+.sab-left span { 
+    color: white; 
+    font-weight: 500; 
+    font-size: 0.95rem; 
+}
 
 .icon-btn-sab {
-    background: transparent; border: none; color: #cbd5e1; font-size: 1.1rem;
-    width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.2s;
-    display: flex; align-items: center; justify-content: center;
+    background: transparent; 
+    border: none; 
+    color: #cbd5e1; 
+    font-size: 1.1rem;
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    transition: 0.2s;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
 }
-.icon-btn-sab:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.icon-btn-sab:hover { 
+    background: rgba(255,255,255,0.1); 
+    color: white; 
+}
 
 .sab-gemini-btn {
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 40px; padding: 6px 14px; color: white; display: flex; align-items: center; 
-    gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: 0.2s;
+    background: rgba(255,255,255,0.08); 
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 40px; 
+    padding: 6px 14px; 
+    color: white; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    font-size: 0.85rem; 
+    font-weight: 500; 
+    transition: 0.2s;
 }
-.sab-gemini-btn:hover { background: rgba(255,255,255,0.15); }
+
+.sab-gemini-btn:hover { 
+    background: rgba(255,255,255,0.15); 
+}
 
 /* Menyorot item yang ditahan/diklik kanan */
 .selected-item {
@@ -1626,6 +3232,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     border-color: rgba(66, 133, 244, 0.5) !important;
 }
 
+/* Penyesuaian Action Bar untuk Mobile */
 @media screen and (max-width: 768px) {
     .selection-action-bar { 
         width: calc(100% - 20px);
@@ -1634,6 +3241,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
         padding: 0 10px; 
         border-radius: 12px; 
     }
+    
     .sab-left, .sab-right { gap: 4px; }
     .sab-gemini-btn { padding: 5px 10px; font-size: 0.75rem; }
     .hide-mobile-sm { display: none !important; }

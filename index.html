@@ -1,31 +1,54 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <!-- ====================================================== -->
+    <!-- 1. META TAGS & KONFIGURASI DOKUMEN                     -->
+    <!-- ====================================================== -->
     <meta charset="UTF-8">
+    <!-- Viewport untuk optimasi mobile, mencegah zoom yang tidak disengaja, dan dukungan notch/safe-area -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0f172a">
     <title>Storage Tasks - Pro Drive</title>
     
+    <!-- ====================================================== -->
+    <!-- 2. STYLESHEETS & EXTERNAL LIBRARIES                    -->
+    <!-- ====================================================== -->
+    <!-- CSS Utama -->
     <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome untuk ikon-ikon antarmuka -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Appwrite SDK (Penghubung ke Backend) -->
     <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <!-- Manifest untuk fitur PWA (Progressive Web App) -->
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <!-- Latar Belakang Animasi Liquid -->
     <div class="liquid-bg"></div>
 
+    <!-- ====================================================== -->
+    <!-- 3. KOMPONEN GLOBAL & OVERLAY UI                        -->
+    <!-- ====================================================== -->
+    
+    <!-- Layar Loading Global -->
     <div id="loading" class="loading-overlay hidden">
         <div class="spinner"></div>
         <p id="loadingText">Memproses...</p>
     </div>
 
+    <!-- Tooltip Kustom untuk Detail Kapasitas Penyimpanan (Storage Bar) -->
     <div id="customTooltip" class="custom-tooltip hidden">
         <div class="tooltip-header" id="ttHeader">KATEGORI</div>
         <div class="tooltip-size" id="ttSize">0 GB</div>
         <div class="tooltip-desc" id="ttDesc">Deskripsi file disini.</div>
     </div>
 
+    <!-- ====================================================== -->
+    <!-- 4. HALAMAN AUTENTIKASI (LOGIN, SIGN UP, RESET)         -->
+    <!-- ====================================================== -->
+
+    <!-- Halaman Login -->
     <section id="loginPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
@@ -55,6 +78,7 @@
         </div>
     </section>
 
+    <!-- Halaman Pendaftaran (Sign Up) -->
     <section id="signupPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
@@ -73,6 +97,7 @@
                     <i class="fa-solid fa-check-circle"></i><input type="password" id="regVerify" placeholder="Ulangi Password" required>
                     <i class="fa-solid fa-eye-slash toggle-eye" onclick="togglePass('regVerify', this)"></i>
                 </div>
+                
                 <button type="submit" class="btn-pill primary">Daftar</button>
                 <div class="auth-footer">
                     Sudah punya akun? <span class="link-text" onclick="nav('loginPage')">Login</span>
@@ -81,6 +106,7 @@
         </div>
     </section>
 
+    <!-- Halaman Lupa Password (Reset) -->
     <section id="resetPage" class="full-screen-center hidden">
         <div class="glass-card auth-card">
             <div class="auth-header">
@@ -113,7 +139,11 @@
         </div>
     </section>
 
+    <!-- ====================================================== -->
+    <!-- 5. HALAMAN UTAMA (DASHBOARD)                           -->
+    <!-- ====================================================== -->
     <section id="dashboardPage" class="dashboard-layout hidden">
+        <!-- Header Dashboard -->
         <header class="top-nav">
             <div class="brand-area" onclick="goBack()" title="Ke Beranda">
                 <img src="Image/logo.png" alt="Logo" class="logo-img">
@@ -125,8 +155,12 @@
             </div>
         </header>
 
+        <!-- Area Konten & Panel Kaca (Glassmorphism) -->
         <div class="main-glass-panel">
+            
+            <!-- Sidebar Kiri (Navigasi Drive) -->
             <aside class="sidebar-left">
+                <!-- Tombol Buat Baru & Menu Dropdown -->
                 <div class="new-btn-wrapper">
                     <button id="newBtnMain" class="btn-pill new-btn">
                         <i class="fa-solid fa-plus"></i> <span class="new-btn-text">Baru</span>
@@ -145,7 +179,9 @@
                     </div>
                 </div>
 
+                <!-- Navigasi Menu Drive Utama -->
                 <nav class="sidebar-menu">
+                    <!-- Indikator Navigasi (Animasi Hover/Active) -->
                     <div class="nav-indicator"></div>
                     
                     <a onclick="handleMenuClick(this, 'root')" class="nav-item active"><i class="fa-solid fa-house"></i> <span>Beranda</span></a>
@@ -157,6 +193,7 @@
                     <a onclick="handleMenuClick(this, 'trash')" class="nav-item"><i class="fa-solid fa-trash-can"></i> <span>Sampah</span></a>
                 </nav>
 
+                <!-- Widget Indikator Penyimpanan di Sidebar -->
                 <div class="storage-widget" onclick="openStorageModal()" style="cursor: pointer;" title="Lihat detail penyimpanan">
                     <div class="storage-label"><i class="fa-solid fa-cloud"></i> Penyimpanan</div>
                     <div class="progress-track"><div id="storageBar" class="progress-fill"></div></div>
@@ -164,7 +201,9 @@
                 </div>
             </aside>
 
+            <!-- Area Grid/Ruang Kerja Utama -->
             <main class="main-content-area">
+                <!-- Kolom Pencarian -->
                 <div class="search-row">
                     <div class="search-bar-pill" id="searchContainer">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -173,15 +212,18 @@
                     </div>
                 </div>
                 
-                <div class="breadcrumb-area"><h2 id="headerTitle" class="header-title-pill">Welcome In Drive</h2></div>
+                <!-- Judul Dinamis & Breadcrumb -->
+                <div class="breadcrumb-area">
+                    <h2 id="headerTitle" class="header-title-pill">Welcome In Drive</h2>
+                </div>
                 
-                <!-- SELECTION ACTION BAR (MUNCUL SAAT ITEM DITAHAN/DIKLIK KANAN) -->
+                <!-- TOP ACTION BAR (Hanya Muncul Saat Mode Seleksi Aktif) -->
                 <div id="selectionActionBar" class="selection-action-bar hidden">
                     <div class="sab-left">
-                        <!-- UBAH BARIS INI: -->
-                         <button class="icon-btn-sab" onclick="clearSelection()"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="icon-btn-sab" onclick="clearSelection()"><i class="fa-solid fa-xmark"></i></button>
                         <span id="sabCount">1 dipilih</span>
-                        <!-- Tombol Minta Gemini sesuai gambar referensi Anda -->
+                        
+                        <!-- Integrasi AI -->
                         <button class="sab-gemini-btn" onclick="alert('Fitur Gemini AI segera hadir!')">
                             <i class="fa-solid fa-sparkles"></i> Minta Gemini
                         </button>
@@ -196,11 +238,17 @@
                     </div>
                 </div>
 
+                <!-- Kontainer Induk untuk Card File & Folder -->
                 <div id="fileGrid" class="file-grid-area"></div>
             </main>
         </div>
     </section>
 
+    <!-- ====================================================== -->
+    <!-- 6. HALAMAN PROFIL & MANAJEMEN PENYIMPANAN PENUH        -->
+    <!-- ====================================================== -->
+    
+    <!-- Halaman Profil Pengguna -->
     <section id="profilePage" class="full-screen-center hidden">
         <div class="glass-card profile-card">
             <div class="profile-header">
@@ -249,6 +297,7 @@
         </div>
     </section>
 
+    <!-- Halaman Detail Pengelola Penyimpanan -->
     <section id="storagePage" class="full-screen-layout hidden">
         <header class="storage-page-header">
             <button class="back-icon-btn" onclick="closeStoragePage()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -269,6 +318,7 @@
                     <span class="highlight-text" id="pageStorageUsedText">0 MB dari 2 GB</span>
                 </div>
 
+                <!-- Bar Status Detail Per Kategori File -->
                 <div class="multi-color-progress page-progress">
                     <div id="pageBarImages" class="bar-segment bar-images" style="width: 0%"></div>
                     <div id="pageBarVideos" class="bar-segment bar-videos" style="width: 0%"></div>
@@ -277,6 +327,7 @@
                     <div id="pageBarFree" class="bar-segment bar-free" style="width: 100%"></div> 
                 </div>
 
+                <!-- Legenda Data -->
                 <div class="storage-detail-list">
                     <div class="detail-item">
                         <div class="dt-left"><span class="dot dot-images"></span> Gambar</div>
@@ -303,6 +354,11 @@
         </div>
     </section>
 
+    <!-- ====================================================== -->
+    <!-- 7. KUMPULAN MODAL & WINDOW POPUP                       -->
+    <!-- ====================================================== -->
+    
+    <!-- Modal Pembuatan Folder Baru -->
     <div id="folderModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('folderModal')">
         <div class="glass-card modal-box">
             <div class="modal-header">
@@ -322,6 +378,7 @@
         </div>
     </div>
 
+    <!-- Modal Unggah File (Drag & Drop Zone) -->
     <div id="uploadModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('uploadModal')">
         <div class="glass-card modal-box upload-box-style">
             <div class="modal-header">
@@ -332,9 +389,12 @@
                 <div id="dropZone" class="drag-drop-area">
                     <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
                     <h4 id="uploadModalDesc">Seret item ke sini atau klik</h4>
+                    
+                    <!-- Input Tersembunyi untuk Menangani Sistem OS -->
                     <input type="file" id="fileInputHidden" hidden multiple>
                     <input type="file" id="folderInputHidden" hidden webkitdirectory directory multiple>
                 </div>
+                <!-- Informasi Status Unggahan -->
                 <div id="fileInfoContainer" class="hidden" style="margin-top:10px;text-align:center;max-height:80px;overflow-y:auto;">
                     <p id="fileInfoText"></p>
                 </div>
@@ -345,6 +405,7 @@
         </div>
     </div>
 
+    <!-- Dropdown Menu "Baru" (Versi Fixed untuk Responsivitas) -->
     <div id="dropdownNewMenu" class="dropdown-content extended-menu context-menu-fixed">
         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
         <hr class="menu-divider">
@@ -357,6 +418,7 @@
         <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
     </div>
 
+    <!-- Modal Informasi Singkat Penyimpanan -->
     <div id="storageModal" class="modal-overlay hidden" onclick="if(event.target === this) closeModal('storageModal')">
         <div class="glass-card modal-box storage-detail-box-wide">
             <div class="storage-modal-header">
@@ -397,6 +459,7 @@
         </div>
     </div>
 
+    <!-- Modal Media Player Kustom (Audio, Video, Dokumen, Foto) -->
     <div id="previewModal" class="preview-overlay hidden">
         <div class="preview-header liquid-glass-panel">
             <div class="preview-header-left">
@@ -420,15 +483,17 @@
         </div>
 
         <div class="preview-body-container">
+            <!-- Navigasi Kiri (File Sebelumnya) -->
             <div class="nav-button-container nav-left">
                 <button id="previewPrevBtn" class="apple-glass-btn pure-glass nav-arrow hidden" onclick="navigatePreview(-1)" title="File Sebelumnya">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
             </div>
 
-            <div id="previewContent" class="preview-content-area">
-                </div>
+            <!-- Kontainer Utama Injeksi Media -->
+            <div id="previewContent" class="preview-content-area"></div>
 
+            <!-- Navigasi Kanan (File Selanjutnya) -->
             <div class="nav-button-container nav-right">
                 <button id="previewNextBtn" class="apple-glass-btn pure-glass nav-arrow hidden" onclick="navigatePreview(1)" title="File Selanjutnya">
                     <i class="fa-solid fa-chevron-right"></i>
@@ -437,6 +502,11 @@
         </div>
     </div>
 
+    <!-- ====================================================== -->
+    <!-- 8. KONTEKS MENU (KLIK KANAN DESKTOP & LONG PRESS HP)   -->
+    <!-- ====================================================== -->
+    
+    <!-- Menu Interaksi File Individu -->
     <div id="fileContextMenu" class="context-menu-modern hidden">
         <div class="ctx-item" id="ctxBtnPreview" onclick="openCurrentItem()"><i class="fa-solid fa-eye"></i><span>Pratinjau</span></div>
         <div class="ctx-item" id="ctxBtnOpenFolder" onclick="openCurrentItem()"><i class="fa-solid fa-folder-open"></i><span>Buka</span></div>
@@ -449,11 +519,13 @@
         <div class="ctx-item" onclick="toggleStarItem()"><i class="fa-solid fa-star" id="ctxStarIcon"></i><span id="ctxStarText">Bintangi</span></div>
         <div class="ctx-item" onclick="alert('Info File')"><i class="fa-solid fa-circle-info"></i><span>Informasi file</span></div>
         <hr class="ctx-divider">
+        <!-- Logika Sampah (Soft & Hard Delete) -->
         <div class="ctx-item ctx-danger" id="ctxTrashBtn" onclick="moveItemToTrash()"><i class="fa-solid fa-trash-can"></i><span>Pindahkan ke Sampah</span></div>
         <div class="ctx-item hidden" id="ctxRestoreBtn" onclick="restoreFromTrash()"><i class="fa-solid fa-rotate-left"></i><span>Pulihkan</span></div>
         <div class="ctx-item ctx-danger hidden" id="ctxPermDeleteBtn" onclick="deleteItemPermanently()"><i class="fa-solid fa-ban"></i><span>Hapus Permanen</span></div>
     </div>
 
+    <!-- Menu Interaksi Area Kosong Global -->
     <div id="globalContextMenu" class="dropdown-content extended-menu context-menu-fixed hidden">
         <a href="javascript:void(0)" onclick="createFolder()"><i class="fa-solid fa-folder-plus"></i> Folder baru</a>
         <hr class="menu-divider">
@@ -466,27 +538,39 @@
         <a href="javascript:void(0)" onclick="openGoogleDoc('form')"><i class="fa-solid fa-file-lines text-purple"></i> Google Formulir</a>
     </div>
 
+    <!-- ====================================================== -->
+    <!-- 9. SCRIPT INJEKSI                                      -->
+    <!-- ====================================================== -->
+    
+    <!-- Modul Utama JavaScript App -->
     <script src="app.js"></script>
 
+    <!-- Script Inline Khusus Layout Mobile & Animasi Sidebar -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const indicator = document.querySelector('.nav-indicator');
             const navItems = document.querySelectorAll('.sidebar-menu .nav-item');
 
+            /**
+             * Memperbarui posisi dan lebar indikator menu sidebar pada perangkat mobile (Bottom Nav Bar)
+             */
             function updateIndicator() {
-                if(window.innerWidth > 768) {
-                    if(indicator) indicator.style.display = 'none';
+                // Matikan logika ini pada tampilan Desktop (CSS mengatur ini secara default, tapi dikunci lewat script juga)
+                if (window.innerWidth > 768) {
+                    if (indicator) indicator.style.display = 'none';
                     return;
                 }
                 
                 const activeItem = document.querySelector('.sidebar-menu .nav-item.active');
                 if (activeItem && indicator) {
                     indicator.style.display = 'block';
+                    // Sesuaikan lebar dan posisi indikator dengan tombol navigasi aktif
                     indicator.style.width = `${activeItem.offsetWidth}px`;
                     indicator.style.left = `${activeItem.offsetLeft}px`;
                 }
             }
 
+            // Memantau perubahan class 'active' di seluruh item navigasi secara real-time
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.attributeName === 'class') {
@@ -495,6 +579,7 @@
                 });
             });
 
+            // Pasangkan observer ke setiap menu item
             navItems.forEach(item => {
                 observer.observe(item, { attributes: true });
                 item.addEventListener('click', () => {
@@ -502,7 +587,10 @@
                 });
             });
 
+            // Memastikan indikator tidak meleset saat rotasi orientasi HP
             window.addEventListener('resize', updateIndicator);
+            
+            // Evaluasi ganda saat pertama kali DOM dimuat untuk mengamankan posisi awal
             setTimeout(updateIndicator, 100);
             setTimeout(updateIndicator, 500); 
         });
