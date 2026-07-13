@@ -880,19 +880,16 @@ function initAllContextMenus() {
     }
 
     if (areaUtama) {
-        // KLIK KANAN AREA KOSONG
+        // KLIK KANAN AREA KOSONG (Hanya menghilangkan seleksi dan menu, tanpa memunculkan popup apa pun)
         areaUtama.addEventListener('contextmenu', (e) => {
             if (e.target.closest('.item-card')) return;
             e.preventDefault(); 
             
             if (typeof window.clearSelection === 'function') window.clearSelection();
             closeAllMenus();
-            
-            const globalMenu = document.getElementById('globalContextMenu');
-            if (globalMenu) positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
         });
 
-        // TAHAN AREA KOSONG (MOBILE)
+        // TAHAN AREA KOSONG DI MOBILE (Hanya menghilangkan seleksi dan menu)
         let gridTouchTimer;
         areaUtama.addEventListener('touchstart', (e) => {
             if (e.target.closest('.item-card')) return;
@@ -900,12 +897,7 @@ function initAllContextMenus() {
             gridTouchTimer = setTimeout(() => {
                 if (typeof window.clearSelection === 'function') window.clearSelection();
                 closeAllMenus();
-                
-                const globalMenu = document.getElementById('globalContextMenu');
-                if (globalMenu) {
-                    positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
+                if (navigator.vibrate) navigator.vibrate(50);
             }, 500);
         }, { passive: true });
 
