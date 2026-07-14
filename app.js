@@ -467,6 +467,10 @@ async function syncUserData(authUser) {
 async function initializeDashboard(userObj) {
   currentUser = userObj;
   folderHistory = [{ id: "root", name: "Drive" }];
+
+  // AKTIFKAN REALTIME DISINI
+  initRealtimeSync();
+
   const filePromise = loadFiles("root");
   const storagePromise = calculateStorage();
   await Promise.all([filePromise, storagePromise]);
@@ -489,6 +493,9 @@ async function checkSession() {
       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
       await syncUserData(currentUser);
     }
+
+    // AKTIFKAN REALTIME DISINI JUGA
+    initRealtimeSync();
 
     folderHistory = [{ id: "root", name: "Drive" }];
     updateProfileUI();
@@ -2833,4 +2840,31 @@ function initPullToRefresh() {
       ptrIndicator.style.opacity = "0";
     }
   });
+}
+
+// ======================================================
+// 10. FITUR REALTIME SINKRONISASI (APPWRITE WEBSOCKETS)
+// ======================================================
+function initRealtimeSync() {
+  if (!currentUser) return;
+
+  // Mendengarkan semua traffic dan perubahan pada tabel 'files'
+  client.subscribe(
+    `databases.${CONFIG.DB_ID}.collections.${CONFIG.COLLECTION_FILES}.documents`,
+    (response) => {
+      // Memastikan bahwa event/perubahan yang terjadi adalah milik akun yang sedang login
+      if (response.payload && response.payload.owner === currentUser.$id) {
+        // Bypass cache lokal (memaksa kalkulasi ulang data terbaru)
+        window.forceCalculateStorage = true;
+
+        // Cek pengguna sedang berada di halaman/folder apa
+        const targetView =
+          currentViewMode === "root" ? currentFolderId : currentViewMode;
+
+        // Update UI (File & Storage) secara otomatis di background
+        loadFiles(targetView);
+        calculateStorage();
+      }
+    },
+  );
 }
