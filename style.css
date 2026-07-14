@@ -1706,52 +1706,96 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 }
 
 .offline-glass-card {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.3)); 
-    backdrop-filter: blur(40px) saturate(200%); 
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 28px;
-    padding: 40px 30px;
+    /* Background sedikit transparan dengan gradient lembut */
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.4)) !important; 
+    
+    /* Efek Blur Kaca Premium ala iOS */
+    backdrop-filter: blur(50px) saturate(220%) !important; 
+    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+    
+    /* Bias cahaya di tepi kaca (Edge Lighting) */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 32px !important; 
+    
+    padding: 40px 30px !important;
     text-align: center;
     max-width: 340px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    width: 100%;
+    
+    /* Kedalaman 3D ekstrem: Bayangan luar tebal & Pantulan dalam bercahaya */
+    box-shadow: 
+        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important;
+        
     position: relative;
     overflow: hidden;
+    z-index: 10;
 }
 
 .offline-icon {
-    font-size: 3.5rem;
-    color: rgba(255, 255, 255, 0.2);
-    margin-bottom: 20px;
+    font-size: 4.5rem !important; 
+    color: rgba(255, 255, 255, 0.15) !important;
+    margin-bottom: 25px !important;
     position: relative;
+    display: inline-block;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
 }
 
-/* Garis coret untuk icon WiFi */
+/* Garis coret merah untuk icon WiFi */
 .offline-slash {
     position: absolute;
-    top: 55px;
+    top: 75px; /* Menyelaraskan tepat di tengah ikon WiFi */
     left: 50%;
-    width: 60px;
-    height: 4px;
-    background: #ef4444; /* Merah Danger */
-    border-radius: 4px;
+    width: 80px;
+    height: 5px;
+    background: #ff453a; /* Warna iOS Red (Merah Cerah) */
+    border-radius: 5px;
     transform: translateX(-50%) rotate(-45deg);
-    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 69, 58, 0.5); /* Efek merah bercahaya */
 }
 
 .offline-state h3 {
-    font-size: 1.3rem;
+    font-size: 1.45rem !important;
     font-weight: 700;
     color: white;
     margin-bottom: 12px;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
 .offline-state p {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 20px;
+    color: #cbd5e1 !important; 
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 25px !important;
+    font-weight: 500;
+}
+
+/* Desain Khusus Tombol "Coba Lagi" agar senada dengan kartu kaca */
+.offline-glass-card .btn-pill {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 1.05rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.offline-glass-card .btn-pill:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+}
+
+.offline-glass-card .btn-pill:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3) !important;
 }
 
 .mt-15 {
@@ -1759,11 +1803,12 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     width: 100%;
 }
 
+/* Efek detak/bernafas halus pada Ikon WiFi */
 .fade-pulse {
-    animation: fadePulse 2s infinite alternate;
+    animation: fadePulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
 }
 
 @keyframes fadePulse {
-    0% { opacity: 0.3; }
-    100% { opacity: 0.8; }
+    0% { opacity: 0.5; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1.05); }
 }
