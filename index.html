@@ -516,6 +516,25 @@
           </div>
 
           <div id="fileGrid" class="file-grid-area"></div>
+          <!-- TAMBAHAN BARU: HALAMAN OFFLINE (Disembunyikan secara default) -->
+          <div id="offlineState" class="offline-state hidden">
+            <div class="offline-glass-card">
+              <i class="fa-solid fa-wifi offline-icon fade-pulse"></i>
+              <div class="offline-slash"></div>
+              <h3>Anda Sedang Offline</h3>
+              <p>
+                Sistem tidak dapat terhubung ke server Vercel. Kami akan terus
+                mencoba menyambungkan kembali, atau tarik ke bawah untuk
+                menyegarkan.
+              </p>
+              <button
+                class="btn-pill secondary-dark mt-15"
+                onclick="initPullToRefresh(true)"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          </div>
         </main>
       </div>
     </section>

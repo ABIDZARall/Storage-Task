@@ -2728,9 +2728,25 @@ window.openPreviewInNewTab = () => {
 };
 
 // ======================================================
-// FITUR PULL-TO-REFRESH MOBILE (NATIVE PANEL PULL DOWN)
+// FITUR PULL-TO-REFRESH MOBILE (SMART NETWORK DETECTION)
 // ======================================================
-function initPullToRefresh() {
+
+// Helper: Tampilkan atau Sembunyikan Layar Offline
+function toggleOfflineUI(isOffline) {
+  const gridEl = document.getElementById("fileGrid");
+  const offlineEl = document.getElementById("offlineState");
+
+  if (isOffline) {
+    if (gridEl) gridEl.classList.add("hidden");
+    if (offlineEl) offlineEl.classList.remove("hidden");
+  } else {
+    if (gridEl) gridEl.classList.remove("hidden");
+    if (offlineEl) offlineEl.classList.add("hidden");
+  }
+}
+
+// Fungsi utama Pull-to-Refresh
+function initPullToRefresh(isForceButton = false) {
   const ptrIndicator = document.getElementById("ptr-indicator");
   const ptrSpinner = document.querySelector(".ptr-spinner-svg");
   const scrollArea = document.querySelector(".main-content-area");
@@ -2742,9 +2758,13 @@ function initPullToRefresh() {
   let currentY = 0;
   let isPulling = false;
   let isRefreshing = false;
-
-  // UBAH: Threshold diperbesar menjadi 95 agar panel tertarik lebih jauh
   const threshold = 95;
+
+  // Jika dipanggil dari tombol "Coba Lagi" di halaman offline
+  if (isForceButton) {
+    triggerRefreshLogic();
+    return;
+  }
 
   scrollArea.addEventListener(
     "touchstart",
@@ -2771,7 +2791,6 @@ function initPullToRefresh() {
         if (e.cancelable) e.preventDefault();
 
         const pullDistance = distance * 0.45;
-
         glassPanel.style.transform = `translateY(${pullDistance}px)`;
 
         const opacity = Math.min(pullDistance / threshold, 1);
@@ -2793,53 +2812,80 @@ function initPullToRefresh() {
     const pullDistance = distance * 0.45;
 
     if (pullDistance >= threshold) {
-      isRefreshing = true;
+      triggerRefreshLogic();
+    } else {
+      resetRefreshUI();
+    }
+  });
 
-      glassPanel.style.transition =
-        "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
-      ptrIndicator.style.transition = "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+  // Logika Eksekusi Refresh Berdasarkan Jaringan
+  async function triggerRefreshLogic() {
+    isRefreshing = true;
 
-      // Kunci panel di posisi 95px (Celanya besar)
-      glassPanel.style.transform = `translateY(${threshold}px)`;
+    // Animasi kunci panel di tengah
+    glassPanel.style.transition =
+      "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+    ptrIndicator.style.transition = "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+    glassPanel.style.transform = `translateY(${threshold}px)`;
+    ptrIndicator.style.transform = `translate(-50%, ${threshold * 0.4}px) scale(1)`;
+    ptrIndicator.style.opacity = "1";
+    ptrIndicator.classList.add("refreshing");
 
-      // UBAH: Kunci posisi spinner agak naik ke atas, persis di tengah celah
-      ptrIndicator.style.transform = `translate(-50%, ${threshold * 0.4}px) scale(1)`;
-      ptrIndicator.style.opacity = "1";
+    try {
+      const isOnline = navigator.onLine;
 
-      ptrIndicator.classList.add("refreshing");
+      if (!isOnline) {
+        // JARINGAN TERPUTUS (OFFLINE)
+        // Putar spinner sangat lama (10 detik) untuk mencari sinyal
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        toggleOfflineUI(true); // Munculkan layar offline
+      } else {
+        // JARINGAN TERHUBUNG (ONLINE)
+        // Deteksi kualitas jaringan (Stabil / Baik / Buruk)
+        let spinTime = 1200; // Default Baik (WIFI/4G)
 
-      try {
+        if (navigator.connection) {
+          const connType = navigator.connection.effectiveType;
+          if (connType === "slow-2g" || connType === "2g") {
+            spinTime = 5000; // Jaringan Buruk
+          } else if (connType === "3g") {
+            spinTime = 3000; // Jaringan Stabil tapi medium
+          }
+        }
+
         window.forceCalculateStorage = true;
         const targetView =
           currentViewMode === "root" ? currentFolderId : currentViewMode;
 
+        // Ambil data ke server Vercel + Tunggu sesuai kualitas jaringan
         await Promise.all([
           loadFiles(targetView),
           calculateStorage(),
-          new Promise((resolve) => setTimeout(resolve, 1200)),
+          new Promise((resolve) => setTimeout(resolve, spinTime)),
         ]);
-      } catch (err) {
-        console.error("Gagal merefresh:", err);
-      } finally {
-        glassPanel.style.transform = `translateY(0px)`;
-        ptrIndicator.style.transform = `translate(-50%, 0px) scale(0.5)`;
-        ptrIndicator.style.opacity = "0";
 
-        setTimeout(() => {
-          ptrIndicator.classList.remove("refreshing");
-          isRefreshing = false;
-        }, 400);
+        toggleOfflineUI(false); // Sembunyikan layar offline jika sukses
       }
-    } else {
-      glassPanel.style.transition =
-        "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
-      ptrIndicator.style.transition = "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
-
-      glassPanel.style.transform = `translateY(0px)`;
-      ptrIndicator.style.transform = `translate(-50%, 0) scale(0.5)`;
-      ptrIndicator.style.opacity = "0";
+    } catch (err) {
+      console.error("Gagal merefresh:", err);
+      // Fallback jika error API terjadi padahal ada internet
+      toggleOfflineUI(true);
+    } finally {
+      resetRefreshUI();
     }
-  });
+  }
+
+  // Mengembalikan posisi UI ke semula
+  function resetRefreshUI() {
+    glassPanel.style.transform = `translateY(0px)`;
+    ptrIndicator.style.transform = `translate(-50%, 0px) scale(0.5)`;
+    ptrIndicator.style.opacity = "0";
+
+    setTimeout(() => {
+      ptrIndicator.classList.remove("refreshing");
+      isRefreshing = false;
+    }, 400);
+  }
 }
 
 // ======================================================
