@@ -54,6 +54,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe 
 }
 .hidden { display: none !important; }
 
+/* Pull-to-Refresh (mobile touch) */
+#pullToRefresh.ptr { position: absolute; top: 0; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: center; z-index: 6000; transform: translateY(-120%); transition: transform 300ms ease, opacity 300ms ease; opacity: 0; pointer-events: none; }
+#pullToRefresh.ptr:not(.hidden) { pointer-events: none; }
+#pullToRefresh .ptr-spinner { width: 36px; height: 36px; border: 4px solid rgba(255,255,255,0.12); border-top-color: var(--accent); border-radius: 50%; box-sizing: border-box; animation: ptr-spin 1s linear infinite; }
+#pullToRefresh.refreshing { transform: translateY(50px) !important; opacity: 1 !important; }
+@keyframes ptr-spin { to { transform: rotate(360deg); } }
+
 /* ============================================================ */
 /* AUTHENTICATION (LOGIN, REGISTER, RESET)                      */
 /* ============================================================ */

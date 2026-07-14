@@ -62,6 +62,110 @@ const toggleLoading = (show, msg = "Memproses...") => {
     }
 };
 
+// ======================================================
+// Pull-to-Refresh (mobile web) - ringan dan terisolasi
+// ======================================================
+const initPullToRefresh = () => {
+    // Akan membuat elemen indikator di awal body jika belum ada
+    if (!document.getElementById('pullToRefresh')) {
+        const ptr = document.createElement('div');
+        ptr.id = 'pullToRefresh';
+        ptr.className = 'ptr hidden';
+        ptr.setAttribute('aria-hidden', 'true');
+        ptr.innerHTML = '<div class="ptr-spinner"></div>';
+        document.body.insertBefore(ptr, document.body.firstChild);
+    }
+
+    const ptrEl = document.getElementById('pullToRefresh');
+    let startY = 0;
+    let currentY = 0;
+    let pulling = false;
+    const threshold = 70; // jarak (px) untuk memicu refresh
+    const maxPull = 160; // jarak tarik maksimal
+
+    // Mulai sentuhan
+    window.addEventListener('touchstart', (e) => {
+        try {
+            if (document.scrollingElement && document.scrollingElement.scrollTop === 0) {
+                startY = e.touches[0].clientY;
+                currentY = startY;
+                pulling = true;
+                ptrEl.style.transition = '';
+            } else {
+                pulling = false;
+            }
+        } catch (err) { pulling = false; }
+    }, { passive: true });
+
+    // Saat bergerak
+    window.addEventListener('touchmove', (e) => {
+        if (!pulling) return;
+        currentY = e.touches[0].clientY;
+        const diff = Math.max(0, currentY - startY);
+        if (diff > 0) {
+            // cegah geser normal saat menarik ptr
+            e.preventDefault();
+            const translate = Math.min(maxPull, diff / 2);
+            ptrEl.classList.remove('hidden');
+            ptrEl.style.transform = `translateY(${translate}px)`;
+            ptrEl.style.opacity = Math.min(1, translate / threshold);
+        }
+    }, { passive: false });
+
+    // Saat sentuhan diangkat
+    window.addEventListener('touchend', async () => {
+        if (!pulling) return;
+        pulling = false;
+        const diff = Math.max(0, currentY - startY);
+        ptrEl.style.transition = 'transform 300ms ease, opacity 300ms ease';
+        if (diff / 2 >= threshold) {
+            // tampilkan status refreshing
+            ptrEl.style.transform = `translateY(50px)`;
+            ptrEl.style.opacity = '1';
+            ptrEl.classList.add('refreshing');
+
+            try {
+                await doAppRefresh();
+            } catch (err) {
+                console.error('Refresh error', err);
+            }
+
+            // sembunyikan setelah sebentar
+            setTimeout(() => {
+                ptrEl.classList.remove('refreshing');
+                ptrEl.style.transform = '';
+                ptrEl.style.opacity = '';
+                ptrEl.classList.add('hidden');
+            }, 600);
+        } else {
+            // animasi kembali
+            ptrEl.style.transform = '';
+            ptrEl.style.opacity = '';
+            setTimeout(() => ptrEl.classList.add('hidden'), 300);
+        }
+        startY = currentY = 0;
+    }, { passive: true });
+};
+
+// Fungsi refresh aplikasi yang aman: coba panggil fungsi lokal jika ada, fallback ke reload
+const doAppRefresh = async () => {
+    // Jika ada fungsi khusus untuk refresh daftar/halaman, panggil
+    if (typeof refreshCurrentView === 'function') {
+        try { await refreshCurrentView(); return; } catch (e) { console.warn(e); }
+    }
+
+    if (typeof loadFiles === 'function') {
+        try { await loadFiles(currentFolderId); return; } catch (e) { console.warn(e); }
+    }
+
+    if (typeof checkSession === 'function') {
+        try { await checkSession(); } catch (e) { console.warn(e); }
+    }
+
+    // fallback aman: reload halaman (sebagai jalan terakhir)
+    try { window.location.reload(); } catch (e) { console.error(e); }
+};
+
 // MENYIMPAN ID FILE YANG TERSELEKSI
 let selectedFileIds = new Set(); 
 
@@ -145,6 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initAllContextMenus(); 
     initStorageTooltip(); 
     initProfileImageUploader(); 
+    // Inisialisasi Pull-to-Refresh untuk versi mobile (tidak mengganggu desktop)
+    if (typeof initPullToRefresh === 'function') initPullToRefresh();
     
     setTimeout(() => {
         const activeItem = document.querySelector('.nav-item.active');
