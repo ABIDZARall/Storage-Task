@@ -79,6 +79,15 @@ const initPullToRefresh = () => {
 
   const ptrEl = document.getElementById("pullToRefresh");
   const mainEl = document.querySelector(".main-content-area");
+  // tentukan elemen penggulung (scroll container) yang sebenarnya
+  const scrollContainer = (function() {
+    if (document.scrollingElement && document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight) return document.scrollingElement;
+    if (document.documentElement && document.documentElement.scrollHeight > document.documentElement.clientHeight) return document.documentElement;
+    if (document.body && document.body.scrollHeight > document.body.clientHeight) return document.body;
+    if (mainEl && mainEl.scrollHeight > mainEl.clientHeight) return mainEl;
+    return document.scrollingElement || document.documentElement || window;
+  })();
+
   let startY = 0;
   let currentY = 0;
   let pulling = false;
@@ -86,8 +95,8 @@ const initPullToRefresh = () => {
   const maxPull = 160; // jarak tarik maksimal
 
   // Mulai sentuhan
-  // Pasang listener pada area utama (mainEl) bila tersedia, fallback ke window
-  const touchTarget = mainEl || document.scrollingElement || window;
+  // Pasang listener pada scrollContainer (tempat scroll sebenarnya)
+  const touchTarget = scrollContainer === window ? window : scrollContainer;
   const addListener = (name, handler, opts) => {
     try {
       touchTarget.addEventListener(name, handler, opts);
@@ -100,12 +109,18 @@ const initPullToRefresh = () => {
     "touchstart",
     (e) => {
       try {
-        // hanya aktifkan saat elemen utama berada di paling atas
-        const atTop =
-          (document.scrollingElement &&
-            document.scrollingElement.scrollTop === 0) ||
-          (mainEl && mainEl.scrollTop === 0);
-        if (atTop) {
+        // hanya aktifkan saat scrollContainer berada di paling atas
+        let scAtTop = false;
+        if (scrollContainer && typeof scrollContainer.scrollTop === 'number') {
+          scAtTop = scrollContainer.scrollTop <= 0;
+        } else {
+          scAtTop = (document.scrollingElement && document.scrollingElement.scrollTop <= 0) ||
+                    (document.documentElement && document.documentElement.scrollTop <= 0) ||
+                    (document.body && document.body.scrollTop <= 0);
+        }
+
+        // hanya mulai jika menyentuh di bagian atas layar dan ada sentuhan
+        if (scAtTop && e.touches && e.touches[0]) {
           startY = e.touches[0].clientY;
           currentY = startY;
           pulling = true;
