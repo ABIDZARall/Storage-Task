@@ -1706,82 +1706,87 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 }
 
 .offline-glass-card {
-    /* Background sedikit transparan dengan gradient lembut */
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.4)) !important; 
-    
-    /* Efek Blur Kaca Premium ala iOS */
-    backdrop-filter: blur(50px) saturate(220%) !important; 
-    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
-    
-    /* Bias cahaya di tepi kaca (Edge Lighting) */
-    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
-    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-radius: 32px !important; 
-    
+    /* UKURAN KEMBALI KE SEMULA */
     padding: 40px 30px !important;
-    text-align: center;
     max-width: 340px;
     width: 100%;
-    
-    /* Kedalaman 3D ekstrem: Bayangan luar tebal & Pantulan dalam bercahaya */
-    box-shadow: 
-        0 40px 80px -20px rgba(0, 0, 0, 0.8), 
-        inset 0 1px 3px rgba(255, 255, 255, 0.3),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important;
-        
+    border-radius: 28px !important; 
+    text-align: center;
     position: relative;
     overflow: hidden;
     z-index: 10;
+    
+    /* DESAIN DIPERTAJAM: EFEK LIQUID GLASS APPLE MENONJOL (PREMIUM) */
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.65), rgba(15, 23, 42, 0.4)) !important; 
+    backdrop-filter: blur(50px) saturate(220%) !important; 
+    -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 
+        0 30px 60px -15px rgba(0, 0, 0, 0.7), 
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important;
 }
 
 .offline-icon {
-    font-size: 4.5rem !important; 
+    /* UKURAN KEMBALI KE SEMULA */
+    font-size: 3.5rem !important; 
+    margin-bottom: 20px !important;
+    
+    /* WARNA LEBIH ESTETIK */
     color: rgba(255, 255, 255, 0.15) !important;
-    margin-bottom: 25px !important;
     position: relative;
     display: inline-block;
     filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
 }
 
-/* Garis coret merah untuk icon WiFi */
 .offline-slash {
+    /* UKURAN KEMBALI KE SEMULA */
     position: absolute;
-    top: 75px; /* Menyelaraskan tepat di tengah ikon WiFi */
+    top: 55px; 
     left: 50%;
-    width: 80px;
-    height: 5px;
-    background: #ff453a; /* Warna iOS Red (Merah Cerah) */
-    border-radius: 5px;
+    width: 60px;
+    height: 4px;
+    border-radius: 4px;
     transform: translateX(-50%) rotate(-45deg);
-    box-shadow: 0 4px 12px rgba(255, 69, 58, 0.5); /* Efek merah bercahaya */
+    
+    /* WARNA MERAH KHAS APPLE (LEBIH MENYALA) */
+    background: #ff453a; 
+    box-shadow: 0 2px 10px rgba(255, 69, 58, 0.5); 
 }
 
 .offline-state h3 {
-    font-size: 1.45rem !important;
+    /* UKURAN KEMBALI KE SEMULA */
+    font-size: 1.3rem !important;
+    margin-bottom: 12px;
     font-weight: 700;
     color: white;
-    margin-bottom: 12px;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.3px;
     text-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
 .offline-state p {
+    /* UKURAN KEMBALI KE SEMULA */
+    font-size: 0.9rem !important;
+    margin-bottom: 20px !important;
     color: #cbd5e1 !important; 
-    font-size: 0.95rem !important;
-    line-height: 1.6 !important;
-    margin-bottom: 25px !important;
+    line-height: 1.5 !important;
     font-weight: 500;
 }
 
-/* Desain Khusus Tombol "Coba Lagi" agar senada dengan kartu kaca */
+/* Tombol Liquid Glass Premium */
 .offline-glass-card .btn-pill {
+    /* UKURAN KEMBALI KE SEMULA */
+    font-size: 0.95rem; 
+    height: 44px; 
+    
+    /* DESAIN DIPERTAJAM (GLASS) */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
     color: #ffffff !important;
     font-weight: 600;
-    font-size: 1.05rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
