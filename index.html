@@ -21,10 +21,6 @@
   <body>
     <div class="liquid-bg"></div>
 
-    <div id="pullToRefresh" class="ptr hidden" aria-hidden="true">
-      <div class="ptr-spinner"></div>
-    </div>
-
     <div id="loading" class="loading-overlay hidden">
       <div class="spinner"></div>
       <p id="loadingText">Memproses...</p>
@@ -222,6 +218,144 @@
           </button>
         </div>
       </header>
+
+      <!-- TAMBAHAN BARU: SPINNER BERGAYA NATIVE iOS -->
+      <div id="ptr-indicator" class="ptr-indicator">
+        <svg class="ptr-spinner-svg" viewBox="0 0 100 100">
+          <rect
+            fill="currentColor"
+            opacity="1"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(0 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.91"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(30 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.83"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(60 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.75"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(90 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.66"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(120 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.58"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(150 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.5"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(180 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.41"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(210 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.33"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(240 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.25"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(270 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.16"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(300 50 50)"
+          />
+          <rect
+            fill="currentColor"
+            opacity="0.08"
+            x="46"
+            y="5"
+            width="8"
+            height="24"
+            rx="4"
+            ry="4"
+            transform="rotate(330 50 50)"
+          />
+        </svg>
+      </div>
 
       <div class="main-glass-panel">
         <aside class="sidebar-left">

@@ -54,13 +54,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe 
 }
 .hidden { display: none !important; }
 
-/* Pull-to-Refresh (mobile touch) */
-#pullToRefresh.ptr { position: absolute; top: 0; left: 0; right: 0; height: 64px; display: flex; align-items: center; justify-content: center; z-index: 6000; transform: translateY(-120%); transition: transform 300ms ease, opacity 300ms ease; opacity: 0; pointer-events: none; }
-#pullToRefresh.ptr:not(.hidden) { pointer-events: none; }
-#pullToRefresh .ptr-spinner { width: 36px; height: 36px; border: 4px solid rgba(255,255,255,0.12); border-top-color: var(--accent); border-radius: 50%; box-sizing: border-box; animation: ptr-spin 1s linear infinite; }
-#pullToRefresh.refreshing { transform: translateY(50px) !important; opacity: 1 !important; }
-@keyframes ptr-spin { to { transform: rotate(360deg); } }
-
 /* ============================================================ */
 /* AUTHENTICATION (LOGIN, REGISTER, RESET)                      */
 /* ============================================================ */
@@ -544,14 +537,7 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 }
 
 /* MAIN CONTENT AREA */
-.main-content-area { 
-    flex: 1; 
-    display: flex; 
-    flex-direction: column; 
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    -webkit-overflow-scrolling: touch; /* momentum scrolling on iOS */
-}
+.main-content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .search-row { display: flex; justify-content: center; margin-bottom: 15px; flex-shrink: 0; }
 
 /* Ganti class .search-bar-pill dan hover-nya dengan ini */
@@ -1651,4 +1637,55 @@ form { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .sab-left, .sab-right { gap: 4px; }
     .sab-gemini-btn { padding: 5px 10px; font-size: 0.75rem; }
     .hide-mobile-sm { display: none !important; }
+}
+
+/* ============================================================ */
+/* PULL TO REFRESH (NATIVE iOS STANDARD - PANEL PULL DOWN)      */
+/* ============================================================ */
+
+.dashboard-layout {
+    position: relative; /* Menjadi anchor untuk spinner */
+}
+
+/* Mematikan efek pantulan bawaan browser Android/iOS */
+.main-content-area {
+    overscroll-behavior-y: none; 
+}
+
+/* Spinner berada bersembunyi di belakang celah antara header dan panel */
+/* Spinner berada bersembunyi di belakang celah antara header dan panel */
+.ptr-indicator {
+    position: absolute;
+    top: 65px; /* UBAH DARI 75px KE 65px (Lebih naik sedikit) */
+    left: 50%;
+    transform: translate(-50%, 0) scale(0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    z-index: 1; 
+    pointer-events: none;
+}
+
+/* Desain SVG Spinner Apple Style */
+.ptr-spinner-svg {
+    width: 34px;
+    height: 34px;
+    color: rgba(255, 255, 255, 0.9); /* Putih semi-transparan elegan */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.ptr-indicator.refreshing .ptr-spinner-svg {
+    /* Animasi putaran patah-patah 12-step khas native */
+    animation: ios-spin 1s steps(12, end) infinite;
+}
+
+@keyframes ios-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mencegah lag saat panel ditarik oleh JavaScript */
+.main-glass-panel {
+    will-change: transform;
 }

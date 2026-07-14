@@ -63,198 +63,6 @@ const toggleLoading = (show, msg = "Memproses...") => {
   }
 };
 
-// ======================================================
-// Pull-to-Refresh (mobile web) - ringan dan terisolasi
-// ======================================================
-const initPullToRefresh = () => {
-  // Akan membuat elemen indikator di awal body jika belum ada
-  if (!document.getElementById("pullToRefresh")) {
-    const ptr = document.createElement("div");
-    ptr.id = "pullToRefresh";
-    ptr.className = "ptr hidden";
-    ptr.setAttribute("aria-hidden", "true");
-    ptr.innerHTML = '<div class="ptr-spinner"></div>';
-    document.body.insertBefore(ptr, document.body.firstChild);
-  }
-
-  const ptrEl = document.getElementById("pullToRefresh");
-  const mainEl = document.querySelector(".main-content-area");
-  // tentukan elemen penggulung (scroll container) yang sebenarnya
-  const scrollContainer = (function() {
-    if (document.scrollingElement && document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight) return document.scrollingElement;
-    if (document.documentElement && document.documentElement.scrollHeight > document.documentElement.clientHeight) return document.documentElement;
-    if (document.body && document.body.scrollHeight > document.body.clientHeight) return document.body;
-    if (mainEl && mainEl.scrollHeight > mainEl.clientHeight) return mainEl;
-    return document.scrollingElement || document.documentElement || window;
-  })();
-
-  let startY = 0;
-  let currentY = 0;
-  let pulling = false;
-  const threshold = 70; // jarak (px) untuk memicu refresh
-  const maxPull = 160; // jarak tarik maksimal
-
-  // Mulai sentuhan
-  // Pasang listener pada scrollContainer (tempat scroll sebenarnya)
-  const touchTarget = scrollContainer === window ? window : scrollContainer;
-  const addListener = (name, handler, opts) => {
-    try {
-      touchTarget.addEventListener(name, handler, opts);
-    } catch (e) {
-      window.addEventListener(name, handler, opts);
-    }
-  };
-
-  addListener(
-    "touchstart",
-    (e) => {
-      try {
-        // hanya aktifkan saat scrollContainer berada di paling atas
-        let scAtTop = false;
-        if (scrollContainer && typeof scrollContainer.scrollTop === 'number') {
-          scAtTop = scrollContainer.scrollTop <= 0;
-        } else {
-          scAtTop = (document.scrollingElement && document.scrollingElement.scrollTop <= 0) ||
-                    (document.documentElement && document.documentElement.scrollTop <= 0) ||
-                    (document.body && document.body.scrollTop <= 0);
-        }
-
-        // hanya mulai jika menyentuh di bagian atas layar dan ada sentuhan
-        if (scAtTop && e.touches && e.touches[0]) {
-          startY = e.touches[0].clientY;
-          currentY = startY;
-          pulling = true;
-          ptrEl.style.transition = "";
-          if (mainEl) mainEl.style.transition = "";
-        } else {
-          pulling = false;
-        }
-      } catch (err) {
-        pulling = false;
-      }
-    },
-    { passive: true },
-  );
-
-  // Saat bergerak
-  addListener(
-    "touchmove",
-    (e) => {
-      if (!pulling) return;
-      currentY = e.touches[0].clientY;
-      const diff = Math.max(0, currentY - startY);
-      if (diff > 0) {
-        // cegah geser normal saat menarik ptr
-        // hanya prevent default jika browser memungkinkan (passive:false pada listener)
-        try {
-          e.preventDefault();
-        } catch (err) {
-          /* ignore */
-        }
-        const translate = Math.min(maxPull, diff / 2);
-        ptrEl.classList.remove("hidden");
-        // tarik indikator sedikit lebih lembut agar terlihat di atas konten
-        const ptrY = Math.max(0, translate - 30);
-        ptrEl.style.transform = `translateY(${ptrY}px)`;
-        ptrEl.style.opacity = Math.min(1, translate / threshold);
-
-        // Geser area utama agar ikut tertarik (mirip Instagram)
-        if (mainEl) {
-          mainEl.style.transform = `translateY(${translate}px)`;
-          mainEl.style.willChange = "transform";
-        }
-      }
-    },
-    { passive: false },
-  );
-
-  // Saat sentuhan diangkat
-  addListener(
-    "touchend",
-    async () => {
-      if (!pulling) return;
-      pulling = false;
-      const diff = Math.max(0, currentY - startY);
-      ptrEl.style.transition = "transform 300ms ease, opacity 300ms ease";
-      if (mainEl)
-        mainEl.style.transition =
-          "transform 350ms cubic-bezier(0.22, 0.9, 0.3, 1)";
-
-      if (diff / 2 >= threshold) {
-        // tampilkan status refreshing - biarkan area utama sedikit terbuka
-        const showingY = 50;
-        ptrEl.style.transform = `translateY(${showingY - 30}px)`;
-        ptrEl.style.opacity = "1";
-        ptrEl.classList.add("refreshing");
-        if (mainEl) mainEl.style.transform = `translateY(${showingY}px)`;
-
-        try {
-          await doAppRefresh();
-        } catch (err) {
-          console.error("Refresh error", err);
-        }
-
-        // sembunyikan setelah sebentar
-        setTimeout(() => {
-          ptrEl.classList.remove("refreshing");
-          ptrEl.style.transform = "";
-          ptrEl.style.opacity = "";
-          ptrEl.classList.add("hidden");
-          if (mainEl) {
-            mainEl.style.transform = "";
-            mainEl.style.willChange = "";
-          }
-        }, 600);
-      } else {
-        // animasi kembali ke posisi asal
-        ptrEl.style.transform = "";
-        ptrEl.style.opacity = "";
-        if (mainEl) mainEl.style.transform = "";
-        setTimeout(() => ptrEl.classList.add("hidden"), 300);
-      }
-      startY = currentY = 0;
-    },
-    { passive: true },
-  );
-};
-
-// Fungsi refresh aplikasi yang aman: coba panggil fungsi lokal jika ada, fallback ke reload
-const doAppRefresh = async () => {
-  // Jika ada fungsi khusus untuk refresh daftar/halaman, panggil
-  if (typeof refreshCurrentView === "function") {
-    try {
-      await refreshCurrentView();
-      return;
-    } catch (e) {
-      console.warn(e);
-    }
-  }
-
-  if (typeof loadFiles === "function") {
-    try {
-      await loadFiles(currentFolderId);
-      return;
-    } catch (e) {
-      console.warn(e);
-    }
-  }
-
-  if (typeof checkSession === "function") {
-    try {
-      await checkSession();
-    } catch (e) {
-      console.warn(e);
-    }
-  }
-
-  // fallback aman: reload halaman (sebagai jalan terakhir)
-  try {
-    window.location.reload();
-  } catch (e) {
-    console.error(e);
-  }
-};
-
 // MENYIMPAN ID FILE YANG TERSELEKSI
 let selectedFileIds = new Set();
 
@@ -337,8 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAllContextMenus();
   initStorageTooltip();
   initProfileImageUploader();
-  // Inisialisasi Pull-to-Refresh untuk versi mobile (tidak mengganggu desktop)
-  if (typeof initPullToRefresh === "function") initPullToRefresh();
+  initPullToRefresh();
 
   setTimeout(() => {
     const activeItem = document.querySelector(".nav-item.active");
@@ -1466,16 +1273,20 @@ function initAllContextMenus() {
   }
 
   if (areaUtama) {
-    // KLIK KANAN AREA KOSONG (Hanya menghilangkan seleksi dan menu, tanpa memunculkan popup apa pun)
+    // KLIK KANAN AREA KOSONG
     areaUtama.addEventListener("contextmenu", (e) => {
       if (e.target.closest(".item-card")) return;
       e.preventDefault();
 
       if (typeof window.clearSelection === "function") window.clearSelection();
       closeAllMenus();
+
+      const globalMenu = document.getElementById("globalContextMenu");
+      if (globalMenu)
+        positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
     });
 
-    // TAHAN AREA KOSONG DI MOBILE (Hanya menghilangkan seleksi dan menu)
+    // TAHAN AREA KOSONG (MOBILE)
     let gridTouchTimer;
     areaUtama.addEventListener(
       "touchstart",
@@ -1486,7 +1297,12 @@ function initAllContextMenus() {
           if (typeof window.clearSelection === "function")
             window.clearSelection();
           closeAllMenus();
-          if (navigator.vibrate) navigator.vibrate(50);
+
+          const globalMenu = document.getElementById("globalContextMenu");
+          if (globalMenu) {
+            positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
+            if (navigator.vibrate) navigator.vibrate(50);
+          }
         }, 500);
       },
       { passive: true },
@@ -2903,3 +2719,118 @@ window.openPreviewInNewTab = () => {
     closePreview();
   }
 };
+
+// ======================================================
+// FITUR PULL-TO-REFRESH MOBILE (NATIVE PANEL PULL DOWN)
+// ======================================================
+function initPullToRefresh() {
+  const ptrIndicator = document.getElementById("ptr-indicator");
+  const ptrSpinner = document.querySelector(".ptr-spinner-svg");
+  const scrollArea = document.querySelector(".main-content-area");
+  const glassPanel = document.querySelector(".main-glass-panel");
+
+  if (!ptrIndicator || !scrollArea || !glassPanel) return;
+
+  let startY = 0;
+  let currentY = 0;
+  let isPulling = false;
+  let isRefreshing = false;
+
+  // UBAH: Threshold diperbesar menjadi 95 agar panel tertarik lebih jauh
+  const threshold = 95;
+
+  scrollArea.addEventListener(
+    "touchstart",
+    (e) => {
+      if (scrollArea.scrollTop <= 0 && !isRefreshing) {
+        startY = e.touches[0].clientY;
+        isPulling = true;
+        glassPanel.style.transition = "none";
+        ptrIndicator.style.transition = "none";
+      }
+    },
+    { passive: true },
+  );
+
+  scrollArea.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!isPulling) return;
+
+      currentY = e.touches[0].clientY;
+      const distance = currentY - startY;
+
+      if (distance > 0 && scrollArea.scrollTop <= 0) {
+        if (e.cancelable) e.preventDefault();
+
+        const pullDistance = distance * 0.45;
+
+        glassPanel.style.transform = `translateY(${pullDistance}px)`;
+
+        const opacity = Math.min(pullDistance / threshold, 1);
+        const rotate = (pullDistance / threshold) * 180;
+
+        ptrIndicator.style.opacity = opacity;
+        ptrIndicator.style.transform = `translate(-50%, ${pullDistance * 0.4}px) scale(${opacity})`;
+        ptrSpinner.style.transform = `rotate(${rotate}deg)`;
+      }
+    },
+    { passive: false },
+  );
+
+  scrollArea.addEventListener("touchend", async () => {
+    if (!isPulling) return;
+    isPulling = false;
+
+    const distance = currentY - startY;
+    const pullDistance = distance * 0.45;
+
+    if (pullDistance >= threshold) {
+      isRefreshing = true;
+
+      glassPanel.style.transition =
+        "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+      ptrIndicator.style.transition = "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+
+      // Kunci panel di posisi 95px (Celanya besar)
+      glassPanel.style.transform = `translateY(${threshold}px)`;
+
+      // UBAH: Kunci posisi spinner agak naik ke atas, persis di tengah celah
+      ptrIndicator.style.transform = `translate(-50%, ${threshold * 0.4}px) scale(1)`;
+      ptrIndicator.style.opacity = "1";
+
+      ptrIndicator.classList.add("refreshing");
+
+      try {
+        window.forceCalculateStorage = true;
+        const targetView =
+          currentViewMode === "root" ? currentFolderId : currentViewMode;
+
+        await Promise.all([
+          loadFiles(targetView),
+          calculateStorage(),
+          new Promise((resolve) => setTimeout(resolve, 1200)),
+        ]);
+      } catch (err) {
+        console.error("Gagal merefresh:", err);
+      } finally {
+        glassPanel.style.transform = `translateY(0px)`;
+        ptrIndicator.style.transform = `translate(-50%, 0px) scale(0.5)`;
+        ptrIndicator.style.opacity = "0";
+
+        setTimeout(() => {
+          ptrIndicator.classList.remove("refreshing");
+          isRefreshing = false;
+        }, 400);
+      }
+    } else {
+      glassPanel.style.transition =
+        "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+      ptrIndicator.style.transition = "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+
+      glassPanel.style.transform = `translateY(0px)`;
+      ptrIndicator.style.transform = `translate(-50%, 0) scale(0.5)`;
+      ptrIndicator.style.opacity = "0";
+    }
+  });
+}
