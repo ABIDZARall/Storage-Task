@@ -7,6 +7,15 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- Kompatibilitas mode "app" saat ditambahkan ke Home Screen (Safari iOS & Chrome Android) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>Storage Tasks - Pro Drive</title>
 
     <link rel="stylesheet" href="style.css" />
@@ -1094,7 +1103,7 @@
         const navItems = document.querySelectorAll(".sidebar-menu .nav-item");
 
         function updateIndicator() {
-          if (window.innerWidth > 768) {
+          if (window.innerWidth > 1024) {
             if (indicator) indicator.style.display = "none";
             return;
           }
