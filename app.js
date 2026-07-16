@@ -310,8 +310,29 @@ function checkSystemHealth() {
 }
 
 // ======================================================
-// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET)
+// 4. LOGIKA AUTH (SIGN UP, LOGIN, LOGOUT, RESET) & SECURITY
 // ======================================================
+
+// AUTH SECURITY UTILS (STANDAR SIBER)
+const AUTH_SECURITY = {
+  loginAttempts: 0,
+  lockUntil: 0,
+  validateEmail: (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) return false;
+    const domain = email.split('@')[1].toLowerCase();
+    const trustedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'ymail.com', 'mac.com', 'me.com', 'msn.com', 'live.com'];
+    return trustedDomains.includes(domain);
+  },
+  validatePhone: (phone) => {
+    const re = /^(\+?\d{10,15})$/;
+    return re.test(phone.replace(/[\s-]/g, ''));
+  },
+  validatePassword: (password) => {
+    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/;
+    return re.test(password);
+  }
+};
 
 if (el("signupForm")) {
   el("signupForm").addEventListener("submit", async (e) => {
@@ -322,7 +343,12 @@ if (el("signupForm")) {
     const pass = el("regPass").value;
     const verify = el("regVerify").value;
 
+    if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
+    if (!AUTH_SECURITY.validateEmail(email)) return alert("Keamanan Siber: Gunakan email publik yang terpercaya (Gmail, Yahoo, Outlook, iCloud). Email sementara/perusahaan tidak diizinkan.");
+    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Keamanan Siber: Nomor telepon tidak valid. Gunakan format resmi (contoh: +62812...) atau 10-15 digit angka.");
+    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
     if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
+    
     toggleLoading(true, "Mendaftarkan Akun Anda...");
     try {
       checkSystemHealth();
@@ -371,8 +397,17 @@ if (el("signupForm")) {
 if (el("loginForm")) {
   el("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (Date.now() < AUTH_SECURITY.lockUntil) {
+      const waitSecs = Math.ceil((AUTH_SECURITY.lockUntil - Date.now()) / 1000);
+      return alert(`Keamanan Siber: Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
+    }
+
     let inputId = el("loginEmail").value.trim();
     const pass = el("loginPass").value;
+    
+    // Sanitasi input login dari serangan XSS
+    inputId = window.sanitizeInput ? window.sanitizeInput(inputId) : inputId;
+    
     try {
       toggleLoading(true, "Memproses Login...");
       checkSystemHealth();
@@ -407,9 +442,19 @@ if (el("loginForm")) {
         email: user.email,
         password: pass,
       }).catch((e) => { });
+      AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
       await initializeDashboard(user);
     } catch (error) {
       toggleLoading(false);
+      
+      // BRUTE FORCE TRACKING
+      AUTH_SECURITY.loginAttempts++;
+      if (AUTH_SECURITY.loginAttempts >= 3) {
+        AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
+        AUTH_SECURITY.loginAttempts = 0;
+        alert("Peringatan Siber: Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal (Brute-force protection).");
+        return;
+      }
 
       // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
       if (error.message.includes("prohibited when a session is active")) {
@@ -458,9 +503,10 @@ if (el("resetForm")) {
     const email = el("resetEmail").value.trim();
     const newPass = el("resetNewPass").value;
     const verifyPass = el("resetVerifyPass").value;
-    if (newPass !== verifyPass)
-      return alert("Konfirmasi password tidak cocok!");
-    if (newPass.length < 8) return alert("Password minimal 8 karakter.");
+    
+    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
+    
     toggleLoading(true, "Mencari Akun...");
     try {
       const res = await databases.listDocuments(
