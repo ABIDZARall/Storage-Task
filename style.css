@@ -4465,3 +4465,65 @@ form {
         transform: scale(1.05);
     }
 }
+
+/* ============================================================ */
+/* MAXIMUM BACKWARD COMPATIBILITY OVERRIDES                     */
+/* ============================================================ */
+
+/* Fallback for aspect-ratio on Safari < 15 and old Chrome */
+@supports not (aspect-ratio: 1 / 1) {
+    .item-card {
+        height: 170px;
+    }
+    
+    .apple-glass-btn.play-pause-btn {
+        height: 85px;
+    }
+}
+
+/* Fallback for flex gap on Safari < 14.1 */
+/* We add small margins to common flex rows that use gap heavily */
+.sab-left > *:not(:last-child),
+.sab-right > *:not(:last-child) {
+    margin-right: 8px;
+}
+.audio-controls-v2 > *:not(:last-child) {
+    margin-right: 20px;
+}
+.storage-page-header > *:not(:last-child) {
+    margin-right: 12px;
+}
+
+/* Fix sticky hover on mobile devices */
+@media (hover: none) {
+    .item-card:hover {
+        transform: none !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+    }
+    
+    .item-card:hover .mac-folder-icon {
+        transform: none !important;
+    }
+    
+    .item-card:hover .mac-folder-front {
+        transform: none !important;
+        filter: none !important;
+    }
+    
+    .btn-pill:hover,
+    .apple-glass-btn:hover,
+    .icon-btn-sab:hover,
+    .sab-gemini-btn:hover,
+    .volume-icon-btn:hover {
+        transform: none !important;
+        background: inherit;
+    }
+    
+    /* Revert active state to show feedback */
+    .item-card:active {
+        transform: scale(0.98) !important;
+    }
+}

@@ -1,10 +1,26 @@
 // ======================================================
 // 1. KONFIGURASI APPWRITE & GLOBAL
 // ======================================================
-const client = new Appwrite.Client();
-const account = new Appwrite.Account(client);
-const databases = new Appwrite.Databases(client);
-const storage = new Appwrite.Storage(client);
+let client, account, databases, storage;
+try {
+  if (typeof Appwrite === 'undefined') {
+    throw new Error("Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.");
+  }
+  client = new Appwrite.Client();
+  account = new Appwrite.Account(client);
+  databases = new Appwrite.Databases(client);
+  storage = new Appwrite.Storage(client);
+} catch (error) {
+  console.error("Critical Engine Error:", error);
+  window.addEventListener("DOMContentLoaded", () => {
+    document.body.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#0B0F19; color:white; font-family:sans-serif; text-align:center; padding:20px;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:3rem; color:#ef4444; margin-bottom:15px;"></i>
+        <h2 style="margin-bottom:10px;">Browser Tidak Mendukung atau Offline</h2>
+        <p style="color:#cbd5e1; max-width:400px; line-height:1.5;">Aplikasi tidak dapat memuat mesin utama. Silakan gunakan browser yang lebih baru atau periksa koneksi internet Anda.</p>
+      </div>`;
+  });
+}
 
 // KONFIGURASI AVATAR (Solusi Masalah Validasi URL vs File Lokal)
 const DEFAULT_AVATAR_LOCAL = "Image/profile-default.jpeg";
