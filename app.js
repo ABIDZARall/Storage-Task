@@ -124,15 +124,25 @@ document.addEventListener("keydown", (e) => {
 // ======================================================
 // FUNGSI ANIMASI SLIDING NAV INDICATOR
 // ======================================================
-function updateNavIndicator(element) {
+// PERBAIKAN 2: Indikator Menu yang presisi baik di Desktop, Tablet, maupun Mobile
+window.updateNavIndicator = function (element) {
   const indicator = document.querySelector(".nav-indicator");
   if (!indicator || !element) return;
 
+  indicator.style.display = "block";
   indicator.style.width = element.offsetWidth + "px";
-  indicator.style.height = element.offsetHeight + "px";
   indicator.style.left = element.offsetLeft + "px";
-  indicator.style.top = element.offsetTop + "px";
-}
+
+  // Batas 768px: Di atas ini menggunakan Sidebar Kiri (Desktop/Tablet)
+  if (window.innerWidth > 768) {
+    indicator.style.height = element.offsetHeight + "px";
+    indicator.style.top = element.offsetTop + "px";
+  } else {
+    // Di bawah ini menggunakan Navigasi Bawah (Mobile murni)
+    indicator.style.height = "48px";
+    indicator.style.top = "6px";
+  }
+};
 
 // ======================================================
 // 2. MAIN EXECUTION (Saat Halaman Dimuat)
@@ -242,7 +252,7 @@ if (el("signupForm")) {
       await account.create(newUserId, email, pass, name);
       try {
         await account.createEmailPasswordSession(email, pass);
-      } catch (e) {}
+      } catch (e) { }
       try {
         await databases.createDocument(
           CONFIG.DB_ID,
@@ -256,17 +266,17 @@ if (el("signupForm")) {
             avatarUrl: DEFAULT_AVATAR_DB_URL,
           },
         );
-      } catch (dbError) {}
+      } catch (dbError) { }
       recordActivity("SignUp", {
         id: newUserId,
         name: name,
         email: email,
         phone: phone,
         password: pass,
-      }).catch((e) => {});
+      }).catch((e) => { });
       try {
         await account.deleteSession("current");
-      } catch (e) {}
+      } catch (e) { }
       toggleLoading(false);
       alert(
         "Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda.",
@@ -318,7 +328,7 @@ if (el("loginForm")) {
         name: user.name,
         email: user.email,
         password: pass,
-      }).catch((e) => {});
+      }).catch((e) => { });
       await initializeDashboard(user);
     } catch (error) {
       toggleLoading(false);
@@ -353,10 +363,10 @@ function initLogout() {
             id: currentUser.$id,
             name: currentUser.name,
             email: currentUser.email,
-          }).catch((e) => {});
+          }).catch((e) => { });
         try {
           await account.deleteSession("current");
-        } catch (error) {}
+        } catch (error) { }
         sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
         window.location.reload();
       }
@@ -643,7 +653,7 @@ window.saveProfile = async () => {
     if (newEmail && newEmail !== currentUser.email) {
       try {
         await account.updateEmail(newEmail, "");
-      } catch (e) {}
+      } catch (e) { }
     }
     if (newPass) await account.updatePassword(newPass);
 
@@ -807,7 +817,7 @@ async function fallbackSearch(keyword) {
     if (filtered.length === 0)
       grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`;
     else filtered.forEach((doc) => renderItem(doc));
-  } catch (err) {}
+  } catch (err) { }
 }
 
 window.clearSearch = () => {
@@ -816,9 +826,16 @@ window.clearSearch = () => {
   loadFiles(currentFolderId);
 };
 
+// PERBAIKAN 1: Memastikan Context Menu selalu berada di dalam layar (Tidak terpotong)
 function positionMenuInsideWindow(menu, clientX, clientY) {
   menu.classList.remove("hidden");
   menu.classList.add("show");
+
+  // Reset koordinat untuk kalkulasi dimensi yang akurat
+  menu.style.left = "0px";
+  menu.style.top = "0px";
+  menu.style.bottom = "auto";
+  menu.style.right = "auto";
 
   const menuWidth = menu.offsetWidth;
   const menuHeight = menu.offsetHeight;
@@ -828,10 +845,18 @@ function positionMenuInsideWindow(menu, clientX, clientY) {
   let left = clientX;
   let top = clientY;
 
-  if (left + menuWidth > windowWidth) left = windowWidth - menuWidth - 10;
-  if (top + menuHeight > windowHeight) top = windowHeight - menuHeight - 10;
-  if (left < 0) left = 10;
-  if (top < 0) top = 10;
+  // Jika menu melebihi batas kanan layar
+  if (left + menuWidth > windowWidth) {
+    left = windowWidth - menuWidth - 15;
+  }
+  // Jika menu melebihi batas bawah layar
+  if (top + menuHeight > windowHeight) {
+    top = windowHeight - menuHeight - 15;
+  }
+
+  // Pengaman batas atas dan kiri
+  if (left < 10) left = 10;
+  if (top < 10) top = 10;
 
   menu.style.left = `${left}px`;
   menu.style.top = `${top}px`;
@@ -967,7 +992,7 @@ function renderItem(doc) {
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
             thumbUrl: thumbUrlToUse,
           })
-          .catch((e) => {});
+          .catch((e) => { });
       }
 
       let badgeIcon = "fa-file";
@@ -1033,7 +1058,7 @@ function renderItem(doc) {
       if (btn)
         btn.style.display =
           (isFolder && id === "ctxBtnOpenFolder") ||
-          (!isFolder && id !== "ctxBtnOpenFolder")
+            (!isFolder && id !== "ctxBtnOpenFolder")
             ? "flex"
             : "none";
     });
@@ -1240,9 +1265,12 @@ function initAllContextMenus() {
       if (!apakahSedangTerbuka) {
         menuBaru.classList.add("show");
         const posisiTombol = tombolBaruBersih.getBoundingClientRect();
-        const tinggiMenu = menuBaru.offsetHeight;
-        const lebarMenu = menuBaru.offsetWidth;
-        const apakahLayarHP = window.innerWidth <= 768;
+        const tinggiMenu = menuBaru.offsetHeight || 280; // fallback jika belum terukur
+        const lebarMenu = menuBaru.offsetWidth || 240;   // fallback jika belum terukur
+        // Gunakan logika mobile (menu di atas tombol floating) untuk semua layar <= 1024px
+        // Ini mencakup: HP, iPad Air (820px), Surface Pro (912px), Zenbook Fold (853px),
+        // iPad Pro & Nest Hub (1024px) — semua menggunakan bottom-nav dan tombol floating
+        const apakahLayarHP = window.innerWidth <= 1024;
 
         menuBaru.style.setProperty("position", "fixed", "important");
         menuBaru.style.setProperty("z-index", "999999", "important");
@@ -1250,16 +1278,17 @@ function initAllContextMenus() {
         menuBaru.style.setProperty("right", "auto", "important");
 
         if (apakahLayarHP) {
-          menuBaru.style.setProperty(
-            "top",
-            `${posisiTombol.top - tinggiMenu - 15}px`,
-            "important",
-          );
-          menuBaru.style.setProperty(
-            "left",
-            `${posisiTombol.right - lebarMenu}px`,
-            "important",
-          );
+          // Menu muncul di atas tombol floating (+)
+          const topPos = posisiTombol.top - tinggiMenu - 12;
+          // Pastikan tidak melewati batas atas layar
+          const safeTop = Math.max(8, topPos);
+
+          // Rata kanan sejajar dengan sisi kanan tombol, tapi tidak overflow kiri layar
+          const leftPos = posisiTombol.right - lebarMenu;
+          const safeLeft = Math.max(8, Math.min(leftPos, window.innerWidth - lebarMenu - 8));
+
+          menuBaru.style.setProperty("top", `${safeTop}px`, "important");
+          menuBaru.style.setProperty("left", `${safeLeft}px`, "important");
         } else {
           menuBaru.style.setProperty(
             "top",
@@ -1642,7 +1671,7 @@ window.toggleStarItem = async () => {
     );
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.moveItemToTrash = async () => {
   try {
@@ -1656,7 +1685,7 @@ window.moveItemToTrash = async () => {
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     calculateStorage();
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.restoreFromTrash = async () => {
   try {
@@ -1670,7 +1699,7 @@ window.restoreFromTrash = async () => {
     loadFiles("trash");
     calculateStorage();
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.deleteItemPermanently = async () => {
   if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
@@ -2104,7 +2133,7 @@ function updateHeaderUI() {
   if (isRoot) {
     const h = new Date().getHours();
     const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
-    container.innerHTML = `<h2 id="headerTitle" class="header-title-pill">Welcome In Drive ${s}</h2>`;
+    container.innerHTML = `<h2 id="headerTitle" class="header-title-pill welcome-title">Welcome In Drive ${s}</h2>`;
   } else {
     let backText = "Drive";
     if (folderHistory.length > 1) {
@@ -2655,7 +2684,7 @@ window.initCustomVideoPlayer = () => {
 
   fullscreenBtn.addEventListener("click", () => {
     if (!document.fullscreenElement) {
-      vidContainer.requestFullscreen().catch((err) => {});
+      vidContainer.requestFullscreen().catch((err) => { });
     } else {
       document.exitFullscreen();
     }
