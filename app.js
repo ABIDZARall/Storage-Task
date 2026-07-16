@@ -10,6 +10,68 @@ try {
   account = new Appwrite.Account(client);
   databases = new Appwrite.Databases(client);
   storage = new Appwrite.Storage(client);
+  
+  // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
+  window.sanitizeInput = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+  };
+
+  const originalCreate = databases.createDocument.bind(databases);
+  databases.createDocument = async (dbId, colId, docId, data, permissions) => {
+    // 1. XSS Filter: Sanitize all strings before saving to database
+    const sanitizedData = {};
+    for (const key in data) {
+      if (typeof data[key] === 'string') {
+        sanitizedData[key] = window.sanitizeInput(data[key]);
+      } else {
+        sanitizedData[key] = data[key];
+      }
+    }
+    
+    // 2. Backend Security: Enforce Row Level Security (RLS)
+    let securePerms = permissions || [];
+    try {
+      const usr = await account.get();
+      if (usr && usr.$id) {
+        securePerms = [
+          Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
+          Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
+          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
+        ];
+      }
+    } catch(e) {}
+    
+    return originalCreate(dbId, colId, docId, sanitizedData, securePerms);
+  };
+  
+  // 3. Storage Security: Block Executables & Enforce RLS
+  const originalCreateFile = storage.createFile.bind(storage);
+  storage.createFile = async (bucketId, fileId, file, permissions) => {
+    if (file && file.name) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const blockedExts = ['exe', 'bat', 'sh', 'cmd', 'msi', 'vbs', 'ps1', 'apk'];
+      if (blockedExts.includes(ext)) {
+        throw new Error("Security Alert: Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
+      }
+    }
+    let securePerms = permissions || [];
+    try {
+      const usr = await account.get();
+      if (usr && usr.$id) {
+        securePerms = [
+          Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
+          Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
+          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
+        ];
+      }
+    } catch(e) {}
+    return originalCreateFile(bucketId, fileId, file, securePerms);
+  };
+  // ------------------------------------------------
+
 } catch (error) {
   console.error("Critical Engine Error:", error);
   window.addEventListener("DOMContentLoaded", () => {
