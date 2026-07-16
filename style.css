@@ -1069,6 +1069,7 @@ form {
     .welcome-title {
         margin-top: 8px !important;
         font-size: 1.6rem !important;
+        margin-left: 0 !important;
     }
 }
 
