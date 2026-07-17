@@ -2475,7 +2475,10 @@ window.openPreview = (doc) => {
                                 <button class="audio-btn-ios" id="audioNextBtn" title="File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                             </div>
 
-                            <button class="audio-icon-btn-ios"><i class="fa-solid fa-satellite-dish"></i></button>
+                            <div class="audio-volume-pill-ios">
+                                <button class="audio-mute-btn-ios" id="audioMuteBtn" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
+                                <input type="range" id="audioVolumeSlider" class="audio-slider-ios volume-slider-ios" min="0" max="1" step="0.01" value="1" style="--prog: 100%;">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2560,12 +2563,43 @@ function initAppleAudioPlayer() {
     isDraggingAudio = false;
   });
 
+  const muteBtn = el("audioMuteBtn");
+
+  const updateAudioMuteIcon = (vol) => {
+    if (!muteBtn) return;
+    if (vol === 0 || audio.muted) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+    else if (vol < 0.5) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
+    else muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+  };
+
   if (volumeSlider) {
     audio.volume = 1;
     volumeSlider.addEventListener("input", (e) => {
       const vol = parseFloat(e.target.value);
       audio.volume = vol;
+      audio.muted = vol === 0;
       volumeSlider.style.setProperty("--prog", vol * 100 + "%");
+      updateAudioMuteIcon(vol);
+    });
+  }
+
+  if (muteBtn) {
+    muteBtn.addEventListener("click", () => {
+      audio.muted = !audio.muted;
+      if (audio.muted) {
+        if (volumeSlider) {
+          volumeSlider.value = 0;
+          volumeSlider.style.setProperty("--prog", "0%");
+        }
+      } else {
+        const currentVol = audio.volume > 0 ? audio.volume : 1;
+        audio.volume = currentVol;
+        if (volumeSlider) {
+          volumeSlider.value = currentVol;
+          volumeSlider.style.setProperty("--prog", currentVol * 100 + "%");
+        }
+      }
+      updateAudioMuteIcon(audio.muted ? 0 : audio.volume);
     });
   }
 
