@@ -1936,13 +1936,7 @@ function handleFileSelect(files) {
 
   // Akumulasi file yang dipilih (bisa drag & drop berkali-kali)
   if (selectedUploadFiles && selectedUploadFiles.length > 0) {
-      // Tambahkan file baru, tapi filter duplikat berdasarkan nama dan ukuran
-      let newFiles = tempFiles.filter(newFile => {
-          return !selectedUploadFiles.some(existingFile => 
-              existingFile.name === newFile.name && existingFile.size === newFile.size
-          );
-      });
-      selectedUploadFiles = [...selectedUploadFiles, ...newFiles];
+      selectedUploadFiles = [...selectedUploadFiles, ...tempFiles];
   } else {
       selectedUploadFiles = tempFiles;
   }
@@ -1971,6 +1965,12 @@ function handleFileSelect(files) {
   fileListHTML += `</ul></div>`;
   infoText.innerHTML = fileListHTML;
   document.getElementById("fileInfoContainer").classList.remove("hidden");
+  
+  // Kosongkan value input agar event 'change' bisa dipicu kembali meskipun memilih file yang sama
+  const fInput = document.getElementById("fileInputHidden");
+  const folderInputHidden = document.getElementById("folderInputHidden");
+  if (fInput) fInput.value = "";
+  if (folderInputHidden) folderInputHidden.value = "";
 }
 
 // FUNGSI PINTAR MEMBACA STRUKTUR FOLDER DARI DRAG & DROP
