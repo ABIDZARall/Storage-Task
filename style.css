@@ -404,31 +404,33 @@ form {
 /* ============================================================ */
 @media screen and (max-width: 768px) {
     .profile-card {
-        padding: 20px 15px;
-        max-width: 90%;
+        padding: 16px 14px;
+        max-width: 85%;
+        transform: scale(0.92);
+        transform-origin: center center;
     }
     .profile-header {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     .profile-header h3 {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
     }
     .profile-avatar-wrapper {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
     }
     .profile-avatar-container {
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
     .profile-hint {
-        font-size: 0.75rem;
-        margin-top: 5px;
+        font-size: 0.7rem;
+        margin-top: 4px;
     }
     .separator-line {
-        margin: 10px 0 8px 0;
+        margin: 8px 0 6px 0;
     }
     .profile-actions {
-        margin-top: 10px;
+        margin-top: 8px;
     }
 }
 
