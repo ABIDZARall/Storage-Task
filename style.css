@@ -4717,9 +4717,53 @@ body.light-mode .video-title-ios,
 body.light-mode .video-time-ios,
 body.light-mode .sab-text,
 body.light-mode .empty-state h3,
-body.light-mode .empty-state p {
-    color: #1e293b !important;
+body.light-mode .empty-state p,
+body.light-mode .storage-hero h1,
+body.light-mode .storage-sub-hero,
+body.light-mode #fileInfoText,
+body.light-mode .modal-header h3,
+body.light-mode .thumb-fallback-card i,
+body.light-mode .preview-file-info span {
+    color: #0f172a !important;
     text-shadow: none !important;
+}
+
+body.light-mode .preview-overlay,
+body.light-mode .modal-overlay,
+body.light-mode .full-screen-center,
+body.light-mode .full-screen-layout {
+    background: rgba(248, 250, 252, 0.95) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+}
+
+body.light-mode .preview-glass-panel,
+body.light-mode .glass-card,
+body.light-mode .modal-box {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(220, 220, 220, 0.8) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .apple-audio-player-ios,
+body.light-mode .audio-player-container,
+body.light-mode .video-player-container,
+body.light-mode .preview-header,
+body.light-mode .audio-main-controls-ios,
+body.light-mode .apple-top-controls {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: rgba(200, 200, 200, 0.5) !important;
+    color: #1e293b !important;
+}
+
+body.light-mode .thumb-box {
+    background-color: #f1f5f9 !important;
+}
+body.light-mode .thumb-box.bg-purple {
+    background-color: #f3e8ff !important;
+}
+body.light-mode .thumb-video {
+    background-color: #e2e8f0 !important;
 }
 
 body.light-mode .pill-input {
@@ -4804,16 +4848,20 @@ body.light-mode .back-btn:hover {
 /* Invert icons that are explicitly white in dark mode */
 body.light-mode .icon-only-btn,
 body.light-mode .audio-btn-ios,
-body.light-mode .audio-mute-btn-ios { 
-    color: #475569; 
+body.light-mode .audio-mute-btn-ios,
+body.light-mode .close-icon,
+body.light-mode .close-icon-simple { 
+    color: #334155 !important; 
 }
+
 body.light-mode .icon-only-btn:hover,
 body.light-mode .audio-btn-ios:hover,
-body.light-mode .audio-mute-btn-ios:hover { 
-    color: #0f172a; 
+body.light-mode .audio-mute-btn-ios:hover,
+body.light-mode .close-icon:hover { 
+    color: #0f172a !important; 
+    background: rgba(0, 0, 0, 0.05) !important;
 }
 body.light-mode .apple-volume-slider::-webkit-slider-thumb { background: #475569; }
-body.light-mode .apple-audio-player-ios { color: #0f172a; }
 
 /* Tooltip and dropdowns */
 body.light-mode .context-menu-item { color: #334155; }
