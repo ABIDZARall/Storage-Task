@@ -95,11 +95,11 @@ const DEFAULT_AVATAR_DB_URL =
 const _dx = (s) => atob(s);
 const CONFIG = {
   ENDPOINT: "https://sgp.cloud.appwrite.io/v1", // Singapore Region
-  PROJECT_ID: _dx("69cb16b0002ee20f2a3d"), // Project ID
-  DB_ID: _dx("6a5a634d003e4a12170a"),
-  COLLECTION_FILES: _dx("files_backups"),
-  COLLECTION_USERS: _dx("users_backups"),
-  BUCKET_ID: _dx("6a5a6943000f133e6a35"),
+  PROJECT_ID: "69cb16b0002ee20f2a3d", // Project ID
+  DB_ID: "6a5a634d003e4a12170a",
+  COLLECTION_FILES: "files_backups",
+  COLLECTION_USERS: "users_backups",
+  BUCKET_ID: "6a5a6943000f133e6a35",
 };
 
 // API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
