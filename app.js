@@ -2447,14 +2447,14 @@ window.openPreview = (doc) => {
       setTimeout(initCustomVideoPlayer, 50);
     } else if (audioExts.includes(ext)) {
       contentArea.innerHTML = `
-                <div class="apple-audio-player-v2">
+                <div class="apple-audio-player-v2 vertical-stacked">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
                     <div class="audio-cover-v2" id="audioCoverArt">
                         <i class="fa-solid fa-music"></i>
                     </div>
 
-                    <div class="audio-right-v2">
+                    <div class="audio-glass-panel">
                         <div class="audio-header-v2">
                             <div class="audio-meta-v2">
                                 <div class="audio-title-v2" title="${doc.name}">${doc.name}</div>
@@ -2475,12 +2475,6 @@ window.openPreview = (doc) => {
                             <button class="audio-btn-v2" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                             <button class="audio-btn-v2 play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
                             <button class="audio-btn-v2" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
-                        </div>
-
-                        <div class="audio-volume-v2">
-                            <i class="fa-solid fa-volume-off"></i>
-                            <input type="range" id="audioVolumeSlider" class="apple-slider-v2 volume-slider-v2" min="0" max="1" step="0.01" value="1" style="--prog: 100%;">
-                            <i class="fa-solid fa-volume-high"></i>
                         </div>
                     </div>
                     
