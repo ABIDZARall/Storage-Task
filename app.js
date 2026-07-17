@@ -213,18 +213,10 @@ window.updateNavIndicator = function (element) {
   indicator.style.display = "block";
   
   if (window.innerWidth > 768) {
-      // Di Desktop/Tablet, samakan panjang indikator dengan tombol Baru (.new-btn)
-      const newBtn = document.querySelector(".new-btn");
-      if (newBtn) {
-          indicator.style.width = newBtn.offsetWidth + "px";
-      } else {
-          indicator.style.width = element.offsetWidth + "px";
-      }
-      
-      // Kembalikan ke posisi awal tanpa terpengaruh efek geser transform
+      // Di Desktop/Tablet, gunakan lebar penuh menu agar sejajar persis dengan tombol Baru
+      indicator.style.width = "100%";
       indicator.style.left = "0px";
-      
-      indicator.style.height = element.offsetHeight + "px";
+      indicator.style.height = "44px"; // Paksa tinggi 44px sesuai nav-item
       indicator.style.top = element.offsetTop + "px";
   } else {
       // Di Mobile
