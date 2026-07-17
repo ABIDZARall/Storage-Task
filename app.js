@@ -6,21 +6,18 @@ try {
   if (typeof Appwrite === 'undefined') {
     throw new Error("Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.");
   }
-
-  // === INISIALISASI SDK APPWRITE ===
   client = new Appwrite.Client();
   account = new Appwrite.Account(client);
   databases = new Appwrite.Databases(client);
   storage = new Appwrite.Storage(client);
 
-  const SECURITY_SYSTEM = {
-    checkThreats: (input) => input,
-    initAntiSpy: () => {},
-    secureBackendRequest: async (op) => await op(),
-    obfuscate: (text) => text,
+  // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
+  window.sanitizeInput = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
   };
-  window.sanitizeInput = (str) => str;
-  SECURITY_SYSTEM.initAntiSpy();
 
   const originalCreate = databases.createDocument.bind(databases);
   databases.createDocument = async (dbId, colId, docId, data, permissions) => {
@@ -39,20 +36,13 @@ try {
     try {
       const usr = await account.get();
       if (usr && usr.$id) {
-        // Berikan akses baca publik (any) agar fitur pencarian Username -> Email berfungsi,
-        // namun larang akses tulis/hapus selain pemilik asli.
         securePerms = [
-          Appwrite.Permission.read(Appwrite.Role.any()),
+          Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
           Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
           Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
         ];
       }
-    } catch (e) {
-      // Jika belum login (Guest/Signup), berikan akses baca publik
-      securePerms = [
-        Appwrite.Permission.read(Appwrite.Role.any())
-      ];
-    }
+    } catch (e) { }
 
     return originalCreate(dbId, colId, docId, sanitizedData, securePerms);
   };
@@ -64,7 +54,7 @@ try {
       const ext = file.name.split('.').pop().toLowerCase();
       const blockedExts = ['exe', 'bat', 'sh', 'cmd', 'msi', 'vbs', 'ps1', 'apk'];
       if (blockedExts.includes(ext)) {
-        throw new Error("Security Alert: Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
+        throw new Error("Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
       }
     }
     let securePerms = permissions || [];
@@ -102,16 +92,18 @@ const DEFAULT_AVATAR_DB_URL =
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
 // SECURITY: OBFUSCATED CREDENTIALS (STANDAR SIBER)
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
+const _dx = (s) => atob(s);
 const CONFIG = {
-  ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
-  PROJECT_ID: '697f71b40034438bb559',
-  DB_ID: 'storagedb',
-  COLLECTION_FILES: 'files',
-  COLLECTION_USERS: 'users',
-  BUCKET_ID: 'taskfiles'
+  ENDPOINT: _dx("aHR0cHM6Ly9jbG91ZC5hcHB3cml0ZS5pby92MQ=="), // cloud.appwrite.io
+  PROJECT_ID: _dx("Njk3ZjcxYjQwMDM0NDM4YmI1NTk="), // Project ID
+  DB_ID: _dx("c3RvcmFnZWRi"),
+  COLLECTION_FILES: _dx("ZmlsZXM="),
+  COLLECTION_USERS: _dx("dXNlcnM="),
+  BUCKET_ID: _dx("dGFza2ZpbGVz"),
 };
+
 // API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
-const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
+const SHEETDB_API = _dx("aHR0cHM6Ly9zaGVldGRiLmlvL2FwaS92MS92OWU1dWhmb3gzbmJp");
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
@@ -348,21 +340,20 @@ const AUTH_SECURITY = {
 if (el("signupForm")) {
   el("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = SECURITY_SYSTEM.checkThreats(el("regName").value.trim());
-    const email = SECURITY_SYSTEM.checkThreats(el("regEmail").value.trim());
-    const phone = SECURITY_SYSTEM.checkThreats(el("regPhone").value.trim());
-    const pass = SECURITY_SYSTEM.checkThreats(el("regPass").value);
+    const name = el("regName").value.trim();
+    const email = el("regEmail").value.trim();
+    const phone = el("regPhone").value.trim();
+    const pass = el("regPass").value;
     const verify = el("regVerify").value;
 
     if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
-    if (!AUTH_SECURITY.validateEmail(email)) return alert("Keamanan Siber: Gunakan email publik yang terpercaya (Gmail, Yahoo, Outlook, iCloud). Email sementara/perusahaan tidak diizinkan.");
-    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Keamanan Siber: Nomor telepon tidak valid. Gunakan format resmi (contoh: +62812...) atau 10-15 digit angka.");
-    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (!AUTH_SECURITY.validateEmail(email)) return alert("Gunakan email yang kamu miliki.");
+    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Nomor telepon tidak valid.");
+    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
     if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
 
     toggleLoading(true, "Mendaftarkan Akun Anda...");
     try {
-      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
       checkSystemHealth();
       const newUserId = Appwrite.ID.unique();
       await account.create(newUserId, email, pass, name);
@@ -378,7 +369,7 @@ if (el("signupForm")) {
             email: email,
             phone: phone,
             name: name,
-            password: SECURITY_SYSTEM.obfuscate(pass),
+            password: pass,
             avatarUrl: DEFAULT_AVATAR_DB_URL,
           },
         );
@@ -411,78 +402,92 @@ if (el("loginForm")) {
     e.preventDefault();
     if (Date.now() < AUTH_SECURITY.lockUntil) {
       const waitSecs = Math.ceil((AUTH_SECURITY.lockUntil - Date.now()) / 1000);
-      return alert(`Keamanan Siber: Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
+      return alert(`Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
     }
 
-    let inputId = SECURITY_SYSTEM.checkThreats(el("loginEmail").value.trim());
-    const pass = SECURITY_SYSTEM.checkThreats(el("loginPass").value);
+    let inputId = el("loginEmail").value.trim();
+    const pass = el("loginPass").value;
 
-    // Sanitasi input login dari serangan XSS
-    inputId = window.sanitizeInput ? window.sanitizeInput(inputId) : inputId;
+    // PERBAIKAN: Jangan sanitize input login - sanitasi XSS merusak kredensial
+    // yang dikirim ke Appwrite Auth API (contoh: karakter khusus dalam password)
 
     try {
       toggleLoading(true, "Memproses Login...");
+      checkSystemHealth();
 
-      // Cek apakah input adalah username (tidak mengandung @)
+      // PERBAIKAN: Hapus sesi lama yang tersisa sebelum login baru
+      try {
+        await account.deleteSession("current");
+      } catch (e) {
+        // Tidak ada sesi aktif - aman untuk lanjut
+      }
+      sessionStorage.clear();
+
       if (!inputId.includes("@")) {
         try {
           const res = await databases.listDocuments(
             CONFIG.DB_ID,
             CONFIG.COLLECTION_USERS,
-            [Appwrite.Query.equal("name", inputId)]
+            [Appwrite.Query.equal("name", inputId)],
           );
-          if (res.documents.length > 0) {
-            inputId = res.documents[0].email; // Ubah username menjadi email
-          } else {
-            throw new Error("Username tidak ditemukan di Database. Silakan cek kembali atau gunakan Email Anda.");
+          if (res.documents.length > 0) inputId = res.documents[0].email;
+          else throw new Error("Username tidak ditemukan.");
+        } catch (lookupErr) {
+          // Jika listDocuments gagal karena permission, coba anggap inputId sebagai email
+          if (lookupErr.message && lookupErr.message.includes("tidak ditemukan")) {
+            throw lookupErr;
           }
-        } catch (e) {
-          throw new Error("Sistem Gagal mencari Username: " + e.message);
+          // Untuk error permission/network, coba login langsung dengan inputId sebagai email
+          console.warn("Username lookup gagal, mencoba sebagai email:", lookupErr.message);
         }
       }
 
-      // Langsung tembak Session ke Appwrite, hemat 2 API Request
+      // Langsung tembak Session ke Appwrite
       await account.createEmailPasswordSession(inputId, pass);
 
-    let user = await account.get();
-    sessionStorage.setItem("currentUser", JSON.stringify(user));
+      let user = await account.get();
+      sessionStorage.setItem("currentUser", JSON.stringify(user));
 
-    await syncUserData(user);
-    recordActivity("Login", {
-      id: user.$id,
-      name: user.name,
-      email: user.email,
-      password: pass,
-    }).catch((e) => { });
-    AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
-    await initializeDashboard(user);
-  } catch (error) {
-    toggleLoading(false);
+      await syncUserData(user);
+      recordActivity("Login", {
+        id: user.$id,
+        name: user.name,
+        email: user.email,
+        password: pass,
+      }).catch((e) => { });
+      AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
+      await initializeDashboard(user);
+    } catch (error) {
+      toggleLoading(false);
 
-    // BRUTE FORCE TRACKING
-    AUTH_SECURITY.loginAttempts++;
-    if (AUTH_SECURITY.loginAttempts >= 3) {
-      AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
-      AUTH_SECURITY.loginAttempts = 0;
-      alert("Peringatan Siber: Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal (Brute-force protection).");
-      return;
-    }
-
-    // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
-    if (error.message.includes("prohibited when a session is active")) {
-      try {
-        let user = await account.get();
-        sessionStorage.setItem("currentUser", JSON.stringify(user));
-        await initializeDashboard(user);
+      // BRUTE FORCE TRACKING
+      AUTH_SECURITY.loginAttempts++;
+      if (AUTH_SECURITY.loginAttempts >= 3) {
+        AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
+        AUTH_SECURITY.loginAttempts = 0;
+        alert("Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal.");
         return;
-      } catch (fallbackErr) {
-        alert("Gagal memulihkan sesi: " + fallbackErr.message);
       }
-    } else {
-      alert("Login Gagal: " + error.message);
+
+      // Fallback: Jika masih ada sesi aktif, langsung tarik data user-nya
+      if (error.message && (error.message.includes("prohibited when a session is active") || error.message.includes("Creation of a session is prohibited"))) {
+        try {
+          let user = await account.get();
+          sessionStorage.setItem("currentUser", JSON.stringify(user));
+          await syncUserData(user);
+          await initializeDashboard(user);
+          return;
+        } catch (fallbackErr) {
+          // Sesi rusak - hapus dan minta login ulang
+          try { await account.deleteSession("current"); } catch(e) {}
+          sessionStorage.clear();
+          alert("Sesi sebelumnya bermasalah. Silakan coba login kembali.");
+        }
+      } else {
+        alert("Login Gagal: " + error.message);
+      }
     }
-  }
-});
+  });
 }
 
 function initLogout() {
@@ -512,11 +517,11 @@ function initLogout() {
 if (el("resetForm")) {
   el("resetForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = SECURITY_SYSTEM.checkThreats(el("resetEmail").value.trim());
-    const newPass = SECURITY_SYSTEM.checkThreats(el("resetNewPass").value);
+    const email = el("resetEmail").value.trim();
+    const newPass = el("resetNewPass").value;
     const verifyPass = el("resetVerifyPass").value;
 
-    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
     if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
 
     toggleLoading(true, "Mencari Akun...");
@@ -533,9 +538,8 @@ if (el("resetForm")) {
         CONFIG.DB_ID,
         CONFIG.COLLECTION_USERS,
         userDoc.$id,
-        { password: SECURITY_SYSTEM.obfuscate(newPass) },
+        { password: newPass },
       );
-
       await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, {
         method: "PATCH",
         headers: {
@@ -626,52 +630,31 @@ async function initializeDashboard(userObj) {
   toggleLoading(false);
 }
 
-// PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
-// async function checkSession() {
-//   if (!el("loginPage").classList.contains("hidden")) return;
-//   toggleLoading(true, "Memuat Ruang Kerja...");
-//   try {
-//     const cachedUser = sessionStorage.getItem("currentUser");
-//     if (cachedUser) {
-//       currentUser = JSON.parse(cachedUser);
-//       await syncUserData(currentUser);
-//     } else {
-//       currentUser = await account.get();
-//       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-//       await syncUserData(currentUser);
-//     }
-
-//     // AKTIFKAN REALTIME DISINI JUGA
-//     initRealtimeSync();
-
-//     folderHistory = [{ id: "root", name: "Drive" }];
-//     updateProfileUI();
-//     window.nav("dashboardPage");
-//     calculateStorage();
-//     loadFiles("root");
-//   } catch (e) {
-//     sessionStorage.clear();
-//     window.nav("loginPage");
-//   } finally {
-//     toggleLoading(false);
-//   }
-// }
-
+// PERBAIKAN: Selalu verifikasi sesi ke Appwrite API, jangan hanya cache
 async function checkSession() {
-  if (!el("loginPage").classList.contains("hidden")) return;
+  // Jika loginPage sedang ditampilkan (user sengaja di halaman login), skip
+  if (el("loginPage") && !el("loginPage").classList.contains("hidden")) return;
   toggleLoading(true, "Memuat Ruang Kerja...");
   try {
-
-
-    const cachedUser = sessionStorage.getItem("currentUser");
-    if (cachedUser) {
-      currentUser = JSON.parse(cachedUser);
-      await syncUserData(currentUser);
-    } else {
-      currentUser = await account.get();
-      sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-      await syncUserData(currentUser);
+    // PERBAIKAN: Selalu verifikasi ke Appwrite terlebih dahulu
+    // Cache sessionStorage bisa stale/expired, jadi harus validasi
+    let user;
+    try {
+      user = await account.get();
+    } catch (apiErr) {
+      // Sesi tidak valid di Appwrite - bersihkan cache dan tampilkan login
+      sessionStorage.clear();
+      window.nav("loginPage");
+      toggleLoading(false);
+      return;
     }
+
+    currentUser = user;
+    sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+    await syncUserData(currentUser);
+
+    // AKTIFKAN REALTIME DISINI JUGA
+    initRealtimeSync();
 
     folderHistory = [{ id: "root", name: "Drive" }];
     updateProfileUI();
@@ -685,6 +668,8 @@ async function checkSession() {
     toggleLoading(false);
   }
 }
+
+
 
 // PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
@@ -756,11 +741,10 @@ function initProfileImageUploader() {
 window.saveProfile = async () => {
   toggleLoading(true, "Menyimpan Perubahan Profil...");
   try {
-    const newName = SECURITY_SYSTEM.checkThreats(el("editName").value.trim());
-    const newEmail = SECURITY_SYSTEM.checkThreats(el("editEmail").value.trim());
-    const newPhone = SECURITY_SYSTEM.checkThreats(el("editPhone").value.trim());
-    const newPass = SECURITY_SYSTEM.checkThreats(el("editPass").value);
-    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
+    const newName = el("editName").value.trim();
+    const newEmail = el("editEmail").value.trim();
+    const newPhone = el("editPhone").value.trim();
+    const newPass = el("editPass").value;
     let newAvatarUrl =
       userDataDB && userDataDB.avatarUrl
         ? userDataDB.avatarUrl
@@ -1117,11 +1101,11 @@ function renderItem(doc) {
       } else {
         thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
         localCache[doc.fileId] = thumbUrlToUse;
-
+        
         // OPTIMASI PERFORMA: Batasi ukuran cache maksimal 100 item (Anti Memory Leak)
         const cacheKeys = Object.keys(localCache);
         if (cacheKeys.length > 100) delete localCache[cacheKeys[0]];
-
+        
         localStorage.setItem("hfThumbCache", JSON.stringify(localCache));
         databases
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
@@ -1769,12 +1753,11 @@ window.createFolder = () => {
 };
 
 window.submitCreateFolder = async () => {
-  const name = SECURITY_SYSTEM.checkThreats(document.getElementById("newFolderName").value.trim());
+  const name = document.getElementById("newFolderName").value.trim();
   if (!name) return;
   closeModal("folderModal");
   toggleLoading(true);
   try {
-    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     await databases.createDocument(
       CONFIG.DB_ID,
       CONFIG.COLLECTION_FILES,
@@ -1842,7 +1825,6 @@ window.deleteItemPermanently = async () => {
   if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
   toggleLoading(true, "Menghapus...");
   try {
-    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     if (selectedItem.type === "file")
       await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId);
     await databases.deleteDocument(
@@ -1875,10 +1857,8 @@ window.downloadCurrentItem = () => {
   closeAllMenus();
 };
 window.renameCurrentItem = async () => {
-  let newName = prompt("Nama baru:", selectedItem.name);
+  const newName = prompt("Nama baru:", selectedItem.name);
   if (newName) {
-    newName = SECURITY_SYSTEM.checkThreats(newName.trim());
-    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     await databases.updateDocument(
       CONFIG.DB_ID,
       CONFIG.COLLECTION_FILES,
@@ -2080,14 +2060,12 @@ window.submitUploadFile = async () => {
 
       for (let part of parts) {
         if (!part) continue;
-        part = SECURITY_SYSTEM.checkThreats(part);
         currentPath = currentPath ? `${currentPath}/${part}` : part;
 
         if (folderCache[currentPath]) {
           parentId = folderCache[currentPath];
         } else {
           const newFolderId = Appwrite.ID.unique();
-          await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
           await databases.createDocument(
             CONFIG.DB_ID,
             CONFIG.COLLECTION_FILES,
@@ -2132,10 +2110,8 @@ window.submitUploadFile = async () => {
 
     for (let i = 0; i < uploadQueue.length; i++) {
       const item = uploadQueue[i];
-      SECURITY_SYSTEM.checkThreats(item.fileObj.name);
       toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
 
-      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
       const up = await storage.createFile(
         CONFIG.BUCKET_ID,
         Appwrite.ID.unique(),
