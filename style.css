@@ -2670,212 +2670,180 @@ form {
 }
 
 /* ============================================================ */
-/* NEW: APPLE ORIGINAL AUDIO PLAYER (LIQUID GLASS v2 TATA LETAK BARU) */
+/* NEW: APPLE ORIGINAL AUDIO PLAYER (iOS 16/17 LOCK SCREEN)   */
 /* ============================================================ */
-.preview-content-area:has(.apple-audio-player-v2) {
+.preview-content-area:has(.apple-audio-player-ios) {
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
 }
 
-.apple-audio-player-v2.vertical-stacked {
+.apple-audio-player-ios {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 440px;
-    max-width: 95vw;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding: 0;
-    gap: 30px;
+    width: 360px;
+    max-width: 90vw;
+    gap: 16px;
+    margin: 0 auto;
     animation: previewZoomIn 0.35s ease-out;
-    position: relative;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-cover-v2 {
-    width: 320px;
-    height: 320px;
-    border-radius: 20px;
-    background: #d4d4d8;
+.audio-cover-ios {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #ffffff 100%);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    flex-shrink: 0;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-cover-v2 i {
-    font-size: 10rem;
+.audio-cover-ios::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 14px;
+    pointer-events: none;
+}
+
+.audio-cover-ios i {
+    font-size: 8rem;
     color: #94a3b8;
-    text-shadow: none;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-cover-v2.playing {
-    transform: scale(1.04);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+.audio-cover-ios.playing {
+    transform: scale(1.03);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.35);
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-glass-panel {
+.audio-glass-ios {
     width: 100%;
-    background: rgba(43, 53, 78, 0.5);
-    backdrop-filter: blur(50px) saturate(200%);
-    -webkit-backdrop-filter: blur(50px) saturate(200%);
-    border-radius: 30px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.2);
+    background: rgba(150, 150, 150, 0.15); /* Neutral subtle glass */
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-radius: 24px;
+    padding: 24px 20px;
+    /* Liquid glass "menonjol dan timbul" effect */
+    box-shadow: 
+        0 15px 35px rgba(0,0,0,0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.4),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1),
+        inset 1px 0 2px rgba(255, 255, 255, 0.1),
+        inset -1px 0 2px rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    position: relative;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    gap: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-header-v2 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.audio-meta-ios {
     text-align: center;
-    position: relative;
-}
-
-.apple-audio-player-v2.vertical-stacked .audio-meta-v2 {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
+    gap: 4px;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-title-v2 {
-    font-size: 1.5rem;
-    font-weight: 700;
+.audio-title-ios {
     color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    max-width: 80%;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-artist-v2 {
-    font-size: 1.1rem;
+.audio-artist-ios {
     color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
     font-weight: 500;
 }
 
-.apple-audio-player-v2.vertical-stacked .audio-airplay-btn {
-    position: absolute;
-    right: 0;
-    top: 5px;
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.apple-audio-player-v2.vertical-stacked .audio-airplay-btn:hover {
-    color: white;
-}
-
-.apple-audio-player-v2.vertical-stacked .audio-timeline-v2 {
+.audio-timeline-container-ios {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    align-items: center;
+    gap: 12px;
 }
 
-.apple-slider-v2 {
+.audio-time-ios {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'SF Pro Text', 'Inter', monospace;
+    font-weight: 600;
+    width: 32px;
+    text-align: center;
+}
+
+.audio-slider-ios {
     -webkit-appearance: none;
     appearance: none;
-    width: 100%;
-    height: 6px;
+    flex-grow: 1;
+    height: 5px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
     outline: none;
     cursor: pointer;
-    position: relative;
 }
 
-.apple-slider-v2::-webkit-slider-runnable-track {
+.audio-slider-ios::-webkit-slider-runnable-track {
     background: linear-gradient(to right, rgba(255, 255, 255, 0.9) var(--prog), transparent var(--prog));
-    height: 6px;
+    height: 5px;
     border-radius: 3px;
 }
 
-.apple-slider-v2::-webkit-slider-thumb {
+.audio-slider-ios::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s ease;
-    margin-top: -5px;
-    opacity: 1;
+    width: 6px;
+    height: 6px;
+    background: transparent;
 }
 
-.audio-time-row {
+.audio-controls-ios {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
-    font-family: 'SF Pro Text', 'Consolas', monospace;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
-.audio-controls-v2 {
-    display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 40px;
-    margin-top: 10px;
+    padding: 0 5px;
 }
 
-.audio-btn-v2 {
+.audio-main-controls-ios {
+    display: flex;
+    align-items: center;
+    gap: 35px;
+}
+
+.audio-icon-btn-ios {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.audio-icon-btn-ios:hover { color: white; }
+
+.audio-btn-ios {
     background: transparent;
     border: none;
     color: white;
-    font-size: 2rem;
+    font-size: 1.8rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.2s;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
-.audio-btn-v2:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
+.audio-btn-ios:active {
+    transform: scale(0.9);
 }
 
-.audio-btn-v2:active {
-    transform: scale(0.95);
-    opacity: 1;
-}
-
-.audio-btn-v2.play {
-    font-size: 3rem;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.audio-volume-v2 {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.audio-volume-v2 i {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
+.audio-btn-ios.play-ios {
+    font-size: 2.8rem;
 }
 
 .volume-slider-v2 {

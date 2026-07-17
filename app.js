@@ -2447,38 +2447,37 @@ window.openPreview = (doc) => {
       setTimeout(initCustomVideoPlayer, 50);
     } else if (audioExts.includes(ext)) {
       contentArea.innerHTML = `
-                <div class="apple-audio-player-v2 vertical-stacked">
+                <div class="apple-audio-player-ios">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
-                    <div class="audio-cover-v2" id="audioCoverArt">
+                    <div class="audio-cover-ios" id="audioCoverArt">
                         <i class="fa-solid fa-music"></i>
                     </div>
 
-                    <div class="audio-glass-panel">
-                        <div class="audio-header-v2">
-                            <div class="audio-meta-v2">
-                                <div class="audio-title-v2" title="${doc.name}">${doc.name}</div>
-                                <div class="audio-artist-v2">Storage Tasks Player</div>
-                            </div>
-                            <button class="audio-airplay-btn"><i class="fa-solid fa-satellite-dish"></i></button>
+                    <div class="audio-glass-ios">
+                        <div class="audio-meta-ios">
+                            <div class="audio-title-ios" title="${doc.name}">${doc.name}</div>
+                            <div class="audio-artist-ios">Storage Tasks Player</div>
                         </div>
 
-                        <div class="audio-timeline-v2">
-                            <input type="range" id="audioProgressSlider" class="apple-slider-v2" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
-                            <div class="audio-time-row">
-                                <span id="audioCurrentTime">0:00</span>
-                                <span id="audioDuration">-:--</span>
-                            </div>
+                        <div class="audio-timeline-container-ios">
+                            <span id="audioCurrentTime" class="audio-time-ios">0:00</span>
+                            <input type="range" id="audioProgressSlider" class="audio-slider-ios" min="0" max="100" step="0.1" value="0" style="--prog: 0%;">
+                            <span id="audioDuration" class="audio-time-ios">-:--</span>
                         </div>
 
-                        <div class="audio-controls-v2">
-                            <button class="audio-btn-v2" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
-                            <button class="audio-btn-v2 play" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
-                            <button class="audio-btn-v2" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                        <div class="audio-controls-ios">
+                            <button class="audio-icon-btn-ios"><i class="fa-regular fa-star"></i></button>
+                            
+                            <div class="audio-main-controls-ios">
+                                <button class="audio-btn-ios" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                                <button class="audio-btn-ios play-ios" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
+                                <button class="audio-btn-ios" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                            </div>
+
+                            <button class="audio-icon-btn-ios"><i class="fa-solid fa-satellite-dish"></i></button>
                         </div>
                     </div>
-                    
-                    <div class="ios-indicator"></div>
                 </div>
             `;
       setTimeout(initAppleAudioPlayer, 50);
