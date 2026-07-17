@@ -4681,7 +4681,9 @@ body.light-mode { scrollbar-color: rgba(0,0,0,0.15) transparent; }
 
 /* ──────── 4. MAIN GLASS PANEL (Desktop frame) ──────── */
 body.light-mode .main-glass-panel {
-    background: rgba(255, 255, 255, 0.55) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.2)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.85) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     border-left-color: rgba(255, 255, 255, 0.9) !important;
@@ -4690,7 +4692,9 @@ body.light-mode .main-glass-panel {
 
 /* ──────── 5. SIDEBAR (Desktop) ──────── */
 body.light-mode .sidebar-left {
-    background: rgba(255, 255, 255, 0.55) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.2)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.8) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     border-left-color: rgba(255, 255, 255, 0.9) !important;
@@ -4730,12 +4734,14 @@ body.light-mode .nav-item.active i { color: var(--accent) !important; }
 
 /* ──────── 8. STORAGE WIDGET (sidebar bottom) ──────── */
 body.light-mode .storage-widget {
-    background: rgba(255, 255, 255, 0.55) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.2)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .storage-widget:hover {
-    background: rgba(255, 255, 255, 0.75) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3)) !important;
 }
 body.light-mode .storage-label { color: #334155 !important; }
 body.light-mode .storage-text { color: #475569 !important; }
@@ -4747,13 +4753,15 @@ body.light-mode .progress-track {
 
 /* ──────── 9. PROFILE AREA (top-right capsule) ──────── */
 body.light-mode .profile-area {
-    background: rgba(255, 255, 255, 0.65) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    border-top-color: rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.25)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-top-color: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .avatar {
-    border-color: rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -4769,16 +4777,18 @@ body.light-mode .brand-area:hover {
 
 /* ──────── 11. SEARCH BAR ──────── */
 body.light-mode .search-bar-pill {
-    background: rgba(255, 255, 255, 0.70) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    border-top-color: rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.25)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-top-color: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.6) !important;
 }
 body.light-mode .search-bar-pill:focus-within,
 body.light-mode .search-bar-pill:hover {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-color: rgba(45, 212, 191, 0.5) !important;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(45, 212, 191, 0.12) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4)) !important;
+    border-color: rgba(45, 212, 191, 0.6) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(45, 212, 191, 0.15) !important;
 }
 body.light-mode .search-bar-pill input { color: #0f172a !important; }
 body.light-mode .search-bar-pill input::placeholder { color: #94a3b8 !important; }
@@ -4789,10 +4799,12 @@ body.light-mode .search-bar-pill:focus-within .search-icon { color: #334155 !imp
 body.light-mode .breadcrumb-area h2,
 body.light-mode .breadcrumb-area .header-title-pill {
     color: #0f172a !important;
-    background: rgba(255, 255, 255, 0.60) !important;
-    border-color: rgba(200, 200, 200, 0.5) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
     text-shadow: none !important;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .welcome-title { color: #0f172a !important; text-shadow: none !important; }
 
@@ -4809,13 +4821,15 @@ body.light-mode .back-btn:hover {
 
 /* ──────── 14. FILE/FOLDER GRID CARDS ──────── */
 body.light-mode .item-card {
-    background: rgba(255, 255, 255, 0.70) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
     border: 1px solid rgba(220, 220, 220, 0.6) !important;
     border-top-color: rgba(255, 255, 255, 0.95) !important;
     box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04) !important;
 }
 body.light-mode .item-card:hover {
-    background: rgba(255, 255, 255, 0.90) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.4)) !important;
     border-color: rgba(45, 212, 191, 0.5) !important;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08) !important;
 }
@@ -4825,9 +4839,11 @@ body.light-mode .thumb-box.bg-purple { background: rgba(168, 85, 247, 0.08) !imp
 
 /* ──────── 15. DROPDOWN (Context Menu from + Baru) ──────── */
 body.light-mode .dropdown-content {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.10) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.10), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .ctx-item,
 body.light-mode .dropdown-content a {
@@ -4852,25 +4868,25 @@ body.light-mode .ctx-divider {
 
 /* ──────── 16. CONTEXT MENU (Right-click) ──────── */
 body.light-mode .context-menu-modern {
-    background: rgba(255, 255, 255, 0.88) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)) !important;
     backdrop-filter: blur(40px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ──────── 17. MODALS (Folder Baru, Upload, etc.) ──────── */
 body.light-mode .modal-overlay {
-    background: rgba(0, 0, 0, 0.15) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    background: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(20px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
 }
 body.light-mode .modal-box,
 body.light-mode .glass-card {
-    background: rgba(255, 255, 255, 0.88) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)) !important;
     backdrop-filter: blur(40px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.10), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
@@ -4964,9 +4980,11 @@ body.light-mode .profile-avatar-wrapper { border-color: rgba(0,0,0,0.08) !import
 
 /* ──────── 23. STORAGE DETAIL MODAL (Popup) ──────── */
 body.light-mode .storage-detail-box-wide {
-    background: rgba(255, 255, 255, 0.88) !important;
-    border: 1px solid rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.10) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.10), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .storage-modal-header h3 { color: #0f172a !important; }
 body.light-mode .storage-hero h1 { color: #0f172a !important; text-shadow: none !important; }
@@ -5111,15 +5129,19 @@ body.light-mode .apple-volume-slider::-webkit-slider-thumb { background: #475569
 
 /* ──────── 27. AUDIO PLAYER (iOS Lock Screen Style) ──────── */
 body.light-mode .audio-cover-ios {
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0) !important;
-    border-color: rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.06) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3)) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .audio-cover-ios i { color: #94a3b8 !important; }
 body.light-mode .audio-glass-ios {
-    background: rgba(255, 255, 255, 0.70) !important;
-    border-color: rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255,255,255,0.5) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .audio-title-ios { color: #0f172a !important; text-shadow: none !important; }
 body.light-mode .audio-artist-ios { color: #64748b !important; }
@@ -5187,9 +5209,11 @@ body.light-mode .empty-subtext { color: #475569 !important; text-shadow: none !i
 
 /* ──────── 32. PURE GLASS (Override for light) ──────── */
 body.light-mode .pure-glass {
-    background: rgba(255, 255, 255, 0.65) !important;
-    border-color: rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255,255,255,0.5) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2)) !important;
+    backdrop-filter: blur(30px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ──────── 33. THEME TOGGLE BUTTON ──────── */
@@ -5237,9 +5261,11 @@ body.light-mode .theme-btn:hover {
 
 /* ──────── 35. OFFLINE CARD ──────── */
 body.light-mode .offline-glass-card {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-color: rgba(200, 200, 200, 0.5) !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.06) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.35)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 body.light-mode .offline-glass-card h2,
 body.light-mode .offline-glass-card p { color: #334155 !important; }
