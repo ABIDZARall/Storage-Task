@@ -425,13 +425,6 @@ if (el("loginForm")) {
         else throw new Error("Username tidak ditemukan.");
       }
 
-      // 🚀 PERBAIKAN AUTENTIKASI: Bersihkan "Sesi Hantu" sebelum membuat sesi baru
-      try {
-        await account.deleteSession("current");
-      } catch (err) {
-        // Abaikan tanpa error jika memang tidak ada sesi aktif
-      }
-
       // Langsung tembak Session ke Appwrite, hemat 2 API Request
       await account.createEmailPasswordSession(inputId, pass);
 
