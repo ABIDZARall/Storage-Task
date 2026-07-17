@@ -94,7 +94,7 @@ const DEFAULT_AVATAR_DB_URL =
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
 const _dx = (s) => atob(s);
 const CONFIG = {
-  ENDPOINT: _dx("aHR0cHM6Ly9jbG91ZC5hcHB3cml0ZS5pby92MQ=="), // cloud.appwrite.io
+  ENDPOINT: "https://sgp.cloud.appwrite.io/v1", // Singapore Region
   PROJECT_ID: _dx("Njk3ZjcxYjQwMDM0NDM4YmI1NTk="), // Project ID
   DB_ID: _dx("c3RvcmFnZWRi"),
   COLLECTION_FILES: _dx("ZmlsZXM="),
@@ -396,7 +396,7 @@ if (el("signupForm")) {
   });
 }
 
-// PERBAIKAN: Login Logic Dipercepat & Penanganan Sesi Hantu
+// PERBAIKAN: Login Logic & Penanganan Sesi Hantu
 if (el("loginForm")) {
   el("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -408,38 +408,18 @@ if (el("loginForm")) {
     let inputId = el("loginEmail").value.trim();
     const pass = el("loginPass").value;
 
-    // PERBAIKAN: Jangan sanitize input login - sanitasi XSS merusak kredensial
-    // yang dikirim ke Appwrite Auth API (contoh: karakter khusus dalam password)
-
     try {
       toggleLoading(true, "Memproses Login...");
       checkSystemHealth();
 
-      // PERBAIKAN: Hapus sesi lama yang tersisa sebelum login baru
-      try {
-        await account.deleteSession("current");
-      } catch (e) {
-        // Tidak ada sesi aktif - aman untuk lanjut
-      }
-      sessionStorage.clear();
-
       if (!inputId.includes("@")) {
-        try {
-          const res = await databases.listDocuments(
-            CONFIG.DB_ID,
-            CONFIG.COLLECTION_USERS,
-            [Appwrite.Query.equal("name", inputId)],
-          );
-          if (res.documents.length > 0) inputId = res.documents[0].email;
-          else throw new Error("Username tidak ditemukan.");
-        } catch (lookupErr) {
-          // Jika listDocuments gagal karena permission, coba anggap inputId sebagai email
-          if (lookupErr.message && lookupErr.message.includes("tidak ditemukan")) {
-            throw lookupErr;
-          }
-          // Untuk error permission/network, coba login langsung dengan inputId sebagai email
-          console.warn("Username lookup gagal, mencoba sebagai email:", lookupErr.message);
-        }
+        const res = await databases.listDocuments(
+          CONFIG.DB_ID,
+          CONFIG.COLLECTION_USERS,
+          [Appwrite.Query.equal("name", inputId)],
+        );
+        if (res.documents.length > 0) inputId = res.documents[0].email;
+        else throw new Error("Username tidak ditemukan.");
       }
 
       // Langsung tembak Session ke Appwrite
@@ -455,7 +435,7 @@ if (el("loginForm")) {
         email: user.email,
         password: pass,
       }).catch((e) => { });
-      AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
+      AUTH_SECURITY.loginAttempts = 0;
       await initializeDashboard(user);
     } catch (error) {
       toggleLoading(false);
@@ -463,7 +443,7 @@ if (el("loginForm")) {
       // BRUTE FORCE TRACKING
       AUTH_SECURITY.loginAttempts++;
       if (AUTH_SECURITY.loginAttempts >= 3) {
-        AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
+        AUTH_SECURITY.lockUntil = Date.now() + 60000;
         AUTH_SECURITY.loginAttempts = 0;
         alert("Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal.");
         return;
@@ -630,27 +610,33 @@ async function initializeDashboard(userObj) {
   toggleLoading(false);
 }
 
-// PERBAIKAN: Selalu verifikasi sesi ke Appwrite API, jangan hanya cache
+// PERBAIKAN: Cek sesi dengan cache dulu, lalu verifikasi ke API
 async function checkSession() {
-  // Jika loginPage sedang ditampilkan (user sengaja di halaman login), skip
   if (el("loginPage") && !el("loginPage").classList.contains("hidden")) return;
   toggleLoading(true, "Memuat Ruang Kerja...");
   try {
-    // PERBAIKAN: Selalu verifikasi ke Appwrite terlebih dahulu
-    // Cache sessionStorage bisa stale/expired, jadi harus validasi
-    let user;
-    try {
-      user = await account.get();
-    } catch (apiErr) {
-      // Sesi tidak valid di Appwrite - bersihkan cache dan tampilkan login
-      sessionStorage.clear();
-      window.nav("loginPage");
-      toggleLoading(false);
-      return;
+    // Cek cache dulu untuk kecepatan, lalu validasi ke Appwrite
+    const cachedUser = sessionStorage.getItem("currentUser");
+    if (cachedUser) {
+      currentUser = JSON.parse(cachedUser);
+      // Validasi sesi masih aktif di Appwrite
+      try {
+        const freshUser = await account.get();
+        currentUser = freshUser;
+        sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+      } catch (apiErr) {
+        // Sesi expired di server - bersihkan cache dan tampilkan login
+        sessionStorage.clear();
+        currentUser = null;
+        window.nav("loginPage");
+        toggleLoading(false);
+        return;
+      }
+    } else {
+      currentUser = await account.get();
+      sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
     }
 
-    currentUser = user;
-    sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
     await syncUserData(currentUser);
 
     // AKTIFKAN REALTIME DISINI JUGA
