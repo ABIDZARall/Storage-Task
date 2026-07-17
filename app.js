@@ -1916,7 +1916,35 @@ function resetUploadUI() {
 
 function handleFileSelect(files) {
   if (!files || files.length === 0) return;
-  selectedUploadFiles = Array.from(files);
+  
+  let tempFiles = Array.from(files);
+
+  if (uploadMode === "file") {
+    if (tempFiles.length > 100) {
+      alert("Peringatan: Maksimal 100 file dapat diunggah sekaligus. Hanya 100 file pertama yang akan diproses.");
+      tempFiles = tempFiles.slice(0, 100);
+    }
+  } else if (uploadMode === "folder") {
+    let topLevelFolders = new Set();
+    tempFiles.forEach(f => {
+      const path = f.customPath || f.webkitRelativePath;
+      if (path) {
+         topLevelFolders.add(path.split('/')[0]);
+      }
+    });
+    if (topLevelFolders.size > 10) {
+       alert("Peringatan: Maksimal 10 folder utama dapat diunggah sekaligus. Silakan kurangi jumlah folder yang dipilih.");
+       resetUploadUI();
+       return;
+    }
+  } else {
+    if (tempFiles.length > 100) {
+      alert("Peringatan: Maksimal 100 item dapat diunggah sekaligus.");
+      tempFiles = tempFiles.slice(0, 100);
+    }
+  }
+
+  selectedUploadFiles = tempFiles;
 
   const realFiles = selectedUploadFiles.filter(
     (f) => f.name !== ".emptyFolder",
@@ -2094,33 +2122,42 @@ window.submitUploadFile = async () => {
       }
     }
 
-    for (let i = 0; i < uploadQueue.length; i++) {
-      const item = uploadQueue[i];
-      toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
+    const CONCURRENCY_LIMIT = 15;
+    let completed = 0;
 
-      const up = await storage.createFile(
-        CONFIG.BUCKET_ID,
-        Appwrite.ID.unique(),
-        item.fileObj,
-      );
-      const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
+    for (let i = 0; i < uploadQueue.length; i += CONCURRENCY_LIMIT) {
+      const batch = uploadQueue.slice(i, i + CONCURRENCY_LIMIT);
+      toggleLoading(true, `Mengunggah ${Math.min(i + CONCURRENCY_LIMIT, uploadQueue.length)} dari ${uploadQueue.length} file...`);
+      
+      await Promise.all(batch.map(async (item) => {
+        try {
+          const up = await storage.createFile(
+            CONFIG.BUCKET_ID,
+            Appwrite.ID.unique(),
+            item.fileObj,
+          );
+          const viewUrl = storage.getFileView(CONFIG.BUCKET_ID, up.$id).href;
 
-      await databases.createDocument(
-        CONFIG.DB_ID,
-        CONFIG.COLLECTION_FILES,
-        Appwrite.ID.unique(),
-        {
-          name: item.fileObj.name,
-          type: "file",
-          parentId: item.parentId,
-          owner: currentUser.$id,
-          url: viewUrl,
-          fileId: up.$id,
-          size: item.fileObj.size,
-          starred: false,
-          trashed: false,
-        },
-      );
+          await databases.createDocument(
+            CONFIG.DB_ID,
+            CONFIG.COLLECTION_FILES,
+            Appwrite.ID.unique(),
+            {
+              name: item.fileObj.name,
+              type: "file",
+              parentId: item.parentId,
+              owner: currentUser.$id,
+              url: viewUrl,
+              fileId: up.$id,
+              size: item.fileObj.size,
+              starred: false,
+              trashed: false,
+            },
+          );
+        } catch (err) {
+          console.error("Gagal unggah file:", item.fileObj.name, err);
+        }
+      }));
     }
 
     resetUploadUI();
