@@ -1956,10 +1956,19 @@ function handleFileSelect(files) {
   const infoText = document.getElementById("fileInfoText");
   let msg = `Terpilih: ${realFiles.length} file `;
   if (folderCount > 0) msg += `(dan ${folderCount} folder kosong)`;
-  if (realFiles.length === 1 && folderCount === 0) {
-      msg = `Terpilih: 1 file (${realFiles[0].name})`;
-  }
-  infoText.innerText = msg;
+  
+  let fileListHTML = `<div style="text-align: left; padding: 0 10px;">`;
+  fileListHTML += `<strong style="display: block; margin-bottom: 5px; text-align: center;">${msg}</strong>`;
+  fileListHTML += `<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.9em;">`;
+  
+  realFiles.forEach(f => {
+      fileListHTML += `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.name}">
+        <i class="fa-solid fa-file" style="margin-right: 5px; opacity: 0.7;"></i> ${f.name}
+      </li>`;
+  });
+  
+  fileListHTML += `</ul></div>`;
+  infoText.innerHTML = fileListHTML;
   document.getElementById("fileInfoContainer").classList.remove("hidden");
 }
 
