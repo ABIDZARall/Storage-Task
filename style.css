@@ -2873,6 +2873,54 @@ form {
     }
 }
 
+/* TABLET & DESKTOP (iPad, Windows, Mac) */
+@media (min-width: 768px) and (min-height: 601px) {
+    .apple-audio-player-ios {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        max-width: 700px;
+        align-items: center;
+        gap: 36px;
+        margin: 0 auto;
+    }
+    .audio-cover-ios {
+        width: 240px;
+        height: 240px;
+        flex: 0 0 240px;
+        border-radius: 16px;
+    }
+    .audio-cover-ios i {
+        font-size: 8rem;
+    }
+    .audio-glass-ios {
+        width: 380px;
+        flex: 0 1 380px;
+        padding: 24px 20px;
+        border-radius: 28px;
+        gap: 18px;
+    }
+    .audio-title-ios {
+        font-size: 1.4rem;
+        letter-spacing: 0.4px;
+    }
+    .audio-artist-ios {
+        font-size: 1.05rem;
+    }
+    .audio-main-controls-ios {
+        gap: 40px;
+    }
+    .audio-icon-btn-ios {
+        font-size: 1.3rem;
+    }
+    .audio-btn-ios {
+        font-size: 2rem;
+    }
+    .audio-btn-ios.play-ios {
+        font-size: 3rem;
+    }
+}
+
 .volume-slider-v2 {
     flex: 1;
     height: 4px;
