@@ -2470,9 +2470,9 @@ window.openPreview = (doc) => {
                             <button class="audio-icon-btn-ios"><i class="fa-regular fa-star"></i></button>
                             
                             <div class="audio-main-controls-ios">
-                                <button class="audio-btn-ios" id="audioPrevBtn" title="1x Klik: Mundur 10s&#10;2x Klik: File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                                <button class="audio-btn-ios" id="audioPrevBtn" title="Mulai Ulang / File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                                 <button class="audio-btn-ios play-ios" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
-                                <button class="audio-btn-ios" id="audioNextBtn" title="1x Klik: Maju 10s&#10;2x Klik: File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                                <button class="audio-btn-ios" id="audioNextBtn" title="File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
                             </div>
 
                             <button class="audio-icon-btn-ios"><i class="fa-solid fa-satellite-dish"></i></button>
@@ -2618,38 +2618,24 @@ function initAppleAudioPlayer() {
     triggerTrackChange(1);
   });
 
-  function attachSmartNav(element, skipTime, navDir) {
+  function attachStandardNav(element, navDir) {
     if (!element) return;
-    let timer = null;
-    let clickCount = 0;
-
     element.addEventListener("click", (e) => {
       e.preventDefault();
-      clickCount++;
-
+      
       element.classList.add("glow");
-      setTimeout(() => element.classList.remove("glow"), 500);
+      setTimeout(() => element.classList.remove("glow"), 300);
 
-      if (clickCount === 1) {
-        timer = setTimeout(() => {
-          if (audio && !isNaN(audio.duration)) {
-            let newTime = audio.currentTime + skipTime;
-            if (newTime < 0) newTime = 0;
-            if (newTime > audio.duration) newTime = audio.duration;
-            audio.currentTime = newTime;
-          }
-          clickCount = 0;
-        }, 280);
-      } else if (clickCount === 2) {
-        clearTimeout(timer);
-        triggerTrackChange(navDir);
-        clickCount = 0;
+      if (navDir === -1 && audio && audio.currentTime > 3) {
+          audio.currentTime = 0;
+      } else {
+          triggerTrackChange(navDir);
       }
     });
   }
 
-  attachSmartNav(prevBtn, -10, -1);
-  attachSmartNav(nextBtn, 10, 1);
+  attachStandardNav(prevBtn, -1);
+  attachStandardNav(nextBtn, 1);
 }
 
 window.navigatePreview = (direction) => {
