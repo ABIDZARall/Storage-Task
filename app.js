@@ -2401,9 +2401,10 @@ window.openPreview = (doc) => {
       contentArea.innerHTML = `<img src="${fileViewUrl}" alt="${doc.name}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
     } else if (vidExts.includes(ext)) {
       contentArea.innerHTML = `
-                <div class="apple-video-wrapper" id="vidContainer">
-                    <video src="${fileViewUrl}" id="customVideo" playsinline autoplay></video>
-                    
+                <div class="apple-video-wrapper" id="vidContainer" style="transform: translateZ(0); will-change: transform;">
+                    <!-- OPTIMASI PEMUTARAN VIDEO 4K 60FPS & PRESISI AV SYNC -->
+                    <video src="${fileViewUrl}" id="customVideo" playsinline autoplay preload="auto" decoding="async" controlsList="nodownload noplaybackrate"></video>
+
                     <div class="apple-video-overlay" id="vidOverlay">
                         <div class="apple-top-controls">
                             <div class="placeholder-top-left" style="width:40px"></div>
