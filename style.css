@@ -400,6 +400,39 @@ form {
 }
 
 /* ============================================================ */
+/* MOBILE OVERRIDES UNTUK PROFILE CARD                          */
+/* ============================================================ */
+@media screen and (max-width: 768px) {
+    .profile-card {
+        padding: 20px 15px;
+        max-width: 90%;
+    }
+    .profile-header {
+        margin-bottom: 15px;
+    }
+    .profile-header h3 {
+        font-size: 1.15rem;
+    }
+    .profile-avatar-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    .profile-avatar-container {
+        margin-bottom: 15px;
+    }
+    .profile-hint {
+        font-size: 0.75rem;
+        margin-top: 5px;
+    }
+    .separator-line {
+        margin: 10px 0 8px 0;
+    }
+    .profile-actions {
+        margin-top: 10px;
+    }
+}
+
+/* ============================================================ */
 /* DASHBOARD LAYOUT & SIDEBAR - BRAND LOGO & TEXT UPDATE        */
 /* ============================================================ */
 .dashboard-layout {
