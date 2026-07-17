@@ -3112,3 +3112,38 @@ document.addEventListener("click", (e) => {
     audVol.classList.remove("expanded");
   }
 });
+
+// ======================================================
+// THEME TOGGLE LOGIC (LIGHT/DARK MODE)
+// ======================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const themeBtn = document.getElementById("themeToggleBtn");
+  const themeIcon = document.getElementById("themeIcon");
+  
+  // Periksa tema yang tersimpan di localStorage
+  const savedTheme = localStorage.getItem("themePreference");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+    if (themeIcon) {
+      themeIcon.classList.remove("fa-sun");
+      themeIcon.classList.add("fa-moon");
+    }
+  }
+  
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light-mode");
+      const isLight = document.body.classList.contains("light-mode");
+      
+      if (isLight) {
+        localStorage.setItem("themePreference", "light");
+        themeIcon.classList.remove("fa-sun");
+        themeIcon.classList.add("fa-moon");
+      } else {
+        localStorage.setItem("themePreference", "dark");
+        themeIcon.classList.remove("fa-moon");
+        themeIcon.classList.add("fa-sun");
+      }
+    });
+  }
+});

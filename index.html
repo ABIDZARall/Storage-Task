@@ -148,13 +148,22 @@
         <img src="Image/logo.png" alt="Logo" class="logo-img" />
         <span class="brand-text">Cloud Storage</span>
       </div>
-      <div class="profile-area">
-        <img src="Image/profile-default.jpeg" alt="User" class="avatar" id="dashAvatar" onclick="openProfilePage()"
-          title="Edit Profil" />
-        <button id="logoutBtn" class="btn-pill small logout-btn">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
+        <div class="profile-area">
+          <button id="themeToggleBtn" class="btn-pill small theme-btn" title="Ganti Tema">
+            <i class="fa-solid fa-sun" id="themeIcon"></i>
+          </button>
+          <img
+            src="Image/profile-default.jpeg"
+            alt="User"
+            class="avatar"
+            id="dashAvatar"
+            onclick="openProfilePage()"
+            title="Edit Profil"
+          />
+          <button id="logoutBtn" class="btn-pill small logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
     </header>
 
     <!-- TAMBAHAN BARU: SPINNER BERGAYA NATIVE iOS -->

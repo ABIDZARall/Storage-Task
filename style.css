@@ -4644,3 +4644,152 @@ form {
         transform: scale(0.98) !important;
     }
 }
+
+/* ============================================================ */
+/* LIGHT MODE (FROSTED Glass BRIGHT AESTHETIC)                  */
+/* ============================================================ */
+body.light-mode {
+    --bg-color: #f8fafc;
+    --text-main: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(200, 200, 200, 0.5);
+    --track-bg: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .liquid-bg {
+    background-color: #f1f5f9;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.2), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(79, 70, 229, 0.15), transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.1), transparent 50%);
+}
+
+body.light-mode .glass-panel,
+body.light-mode .auth-card,
+body.light-mode .side-nav,
+body.light-mode .top-nav,
+body.light-mode .context-menu-modern,
+body.light-mode .apple-glass-btn,
+body.light-mode .apple-bottom-pill,
+body.light-mode .apple-volume-container,
+body.light-mode .preview-glass-panel,
+body.light-mode .apple-top-controls,
+body.light-mode .audio-main-controls-ios,
+body.light-mode .audio-volume-pill-ios,
+body.light-mode .btn-pill {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(220, 220, 220, 0.8);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    color: #0f172a;
+}
+
+body.light-mode .item-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5));
+    border: 1px solid rgba(220, 220, 220, 0.9);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .item-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(45, 212, 191, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .file-name { color: #1e293b; }
+body.light-mode .file-type { color: #64748b; }
+body.light-mode .brand-text,
+body.light-mode .nav-item { color: #334155; }
+body.light-mode .nav-item:hover, body.light-mode .nav-item.active {
+    background: rgba(45, 212, 191, 0.15);
+    color: #0f172a;
+}
+body.light-mode .search-bar-pill {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(200, 200, 200, 0.6);
+}
+body.light-mode .search-input { color: #1e293b; }
+body.light-mode .search-input::placeholder { color: #94a3b8; }
+body.light-mode .search-icon { color: #64748b; }
+
+body.light-mode .btn-pill.primary {
+    background: linear-gradient(135deg, #2dd4bf, #0ea5e9);
+    color: white;
+}
+
+body.light-mode .logout-btn { color: var(--clr-red); }
+body.light-mode .logout-btn:hover { background: rgba(234, 67, 53, 0.15); }
+
+/* Theme Button styling */
+.theme-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #fbbc04; /* Sun color in dark mode */
+    padding: 0;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+.theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+body.light-mode .theme-btn {
+    color: #4f46e5; /* Moon color in light mode */
+}
+body.light-mode .theme-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .breadcrumb-area h2,
+body.light-mode .breadcrumb-area .header-title-pill {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(200, 200, 200, 0.6);
+    text-shadow: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .back-btn {
+    color: #334155;
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(200, 200, 200, 0.6);
+}
+body.light-mode .back-btn:hover {
+    background: rgba(45, 212, 191, 0.15);
+    color: #0f172a;
+}
+
+/* Invert icons that are explicitly white in dark mode */
+body.light-mode .icon-only-btn,
+body.light-mode .audio-btn-ios,
+body.light-mode .audio-mute-btn-ios { 
+    color: #475569; 
+}
+body.light-mode .icon-only-btn:hover,
+body.light-mode .audio-btn-ios:hover,
+body.light-mode .audio-mute-btn-ios:hover { 
+    color: #0f172a; 
+}
+body.light-mode .apple-volume-slider::-webkit-slider-thumb { background: #475569; }
+body.light-mode .apple-audio-player-ios { color: #0f172a; }
+
+/* Tooltip and dropdowns */
+body.light-mode .context-menu-item { color: #334155; }
+body.light-mode .context-menu-item:hover { background: rgba(0, 0, 0, 0.05); }
+body.light-mode .context-menu-item.danger-item { color: #ef4444; }
+body.light-mode .custom-tooltip {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(200, 200, 200, 0.5);
+    color: #1e293b;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+body.light-mode .tooltip-size { color: #2dd4bf; }
+body.light-mode .tooltip-desc { color: #64748b; }
+body.light-mode .nav-item-icon { color: #475569; }
