@@ -3044,6 +3044,11 @@ form {
         pointer-events: none !important;
     }
 
+    .breadcrumb-area > * {
+        pointer-events: auto !important;
+    }
+
+
     /* ---> TAMBAHKAN KODE INI UNTUK MEMPERBAIKI UKURAN PILL DI MOBILE <--- */
     .breadcrumb-area .header-title-pill {
         font-size: 1.2rem !important;
