@@ -5,8 +5,8 @@ const storage = new Appwrite.Storage(client);
 
 // KONFIGURASI
 const CONFIG = {
-    ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
-    PROJECT_ID: '697f71b40034438bb559', 
+    ENDPOINT: 'https://cloud.appwrite.io/v1',
+    PROJECT_ID: 'sgp-697f71b40034438bb559', 
     DB_ID: 'storagedb',
     COLLECTION_FILES: 'files',   
     COLLECTION_USERS: 'users',   

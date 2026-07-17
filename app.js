@@ -94,8 +94,8 @@ const DEFAULT_AVATAR_DB_URL =
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
 const _dx = (s) => atob(s);
 const CONFIG = {
-  ENDPOINT: _dx("aHR0cHM6Ly9zZ3AuY2xvdWQuYXBwd3JpdGUuaW8vdjE="), // SGP Endpoint
-  PROJECT_ID: _dx("Njk3ZjcxYjQwMDM0NDM4YmI1NTk="), // Project ID
+  ENDPOINT: _dx("aHR0cHM6Ly9jbG91ZC5hcHB3cml0ZS5pby92MQ=="), // cloud.appwrite.io
+  PROJECT_ID: _dx("c2dwLTY5N2Y3MWI0MDAzNDQzOGJiNTU5"), // sgp-697f71b40034438bb559
   DB_ID: _dx("c3RvcmFnZWRi"),
   COLLECTION_FILES: _dx("ZmlsZXM="),
   COLLECTION_USERS: _dx("dXNlcnM="),
