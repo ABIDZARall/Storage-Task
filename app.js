@@ -212,34 +212,26 @@ window.updateNavIndicator = function (element) {
 
   indicator.style.display = "block";
   
-  const icon = element.querySelector("i");
-  const text = element.querySelector("span");
-
-  if (icon && text && window.innerWidth > 768) {
-      const style = window.getComputedStyle(element);
-      const paddingLeft = parseFloat(style.paddingLeft) || 0;
-      const paddingRight = parseFloat(style.paddingRight) || 0;
-      const gap = parseFloat(style.gap) || 0;
+  if (window.innerWidth > 768) {
+      // Di Desktop/Tablet, samakan panjang indikator dengan tombol Baru (.new-btn)
+      const newBtn = document.querySelector(".new-btn");
+      if (newBtn) {
+          indicator.style.width = newBtn.offsetWidth + "px";
+      } else {
+          indicator.style.width = element.offsetWidth + "px";
+      }
       
-      const contentWidth = icon.offsetWidth + text.offsetWidth + paddingLeft + paddingRight + gap;
-      indicator.style.width = contentWidth + "px";
+      // Kembalikan ke posisi awal tanpa terpengaruh efek geser transform
+      indicator.style.left = "0px";
       
-      // Sesuaikan posisi kiri dengan efek transform translateX(4px) saat active
-      const isShifted = element.classList.contains("active");
-      indicator.style.left = (element.offsetLeft + (isShifted ? 4 : 0)) + "px";
+      indicator.style.height = element.offsetHeight + "px";
+      indicator.style.top = element.offsetTop + "px";
   } else {
+      // Di Mobile
       indicator.style.width = element.offsetWidth + "px";
       indicator.style.left = element.offsetLeft + "px";
-  }
-
-  // Batas 768px: Di atas ini menggunakan Sidebar Kiri (Desktop/Tablet)
-  if (window.innerWidth > 768) {
-    indicator.style.height = element.offsetHeight + "px";
-    indicator.style.top = element.offsetTop + "px";
-  } else {
-    // Di bawah ini menggunakan Navigasi Bawah (Mobile murni)
-    indicator.style.height = "48px";
-    indicator.style.top = "6px";
+      indicator.style.height = "48px";
+      indicator.style.top = "6px";
   }
 };
 
