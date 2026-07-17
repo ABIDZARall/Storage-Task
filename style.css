@@ -4723,26 +4723,53 @@ body.light-mode .storage-sub-hero,
 body.light-mode #fileInfoText,
 body.light-mode .modal-header h3,
 body.light-mode .thumb-fallback-card i,
-body.light-mode .preview-file-info span {
+body.light-mode .preview-file-info span,
+body.light-mode .storage-page-header h2,
+body.light-mode #pageStoragePercent,
+body.light-mode #pageStorageUsedText,
+body.light-mode .storage-summary-row span,
+body.light-mode .dt-left,
+body.light-mode .dt-right {
     color: #0f172a !important;
     text-shadow: none !important;
 }
 
-body.light-mode .preview-overlay,
-body.light-mode .modal-overlay,
+body.light-mode .liquid-bg {
+    background-color: #f8fafc !important;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.15), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(79, 70, 229, 0.15), transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.10), transparent 50%) !important;
+}
+
+body.light-mode .preview-overlay {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(25px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+}
+
+body.light-mode .modal-overlay {
+    background: rgba(255, 255, 255, 0.35) !important;
+    backdrop-filter: blur(20px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+}
+
 body.light-mode .full-screen-center,
 body.light-mode .full-screen-layout {
-    background: rgba(248, 250, 252, 0.95) !important;
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 body.light-mode .preview-glass-panel,
 body.light-mode .glass-card,
-body.light-mode .modal-box {
-    background: rgba(255, 255, 255, 0.9) !important;
-    border: 1px solid rgba(220, 220, 220, 0.8) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+body.light-mode .modal-box,
+body.light-mode .storage-manager-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.35)) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(35px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important;
 }
 
 body.light-mode .apple-audio-player-ios,
@@ -4751,7 +4778,9 @@ body.light-mode .video-player-container,
 body.light-mode .preview-header,
 body.light-mode .audio-main-controls-ios,
 body.light-mode .apple-top-controls {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5)) !important;
+    backdrop-filter: blur(30px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
     border-color: rgba(200, 200, 200, 0.5) !important;
     color: #1e293b !important;
 }
