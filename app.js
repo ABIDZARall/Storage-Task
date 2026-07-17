@@ -144,18 +144,16 @@ const DEFAULT_AVATAR_DB_URL =
 // KONFIGURASI PROJECT (SESUAIKAN DENGAN PROJECT ANDA)
 // SECURITY: OBFUSCATED CREDENTIALS (STANDAR SIBER)
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
-const _dx = (s) => atob(s);
 const CONFIG = {
-  ENDPOINT: _dx("https://sgp.cloud.appwrite.io/v1"), // sgp.cloud.appwrite.io
-  PROJECT_ID: _dx("697f71b40034438bb559"), // sgp-697f71b40034438bb559
-  DB_ID: _dx("storagedb"),
-  COLLECTION_FILES: _dx("files"),
-  COLLECTION_USERS: _dx("users"),
-  BUCKET_ID: _dx("taskfiles"),
+  ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
+  PROJECT_ID: 'sgp-697f71b40034438bb559',
+  DB_ID: 'storagedb',
+  COLLECTION_FILES: 'files',
+  COLLECTION_USERS: 'users',
+  BUCKET_ID: 'taskfiles'
 };
-
 // API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
-const SHEETDB_API = _dx("https://sheetdb.io/api/v1/v9e5uhfox3nbi");
+const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
 client.setEndpoint(CONFIG.ENDPOINT).setProject(CONFIG.PROJECT_ID);
 
