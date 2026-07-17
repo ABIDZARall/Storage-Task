@@ -2682,39 +2682,46 @@ form {
 .apple-audio-player-v2 {
     display: flex;
     flex-direction: row;
-    width: 720px;
+    width: 660px;
     max-width: 95vw;
-    height: 320px;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    height: 280px;
+    background: linear-gradient(145deg, rgba(43, 53, 78, 0.8) 0%, rgba(22, 27, 43, 0.8) 100%);
+    backdrop-filter: blur(50px) saturate(200%);
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 28px;
     padding: 20px;
-    gap: 30px;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    gap: 25px;
+    box-shadow: 
+        0 40px 80px -20px rgba(0, 0, 0, 0.7), 
+        inset 0 2px 8px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 8px rgba(0, 0, 0, 0.4);
     animation: previewZoomIn 0.35s ease-out;
     color: white;
     position: relative;
 }
 
+
+
 .audio-cover-v2 {
-    width: 280px;
-    height: 280px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #2dd4bf 100%);
+    width: 240px;
+    height: 240px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #2dd4bf 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     flex-shrink: 0;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .audio-cover-v2 i {
     font-size: 8rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: white;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .audio-cover-v2.playing {
@@ -2745,7 +2752,7 @@ form {
 }
 
 .audio-title-v2 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: white;
     white-space: nowrap;
@@ -2753,6 +2760,7 @@ form {
     text-overflow: ellipsis;
     max-width: 100%;
     letter-spacing: -0.3px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .audio-artist-v2 {
@@ -2855,6 +2863,7 @@ form {
 
 .audio-btn-v2.play {
     font-size: 3rem;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .audio-volume-v2 {
