@@ -912,6 +912,7 @@ async function performSearch(keyword) {
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.search("name", keyword),
         Appwrite.Query.limit(50),
+        Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"])
       ],
     );
     updatePreviewList(res.documents);
@@ -933,6 +934,7 @@ async function fallbackSearch(keyword) {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.limit(100),
+        Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"])
       ],
     );
     const filtered = res.documents.filter((doc) =>
@@ -1114,6 +1116,11 @@ function renderItem(doc) {
       } else {
         thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
         localCache[doc.fileId] = thumbUrlToUse;
+        
+        // OPTIMASI PERFORMA: Batasi ukuran cache maksimal 100 item (Anti Memory Leak)
+        const cacheKeys = Object.keys(localCache);
+        if (cacheKeys.length > 100) delete localCache[cacheKeys[0]];
+        
         localStorage.setItem("hfThumbCache", JSON.stringify(localCache));
         databases
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
@@ -1697,6 +1704,8 @@ async function calculateStorage() {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.equal("type", "file"),
+        Appwrite.Query.limit(500),
+        Appwrite.Query.select(["size", "name"])
       ],
     );
 
@@ -2220,6 +2229,10 @@ async function loadFiles(param) {
       Appwrite.Query.equal("trashed", false),
     );
   }
+
+  // OPTIMASI PERFORMA: Batasi maksimal 100 file & Gunakan Projection
+  queries.push(Appwrite.Query.limit(100));
+  queries.push(Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"]));
 
   try {
     const res = await databases.listDocuments(
