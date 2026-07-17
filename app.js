@@ -1938,13 +1938,24 @@ function handleFileSelect(files) {
        return;
     }
   } else {
-    if (tempFiles.length > 20) {
-      alert("Peringatan: Maksimal 20 item dapat diunggah sekaligus.");
-      tempFiles = tempFiles.slice(0, 20);
-    }
+  if (uploadMode === "file") {
+    // Menghapus batasan 20 item agar bisa upload banyak sekaligus
+  } else if (uploadMode === "folder") {
+    let topLevelFolders = new Set();
+    tempFiles.forEach(f => {
+      const path = f.customPath || f.webkitRelativePath;
+      if (path) {
+         topLevelFolders.add(path.split('/')[0]);
+      }
+    });
   }
 
-  selectedUploadFiles = tempFiles;
+  // Akumulasi file yang dipilih (bisa drag & drop berkali-kali)
+  if (selectedUploadFiles && selectedUploadFiles.length > 0) {
+      selectedUploadFiles = [...selectedUploadFiles, ...tempFiles];
+  } else {
+      selectedUploadFiles = tempFiles;
+  }
 
   const realFiles = selectedUploadFiles.filter(
     (f) => f.name !== ".emptyFolder",
@@ -2009,20 +2020,26 @@ async function traverseFileTree(item, path, allFiles) {
 }
 
 function initDragAndDrop() {
+  const modal = document.getElementById("uploadModal");
   const zone = document.getElementById("dropZone");
   const fileInput = document.getElementById("fileInputHidden");
   const folderInput = document.getElementById("folderInputHidden");
 
-  if (!zone) return;
-  zone.addEventListener("dragover", (e) => {
+  if (!modal || !zone) return;
+  
+  // Pasang event di seluruh modal agar area drop lebih luas
+  modal.addEventListener("dragover", (e) => {
     e.preventDefault();
     zone.classList.add("active");
   });
-  zone.addEventListener("dragleave", () => {
-    zone.classList.remove("active");
+  modal.addEventListener("dragleave", (e) => {
+    // Hanya hilangkan class active jika keluar dari modal sepenuhnya
+    if (e.target === modal) {
+        zone.classList.remove("active");
+    }
   });
 
-  zone.addEventListener("drop", async (e) => {
+  modal.addEventListener("drop", async (e) => {
     e.preventDefault();
     zone.classList.remove("active");
 
