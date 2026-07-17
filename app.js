@@ -911,8 +911,7 @@ async function performSearch(keyword) {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.search("name", keyword),
-        Appwrite.Query.limit(50),
-        Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"])
+        Appwrite.Query.limit(50)
       ],
     );
     updatePreviewList(res.documents);
@@ -933,8 +932,7 @@ async function fallbackSearch(keyword) {
       CONFIG.COLLECTION_FILES,
       [
         Appwrite.Query.equal("owner", currentUser.$id),
-        Appwrite.Query.limit(100),
-        Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"])
+        Appwrite.Query.limit(100)
       ],
     );
     const filtered = res.documents.filter((doc) =>
@@ -1704,8 +1702,7 @@ async function calculateStorage() {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.equal("type", "file"),
-        Appwrite.Query.limit(500),
-        Appwrite.Query.select(["size", "name"])
+        Appwrite.Query.limit(500)
       ],
     );
 
@@ -2230,9 +2227,8 @@ async function loadFiles(param) {
     );
   }
 
-  // OPTIMASI PERFORMA: Batasi maksimal 100 file & Gunakan Projection
+  // OPTIMASI PERFORMA: Batasi maksimal 100 file
   queries.push(Appwrite.Query.limit(100));
-  queries.push(Appwrite.Query.select(["name", "type", "size", "fileId", "thumbUrl", "starred", "trashed", "parentId", "$id", "$createdAt"]));
 
   try {
     const res = await databases.listDocuments(
