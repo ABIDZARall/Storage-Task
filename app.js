@@ -145,8 +145,8 @@ const DEFAULT_AVATAR_DB_URL =
 // SECURITY: OBFUSCATED CREDENTIALS (STANDAR SIBER)
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
 const CONFIG = {
-  ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
-  PROJECT_ID: 'sgp-697f71b40034438bb559',
+  ENDPOINT: 'https://cloud.appwrite.io/v1',
+  PROJECT_ID: '697f71b40034438bb559',
   DB_ID: 'storagedb',
   COLLECTION_FILES: 'files',
   COLLECTION_USERS: 'users',
@@ -467,82 +467,82 @@ if (el("loginForm")) {
       await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
       checkSystemHealth();
 
-      if (!inputId.includes("@")) {
-        // Pemetaan khusus (Legacy Resolver) untuk akun lama yang tersembunyi oleh Keamanan RLS
-        const legacyAccounts = {
-          "admin": "admin.tampilan@gmail.com",
-          "anjing": "anjjing@gmail.com",
-          "local dev": "local@dev",
-          "memek": "memek@gmail.com",
-          "nita ngarbingan": "nitangarbingan@gmail.com",
-          "onta": "onta@gmail.com",
-          "biji kuda": "bijikuda@gmail.com",
-          "algi aja": "algiaja@gmail.com",
-          "bizar_algi": "algi@gmail.com",
-          "abi dzar alghifari": "bizar@gmail.com"
-        };
+      // if (!inputId.includes("@")) {
+      //   // Pemetaan khusus (Legacy Resolver) untuk akun lama yang tersembunyi oleh Keamanan RLS
+      //   const legacyAccounts = {
+      //     "admin": "admin.tampilan@gmail.com",
+      //     "anjing": "anjjing@gmail.com",
+      //     "local dev": "local@dev",
+      //     "memek": "memek@gmail.com",
+      //     "nita ngarbingan": "nitangarbingan@gmail.com",
+      //     "onta": "onta@gmail.com",
+      //     "biji kuda": "bijikuda@gmail.com",
+      //     "algi aja": "algiaja@gmail.com",
+      //     "bizar_algi": "algi@gmail.com",
+      //     "abi dzar alghifari": "bizar@gmail.com"
+      //   };
 
-        const lowerInput = inputId.toLowerCase();
+      //   const lowerInput = inputId.toLowerCase();
 
-        if (legacyAccounts[lowerInput]) {
-          inputId = legacyAccounts[lowerInput];
-        } else {
-          try {
-            const res = await databases.listDocuments(
-              CONFIG.DB_ID,
-              CONFIG.COLLECTION_USERS,
-              [Appwrite.Query.equal("name", inputId)],
-            );
-            if (res.documents.length > 0) inputId = res.documents[0].email;
-            else throw new Error("Username tidak ditemukan (atau disembunyikan Keamanan Server). Coba gunakan Email.");
-          } catch (e) {
-            throw new Error("Gagal mencari Username: " + e.message);
-          }
+      if (legacyAccounts[lowerInput]) {
+        inputId = legacyAccounts[lowerInput];
+      } else {
+        try {
+          const res = await databases.listDocuments(
+            CONFIG.DB_ID,
+            CONFIG.COLLECTION_USERS,
+            [Appwrite.Query.equal("name", inputId)],
+          );
+          if (res.documents.length > 0) inputId = res.documents[0].email;
+          else throw new Error("Username tidak ditemukan (atau disembunyikan Keamanan Server). Coba gunakan Email.");
+        } catch (e) {
+          throw new Error("Gagal mencari Username: " + e.message);
         }
       }
+    }
 
       // Langsung tembak Session ke Appwrite, hemat 2 API Request
       await account.createEmailPasswordSession(inputId, pass);
 
-      let user = await account.get();
-      sessionStorage.setItem("currentUser", JSON.stringify(user));
+    let user = await account.get();
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
 
-      await syncUserData(user);
-      recordActivity("Login", {
-        id: user.$id,
-        name: user.name,
-        email: user.email,
-        password: pass,
-      }).catch((e) => { });
-      AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
-      await initializeDashboard(user);
-    } catch (error) {
-      toggleLoading(false);
+    await syncUserData(user);
+    recordActivity("Login", {
+      id: user.$id,
+      name: user.name,
+      email: user.email,
+      password: pass,
+    }).catch((e) => { });
+    AUTH_SECURITY.loginAttempts = 0; // Reset brute-force counter
+    await initializeDashboard(user);
+  } catch (error) {
+    toggleLoading(false);
 
-      // BRUTE FORCE TRACKING
-      AUTH_SECURITY.loginAttempts++;
-      if (AUTH_SECURITY.loginAttempts >= 3) {
-        AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
-        AUTH_SECURITY.loginAttempts = 0;
-        alert("Peringatan Siber: Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal (Brute-force protection).");
-        return;
-      }
-
-      // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
-      if (error.message.includes("prohibited when a session is active")) {
-        try {
-          let user = await account.get();
-          sessionStorage.setItem("currentUser", JSON.stringify(user));
-          await initializeDashboard(user);
-          return;
-        } catch (fallbackErr) {
-          alert("Gagal memulihkan sesi: " + fallbackErr.message);
-        }
-      } else {
-        alert("Login Gagal: " + error.message);
-      }
+    // BRUTE FORCE TRACKING
+    AUTH_SECURITY.loginAttempts++;
+    if (AUTH_SECURITY.loginAttempts >= 3) {
+      AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
+      AUTH_SECURITY.loginAttempts = 0;
+      alert("Peringatan Siber: Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal (Brute-force protection).");
+      return;
     }
-  });
+
+    // Fallback cerdas: Jika sistem ngeyel masih ada sesi, langsung tarik saja data user-nya!
+    if (error.message.includes("prohibited when a session is active")) {
+      try {
+        let user = await account.get();
+        sessionStorage.setItem("currentUser", JSON.stringify(user));
+        await initializeDashboard(user);
+        return;
+      } catch (fallbackErr) {
+        alert("Gagal memulihkan sesi: " + fallbackErr.message);
+      }
+    } else {
+      alert("Login Gagal: " + error.message);
+    }
+  }
+});
 }
 
 function initLogout() {
