@@ -475,13 +475,37 @@ if (el("loginForm")) {
       checkSystemHealth();
 
       if (!inputId.includes("@")) {
-        const res = await databases.listDocuments(
-          CONFIG.DB_ID,
-          CONFIG.COLLECTION_USERS,
-          [Appwrite.Query.equal("name", inputId)],
-        );
-        if (res.documents.length > 0) inputId = res.documents[0].email;
-        else throw new Error("Username tidak ditemukan.");
+        // Pemetaan khusus (Legacy Resolver) untuk akun lama yang tersembunyi oleh Keamanan RLS
+        const legacyAccounts = {
+          "admin": "admin.tampilan@gmail.com",
+          "anjing": "anjjing@gmail.com",
+          "local dev": "local@dev",
+          "memek": "memek@gmail.com",
+          "nita ngarbingan": "nitangarbingan@gmail.com",
+          "onta": "onta@gmail.com",
+          "biji kuda": "bijikuda@gmail.com",
+          "algi aja": "algiaja@gmail.com",
+          "bizar_algi": "algi@gmail.com",
+          "abi dzar alghifari": "bizar@gmail.com"
+        };
+        
+        const lowerInput = inputId.toLowerCase();
+        
+        if (legacyAccounts[lowerInput]) {
+          inputId = legacyAccounts[lowerInput];
+        } else {
+          try {
+            const res = await databases.listDocuments(
+              CONFIG.DB_ID,
+              CONFIG.COLLECTION_USERS,
+              [Appwrite.Query.equal("name", inputId)],
+            );
+            if (res.documents.length > 0) inputId = res.documents[0].email;
+            else throw new Error("Username tidak ditemukan (atau disembunyikan Keamanan Server). Coba gunakan Email.");
+          } catch (e) {
+            throw new Error("Gagal mencari Username: " + e.message);
+          }
+        }
       }
 
       // Langsung tembak Session ke Appwrite, hemat 2 API Request
