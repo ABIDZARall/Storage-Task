@@ -2447,6 +2447,15 @@ window.openPreview = (doc) => {
       setTimeout(initCustomVideoPlayer, 50);
     } else if (audioExts.includes(ext)) {
       contentArea.innerHTML = `
+                <div class="apple-volume-container pure-glass" id="audioTopVolumeContainer" style="position: absolute; top: 15px; right: 15px; z-index: 100;">
+                    <button class="icon-only-btn volume-icon-btn" id="audioMuteBtn" title="Mute/Unmute">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <div class="volume-slider-wrapper">
+                        <input type="range" id="audioVolumeSlider" class="apple-volume-slider" min="0" max="1" step="0.01" value="1" style="--vol: 100%;">
+                    </div>
+                </div>
+
                 <div class="apple-audio-player-ios">
                     <audio id="customAudio" src="${fileViewUrl}" preload="metadata" autoplay></audio>
                     
@@ -2473,11 +2482,6 @@ window.openPreview = (doc) => {
                                 <button class="audio-btn-ios" id="audioPrevBtn" title="Mulai Ulang / File Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
                                 <button class="audio-btn-ios play-ios" id="audioPlayPause"><i class="fa-solid fa-pause"></i></button>
                                 <button class="audio-btn-ios" id="audioNextBtn" title="File Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
-                            </div>
-
-                            <div class="audio-volume-pill-ios">
-                                <button class="audio-mute-btn-ios" id="audioMuteBtn" title="Mute/Unmute"><i class="fa-solid fa-volume-high"></i></button>
-                                <input type="range" id="audioVolumeSlider" class="audio-slider-ios volume-slider-ios" min="0" max="1" step="0.01" value="1" style="--prog: 100%;">
                             </div>
                         </div>
                     </div>
@@ -2578,7 +2582,7 @@ function initAppleAudioPlayer() {
       const vol = parseFloat(e.target.value);
       audio.volume = vol;
       audio.muted = vol === 0;
-      volumeSlider.style.setProperty("--prog", vol * 100 + "%");
+      volumeSlider.style.setProperty("--vol", vol * 100 + "%");
       updateAudioMuteIcon(vol);
     });
   }
@@ -2589,14 +2593,14 @@ function initAppleAudioPlayer() {
       if (audio.muted) {
         if (volumeSlider) {
           volumeSlider.value = 0;
-          volumeSlider.style.setProperty("--prog", "0%");
+          volumeSlider.style.setProperty("--vol", "0%");
         }
       } else {
         const currentVol = audio.volume > 0 ? audio.volume : 1;
         audio.volume = currentVol;
         if (volumeSlider) {
           volumeSlider.value = currentVol;
-          volumeSlider.style.setProperty("--prog", currentVol * 100 + "%");
+          volumeSlider.style.setProperty("--vol", currentVol * 100 + "%");
         }
       }
       updateAudioMuteIcon(audio.muted ? 0 : audio.volume);
