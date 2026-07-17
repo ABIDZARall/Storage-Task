@@ -13,56 +13,14 @@ try {
   databases = new Appwrite.Databases(client);
   storage = new Appwrite.Storage(client);
 
-  // --- SISTEM KEAMANAN BERLAPIS KHUSUS (WAF, Anti-DevTools, Backend Proxy) ---
   const SECURITY_SYSTEM = {
-    checkThreats: (input) => {
-      if (!input) return input;
-      const dangerousPatterns = [/<script>/i, /javascript:/i, /' OR '1'='1/i, /" OR "1"="1/i, /DROP TABLE/i, /SELECT \* FROM/i, /--/];
-      if (dangerousPatterns.some(pattern => pattern.test(input))) {
-        window.location.href = "https://www.google.com"; // Usir peretas langsung
-        throw new Error("ANOMALI TERDETEKSI: Upaya injeksi ditolak oleh Pos Penjaga Keamanan.");
-      }
-      return input;
-    },
-    initAntiSpy: () => {
-      // Blokir Klik Kanan
-      document.addEventListener("contextmenu", (e) => e.preventDefault());
-      // Blokir Shortcut DevTools (F12, Ctrl+Shift+I, dll)
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || (e.ctrlKey && e.key === "U")) {
-          e.preventDefault();
-          window.location.href = "https://www.google.com";
-        }
-      });
-      // Debugger Trap & CCTV
-      setInterval(() => {
-        const before = new Date().getTime();
-        debugger; // Akan berhenti disini jika DevTools terbuka
-        const after = new Date().getTime();
-        if (after - before > 100) {
-          document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%; font-family:sans-serif;'>AKSES DITOLAK: Aktivitas Mencurigakan Terdeteksi Oleh CCTV! Barang Bukti Disita.</h1>";
-          setTimeout(() => window.location.href = "https://www.google.com", 2000);
-        }
-      }, 2000);
-    },
-    secureBackendRequest: async (operation) => {
-      if (typeof AUTH_SECURITY !== 'undefined' && Date.now() < AUTH_SECURITY.lockUntil) {
-        throw new Error("Backend Security: Akses dikunci sementara dari pusat.");
-      }
-      return await operation();
-    },
-    obfuscate: (text) => btoa(text).split('').reverse().join(''),
+    checkThreats: (input) => input,
+    initAntiSpy: () => {},
+    secureBackendRequest: async (op) => await op(),
+    obfuscate: (text) => text,
   };
+  window.sanitizeInput = (str) => str;
   SECURITY_SYSTEM.initAntiSpy();
-  // -----------------------------------------------------------------------------
-
-  // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
-  window.sanitizeInput = (str) => {
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
-  };
 
   const originalCreate = databases.createDocument.bind(databases);
   databases.createDocument = async (dbId, colId, docId, data, permissions) => {
@@ -464,42 +422,6 @@ if (el("loginForm")) {
 
     try {
       toggleLoading(true, "Memproses Login...");
-      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
-      checkSystemHealth();
-
-      // if (!inputId.includes("@")) {
-      //   // Pemetaan khusus (Legacy Resolver) untuk akun lama yang tersembunyi oleh Keamanan RLS
-      //   const legacyAccounts = {
-      //     "admin": "admin.tampilan@gmail.com",
-      //     "anjing": "anjjing@gmail.com",
-      //     "local dev": "local@dev",
-      //     "memek": "memek@gmail.com",
-      //     "nita ngarbingan": "nitangarbingan@gmail.com",
-      //     "onta": "onta@gmail.com",
-      //     "biji kuda": "bijikuda@gmail.com",
-      //     "algi aja": "algiaja@gmail.com",
-      //     "bizar_algi": "algi@gmail.com",
-      //     "abi dzar alghifari": "bizar@gmail.com"
-      //   };
-
-      //   const lowerInput = inputId.toLowerCase();
-
-      if (legacyAccounts[lowerInput]) {
-        inputId = legacyAccounts[lowerInput];
-      } else {
-        try {
-          const res = await databases.listDocuments(
-            CONFIG.DB_ID,
-            CONFIG.COLLECTION_USERS,
-            [Appwrite.Query.equal("name", inputId)],
-          );
-          if (res.documents.length > 0) inputId = res.documents[0].email;
-          else throw new Error("Username tidak ditemukan (atau disembunyikan Keamanan Server). Coba gunakan Email.");
-        } catch (e) {
-          throw new Error("Gagal mencari Username: " + e.message);
-        }
-      }
-    }
 
       // Langsung tembak Session ke Appwrite, hemat 2 API Request
       await account.createEmailPasswordSession(inputId, pass);
