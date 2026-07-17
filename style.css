@@ -2687,9 +2687,9 @@ form {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 85vw;
-    max-width: 320px;
-    gap: 16px;
+    width: 80vw;
+    max-width: 260px;
+    gap: 12px;
     margin: 0 auto;
     animation: previewZoomIn 0.35s ease-out;
 }
@@ -2699,7 +2699,7 @@ form {
     aspect-ratio: 1/1;
     border-radius: 12px;
     background: linear-gradient(135deg, #e5e5ea 0%, #f4f4f5 100%);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2710,13 +2710,13 @@ form {
 }
 
 .audio-cover-ios i {
-    font-size: 7rem;
+    font-size: 5.5rem;
     color: #94a3b8;
 }
 
 .audio-cover-ios.playing {
     transform: scale(1.02);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
 .audio-glass-ios {
@@ -2724,17 +2724,17 @@ form {
     background: rgba(200, 200, 200, 0.12);
     backdrop-filter: blur(50px) saturate(200%);
     -webkit-backdrop-filter: blur(50px) saturate(200%);
-    border-radius: 24px;
-    padding: 20px 18px;
+    border-radius: 20px;
+    padding: 16px 14px;
     box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.2), 
+        0 8px 25px rgba(0, 0, 0, 0.15), 
         inset 0 1px 2px rgba(255, 255, 255, 0.35),
         inset 0 -1px 2px rgba(0, 0, 0, 0.1),
         inset 1px 0 1px rgba(255, 255, 255, 0.15),
         inset -1px 0 1px rgba(255, 255, 255, 0.15);
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 14px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
 }
@@ -2743,42 +2743,42 @@ form {
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .audio-title-ios {
     color: white;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
 }
 
 .audio-artist-ios {
     color: rgba(255, 255, 255, 0.75);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 500;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.1px;
 }
 
 .audio-timeline-container-ios {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
 }
 
 .audio-time-ios {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.7);
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', monospace;
     font-weight: 600;
-    width: 35px;
+    width: 32px;
     text-align: center;
 }
 
@@ -2786,17 +2786,17 @@ form {
     -webkit-appearance: none;
     appearance: none;
     flex-grow: 1;
-    height: 5px;
+    height: 4px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+    border-radius: 2px;
     outline: none;
     cursor: pointer;
 }
 
 .audio-slider-ios::-webkit-slider-runnable-track {
     background: linear-gradient(to right, rgba(255, 255, 255, 0.95) var(--prog), transparent var(--prog));
-    height: 5px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
 }
 
 .audio-slider-ios::-webkit-slider-thumb {
@@ -2810,20 +2810,20 @@ form {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 5px;
+    padding: 0 2px;
 }
 
 .audio-main-controls-ios {
     display: flex;
     align-items: center;
-    gap: 35px;
+    gap: 28px;
 }
 
 .audio-icon-btn-ios {
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.6);
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     cursor: pointer;
     transition: 0.2s;
 }
@@ -2833,10 +2833,10 @@ form {
     background: transparent;
     border: none;
     color: white;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     cursor: pointer;
     transition: all 0.2s;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2847,20 +2847,20 @@ form {
 }
 
 .audio-btn-ios.play-ios {
-    font-size: 2.8rem;
+    font-size: 2.3rem;
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
     .apple-audio-player-ios {
         flex-direction: row;
-        max-width: 600px;
-        width: 90vw;
+        max-width: 480px;
+        width: 85vw;
         align-items: center;
-        gap: 24px;
+        gap: 16px;
     }
     .audio-cover-ios {
         width: 45%;
-        max-width: 240px;
+        max-width: 180px;
         aspect-ratio: 1/1;
         flex-shrink: 0;
     }
