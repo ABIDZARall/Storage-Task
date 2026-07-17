@@ -2122,14 +2122,14 @@ window.submitUploadFile = async () => {
       }
     }
 
-    const CONCURRENCY_LIMIT = 15;
+    const CONCURRENCY_LIMIT = 10;
     let completed = 0;
+    const pool = new Set();
+    
+    toggleLoading(true, `Mempersiapkan ${uploadQueue.length} file...`);
 
-    for (let i = 0; i < uploadQueue.length; i += CONCURRENCY_LIMIT) {
-      const batch = uploadQueue.slice(i, i + CONCURRENCY_LIMIT);
-      toggleLoading(true, `Mengunggah ${Math.min(i + CONCURRENCY_LIMIT, uploadQueue.length)} dari ${uploadQueue.length} file...`);
-      
-      await Promise.all(batch.map(async (item) => {
+    for (const item of uploadQueue) {
+      const uploadTask = (async () => {
         try {
           const up = await storage.createFile(
             CONFIG.BUCKET_ID,
@@ -2156,9 +2156,21 @@ window.submitUploadFile = async () => {
           );
         } catch (err) {
           console.error("Gagal unggah file:", item.fileObj.name, err);
+        } finally {
+          completed++;
+          toggleLoading(true, `Mengunggah ${completed} dari ${uploadQueue.length} file... (Bersamaan)`);
+          pool.delete(uploadTask);
         }
-      }));
+      })();
+
+      pool.add(uploadTask);
+
+      if (pool.size >= CONCURRENCY_LIMIT) {
+        await Promise.race(pool);
+      }
     }
+
+    await Promise.all(pool);
 
     resetUploadUI();
     window.forceCalculateStorage = true;
