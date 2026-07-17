@@ -1936,7 +1936,13 @@ function handleFileSelect(files) {
 
   // Akumulasi file yang dipilih (bisa drag & drop berkali-kali)
   if (selectedUploadFiles && selectedUploadFiles.length > 0) {
-      selectedUploadFiles = [...selectedUploadFiles, ...tempFiles];
+      // Tambahkan file baru, tapi filter duplikat berdasarkan nama dan ukuran
+      let newFiles = tempFiles.filter(newFile => {
+          return !selectedUploadFiles.some(existingFile => 
+              existingFile.name === newFile.name && existingFile.size === newFile.size
+          );
+      });
+      selectedUploadFiles = [...selectedUploadFiles, ...newFiles];
   } else {
       selectedUploadFiles = tempFiles;
   }
@@ -2031,13 +2037,19 @@ function initDragAndDrop() {
     let items = e.dataTransfer.items;
 
     if (items) {
-      toggleLoading(true, "Membaca struktur folder...");
+      toggleLoading(true, "Membaca struktur file/folder...");
+      
+      // Kumpulkan entry secara sinkronik untuk mencegah hilangnya referensi items karena await (bug di beberapa browser)
+      let entries = [];
       for (let i = 0; i < items.length; i++) {
-        let item = items[i].webkitGetAsEntry();
-        if (item) {
-          await traverseFileTree(item, "", allFiles);
-        }
+        let entry = items[i].webkitGetAsEntry();
+        if (entry) entries.push(entry);
       }
+
+      for (let entry of entries) {
+        await traverseFileTree(entry, "", allFiles);
+      }
+      
       toggleLoading(false);
     }
 
