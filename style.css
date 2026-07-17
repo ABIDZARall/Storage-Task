@@ -4695,8 +4695,43 @@ body.light-mode .item-card:hover {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-body.light-mode .file-name { color: #1e293b; }
-body.light-mode .file-type { color: #64748b; }
+body.light-mode .item-name,
+body.light-mode .mac-folder-text,
+body.light-mode .mac-folder-front span,
+body.light-mode .welcome-title,
+body.light-mode .empty-text,
+body.light-mode .empty-subtext,
+body.light-mode .auth-card h3,
+body.light-mode .auth-card .auth-footer,
+body.light-mode .pill-input input,
+body.light-mode .storage-text,
+body.light-mode .storage-bar span,
+body.light-mode #loadingText,
+body.light-mode .file-info p,
+body.light-mode .file-info h3,
+body.light-mode .preview-header h3,
+body.light-mode .audio-title-ios,
+body.light-mode .audio-artist-ios,
+body.light-mode .audio-time-ios,
+body.light-mode .video-title-ios,
+body.light-mode .video-time-ios,
+body.light-mode .sab-text,
+body.light-mode .empty-state h3,
+body.light-mode .empty-state p {
+    color: #1e293b !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .pill-input {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+body.light-mode .pill-input i {
+    color: #475569 !important;
+}
+body.light-mode .pill-input input::placeholder {
+    color: #94a3b8 !important;
+}
 body.light-mode .brand-text,
 body.light-mode .nav-item { color: #334155; }
 body.light-mode .nav-item:hover, body.light-mode .nav-item.active {
