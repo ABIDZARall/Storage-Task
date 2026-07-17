@@ -103,7 +103,7 @@ const DEFAULT_AVATAR_DB_URL =
 // SECURITY: OBFUSCATED CREDENTIALS (STANDAR SIBER)
 // Mencegah peretas dan bot GitHub membaca API Key secara langsung
 const CONFIG = {
-  ENDPOINT: 'https://cloud.appwrite.io/v1',
+  ENDPOINT: 'https://sgp.cloud.appwrite.io/v1',
   PROJECT_ID: '697f71b40034438bb559',
   DB_ID: 'storagedb',
   COLLECTION_FILES: 'files',
@@ -422,6 +422,24 @@ if (el("loginForm")) {
 
     try {
       toggleLoading(true, "Memproses Login...");
+
+      // Cek apakah input adalah username (tidak mengandung @)
+      if (!inputId.includes("@")) {
+        try {
+          const res = await databases.listDocuments(
+            CONFIG.DB_ID,
+            CONFIG.COLLECTION_USERS,
+            [Appwrite.Query.equal("name", inputId)]
+          );
+          if (res.documents.length > 0) {
+            inputId = res.documents[0].email; // Ubah username menjadi email
+          } else {
+            throw new Error("Username tidak ditemukan di Database. Silakan cek kembali atau gunakan Email Anda.");
+          }
+        } catch (e) {
+          throw new Error("Sistem Gagal mencari Username: " + e.message);
+        }
+      }
 
       // Langsung tembak Session ke Appwrite, hemat 2 API Request
       await account.createEmailPasswordSession(inputId, pass);
