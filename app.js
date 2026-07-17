@@ -1919,12 +1919,7 @@ function handleFileSelect(files) {
   
   let tempFiles = Array.from(files);
 
-  if (uploadMode === "file") {
-    if (tempFiles.length > 20) {
-      alert("Peringatan: Maksimal 20 file dapat diunggah sekaligus. Hanya 20 file pertama yang akan diproses.");
-      tempFiles = tempFiles.slice(0, 20);
-    }
-  } else if (uploadMode === "folder") {
+  if (uploadMode === "folder") {
     let topLevelFolders = new Set();
     tempFiles.forEach(f => {
       const path = f.customPath || f.webkitRelativePath;
@@ -1937,17 +1932,6 @@ function handleFileSelect(files) {
        resetUploadUI();
        return;
     }
-  } else {
-  if (uploadMode === "file") {
-    // Menghapus batasan 20 item agar bisa upload banyak sekaligus
-  } else if (uploadMode === "folder") {
-    let topLevelFolders = new Set();
-    tempFiles.forEach(f => {
-      const path = f.customPath || f.webkitRelativePath;
-      if (path) {
-         topLevelFolders.add(path.split('/')[0]);
-      }
-    });
   }
 
   // Akumulasi file yang dipilih (bisa drag & drop berkali-kali)
