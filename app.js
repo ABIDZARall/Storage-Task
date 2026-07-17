@@ -1920,9 +1920,9 @@ function handleFileSelect(files) {
   let tempFiles = Array.from(files);
 
   if (uploadMode === "file") {
-    if (tempFiles.length > 100) {
-      alert("Peringatan: Maksimal 100 file dapat diunggah sekaligus. Hanya 100 file pertama yang akan diproses.");
-      tempFiles = tempFiles.slice(0, 100);
+    if (tempFiles.length > 20) {
+      alert("Peringatan: Maksimal 20 file dapat diunggah sekaligus. Hanya 20 file pertama yang akan diproses.");
+      tempFiles = tempFiles.slice(0, 20);
     }
   } else if (uploadMode === "folder") {
     let topLevelFolders = new Set();
@@ -1938,9 +1938,9 @@ function handleFileSelect(files) {
        return;
     }
   } else {
-    if (tempFiles.length > 100) {
-      alert("Peringatan: Maksimal 100 item dapat diunggah sekaligus.");
-      tempFiles = tempFiles.slice(0, 100);
+    if (tempFiles.length > 20) {
+      alert("Peringatan: Maksimal 20 item dapat diunggah sekaligus.");
+      tempFiles = tempFiles.slice(0, 20);
     }
   }
 
@@ -1954,14 +1954,12 @@ function handleFileSelect(files) {
   ).length;
 
   const infoText = document.getElementById("fileInfoText");
+  let msg = `Terpilih: ${realFiles.length} file `;
+  if (folderCount > 0) msg += `(dan ${folderCount} folder kosong)`;
   if (realFiles.length === 1 && folderCount === 0) {
-    infoText.innerText = `Terpilih: ${realFiles[0].name}`;
-  } else {
-    let msg = `Terpilih: `;
-    if (realFiles.length > 0) msg += `${realFiles.length} file `;
-    if (folderCount > 0) msg += `(${folderCount} folder kosong)`;
-    infoText.innerText = msg;
+      msg = `Terpilih: 1 file (${realFiles[0].name})`;
   }
+  infoText.innerText = msg;
   document.getElementById("fileInfoContainer").classList.remove("hidden");
 }
 
@@ -2122,11 +2120,10 @@ window.submitUploadFile = async () => {
       }
     }
 
-    const CONCURRENCY_LIMIT = 10;
-    let completed = 0;
+    const CONCURRENCY_LIMIT = 20;
     const pool = new Set();
     
-    toggleLoading(true, `Mempersiapkan ${uploadQueue.length} file...`);
+    toggleLoading(true, `Sedang mengunggah ${uploadQueue.length} file secara bersamaan...`);
 
     for (const item of uploadQueue) {
       const uploadTask = (async () => {
@@ -2157,8 +2154,6 @@ window.submitUploadFile = async () => {
         } catch (err) {
           console.error("Gagal unggah file:", item.fileObj.name, err);
         } finally {
-          completed++;
-          toggleLoading(true, `Mengunggah ${completed} dari ${uploadQueue.length} file... (Bersamaan)`);
           pool.delete(uploadTask);
         }
       })();
