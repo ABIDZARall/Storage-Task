@@ -2588,7 +2588,17 @@ function initAppleAudioPlayer() {
   }
 
   if (muteBtn) {
-    muteBtn.addEventListener("click", () => {
+    muteBtn.addEventListener("click", (e) => {
+      const container = el("audioTopVolumeContainer");
+      if (window.innerWidth <= 768 && container) {
+        if (!container.classList.contains("expanded")) {
+          container.classList.add("expanded");
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      }
+
       audio.muted = !audio.muted;
       if (audio.muted) {
         if (volumeSlider) {
@@ -2791,7 +2801,17 @@ window.initCustomVideoPlayer = () => {
     });
   }
 
-  muteBtn.addEventListener("click", () => {
+  muteBtn.addEventListener("click", (e) => {
+    const container = el("vidVolumeContainer");
+    if (window.innerWidth <= 768 && container) {
+      if (!container.classList.contains("expanded")) {
+        container.classList.add("expanded");
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+    }
+
     video.muted = !video.muted;
     if (video.muted) {
       if (volumeSlider) {
@@ -3081,3 +3101,14 @@ function initRealtimeSync() {
     },
   );
 }
+
+document.addEventListener("click", (e) => {
+  const vidVol = document.getElementById("vidVolumeContainer");
+  if (vidVol && !vidVol.contains(e.target)) {
+    vidVol.classList.remove("expanded");
+  }
+  const audVol = document.getElementById("audioTopVolumeContainer");
+  if (audVol && !audVol.contains(e.target)) {
+    audVol.classList.remove("expanded");
+  }
+});

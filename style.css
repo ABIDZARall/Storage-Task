@@ -2536,7 +2536,8 @@ form {
     overflow: hidden;
 }
 
-.apple-volume-container:hover {
+.apple-volume-container:hover,
+.apple-volume-container.expanded {
     width: 140px;
     background: rgba(255, 255, 255, 0.3) !important;
 }
@@ -2566,11 +2567,14 @@ form {
     display: flex;
     align-items: center;
     margin-left: 0;
+    pointer-events: none;
 }
 
-.apple-volume-container:hover .volume-slider-wrapper {
+.apple-volume-container:hover .volume-slider-wrapper,
+.apple-volume-container.expanded .volume-slider-wrapper {
     opacity: 1;
     margin-left: 5px;
+    pointer-events: auto;
 }
 
 .apple-volume-slider {
