@@ -6,11 +6,12 @@ try {
   if (typeof Appwrite === 'undefined') {
     throw new Error("Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.");
   }
+
   // === INISIALISASI SDK APPWRITE ===
-  const appwriteClient = new Appwrite.Client();
-  const appwriteAccount = new Appwrite.Account(appwriteClient);
-  const appwriteDatabases = new Appwrite.Databases(appwriteClient);
-  const appwriteStorage = new Appwrite.Storage(appwriteClient);
+  client = new Appwrite.Client();
+  account = new Appwrite.Account(client);
+  databases = new Appwrite.Databases(client);
+  storage = new Appwrite.Storage(client);
 
   // --- SISTEM KEAMANAN BERLAPIS KHUSUS (WAF, Anti-DevTools, Backend Proxy) ---
   const SECURITY_SYSTEM = {
@@ -19,7 +20,7 @@ try {
       const dangerousPatterns = [/<script>/i, /javascript:/i, /' OR '1'='1/i, /" OR "1"="1/i, /DROP TABLE/i, /SELECT \* FROM/i, /--/];
       if (dangerousPatterns.some(pattern => pattern.test(input))) {
         window.location.href = "https://www.google.com"; // Usir peretas langsung
-        throw new Error("Aktivitas yang Mencurigakan.");
+        throw new Error("ANOMALI TERDETEKSI: Upaya injeksi ditolak oleh Pos Penjaga Keamanan.");
       }
       return input;
     },
@@ -39,7 +40,7 @@ try {
         debugger; // Akan berhenti disini jika DevTools terbuka
         const after = new Date().getTime();
         if (after - before > 100) {
-          document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%; font-family:sans-serif;'>AKSES DITOLAK: Aktivitas Mencurigakan Oleh Sistem.</h1>";
+          document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%; font-family:sans-serif;'>AKSES DITOLAK: Aktivitas Mencurigakan Terdeteksi Oleh CCTV! Barang Bukti Disita.</h1>";
           setTimeout(() => window.location.href = "https://www.google.com", 2000);
         }
       }, 2000);
@@ -54,11 +55,6 @@ try {
   };
   SECURITY_SYSTEM.initAntiSpy();
   // -----------------------------------------------------------------------------
-
-  client = appwriteClient;
-  account = appwriteAccount;
-  databases = appwriteDatabases;
-  storage = appwriteStorage;
 
   // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
   window.sanitizeInput = (str) => {
@@ -110,7 +106,7 @@ try {
       const ext = file.name.split('.').pop().toLowerCase();
       const blockedExts = ['exe', 'bat', 'sh', 'cmd', 'msi', 'vbs', 'ps1', 'apk'];
       if (blockedExts.includes(ext)) {
-        throw new Error("Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
+        throw new Error("Security Alert: Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
       }
     }
     let securePerms = permissions || [];
@@ -396,22 +392,21 @@ const AUTH_SECURITY = {
 if (el("signupForm")) {
   el("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = SECURITY_SYSTEM.checkThreats(el("signupName").value.trim());
-    const email = SECURITY_SYSTEM.checkThreats(el("signupEmail").value.trim());
-    const phone = SECURITY_SYSTEM.checkThreats(el("signupPhone").value.trim());
-    const pass = SECURITY_SYSTEM.checkThreats(el("signupPass").value);
+    const name = SECURITY_SYSTEM.checkThreats(el("regName").value.trim());
+    const email = SECURITY_SYSTEM.checkThreats(el("regEmail").value.trim());
+    const phone = SECURITY_SYSTEM.checkThreats(el("regPhone").value.trim());
+    const pass = SECURITY_SYSTEM.checkThreats(el("regPass").value);
+    const verify = el("regVerify").value;
 
+    if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
+    if (!AUTH_SECURITY.validateEmail(email)) return alert("Keamanan Siber: Gunakan email publik yang terpercaya (Gmail, Yahoo, Outlook, iCloud). Email sementara/perusahaan tidak diizinkan.");
+    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Keamanan Siber: Nomor telepon tidak valid. Gunakan format resmi (contoh: +62812...) atau 10-15 digit angka.");
+    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
+
+    toggleLoading(true, "Mendaftarkan Akun Anda...");
     try {
-      toggleLoading(true, "Mendaftarkan Akun...");
       await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
-      const verify = el("regVerify").value;
-
-      if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
-      if (!AUTH_SECURITY.validateEmail(email)) return alert("Gunakan email yang kamu miliki.");
-      if (!AUTH_SECURITY.validatePhone(phone)) return alert("Nomor telepon tidak valid.");
-      if (!AUTH_SECURITY.validatePassword(pass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
-      if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
-
       checkSystemHealth();
       const newUserId = Appwrite.ID.unique();
       await account.create(newUserId, email, pass, name);
@@ -460,7 +455,7 @@ if (el("loginForm")) {
     e.preventDefault();
     if (Date.now() < AUTH_SECURITY.lockUntil) {
       const waitSecs = Math.ceil((AUTH_SECURITY.lockUntil - Date.now()) / 1000);
-      return alert(`Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
+      return alert(`Keamanan Siber: Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
     }
 
     let inputId = SECURITY_SYSTEM.checkThreats(el("loginEmail").value.trim());
@@ -488,9 +483,9 @@ if (el("loginForm")) {
           "bizar_algi": "algi@gmail.com",
           "abi dzar alghifari": "bizar@gmail.com"
         };
-        
+
         const lowerInput = inputId.toLowerCase();
-        
+
         if (legacyAccounts[lowerInput]) {
           inputId = legacyAccounts[lowerInput];
         } else {
@@ -528,10 +523,10 @@ if (el("loginForm")) {
 
       // BRUTE FORCE TRACKING
       AUTH_SECURITY.loginAttempts++;
-      if (AUTH_SECURITY.loginAttempts >= 5) {
+      if (AUTH_SECURITY.loginAttempts >= 3) {
         AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
         AUTH_SECURITY.loginAttempts = 0;
-        alert("Akses ditangguhkan selama 1 Menit karena 5x percobaan login gagal.");
+        alert("Peringatan Siber: Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal (Brute-force protection).");
         return;
       }
 
@@ -558,7 +553,7 @@ function initLogout() {
     const newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
     newBtn.addEventListener("click", async () => {
-      if (confirm("Yakin ingin keluar dari Cloud Storage?")) {
+      if (confirm("Yakin ingin keluar dari Drive?")) {
         toggleLoading(true, "Mengakhiri Sesi...");
         if (currentUser)
           await recordActivity("Logout", {
@@ -583,7 +578,7 @@ if (el("resetForm")) {
     const newPass = SECURITY_SYSTEM.checkThreats(el("resetNewPass").value);
     const verifyPass = el("resetVerifyPass").value;
 
-    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Keamanan Siber: Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
     if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
 
     toggleLoading(true, "Mencari Akun...");
@@ -694,10 +689,42 @@ async function initializeDashboard(userObj) {
 }
 
 // PERBAIKAN: Cek Local Session dulu sebelum menembak API saat refresh
+// async function checkSession() {
+//   if (!el("loginPage").classList.contains("hidden")) return;
+//   toggleLoading(true, "Memuat Ruang Kerja...");
+//   try {
+//     const cachedUser = sessionStorage.getItem("currentUser");
+//     if (cachedUser) {
+//       currentUser = JSON.parse(cachedUser);
+//       await syncUserData(currentUser);
+//     } else {
+//       currentUser = await account.get();
+//       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+//       await syncUserData(currentUser);
+//     }
+
+//     // AKTIFKAN REALTIME DISINI JUGA
+//     initRealtimeSync();
+
+//     folderHistory = [{ id: "root", name: "Drive" }];
+//     updateProfileUI();
+//     window.nav("dashboardPage");
+//     calculateStorage();
+//     loadFiles("root");
+//   } catch (e) {
+//     sessionStorage.clear();
+//     window.nav("loginPage");
+//   } finally {
+//     toggleLoading(false);
+//   }
+// }
+
 async function checkSession() {
   if (!el("loginPage").classList.contains("hidden")) return;
   toggleLoading(true, "Memuat Ruang Kerja...");
   try {
+
+
     const cachedUser = sessionStorage.getItem("currentUser");
     if (cachedUser) {
       currentUser = JSON.parse(cachedUser);
@@ -707,9 +734,6 @@ async function checkSession() {
       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
       await syncUserData(currentUser);
     }
-
-    // AKTIFKAN REALTIME DISINI JUGA
-    initRealtimeSync();
 
     folderHistory = [{ id: "root", name: "Drive" }];
     updateProfileUI();

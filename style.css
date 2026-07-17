@@ -4475,7 +4475,7 @@ form {
     .item-card {
         height: 170px;
     }
-    
+
     .apple-glass-btn.play-pause-btn {
         height: 85px;
     }
@@ -4483,14 +4483,16 @@ form {
 
 /* Fallback for flex gap on Safari < 14.1 */
 /* We add small margins to common flex rows that use gap heavily */
-.sab-left > *:not(:last-child),
-.sab-right > *:not(:last-child) {
+.sab-left>*:not(:last-child),
+.sab-right>*:not(:last-child) {
     margin-right: 8px;
 }
-.audio-controls-v2 > *:not(:last-child) {
+
+.audio-controls-v2>*:not(:last-child) {
     margin-right: 20px;
 }
-.storage-page-header > *:not(:last-child) {
+
+.storage-page-header>*:not(:last-child) {
     margin-right: 12px;
 }
 
@@ -4503,16 +4505,16 @@ form {
         border-color: rgba(255, 255, 255, 0.08) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
     }
-    
+
     .item-card:hover .mac-folder-icon {
         transform: none !important;
     }
-    
+
     .item-card:hover .mac-folder-front {
         transform: none !important;
         filter: none !important;
     }
-    
+
     .btn-pill:hover,
     .apple-glass-btn:hover,
     .icon-btn-sab:hover,
@@ -4521,7 +4523,7 @@ form {
         transform: none !important;
         background: inherit;
     }
-    
+
     /* Revert active state to show feedback */
     .item-card:active {
         transform: scale(0.98) !important;
