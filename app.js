@@ -211,8 +211,26 @@ window.updateNavIndicator = function (element) {
   if (!indicator || !element) return;
 
   indicator.style.display = "block";
-  indicator.style.width = element.offsetWidth + "px";
-  indicator.style.left = element.offsetLeft + "px";
+  
+  const icon = element.querySelector("i");
+  const text = element.querySelector("span");
+
+  if (icon && text && window.innerWidth > 768) {
+      const style = window.getComputedStyle(element);
+      const paddingLeft = parseFloat(style.paddingLeft) || 0;
+      const paddingRight = parseFloat(style.paddingRight) || 0;
+      const gap = parseFloat(style.gap) || 0;
+      
+      const contentWidth = icon.offsetWidth + text.offsetWidth + paddingLeft + paddingRight + gap;
+      indicator.style.width = contentWidth + "px";
+      
+      // Sesuaikan posisi kiri dengan efek transform translateX(4px) saat active
+      const isShifted = element.classList.contains("active");
+      indicator.style.left = (element.offsetLeft + (isShifted ? 4 : 0)) + "px";
+  } else {
+      indicator.style.width = element.offsetWidth + "px";
+      indicator.style.left = element.offsetLeft + "px";
+  }
 
   // Batas 768px: Di atas ini menggunakan Sidebar Kiri (Desktop/Tablet)
   if (window.innerWidth > 768) {
