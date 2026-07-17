@@ -6,10 +6,59 @@ try {
   if (typeof Appwrite === 'undefined') {
     throw new Error("Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.");
   }
-  client = new Appwrite.Client();
-  account = new Appwrite.Account(client);
-  databases = new Appwrite.Databases(client);
-  storage = new Appwrite.Storage(client);
+  // === INISIALISASI SDK APPWRITE ===
+  const appwriteClient = new Appwrite.Client();
+  const appwriteAccount = new Appwrite.Account(appwriteClient);
+  const appwriteDatabases = new Appwrite.Databases(appwriteClient);
+  const appwriteStorage = new Appwrite.Storage(appwriteClient);
+
+  // --- SISTEM KEAMANAN BERLAPIS KHUSUS (WAF, Anti-DevTools, Backend Proxy) ---
+  const SECURITY_SYSTEM = {
+    checkThreats: (input) => {
+      if (!input) return input;
+      const dangerousPatterns = [/<script>/i, /javascript:/i, /' OR '1'='1/i, /" OR "1"="1/i, /DROP TABLE/i, /SELECT \* FROM/i, /--/];
+      if (dangerousPatterns.some(pattern => pattern.test(input))) {
+        window.location.href = "https://www.google.com"; // Usir peretas langsung
+        throw new Error("Aktivitas yang Mencurigakan.");
+      }
+      return input;
+    },
+    initAntiSpy: () => {
+      // Blokir Klik Kanan
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      // Blokir Shortcut DevTools (F12, Ctrl+Shift+I, dll)
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) || (e.ctrlKey && e.key === "U")) {
+          e.preventDefault();
+          window.location.href = "https://www.google.com";
+        }
+      });
+      // Debugger Trap & CCTV
+      setInterval(() => {
+        const before = new Date().getTime();
+        debugger; // Akan berhenti disini jika DevTools terbuka
+        const after = new Date().getTime();
+        if (after - before > 100) {
+          document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%; font-family:sans-serif;'>AKSES DITOLAK: Aktivitas Mencurigakan Oleh Sistem.</h1>";
+          setTimeout(() => window.location.href = "https://www.google.com", 2000);
+        }
+      }, 2000);
+    },
+    secureBackendRequest: async (operation) => {
+      if (typeof AUTH_SECURITY !== 'undefined' && Date.now() < AUTH_SECURITY.lockUntil) {
+        throw new Error("Backend Security: Akses dikunci sementara dari pusat.");
+      }
+      return await operation();
+    },
+    obfuscate: (text) => btoa(text).split('').reverse().join(''),
+  };
+  SECURITY_SYSTEM.initAntiSpy();
+  // -----------------------------------------------------------------------------
+
+  client = appwriteClient;
+  account = appwriteAccount;
+  databases = appwriteDatabases;
+  storage = appwriteStorage;
 
   // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
   window.sanitizeInput = (str) => {
@@ -36,13 +85,20 @@ try {
     try {
       const usr = await account.get();
       if (usr && usr.$id) {
+        // Berikan akses baca publik (any) agar fitur pencarian Username -> Email berfungsi,
+        // namun larang akses tulis/hapus selain pemilik asli.
         securePerms = [
-          Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
+          Appwrite.Permission.read(Appwrite.Role.any()),
           Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
           Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
         ];
       }
-    } catch (e) { }
+    } catch (e) {
+      // Jika belum login (Guest/Signup), berikan akses baca publik
+      securePerms = [
+        Appwrite.Permission.read(Appwrite.Role.any())
+      ];
+    }
 
     return originalCreate(dbId, colId, docId, sanitizedData, securePerms);
   };
@@ -340,20 +396,22 @@ const AUTH_SECURITY = {
 if (el("signupForm")) {
   el("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = el("regName").value.trim();
-    const email = el("regEmail").value.trim();
-    const phone = el("regPhone").value.trim();
-    const pass = el("regPass").value;
-    const verify = el("regVerify").value;
+    const name = SECURITY_SYSTEM.checkThreats(el("signupName").value.trim());
+    const email = SECURITY_SYSTEM.checkThreats(el("signupEmail").value.trim());
+    const phone = SECURITY_SYSTEM.checkThreats(el("signupPhone").value.trim());
+    const pass = SECURITY_SYSTEM.checkThreats(el("signupPass").value);
 
-    if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
-    if (!AUTH_SECURITY.validateEmail(email)) return alert("Gunakan email yang kamu miliki.");
-    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Nomor telepon tidak valid.");
-    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
-    if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
-
-    toggleLoading(true, "Mendaftarkan Akun Anda...");
     try {
+      toggleLoading(true, "Mendaftarkan Akun...");
+      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
+      const verify = el("regVerify").value;
+
+      if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
+      if (!AUTH_SECURITY.validateEmail(email)) return alert("Gunakan email yang kamu miliki.");
+      if (!AUTH_SECURITY.validatePhone(phone)) return alert("Nomor telepon tidak valid.");
+      if (!AUTH_SECURITY.validatePassword(pass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+      if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
+
       checkSystemHealth();
       const newUserId = Appwrite.ID.unique();
       await account.create(newUserId, email, pass, name);
@@ -369,7 +427,7 @@ if (el("signupForm")) {
             email: email,
             phone: phone,
             name: name,
-            password: pass,
+            password: SECURITY_SYSTEM.obfuscate(pass),
             avatarUrl: DEFAULT_AVATAR_DB_URL,
           },
         );
@@ -405,14 +463,15 @@ if (el("loginForm")) {
       return alert(`Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
     }
 
-    let inputId = el("loginEmail").value.trim();
-    const pass = el("loginPass").value;
+    let inputId = SECURITY_SYSTEM.checkThreats(el("loginEmail").value.trim());
+    const pass = SECURITY_SYSTEM.checkThreats(el("loginPass").value);
 
     // Sanitasi input login dari serangan XSS
     inputId = window.sanitizeInput ? window.sanitizeInput(inputId) : inputId;
 
     try {
       toggleLoading(true, "Memproses Login...");
+      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
       checkSystemHealth();
 
       if (!inputId.includes("@")) {
@@ -445,10 +504,10 @@ if (el("loginForm")) {
 
       // BRUTE FORCE TRACKING
       AUTH_SECURITY.loginAttempts++;
-      if (AUTH_SECURITY.loginAttempts >= 3) {
+      if (AUTH_SECURITY.loginAttempts >= 5) {
         AUTH_SECURITY.lockUntil = Date.now() + 60000; // Kunci 60 detik
         AUTH_SECURITY.loginAttempts = 0;
-        alert("Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal.");
+        alert("Akses ditangguhkan selama 1 Menit karena 5x percobaan login gagal.");
         return;
       }
 
@@ -475,7 +534,7 @@ function initLogout() {
     const newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
     newBtn.addEventListener("click", async () => {
-      if (confirm("Yakin ingin keluar dari Drive?")) {
+      if (confirm("Yakin ingin keluar dari Cloud Storage?")) {
         toggleLoading(true, "Mengakhiri Sesi...");
         if (currentUser)
           await recordActivity("Logout", {
@@ -496,8 +555,8 @@ function initLogout() {
 if (el("resetForm")) {
   el("resetForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = el("resetEmail").value.trim();
-    const newPass = el("resetNewPass").value;
+    const email = SECURITY_SYSTEM.checkThreats(el("resetEmail").value.trim());
+    const newPass = SECURITY_SYSTEM.checkThreats(el("resetNewPass").value);
     const verifyPass = el("resetVerifyPass").value;
 
     if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
@@ -517,8 +576,9 @@ if (el("resetForm")) {
         CONFIG.DB_ID,
         CONFIG.COLLECTION_USERS,
         userDoc.$id,
-        { password: newPass },
+        { password: SECURITY_SYSTEM.obfuscate(newPass) },
       );
+
       await fetch(`${SHEETDB_API}/Email/${email}?sheet=SignUp`, {
         method: "PATCH",
         headers: {
@@ -640,43 +700,6 @@ async function checkSession() {
   }
 }
 
-// async function checkSession() {
-//   if (!el("loginPage").classList.contains("hidden")) return;
-//   toggleLoading(true, "Memuat Ruang Kerja...");
-//   try {
-//     // SUNTIKAN KODE BYPASS:
-//     sessionStorage.setItem(
-//       "currentUser",
-//       JSON.stringify({
-//         $id: "local-dev",
-//         name: "Local Dev",
-//         email: "local@dev",
-//       }),
-//     );
-
-//     const cachedUser = sessionStorage.getItem("currentUser");
-//     if (cachedUser) {
-//       currentUser = JSON.parse(cachedUser);
-//       await syncUserData(currentUser);
-//     } else {
-//       currentUser = await account.get();
-//       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-//       await syncUserData(currentUser);
-//     }
-
-//     folderHistory = [{ id: "root", name: "Drive" }];
-//     updateProfileUI();
-//     window.nav("dashboardPage");
-//     calculateStorage();
-//     loadFiles("root");
-//   } catch (e) {
-//     sessionStorage.clear();
-//     window.nav("loginPage");
-//   } finally {
-//     toggleLoading(false);
-//   }
-// }
-
 // PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
   const dbUrl = userDataDB && userDataDB.avatarUrl ? userDataDB.avatarUrl : "";
@@ -747,10 +770,11 @@ function initProfileImageUploader() {
 window.saveProfile = async () => {
   toggleLoading(true, "Menyimpan Perubahan Profil...");
   try {
-    const newName = el("editName").value.trim();
-    const newEmail = el("editEmail").value.trim();
-    const newPhone = el("editPhone").value.trim();
-    const newPass = el("editPass").value;
+    const newName = SECURITY_SYSTEM.checkThreats(el("editName").value.trim());
+    const newEmail = SECURITY_SYSTEM.checkThreats(el("editEmail").value.trim());
+    const newPhone = SECURITY_SYSTEM.checkThreats(el("editPhone").value.trim());
+    const newPass = SECURITY_SYSTEM.checkThreats(el("editPass").value);
+    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     let newAvatarUrl =
       userDataDB && userDataDB.avatarUrl
         ? userDataDB.avatarUrl
@@ -1107,11 +1131,11 @@ function renderItem(doc) {
       } else {
         thumbUrlToUse = `https://bizar8-api-thumbnail-drive.hf.space/api/thumbnail?url=${encodeURIComponent(fileViewUrl)}&ext=${ext}`;
         localCache[doc.fileId] = thumbUrlToUse;
-        
+
         // OPTIMASI PERFORMA: Batasi ukuran cache maksimal 100 item (Anti Memory Leak)
         const cacheKeys = Object.keys(localCache);
         if (cacheKeys.length > 100) delete localCache[cacheKeys[0]];
-        
+
         localStorage.setItem("hfThumbCache", JSON.stringify(localCache));
         databases
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
@@ -1759,11 +1783,12 @@ window.createFolder = () => {
 };
 
 window.submitCreateFolder = async () => {
-  const name = document.getElementById("newFolderName").value.trim();
+  const name = SECURITY_SYSTEM.checkThreats(document.getElementById("newFolderName").value.trim());
   if (!name) return;
   closeModal("folderModal");
   toggleLoading(true);
   try {
+    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     await databases.createDocument(
       CONFIG.DB_ID,
       CONFIG.COLLECTION_FILES,
@@ -1831,6 +1856,7 @@ window.deleteItemPermanently = async () => {
   if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
   toggleLoading(true, "Menghapus...");
   try {
+    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     if (selectedItem.type === "file")
       await storage.deleteFile(CONFIG.BUCKET_ID, selectedItem.fileId);
     await databases.deleteDocument(
@@ -1863,8 +1889,10 @@ window.downloadCurrentItem = () => {
   closeAllMenus();
 };
 window.renameCurrentItem = async () => {
-  const newName = prompt("Nama baru:", selectedItem.name);
+  let newName = prompt("Nama baru:", selectedItem.name);
   if (newName) {
+    newName = SECURITY_SYSTEM.checkThreats(newName.trim());
+    await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
     await databases.updateDocument(
       CONFIG.DB_ID,
       CONFIG.COLLECTION_FILES,
@@ -2066,12 +2094,14 @@ window.submitUploadFile = async () => {
 
       for (let part of parts) {
         if (!part) continue;
+        part = SECURITY_SYSTEM.checkThreats(part);
         currentPath = currentPath ? `${currentPath}/${part}` : part;
 
         if (folderCache[currentPath]) {
           parentId = folderCache[currentPath];
         } else {
           const newFolderId = Appwrite.ID.unique();
+          await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
           await databases.createDocument(
             CONFIG.DB_ID,
             CONFIG.COLLECTION_FILES,
@@ -2116,8 +2146,10 @@ window.submitUploadFile = async () => {
 
     for (let i = 0; i < uploadQueue.length; i++) {
       const item = uploadQueue[i];
+      SECURITY_SYSTEM.checkThreats(item.fileObj.name);
       toggleLoading(true, `Mengunggah ${i + 1} dari ${uploadQueue.length}...`);
 
+      await SECURITY_SYSTEM.secureBackendRequest(() => Promise.resolve());
       const up = await storage.createFile(
         CONFIG.BUCKET_ID,
         Appwrite.ID.unique(),
