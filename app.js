@@ -1862,23 +1862,6 @@ window.renameCurrentItem = async () => {
 let selectedUploadFiles = [];
 let uploadMode = "file";
 
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const dropZone = document.getElementById("dropZone");
-    if (dropZone) {
-      dropZone.outerHTML = `
-                <div id="dropZone" class="drag-drop-area">
-                    <div class="icon-wrapper"><i class="fa-solid fa-cloud-arrow-up animate-icon"></i></div>
-                    <h4 id="uploadModalDesc">Seret item ke sini atau klik</h4>
-                    <input type="file" id="fileInputHidden" hidden multiple>
-                    <input type="file" id="folderInputHidden" hidden webkitdirectory directory multiple>
-                </div>
-            `;
-      initDragAndDrop();
-    }
-  }, 500);
-});
-
 window.triggerUploadModal = (mode = "file") => {
   closeAllMenus(); // <--- TAMBAHKAN BARIS INI DI SINI
 
