@@ -2588,53 +2588,24 @@ window.openPreview = (doc) => {
       setTimeout(initAppleAudioPlayer, 50);
     } else if (pdfExt.includes(ext)) {
       contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
-    } else if (ext === "docx") {
-      // 🌟 SOLUSI PREMIUM 100% NATIVE UNTUK DOCX (TANPA IFRAME/SERVER PIHAK KETIGA) 🌟
-      contentArea.innerHTML = `
-        <div class="doc-glass-wrapper" style="position:relative; display:flex; flex-direction:column; height:100%; overflow:hidden;">
-            <div id="docx-container" style="flex:1; overflow-y:auto; background:#ffffff; border-radius:12px; padding:20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">
-                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-right:10px;"></i> Memuat dokumen...
-                </div>
-            </div>
-            <!-- Tombol melayang elegan -->
-            <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="position:absolute; bottom:20px; right:20px; box-shadow:0 10px 25px rgba(59,130,246,0.5); text-decoration:none;"><i class="fa-solid fa-download"></i> Simpan</a>
-        </div>
-      `;
+    } else if (ext === "docx" || msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
+      // Menggunakan Microsoft Office Viewer (Paling stabil dan premium untuk Desktop/iPad)
+      let viewerUrl = "";
+      if (msOfficeExts.includes(ext) || ext === "docx") {
+        viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
+      } else {
+        viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
+      }
       
-      // Render DOCX Client-Side (Cepat, anti-blokir, dan offline-ready di sisi klien)
-      fetch(fileDownloadUrl)
-        .then(response => response.blob())
-        .then(blob => {
-            const container = document.getElementById("docx-container");
-            container.innerHTML = ""; // Bersihkan animasi loading
-            docx.renderAsync(blob, container, null, {
-                className: "docx",
-                inWrapper: false,
-                ignoreWidth: false,
-                ignoreHeight: false,
-                ignoreFonts: false,
-                breakPages: true,
-                useBase64URL: true,
-                renderHeaders: true,
-                renderFooters: true,
-                renderFootnotes: true,
-            }).catch(e => {
-                container.innerHTML = `<div style="text-align:center; margin-top:50px; color:#ef4444;"><i class="fa-solid fa-triangle-exclamation" style="font-size:3rem; margin-bottom:15px;"></i><br>Gagal merender dokumen. File mungkin rusak.</div>`;
-            });
-        });
-
-    } else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-      // Untuk file XLS, PPT, DOC lama, gunakan versi bersih tanpa action bar berantakan
-      const encodedUrl = encodeURIComponent(fileDownloadUrl);
-      const googleViewer = `https://docs.google.com/viewerng/viewer?url=${encodedUrl}&embedded=true`;
-      const officeExternal = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+      const officeExternal = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
 
       contentArea.innerHTML = `
-        <div class="doc-glass-wrapper" style="position:relative; height:100%;">
-            <iframe src="${googleViewer}" style="width:100%; height:100%; border:none; border-radius:12px; background:white;"></iframe>
-            <!-- Tombol Buka Penuh yang cantik & melayang di pojok untuk Mobile Fallback -->
-            <a href="${officeExternal}" target="_blank" class="btn-pill primary" style="position:absolute; bottom:20px; right:20px; box-shadow:0 10px 25px rgba(59,130,246,0.5); text-decoration:none;"><i class="fa-solid fa-external-link-alt"></i> Buka Penuh</a>
+        <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex;">
+            <!-- Iframe Document Viewer -->
+            <iframe src="${viewerUrl}" style="flex:1; width:100%; height:100%; border:none; border-radius:12px; background:white;"></iframe>
+            
+            <!-- Tombol Buka Penuh (Premium Floating Button) sebagai solusi 100% untuk Mobile -->
+            <a href="${officeExternal}" target="_blank" class="btn-pill primary" style="position:absolute; bottom:20px; right:20px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-decoration:none; padding:10px 20px; font-size:0.95rem; display:flex; align-items:center; gap:8px; z-index:100;"><i class="fa-solid fa-external-link-alt"></i> Buka Penuh</a>
         </div>
       `;
     } else {
