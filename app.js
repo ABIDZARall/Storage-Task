@@ -2717,20 +2717,20 @@ window.openPreview = (doc) => {
               console.error("Native Render Error:", e);
               // 5. FALLBACK: Jika render native gagal (misal file .doc lama), gunakan Google Docs versi lawas (gview)
               const encodedUrl = encodeURIComponent(fileViewUrl);
-              const googleViewer = \`https://docs.google.com/gview?url=\${encodedUrl}&embedded=true\`;
+              const googleViewer = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
               const externalUrl = msOfficeExts.includes(ext) 
-                   ? \`https://view.officeapps.live.com/op/view.aspx?src=\${encodedUrl}\`
+                   ? `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`
                    : fileViewUrl;
               
-              contentArea.innerHTML = \`
+              contentArea.innerHTML = `
                 <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden;">
-                    <iframe src="\${googleViewer}" style="flex:1; width:100%; height:100%; border:none;"></iframe>
+                    <iframe src="${googleViewer}" style="flex:1; width:100%; height:100%; border:none;"></iframe>
                     <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
-                        <button onclick="document.querySelector('.doc-glass-wrapper iframe').src='\${googleViewer}'" class="btn-pill secondary" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#334155; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:10px 15px;" title="Muat Ulang Viewer"><i class="fa-solid fa-rotate-right"></i></button>
-                        <a href="\${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-external-link-alt" style="margin-right:6px;"></i> Buka Eksternal</a>
+                        <button onclick="document.querySelector('.doc-glass-wrapper iframe').src='${googleViewer}'" class="btn-pill secondary" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#334155; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:10px 15px;" title="Muat Ulang Viewer"><i class="fa-solid fa-rotate-right"></i></button>
+                        <a href="${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-external-link-alt" style="margin-right:6px;"></i> Buka Eksternal</a>
                     </div>
                 </div>
-              \`;
+              `;
           }
       };
       
