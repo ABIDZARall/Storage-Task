@@ -2389,19 +2389,34 @@ function getDisplayedDocuments() {
   return docs;
 }
 
-// Helper untuk meload script native renderer secara dinamis
+// Helper untuk meload script native renderer secara dinamis dengan aman
+window.loadedScripts = window.loadedScripts || {};
+window.loadScriptPromises = window.loadScriptPromises || {};
+
 window.loadScript = function(src) {
-    return new Promise(function(resolve, reject) {
-        if (document.querySelector('script[src="' + src + '"]')) {
-            resolve();
-            return;
-        }
+    if (window.loadedScripts[src]) {
+        return Promise.resolve();
+    }
+    if (window.loadScriptPromises[src]) {
+        return window.loadScriptPromises[src];
+    }
+    
+    const p = new Promise(function(resolve, reject) {
         const s = document.createElement('script');
         s.src = src;
-        s.onload = resolve;
-        s.onerror = reject;
+        s.onload = function() {
+            window.loadedScripts[src] = true;
+            resolve();
+        };
+        s.onerror = function() {
+            delete window.loadScriptPromises[src];
+            reject(new Error("Gagal memuat script: " + src));
+        };
         document.head.appendChild(s);
     });
+    
+    window.loadScriptPromises[src] = p;
+    return p;
 };
 
 window.openPreview = (doc) => {
