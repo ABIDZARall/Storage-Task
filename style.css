@@ -5868,10 +5868,10 @@ body.light-mode .nav-item-icon {
         transform: scale(0.92);
     }
 
-    /* Ubah Search Row menjadi Popup Melayang */
+    /* Ubah Search Row menjadi Popup Melayang (Fixed agar tidak ikut scroll) */
     .search-row {
-        position: absolute !important;
-        top: 12px !important;
+        position: fixed !important;
+        top: 85px !important;
         right: 15px !important;
         left: auto !important;
         width: 320px !important;
