@@ -214,15 +214,17 @@ window.updateNavIndicator = function (element) {
   // Sesuaikan dengan breakpoint CSS (1024px)
   if (window.innerWidth > 1024) {
       // Di Desktop/Tablet, gunakan lebar penuh menu agar sejajar persis dengan tombol Baru
-      indicator.style.width = "100%";
-      indicator.style.left = "0px";
-      indicator.style.height = "44px"; 
-      indicator.style.top = element.offsetTop + "px";
+      indicator.style.setProperty("width", "100%", "important");
+      indicator.style.setProperty("left", "0px", "important");
+      indicator.style.setProperty("height", "44px", "important");
+      indicator.style.setProperty("top", element.offsetTop + "px", "important");
   } else {
       // Di Mobile (Bottom Nav Bar)
-      indicator.style.width = element.offsetWidth + "px";
-      indicator.style.left = element.offsetLeft + "px";
-      // height dan top sudah di-override oleh !important di style.css
+      // Paksa indikator mengikuti ukuran dan posisi akurat dari item yang aktif
+      indicator.style.setProperty("width", element.offsetWidth + "px", "important");
+      indicator.style.setProperty("left", element.offsetLeft + "px", "important");
+      indicator.style.setProperty("height", element.offsetHeight + "px", "important");
+      indicator.style.setProperty("top", element.offsetTop + "px", "important");
   }
 };
 
