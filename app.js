@@ -2589,12 +2589,8 @@ window.openPreview = (doc) => {
     } else if (pdfExt.includes(ext)) {
       contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
     } else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-      let viewerUrl = "";
-      if (msOfficeExts.includes(ext)) {
-        viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
-      } else {
-        viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
-      }
+      // Menggunakan Google Docs Viewer untuk semua dokumen karena Microsoft Office Viewer memblokir iframe di Mobile
+      let viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
       contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${viewerUrl}"></iframe></div>`;
     } else {
       contentArea.innerHTML = `
