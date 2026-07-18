@@ -139,8 +139,8 @@ body {
 /* EFEK LIQUID GLASS APPLE ORIGINAL UNTUK KARTU AUTH */
 .glass-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
 
     /* Garis tepi bercahaya tipis khas Apple */
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -250,8 +250,8 @@ form {
 
 .primary {
     background: linear-gradient(135deg, rgba(45, 212, 191, 0.85), rgba(13, 148, 136, 0.85));
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     color: white;
     width: 100%;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -525,8 +525,8 @@ form {
     /* Mencegah elemen terlipat ke bawah */
 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -578,8 +578,8 @@ form {
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     color: #ef4444;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -619,8 +619,8 @@ form {
 .main-glass-panel {
     flex: 1;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    backdrop-filter: url(#apple-liquid-glass) blur(25px) saturate(200%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%); /* Fallback for Safari */
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(15px) saturate(200%); /* Fallback for Safari */
     border-radius: 32px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: 1px solid rgba(255, 255, 255, 0.4);
@@ -652,8 +652,8 @@ form {
 
     /* EFEK LIQUID GLASS TRANSPARAN & SATURASI TINGGI */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
     /* STRUKTUR CURVED CORNER KHAS APPLE OVERHAUL */
     border-radius: 28px !important;
@@ -692,8 +692,8 @@ form {
     font-weight: 600;
 
     background: rgba(255, 255, 255, 0.12) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -728,8 +728,8 @@ form {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
 
     /* Engine Pembias Kaca: Blur tinggi & Saturasi ditingkatkan agar warna di belakangnya "hidup" */
-    backdrop-filter: url(#apple-liquid-glass) blur(25px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important;
+    backdrop-filter: blur(25px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
 
     /* Edge Lighting: Pantulan cahaya di ujung potongan kaca */
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -797,8 +797,8 @@ form {
     height: 44px;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.14) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important;
+    backdrop-filter: blur(15px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3) !important;
@@ -929,8 +929,8 @@ form {
 
     /* Material Kaca Translucent (Blur + Saturasi Tinggi) */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
 
     /* Inner glow (bias cahaya di tepi) untuk ilusi 3D */
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1017,8 +1017,8 @@ form {
     width: 100%;
     max-width: 600px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     border-radius: 40px;
     height: 48px;
     padding: 0 20px;
@@ -1092,8 +1092,8 @@ form {
 
     /* Efek Kaca (Liquid Glass) Ekstrem */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: 1px solid rgba(255, 255, 255, 0.4);
     border-left: 1px solid rgba(255, 255, 255, 0.2);
@@ -1152,7 +1152,7 @@ form {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: url(#apple-liquid-glass) blur(5px) saturate(180%);
+    backdrop-filter: blur(5px) saturate(180%);
     max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
@@ -1190,8 +1190,8 @@ form {
 
 .item-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%); /* Fallback for Safari */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%); /* Fallback for Safari */
     border-radius: 20px;
     display: flex;
     flex-direction: column;
@@ -1292,8 +1292,8 @@ form {
     width: 100%;
     height: 82%;
     background: linear-gradient(180deg, rgba(235, 235, 245, 0.8), rgba(235, 235, 245, 0.5));
-    backdrop-filter: url(#apple-liquid-glass) blur(10px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
     border-radius: 0 8px 8px 8px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.5);
@@ -1331,8 +1331,8 @@ form {
     width: 100%;
     height: 74%;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6));
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-top: 1px solid rgba(255, 255, 255, 1);
@@ -1498,7 +1498,7 @@ form {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: url(#apple-liquid-glass) blur(5px) saturate(180%);
+    backdrop-filter: blur(5px) saturate(180%);
     z-index: 10000;
     display: flex;
     justify-content: center;
@@ -1516,8 +1516,8 @@ form {
 
     /* LIQUID GLASS EFEK MURNI */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(30px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important;
+    backdrop-filter: blur(30px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -1557,7 +1557,7 @@ form {
 /* Penyesuaian Input Kaca (Untuk Modal Folder) */
 .modal-box .pill-input {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%);
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(150%);
+    backdrop-filter: blur(15px) saturate(150%);
     -webkit-backdrop-filter: blur(15px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: 1px solid rgba(0, 0, 0, 0.2);
@@ -1672,7 +1672,7 @@ form {
     position: fixed;
     z-index: 20000;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(25px) saturate(200%) !important;
+    backdrop-filter: blur(25px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
@@ -1784,8 +1784,8 @@ form {
     max-width: 650px;
     padding: 30px;
     background: rgba(30, 41, 59, 0.45) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
     border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -2066,8 +2066,8 @@ form {
 
     /* Transparent blur overlay so the liquid-bg behind it shines through */
     background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(150%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(150%);
+    backdrop-filter: blur(15px) saturate(150%);
+    -webkit-backdrop-filter: blur(15px) saturate(150%);
 
     z-index: 9000;
     display: flex;
@@ -2101,7 +2101,7 @@ form {
     justify-content: center;
     align-items: center;
     transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    backdrop-filter: url(#apple-liquid-glass) blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
 }
 
 .back-icon-btn:hover {
@@ -2130,7 +2130,7 @@ form {
     padding: 40px 50px;
 
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
@@ -2240,8 +2240,8 @@ form {
     width: 100%;
     height: 100%;
     background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     z-index: 30000;
     display: flex;
     flex-direction: column;
@@ -2260,8 +2260,8 @@ form {
 .preview-header {
     background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     height: 60px;
     display: flex;
     justify-content: space-between;
@@ -2314,8 +2314,8 @@ form {
 /* PURE GLASS STYLE GLOBAL */
 .pure-glass {
     background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.4) !important;
 }
@@ -2426,8 +2426,8 @@ form {
     max-width: 1200px;
     padding: 10px;
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 16px;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
@@ -2807,8 +2807,8 @@ form {
 .audio-glass-ios {
     width: 100%;
     background: rgba(200, 200, 200, 0.12);
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%);
+    backdrop-filter: blur(20px) saturate(200%);
+    -webkit-backdrop-filter: blur(20px) saturate(200%);
     border-radius: 20px;
     padding: 16px 14px;
     box-shadow:
@@ -2940,8 +2940,8 @@ form {
     gap: 6px;
     width: 75px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    backdrop-filter: url(#apple-liquid-glass) blur(8px) saturate(180%);
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(8px) saturate(180%);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
     overflow: hidden;
 }
 
@@ -3170,8 +3170,8 @@ form {
         height: auto;
         gap: 0;
         background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+        backdrop-filter: blur(15px) saturate(180%);
+        -webkit-backdrop-filter: blur(15px) saturate(180%);
         box-shadow: none;
     }
 
@@ -3267,8 +3267,8 @@ form {
         padding: 0 15px !important;
         border-radius: 50px !important;
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -3281,8 +3281,8 @@ form {
         font-size: 1.25rem !important; font-weight: 700; color: white;
         text-shadow: 0 2px 5px rgba(0,0,0,0.3);
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important; 
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important; 
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important; 
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important; 
         border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -3295,7 +3295,7 @@ form {
         font-size: 1.3rem !important; font-weight: 700; color: white;
         text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         background: rgba(30, 41, 59, 0.45) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important; -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(200%) !important;
+        backdrop-filter: blur(15px) saturate(200%) !important; -webkit-backdrop-filter: blur(15px) saturate(200%) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important; border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
     } */
@@ -3336,8 +3336,8 @@ form {
         margin: 0 !important;
 
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -3391,8 +3391,8 @@ form {
 
         /* Apple Liquid Glass Effect: Transparansi bercahaya dengan saturasi warna latar */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
         /* Edge lighting: Bias cahaya dominan dari atas dan kiri */
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -3517,8 +3517,8 @@ form {
         align-items: center !important;
 
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
         border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -3564,8 +3564,8 @@ form {
 
         /* Tingkat transparansi disamakan agar membiaskan wallpaper di belakangnya */
         background: rgba(10, 10, 10, 0.15) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
@@ -3608,7 +3608,7 @@ form {
 
         /* Apple Liquid Glass Effect */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
         /* Edge Lighting and Borders */
@@ -3681,8 +3681,8 @@ form {
 
         /* Apple Liquid Glass Effect */
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
         /* Edge Lighting and Borders */
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -3868,8 +3868,8 @@ form {
 
         /* Tetap gunakan kaca bening Apple Glass */
         background: rgba(10, 10, 10, 0.15) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
 
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
@@ -4571,7 +4571,7 @@ form {
 
     /* DESAIN DIPERTAJAM: EFEK LIQUID Glass APPLE MENONJOL (PREMIUM) */
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
@@ -5007,8 +5007,8 @@ body.light-mode .ctx-divider {
 /* ──────── 16. CONTEXT MENU (Right-click) ──────── */
 body.light-mode .context-menu-modern {
     background: rgba(255, 255, 255, 0.88) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
     border: 1px solid rgba(200, 200, 200, 0.5) !important;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
 }
@@ -5016,15 +5016,15 @@ body.light-mode .context-menu-modern {
 /* ──────── 17. MODALS (Folder Baru, Upload, etc.) ──────── */
 body.light-mode .modal-overlay {
     background: rgba(0, 0, 0, 0.15) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(12px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(12px) saturate(180%) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
 }
 
 body.light-mode .modal-box,
 body.light-mode .glass-card {
     background: rgba(255, 255, 255, 0.88) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(20px) saturate(200%) !important;
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
     border: 1px solid rgba(200, 200, 200, 0.5) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.10), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
@@ -5240,8 +5240,8 @@ body.light-mode .primary-dark:hover {
 /* ──────── 24. STORAGE FULL PAGE ──────── */
 body.light-mode .full-screen-layout {
     background: rgba(240, 244, 248, 0.85) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
 }
 
 body.light-mode .storage-page-header {
@@ -5311,8 +5311,8 @@ body.light-mode .dt-right {
 /* ──────── 25. PREVIEW OVERLAY ──────── */
 body.light-mode .preview-overlay {
     background: rgba(240, 244, 248, 0.88) !important;
-    backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
-    -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
 }
 
 body.light-mode .preview-header {
@@ -5621,8 +5621,8 @@ body.light-mode .theme-btn:hover {
 @media screen and (max-width: 1024px) {
     body.light-mode .main-glass-panel {
         background: rgba(255, 255, 255, 0.25) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%) !important;
+        backdrop-filter: blur(15px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
         box-shadow: none !important;
         border: none !important;
     }
@@ -5878,8 +5878,8 @@ body.light-mode .nav-item-icon {
         align-items: center;
         justify-content: center;
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important;
-        backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
-        -webkit-backdrop-filter: url(#apple-liquid-glass) blur(15px) saturate(180%);
+        backdrop-filter: blur(15px) saturate(180%);
+        -webkit-backdrop-filter: blur(15px) saturate(180%);
         border-radius: 50% !important;
         border: 1px solid rgba(255, 255, 255, 0.15) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
