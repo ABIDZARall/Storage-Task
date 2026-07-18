@@ -2569,6 +2569,12 @@ form {
     align-items: flex-start;
 }
 
+.top-left-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .top-right-group {
     display: flex;
     gap: 12px;
