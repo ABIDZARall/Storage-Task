@@ -627,22 +627,35 @@ async function checkSession() {
         currentUser = freshUser;
         sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
       } catch (apiErr) {
-        // Sesi expired di server - bersihkan cache dan tampilkan login
-        sessionStorage.clear();
-        currentUser = null;
-        window.nav("loginPage");
-        toggleLoading(false);
-        return;
+        // Jika error jaringan (offline) atau bukan 401, biarkan tetap pakai cache
+        if (apiErr.message === "Failed to fetch" || (apiErr.code && apiErr.code !== 401)) {
+          console.warn("Koneksi gagal saat cek sesi. Menggunakan sesi offline.");
+        } else {
+          // Sesi expired di server (401) - bersihkan cache dan tampilkan login
+          sessionStorage.clear();
+          currentUser = null;
+          window.nav("loginPage");
+          toggleLoading(false);
+          return;
+        }
       }
     } else {
       currentUser = await account.get();
       sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
     }
 
-    await syncUserData(currentUser);
+    try {
+        await syncUserData(currentUser);
+    } catch (syncErr) {
+        console.warn("Gagal sinkronisasi data user, abaikan jika offline.", syncErr);
+    }
 
     // AKTIFKAN REALTIME DISINI JUGA
-    initRealtimeSync();
+    try {
+        initRealtimeSync();
+    } catch (rtErr) {
+        console.warn("Gagal init realtime, mungkin offline.");
+    }
 
     folderHistory = [{ id: "root", name: "Drive" }];
     updateProfileUI();
@@ -650,8 +663,15 @@ async function checkSession() {
     calculateStorage();
     loadFiles("root");
   } catch (e) {
-    sessionStorage.clear();
-    window.nav("loginPage");
+    if (e.message === "Failed to fetch" || (e.code && e.code !== 401)) {
+       console.warn("Gagal fetch pada startup, kemungkinan offline.");
+       if (currentUser) {
+           window.nav("dashboardPage");
+       }
+    } else {
+       sessionStorage.clear();
+       window.nav("loginPage");
+    }
   } finally {
     toggleLoading(false);
   }
