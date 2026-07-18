@@ -1074,7 +1074,8 @@ form {
     align-items: flex-start;
 }
 
-.breadcrumb-area .header-title-pill {
+.breadcrumb-area .header-title-pill,
+#landscapeHeaderCenter .header-title-pill {
     display: inline-block;
     padding: 8px 18px;
     border-radius: 50px;
@@ -5819,8 +5820,6 @@ body.light-mode .nav-item-icon {
     /* Tampilkan container title di header */
     #landscapeHeaderCenter {
         display: flex !important;
-        flex: 1;
-        justify-content: center;
         align-items: center;
         margin: 0 10px;
     }
