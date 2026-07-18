@@ -5840,9 +5840,27 @@ body.light-mode .nav-item-icon {
         display: none !important;
     }
 
-    /* Tampilkan tombol search icon */
+    /* Tampilkan tombol search icon secara terpisah mirip volume/logout */
     #mobileSearchToggleBtn {
         display: flex !important;
+        width: 42px !important;
+        height: 42px !important;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) !important;
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 50% !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
+        color: white;
+        transition: transform 0.2s, background 0.3s;
+        cursor: pointer;
+    }
+    #mobileSearchToggleBtn:active {
+        transform: scale(0.92);
     }
 
     /* Ubah Search Row menjadi Popup Melayang */

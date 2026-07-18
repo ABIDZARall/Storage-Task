@@ -152,16 +152,18 @@
       <!-- Kontainer Title Khusus Mobile Landscape -->
       <div id="landscapeHeaderCenter" class="landscape-header-center"></div>
 
-      <div class="profile-area">
-        <button id="mobileSearchToggleBtn" class="btn-pill small icon-only-btn mobile-search-btn" onclick="toggleMobileSearch()" title="Pencarian">
+      <div class="top-right-group">
+        <button id="mobileSearchToggleBtn" class="mobile-search-btn" onclick="toggleMobileSearch()" title="Pencarian">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <button id="themeToggleBtn" class="btn-pill small theme-btn" title="Ganti Tema">
-          <i class="fa-solid fa-sun" id="themeIcon"></i>
-        </button>
-        <img
-          src="Image/profile-default.jpeg"
-          alt="User"
+
+        <div class="profile-area">
+          <button id="themeToggleBtn" class="btn-pill small theme-btn" title="Ganti Tema">
+            <i class="fa-solid fa-sun" id="themeIcon"></i>
+          </button>
+          <img
+            src="Image/profile-default.jpeg"
+            alt="User"
             class="avatar"
             id="dashAvatar"
             onclick="openProfilePage()"
@@ -171,6 +173,7 @@
             <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
+      </div>
     </header>
 
     <!-- TAMBAHAN BARU: SPINNER BERGAYA NATIVE iOS -->
