@@ -205,25 +205,24 @@ document.addEventListener("keydown", (e) => {
 // ======================================================
 // FUNGSI ANIMASI SLIDING NAV INDICATOR
 // ======================================================
-// PERBAIKAN 2: Indikator Menu yang presisi baik di Desktop, Tablet, maupun Mobile
 window.updateNavIndicator = function (element) {
   const indicator = document.querySelector(".nav-indicator");
   if (!indicator || !element) return;
 
   indicator.style.display = "block";
   
-  if (window.innerWidth > 768) {
+  // Sesuaikan dengan breakpoint CSS (1024px)
+  if (window.innerWidth > 1024) {
       // Di Desktop/Tablet, gunakan lebar penuh menu agar sejajar persis dengan tombol Baru
       indicator.style.width = "100%";
       indicator.style.left = "0px";
-      indicator.style.height = "44px"; // Paksa tinggi 44px sesuai nav-item
+      indicator.style.height = "44px"; 
       indicator.style.top = element.offsetTop + "px";
   } else {
-      // Di Mobile
+      // Di Mobile (Bottom Nav Bar)
       indicator.style.width = element.offsetWidth + "px";
       indicator.style.left = element.offsetLeft + "px";
-      indicator.style.height = "48px";
-      indicator.style.top = "6px";
+      // height dan top sudah di-override oleh !important di style.css
   }
 };
 
@@ -243,11 +242,15 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     const activeItem = document.querySelector(".nav-item.active");
     if (activeItem) updateNavIndicator(activeItem);
-  }, 150);
+  }, 300); // Beri waktu ekstra di Android agar layout flex selesai
 
+  let resizeTimer;
   window.addEventListener("resize", () => {
-    const activeItem = document.querySelector(".nav-item.active");
-    if (activeItem) updateNavIndicator(activeItem);
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const activeItem = document.querySelector(".nav-item.active");
+        if (activeItem) updateNavIndicator(activeItem);
+    }, 100);
   });
 });
 
