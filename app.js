@@ -2389,6 +2389,21 @@ function getDisplayedDocuments() {
   return docs;
 }
 
+// Helper untuk meload script native renderer secara dinamis
+window.loadScript = function(src) {
+    return new Promise(function(resolve, reject) {
+        if (document.querySelector('script[src="' + src + '"]')) {
+            resolve();
+            return;
+        }
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+    });
+};
+
 window.openPreview = (doc) => {
   currentPreviewDoc = doc;
   const ext = doc.name.split(".").pop().toLowerCase();
@@ -2587,29 +2602,139 @@ window.openPreview = (doc) => {
             `;
       setTimeout(initAppleAudioPlayer, 50);
     } else if (pdfExt.includes(ext) || msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-      // 🌟 SOLUSI FINAL VIEWER DOKUMEN ALL-IN-ONE (PDF, DOCX, XLSX, PPTX) 🌟
-      // Menggunakan fileViewUrl (inline) agar Google Docs Viewer sukses memuat file tanpa error "Attachment".
-      // Bekerja 100% mulus di Android, iOS, dan Desktop di dalam iframe (tanpa splash screen).
-      const encodedUrl = encodeURIComponent(fileViewUrl);
-      const googleViewer = `https://docs.google.com/viewerng/viewer?url=${encodedUrl}&embedded=true`;
-      
-      // Fallback eksternal jika Google Viewer sedang error/limit
-      const externalUrl = msOfficeExts.includes(ext) 
-           ? `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`
-           : fileViewUrl;
-      
+      // 🌟 SOLUSI DEFINITIF: 100% NATIVE JAVASCRIPT VIEWER 🌟
+      // Karena Google & Microsoft MEMBLOKIR iframe di Mobile Chrome/Safari (X-Frame-Options),
+      // satu-satunya cara agar file terbuka utuh di dalam aplikasi adalah me-render file tersebut
+      // menggunakan Native Javascript Libraries (tanpa iframe pihak ketiga).
       contentArea.innerHTML = `
         <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,0.05);">
-            <!-- Iframe utama Google Docs Viewer -->
-            <iframe src="${googleViewer}" style="flex:1; width:100%; height:100%; border:none;"></iframe>
-            
-            <!-- Tombol pelampung premium untuk Refresh atau Buka Eksternal jika Google gagal memuat -->
+            <div id="native-doc-container" style="flex:1; width:100%; height:100%; overflow-y:auto; padding:15px; display:flex; flex-direction:column; align-items:center;">
+                <div style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
+                    <p style="color:#334155; font-weight:500;">Memproses Dokumen Native...</p>
+                </div>
+            </div>
+            <!-- Tombol pelampung premium -->
             <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
-                <button onclick="document.querySelector('.doc-glass-wrapper iframe').src='${googleViewer}'" class="btn-pill secondary" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#334155; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:10px 15px;" title="Muat Ulang Viewer"><i class="fa-solid fa-rotate-right"></i></button>
-                <a href="${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-external-link-alt" style="margin-right:6px;"></i> Buka Eksternal</a>
+                <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-download" style="margin-right:6px;"></i> Unduh Asli</a>
             </div>
         </div>
       `;
+
+      const container = document.getElementById("native-doc-container");
+
+      const renderNative = async () => {
+          try {
+              if (pdfExt.includes(ext)) {
+                  // 1. PDF Renderer Native (PDF.js)
+                  await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js");
+                  window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+                  
+                  const loadingTask = pdfjsLib.getDocument(fileViewUrl);
+                  const pdf = await loadingTask.promise;
+                  container.innerHTML = ""; // Hapus loading
+                  
+                  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                      const page = await pdf.getPage(pageNum);
+                      const scale = window.innerWidth < 600 ? 1.0 : 1.5;
+                      const viewport = page.getViewport({ scale });
+                      
+                      const canvas = document.createElement("canvas");
+                      const ctx = canvas.getContext("2d");
+                      canvas.height = viewport.height;
+                      canvas.width = viewport.width;
+                      canvas.style.maxWidth = "100%";
+                      canvas.style.height = "auto";
+                      canvas.style.marginBottom = "15px";
+                      canvas.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+                      canvas.style.borderRadius = "4px";
+                      
+                      container.appendChild(canvas);
+                      await page.render({ canvasContext: ctx, viewport }).promise;
+                  }
+              } else if (ext === "docx") {
+                  // 2. DOCX Renderer Native (docx-preview)
+                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+                  await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
+                  
+                  const res = await fetch(fileDownloadUrl);
+                  if(!res.ok) throw new Error("CORS DOCX");
+                  const blob = await res.blob();
+                  container.innerHTML = "";
+                  
+                  await docx.renderAsync(blob, container, null, {
+                      className: "docx", 
+                      inWrapper: true, 
+                      ignoreWidth: false, 
+                      ignoreHeight: false
+                  });
+              } else if (ext === "xlsx" || ext === "xls" || ext === "csv") {
+                  // 3. Excel/CSV Renderer Native (SheetJS)
+                  await window.loadScript("https://unpkg.com/xlsx/dist/xlsx.full.min.js");
+                  
+                  const res = await fetch(fileDownloadUrl);
+                  if(!res.ok) throw new Error("CORS XLSX");
+                  const arrayBuffer = await res.arrayBuffer();
+                  
+                  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                  const firstSheetName = workbook.SheetNames[0];
+                  const worksheet = workbook.Sheets[firstSheetName];
+                  const html = XLSX.utils.sheet_to_html(worksheet, { id: "excel-table" });
+                  
+                  container.innerHTML = html;
+                  container.style.alignItems = "flex-start"; // Align kiri
+                  
+                  const style = document.createElement("style");
+                  style.innerHTML = `
+                      #excel-table { border-collapse: collapse; width: 100%; font-family: sans-serif; font-size:14px; background:white; }
+                      #excel-table td, #excel-table th { border: 1px solid #e2e8f0; padding: 8px 12px; }
+                      #excel-table tr:nth-child(even) { background-color: #f8fafc; }
+                      #excel-table tr:hover { background-color: #f1f5f9; }
+                  `;
+                  container.appendChild(style);
+              } else if (ext === "pptx") {
+                  // 4. PPTX Renderer Native (pptxjs)
+                  await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
+                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/pptxjs.bundle.min.js");
+                  
+                  container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
+                  
+                  const css = document.createElement("link");
+                  css.rel = "stylesheet";
+                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/pptxjs.css";
+                  document.head.appendChild(css);
+
+                  $("#pptx-render-area").pptxToHtml({
+                      pptxFileUrl: fileDownloadUrl,
+                      slideMode: false,
+                      keyBoardShortCut: false
+                  });
+              } else {
+                  throw new Error("Format membutuhkan iframe fallback");
+              }
+          } catch(e) {
+              console.error("Native Render Error:", e);
+              // 5. FALLBACK: Jika render native gagal (misal file .doc lama), gunakan Google Docs versi lawas (gview)
+              const encodedUrl = encodeURIComponent(fileViewUrl);
+              const googleViewer = \`https://docs.google.com/gview?url=\${encodedUrl}&embedded=true\`;
+              const externalUrl = msOfficeExts.includes(ext) 
+                   ? \`https://view.officeapps.live.com/op/view.aspx?src=\${encodedUrl}\`
+                   : fileViewUrl;
+              
+              contentArea.innerHTML = \`
+                <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden;">
+                    <iframe src="\${googleViewer}" style="flex:1; width:100%; height:100%; border:none;"></iframe>
+                    <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
+                        <button onclick="document.querySelector('.doc-glass-wrapper iframe').src='\${googleViewer}'" class="btn-pill secondary" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#334155; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:10px 15px;" title="Muat Ulang Viewer"><i class="fa-solid fa-rotate-right"></i></button>
+                        <a href="\${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-external-link-alt" style="margin-right:6px;"></i> Buka Eksternal</a>
+                    </div>
+                </div>
+              \`;
+          }
+      };
+      
+      renderNative();
     } else {
       contentArea.innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
