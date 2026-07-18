@@ -5871,7 +5871,7 @@ body.light-mode .nav-item-icon {
     /* Ubah Search Row menjadi Popup Melayang */
     .search-row {
         position: absolute !important;
-        top: 50px !important;
+        top: 35px !important;
         right: 15px !important;
         left: auto !important;
         width: 320px !important;
