@@ -2731,13 +2731,13 @@ window.openPreview = (doc) => {
                   // 4. PPTX Renderer Native (pptxjs)
                   await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
                   await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/pptxjs.bundle.min.js");
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
                   
                   container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
                   
                   const css = document.createElement("link");
                   css.rel = "stylesheet";
-                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/pptxjs.css";
+                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
                   document.head.appendChild(css);
 
                   $("#pptx-render-area").pptxToHtml({
