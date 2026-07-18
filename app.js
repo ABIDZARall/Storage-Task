@@ -885,6 +885,34 @@ window.openFolder = (id, name) => {
   loadFiles(id);
 };
 
+window.toggleMobileSearch = () => {
+  const searchRow = document.querySelector(".search-row");
+  const searchInput = document.getElementById("searchInput");
+  if (!searchRow) return;
+
+  searchRow.classList.toggle("search-popup-active");
+  if (searchRow.classList.contains("search-popup-active") && searchInput) {
+    setTimeout(() => searchInput.focus(), 100);
+  }
+};
+
+// Tutup search bar jika tap di luar
+document.addEventListener("click", (e) => {
+  const searchRow = document.querySelector(".search-row");
+  const searchBtn = document.getElementById("mobileSearchToggleBtn");
+  
+  // Jika search row aktif, dan yang di-klik bukan search-row atau search button, maka tutup
+  if (
+    searchRow &&
+    searchRow.classList.contains("search-popup-active") &&
+    !searchRow.contains(e.target) &&
+    searchBtn &&
+    !searchBtn.contains(e.target)
+  ) {
+    searchRow.classList.remove("search-popup-active");
+  }
+});
+
 function initSearchBar() {
   const input = el("searchInput");
   if (!input) return;
@@ -2311,14 +2339,15 @@ async function loadFiles(param) {
 // HEADER UI - MENGGUNAKAN BAHASA INGGRIS
 function updateHeaderUI() {
   const container = document.querySelector(".breadcrumb-area");
-  if (!container) return;
+  const landscapeContainer = document.getElementById("landscapeHeaderCenter");
 
   const isRoot = currentFolderId === "root" && currentViewMode === "root";
+  let content = "";
 
   if (isRoot) {
     const h = new Date().getHours();
     const s = h < 12 ? "Morning" : h < 18 ? "Afternoon" : "Night";
-    container.innerHTML = `<h2 id="headerTitle" class="header-title-pill welcome-title">Welcome In Drive ${s}</h2>`;
+    content = `<h2 id="headerTitle" class="header-title-pill welcome-title">Welcome In Drive ${s}</h2>`;
   } else {
     let backText = "Drive";
     if (folderHistory.length > 1) {
@@ -2327,7 +2356,7 @@ function updateHeaderUI() {
       backText = "Drive";
     }
 
-    container.innerHTML = `
+    content = `
             <div class="back-nav-container">
                 <button onclick="goBack()" class="back-btn" title="Kembali ke ${backText}">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke ${backText}
@@ -2335,6 +2364,9 @@ function updateHeaderUI() {
                 <h2 id="headerTitle" class="header-title-pill" style="margin-top:10px;">${currentFolderName}</h2>
             </div>`;
   }
+
+  if (container) container.innerHTML = content;
+  if (landscapeContainer) landscapeContainer.innerHTML = content;
 }
 
 window.togglePass = (id, icon) => {

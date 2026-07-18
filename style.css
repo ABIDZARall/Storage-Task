@@ -5806,3 +5806,74 @@ body.light-mode .tooltip-desc {
 body.light-mode .nav-item-icon {
     color: #475569;
 }
+
+/* ======================================================================== */
+/* REDESIGN MOBILE LANDSCAPE: HEADER TITLE & SEARCH POPUP                   */
+/* ======================================================================== */
+#landscapeHeaderCenter,
+#mobileSearchToggleBtn {
+    display: none !important;
+}
+
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+    /* Tampilkan container title di header */
+    #landscapeHeaderCenter {
+        display: flex !important;
+        flex: 1;
+        justify-content: center;
+        align-items: center;
+        margin: 0 10px;
+    }
+    
+    #landscapeHeaderCenter .header-title-pill {
+        margin: 0 !important;
+        font-size: 1.15rem !important;
+        padding: 6px 18px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    
+    /* Sembunyikan container title lama (breadcrumb-area) */
+    .breadcrumb-area {
+        display: none !important;
+    }
+
+    /* Tampilkan tombol search icon */
+    #mobileSearchToggleBtn {
+        display: flex !important;
+    }
+
+    /* Ubah Search Row menjadi Popup Melayang */
+    .search-row {
+        position: absolute !important;
+        top: 65px !important;
+        right: 15px !important;
+        left: auto !important;
+        width: 320px !important;
+        max-width: calc(100vw - 30px) !important;
+        z-index: 10000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        
+        /* Animasi turun dan opacity */
+        transform: translateY(-20px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease !important;
+    }
+
+    .search-row.search-popup-active {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    /* Penyesuaian search bar pill agar cocok di dalam popup */
+    .search-bar-pill {
+        width: 100% !important;
+        margin: 0 !important;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255,255,255,0.2) !important;
+    }
+}
