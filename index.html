@@ -23,6 +23,19 @@
 </head>
 
 <body>
+  <!-- RAHASIA APPLE WWDC 25: SVG Refraction Filter for Liquid Glass -->
+  <svg style="display:none;">
+    <filter id="apple-liquid-glass">
+      <!-- Slightly blur the source -->
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+      <!-- Create fluid noise -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" />
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" in="noise" result="coloredNoise" />
+      <!-- Apply displacement map using noise to refract the blurred background -->
+      <feDisplacementMap in="blur" in2="coloredNoise" scale="30" xChannelSelector="R" yChannelSelector="G" result="displacement"/>
+    </filter>
+  </svg>
+
   <div class="liquid-bg"></div>
 
   <div id="loading" class="loading-overlay hidden">
