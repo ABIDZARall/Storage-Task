@@ -3553,9 +3553,9 @@ form {
         animation: iosMenuPopMobile 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards !important;
 
         /* Tingkat transparansi disamakan agar membiaskan wallpaper di belakangnya */
-        background: rgba(10, 10, 10, 0.15) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+        backdrop-filter: blur(25px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
 
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
@@ -3857,9 +3857,9 @@ form {
         min-width: 200px !important;
 
         /* Tetap gunakan kaca bening Apple Glass */
-        background: rgba(10, 10, 10, 0.15) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+        backdrop-filter: blur(25px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
 
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
