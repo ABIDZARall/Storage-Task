@@ -2686,7 +2686,7 @@ window.openPreview = (doc) => {
                   });
               } else if (ext === "xlsx" || ext === "xls" || ext === "csv") {
                   // 3. Excel/CSV Renderer Native (SheetJS)
-                  await window.loadScript("https://unpkg.com/xlsx/dist/xlsx.full.min.js");
+                  await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
                   
                   // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
                   const res = await fetch(fileViewUrl);
