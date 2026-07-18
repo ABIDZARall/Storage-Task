@@ -722,14 +722,14 @@ form {
     left: 0;
     z-index: 20000;
 
-    background: var(--apple-glass-thin) !important;
+    background: rgba(25, 28, 33, 0.65) !important;
     backdrop-filter: blur(40px) saturate(220%) !important;
     -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-    border: var(--apple-border-thin) !important;
-    border-top: var(--apple-border-regular) !important;
-    border-left: var(--apple-border-regular) !important;
-    border-radius: 20px !important;
-    box-shadow: var(--apple-shadow-md), var(--apple-highlight) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.15) !important;
 
 
 
@@ -1660,14 +1660,14 @@ form {
 .context-menu-modern {
     position: fixed;
     z-index: 20000;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-    backdrop-filter: blur(25px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(0, 0, 0, 0.1) !important;
+    background: rgba(25, 28, 33, 0.65) !important;
+    backdrop-filter: blur(40px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.15) !important;
     padding: 8px 0;
     width: 220px;
     display: none;
@@ -1690,15 +1690,16 @@ form {
     display: flex !important;
     align-items: center;
     padding: 8px 14px !important;
-    margin: 1px 8px !important;
+    margin: 2px 8px !important;
     /* Jarak agar berbentuk kapsul saat di-hover */
     color: #ffffff !important;
     /* Teks putih solid agar kontras di atas kaca bening */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); /* MEMASTIKAN TEKS TERBACA DI BACKGROUND TERANG */
     text-decoration: none;
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
     font-weight: 500;
-    letter-spacing: 0.2px;
-    border-radius: 10px !important;
+    letter-spacing: 0.3px;
+    border-radius: 8px !important;
     cursor: pointer;
     transition: all 0.2s ease !important;
 }
