@@ -2589,9 +2589,35 @@ window.openPreview = (doc) => {
     } else if (pdfExt.includes(ext)) {
       contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
     } else if (msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-      // Menggunakan Google Docs Viewer untuk semua dokumen karena Microsoft Office Viewer memblokir iframe di Mobile
-      let viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
-      contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${viewerUrl}"></iframe></div>`;
+      // DOKUMEN VIEWER DENGAN FALLBACK MULTI-SERVER & BUKA EKSTERNAL (SOLUSI FINAL MOBILE)
+      const encodedUrl = encodeURIComponent(fileDownloadUrl);
+      const googleViewer = `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
+      const officeViewer = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
+      const officeExternal = `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`;
+
+      contentArea.innerHTML = `
+        <div class="doc-glass-wrapper">
+          <div style="display:flex; flex-direction:column; height:100%; border-radius:8px; overflow:hidden; background:white;">
+            <!-- Action Bar khusus Dokumen -->
+            <div style="padding:10px 15px; background:rgba(30, 41, 59, 0.85); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-file-lines" style="color:white; font-size:1.1rem;"></i>
+                    <span style="color:white; font-size:0.9rem; font-weight:600;">Pratinjau Dokumen</span>
+                </div>
+                
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button onclick="document.getElementById('docPreviewFrame').src='${officeViewer}'" class="btn-pill secondary" style="padding:6px 12px; font-size:0.75rem; margin:0; background:rgba(255,255,255,0.15); border:none; color:white;"><i class="fa-brands fa-microsoft"></i> Server 1</button>
+                    <button onclick="document.getElementById('docPreviewFrame').src='${googleViewer}'" class="btn-pill secondary" style="padding:6px 12px; font-size:0.75rem; margin:0; background:rgba(255,255,255,0.15); border:none; color:white;"><i class="fa-brands fa-google"></i> Server 2</button>
+                    
+                    <a href="${officeExternal}" target="_blank" class="btn-pill primary" style="padding:6px 12px; font-size:0.75rem; text-decoration:none; margin:0;"><i class="fa-solid fa-external-link-alt"></i> Buka Penuh</a>
+                </div>
+            </div>
+
+            <!-- Frame Pratinjau -->
+            <iframe id="docPreviewFrame" src="${googleViewer}" style="flex:1; width:100%; height:100%; border:none; border-radius:0;"></iframe>
+          </div>
+        </div>
+      `;
     } else {
       contentArea.innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; color:white; text-align:center;">
