@@ -1477,14 +1477,9 @@ function initAllContextMenus() {
     // KLIK KANAN AREA KOSONG
     areaUtama.addEventListener("contextmenu", (e) => {
       if (e.target.closest(".item-card")) return;
-      e.preventDefault();
-
+      // Ditiadakan sesuai permintaan: tidak memunculkan globalContextMenu
       if (typeof window.clearSelection === "function") window.clearSelection();
       closeAllMenus();
-
-      const globalMenu = document.getElementById("globalContextMenu");
-      if (globalMenu)
-        positionMenuInsideWindow(globalMenu, e.clientX, e.clientY);
     });
 
     // TAHAN AREA KOSONG (MOBILE)
@@ -1498,12 +1493,7 @@ function initAllContextMenus() {
           if (typeof window.clearSelection === "function")
             window.clearSelection();
           closeAllMenus();
-
-          const globalMenu = document.getElementById("globalContextMenu");
-          if (globalMenu) {
-            positionMenuInsideWindow(globalMenu, touch.clientX, touch.clientY);
-            if (navigator.vibrate) navigator.vibrate(50);
-          }
+          // Ditiadakan sesuai permintaan: tidak memunculkan globalContextMenu
         }, 500);
       },
       { passive: true },
