@@ -2587,25 +2587,59 @@ window.openPreview = (doc) => {
             `;
       setTimeout(initAppleAudioPlayer, 50);
     } else if (pdfExt.includes(ext)) {
-      contentArea.innerHTML = `<div class="doc-glass-wrapper"><iframe src="${fileViewUrl}"></iframe></div>`;
-    } else if (ext === "docx" || msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
-      // Menggunakan Microsoft Office Viewer (Paling stabil dan premium untuk Desktop/iPad)
-      let viewerUrl = "";
-      if (msOfficeExts.includes(ext) || ext === "docx") {
-        viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
-      } else {
-        viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileDownloadUrl)}&embedded=true`;
-      }
+      // 🌟 SOLUSI ANTI-BLOKIR PDF (Bypass X-Frame-Options via Blob) 🌟
+      contentArea.innerHTML = `
+        <div class="doc-glass-wrapper" style="display:flex; justify-content:center; align-items:center; flex-direction:column; color:white; height:100%;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; margin-bottom:20px;"></i>
+            <p style="font-weight:500;">Memuat Dokumen Aman...</p>
+        </div>`;
       
+      fetch(fileViewUrl)
+        .then(res => {
+            if (!res.ok) throw new Error("CORS/Auth Error");
+            return res.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            contentArea.innerHTML = `<div class="doc-glass-wrapper" style="height:100%; position:relative;">
+                <iframe src="${url}" style="width:100%; height:100%; border:none; border-radius:12px; background:white;"></iframe>
+                <!-- Floating Download Button -->
+                <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="position:absolute; bottom:20px; right:20px; box-shadow:0 10px 25px rgba(59,130,246,0.5); text-decoration:none;"><i class="fa-solid fa-download"></i></a>
+            </div>`;
+        })
+        .catch(e => {
+            // Fallback jika fetch terblokir (CORS)
+            contentArea.innerHTML = `
+              <div class="doc-glass-wrapper" style="display:flex; justify-content:center; align-items:center; flex-direction:column; height:100%; text-align:center; padding:30px;">
+                  <div style="background:rgba(255,255,255,0.05); padding:40px; border-radius:24px; border:1px solid rgba(255,255,255,0.15); box-shadow:0 20px 50px rgba(0,0,0,0.2); backdrop-filter:blur(20px); max-width:400px; width:100%;">
+                      <i class="fa-solid fa-file-pdf" style="font-size:4.5rem; color:#ea4335; margin-bottom:20px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));"></i>
+                      <h3 style="color:white; margin-bottom:12px; font-size:1.4rem; font-weight:600;">Pratinjau PDF Terenkripsi</h3>
+                      <p style="color:rgba(255,255,255,0.7); margin-bottom:30px; font-size:0.95rem; line-height:1.5;">Untuk keamanan, dokumen PDF ini harus dibuka di layar penuh (tanpa bingkai).</p>
+                      <a href="${fileViewUrl}" target="_blank" class="btn-pill primary" style="text-decoration:none; padding:14px 20px; width:100%; justify-content:center;"><i class="fa-solid fa-external-link-alt" style="margin-right:8px;"></i> Buka Layar Penuh</a>
+                  </div>
+              </div>`;
+        });
+
+    } else if (ext === "docx" || msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
+      // 🌟 SOLUSI ULTIMATE ANTI-BLOKIR MS OFFICE 🌟
+      // Iframe eksternal (Microsoft/Google) selalu diblokir browser HP (X-Frame-Options: DENY)
+      // Solusinya: Splash Screen Premium Liquid Glass dengan tombol Buka Eksternal.
       const officeExternal = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileDownloadUrl)}`;
+      const fallbackUrl = (otherDocs.includes(ext)) ? fileViewUrl : officeExternal;
 
       contentArea.innerHTML = `
-        <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex;">
-            <!-- Iframe Document Viewer -->
-            <iframe src="${viewerUrl}" style="flex:1; width:100%; height:100%; border:none; border-radius:12px; background:white;"></iframe>
-            
-            <!-- Tombol Buka Penuh (Premium Floating Button) sebagai solusi 100% untuk Mobile -->
-            <a href="${officeExternal}" target="_blank" class="btn-pill primary" style="position:absolute; bottom:20px; right:20px; box-shadow:0 10px 25px rgba(0,0,0,0.3); text-decoration:none; padding:10px 20px; font-size:0.95rem; display:flex; align-items:center; gap:8px; z-index:100;"><i class="fa-solid fa-external-link-alt"></i> Buka Penuh</a>
+        <div class="doc-glass-wrapper" style="display:flex; justify-content:center; align-items:center; flex-direction:column; height:100%; text-align:center; padding:30px; position:relative; background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);">
+            <div style="background:rgba(255,255,255,0.05); padding:40px; border-radius:24px; border:1px solid rgba(255,255,255,0.15); box-shadow:0 20px 50px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.2); backdrop-filter:blur(20px); max-width:400px; width:100%;">
+                <i class="fa-solid ${iconClass}" style="font-size:4.5rem; color:${iconColor}; margin-bottom:25px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));"></i>
+                <h3 style="color:white; margin-bottom:12px; font-size:1.4rem; font-weight:600; letter-spacing:0.3px;">Dokumen Terenkripsi</h3>
+                <p style="color:rgba(255,255,255,0.7); margin-bottom:30px; font-size:0.95rem; line-height:1.5;">Untuk menjaga keamanan privasi dan kualitas resolusi penuh, dokumen ini harus dibuka di layar terpisah (tanpa bingkai).</p>
+                
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <a href="${fallbackUrl}" target="_blank" class="btn-pill primary" style="text-decoration:none; padding:14px 20px; font-size:1rem; font-weight:600; box-shadow:0 10px 25px rgba(59,130,246,0.5); width:100%; justify-content:center;"><i class="fa-solid fa-external-link-alt" style="margin-right:8px;"></i> Buka Layar Penuh</a>
+                    
+                    <a href="${fileDownloadUrl}" target="_blank" class="btn-pill secondary" style="text-decoration:none; padding:14px 20px; font-size:1rem; font-weight:600; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; width:100%; justify-content:center;"><i class="fa-solid fa-download" style="margin-right:8px;"></i> Unduh Berkas</a>
+                </div>
+            </div>
         </div>
       `;
     } else {
