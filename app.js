@@ -2657,7 +2657,8 @@ window.openPreview = (doc) => {
                   await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
                   await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
                   
-                  const res = await fetch(fileDownloadUrl);
+                  // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
+                  const res = await fetch(fileViewUrl);
                   if(!res.ok) throw new Error("CORS DOCX");
                   const blob = await res.blob();
                   container.innerHTML = "";
@@ -2672,22 +2673,41 @@ window.openPreview = (doc) => {
                   // 3. Excel/CSV Renderer Native (SheetJS)
                   await window.loadScript("https://unpkg.com/xlsx/dist/xlsx.full.min.js");
                   
-                  const res = await fetch(fileDownloadUrl);
+                  // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
+                  const res = await fetch(fileViewUrl);
                   if(!res.ok) throw new Error("CORS XLSX");
                   const arrayBuffer = await res.arrayBuffer();
                   
                   const workbook = XLSX.read(arrayBuffer, { type: "array" });
                   const firstSheetName = workbook.SheetNames[0];
                   const worksheet = workbook.Sheets[firstSheetName];
-                  const html = XLSX.utils.sheet_to_html(worksheet, { id: "excel-table" });
+                  
+                  // FIX: Manual HTML generation for robust rendering
+                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                  let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
+                  for(let i=0; i<jsonData.length; i++) {
+                      html += "<tr>";
+                      for(let j=0; j<jsonData[i].length; j++) {
+                          let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
+                          if(i === 0) html += "<th>" + cellData + "</th>";
+                          else html += "<td>" + cellData + "</td>";
+                      }
+                      html += "</tr>";
+                  }
+                  html += "</table></div>";
+                  
+                  if (jsonData.length === 0) {
+                      html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong atau tidak terbaca.</p>";
+                  }
                   
                   container.innerHTML = html;
                   container.style.alignItems = "flex-start"; // Align kiri
                   
                   const style = document.createElement("style");
                   style.innerHTML = `
-                      #excel-table { border-collapse: collapse; width: 100%; font-family: sans-serif; font-size:14px; background:white; }
-                      #excel-table td, #excel-table th { border: 1px solid #e2e8f0; padding: 8px 12px; }
+                      #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
+                      #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
+                      #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
                       #excel-table tr:nth-child(even) { background-color: #f8fafc; }
                       #excel-table tr:hover { background-color: #f1f5f9; }
                   `;
@@ -2706,28 +2726,32 @@ window.openPreview = (doc) => {
                   document.head.appendChild(css);
 
                   $("#pptx-render-area").pptxToHtml({
-                      pptxFileUrl: fileDownloadUrl,
+                      pptxFileUrl: fileViewUrl, // Gunakan fileViewUrl agar Mobile tidak memutus fetch
                       slideMode: false,
                       keyBoardShortCut: false
                   });
               } else {
-                  throw new Error("Format membutuhkan iframe fallback");
+                  throw new Error("Format ini tidak didukung oleh Native Renderer");
               }
           } catch(e) {
               console.error("Native Render Error:", e);
-              // 5. FALLBACK: Jika render native gagal (misal file .doc lama), gunakan Google Docs versi lawas (gview)
-              const encodedUrl = encodeURIComponent(fileViewUrl);
-              const googleViewer = `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
+              // FALLBACK: Tampilkan pesan error informatif (Bukan Iframe karena pasti diblokir X-Frame-Options)
               const externalUrl = msOfficeExts.includes(ext) 
-                   ? `https://view.officeapps.live.com/op/view.aspx?src=${encodedUrl}`
+                   ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`
                    : fileViewUrl;
               
               contentArea.innerHTML = `
-                <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden;">
-                    <iframe src="${googleViewer}" style="flex:1; width:100%; height:100%; border:none;"></iframe>
-                    <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
-                        <button onclick="document.querySelector('.doc-glass-wrapper iframe').src='${googleViewer}'" class="btn-pill secondary" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#334155; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:10px 15px;" title="Muat Ulang Viewer"><i class="fa-solid fa-rotate-right"></i></button>
-                        <a href="${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-external-link-alt" style="margin-right:6px;"></i> Buka Eksternal</a>
+                <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden; justify-content:center; align-items:center; text-align:center; padding:30px;">
+                    <i class="fa-solid fa-file-circle-exclamation" style="font-size:4.5rem; color:#ef4444; margin-bottom:25px;"></i>
+                    <h3 style="color:#1e293b; font-size:1.6rem; margin-bottom:12px; font-weight:600;">Gagal Memuat Dokumen</h3>
+                    <p style="color:#64748b; font-size:1rem; margin-bottom:30px; max-width:450px; line-height:1.6;">
+                        Sistem tidak dapat memproses dokumen ini secara mandiri karena alasan kompleksitas format atau pemblokiran browser. 
+                        <br><br>
+                        <strong>Detail Error:</strong> ${e.message}
+                    </p>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center;">
+                        <button onclick="window.openPreview(currentPreviewDoc)" class="btn-pill secondary" style="background:white; border:1px solid #cbd5e1; color:#334155; padding:12px 25px; font-weight:500;"><i class="fa-solid fa-rotate-right" style="margin-right:8px;"></i> Coba Lagi</button>
+                        <a href="${externalUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.5); text-decoration:none; padding:12px 25px; font-weight:600;"><i class="fa-solid fa-external-link-alt" style="margin-right:8px;"></i> Buka di Tab Baru</a>
                     </div>
                 </div>
               `;
