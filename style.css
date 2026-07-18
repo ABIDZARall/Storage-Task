@@ -434,6 +434,21 @@ form {
     }
 }
 
+/* LAYAR LANDSCAPE (TIDUR) AGAR TIDAK TERPOTONG */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .full-screen-center {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    .profile-card {
+        margin: auto;
+        transform: scale(0.85);
+        transform-origin: center top;
+    }
+}
+
 /* ============================================================ */
 /* DASHBOARD LAYOUT & SIDEBAR - BRAND LOGO & TEXT UPDATE        */
 /* ============================================================ */
