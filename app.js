@@ -210,21 +210,21 @@ window.updateNavIndicator = function (element) {
   if (!indicator || !element) return;
 
   indicator.style.display = "block";
-  
+
   // Sesuaikan dengan breakpoint CSS (1024px)
   if (window.innerWidth > 1024) {
-      // Di Desktop/Tablet, gunakan lebar penuh menu agar sejajar persis dengan tombol Baru
-      indicator.style.setProperty("width", "100%", "important");
-      indicator.style.setProperty("left", "0px", "important");
-      indicator.style.setProperty("height", "44px", "important");
-      indicator.style.setProperty("top", element.offsetTop + "px", "important");
+    // Di Desktop/Tablet, gunakan lebar penuh menu agar sejajar persis dengan tombol Baru
+    indicator.style.setProperty("width", "100%", "important");
+    indicator.style.setProperty("left", "0px", "important");
+    indicator.style.setProperty("height", "44px", "important");
+    indicator.style.setProperty("top", element.offsetTop + "px", "important");
   } else {
-      // Di Mobile (Bottom Nav Bar)
-      // Paksa indikator mengikuti ukuran dan posisi akurat dari item yang aktif
-      indicator.style.setProperty("width", element.offsetWidth + "px", "important");
-      indicator.style.setProperty("left", element.offsetLeft + "px", "important");
-      indicator.style.setProperty("height", element.offsetHeight + "px", "important");
-      indicator.style.setProperty("top", element.offsetTop + "px", "important");
+    // Di Mobile (Bottom Nav Bar)
+    // Paksa indikator mengikuti ukuran dan posisi akurat dari item yang aktif
+    indicator.style.setProperty("width", element.offsetWidth + "px", "important");
+    indicator.style.setProperty("left", element.offsetLeft + "px", "important");
+    indicator.style.setProperty("height", element.offsetHeight + "px", "important");
+    indicator.style.setProperty("top", element.offsetTop + "px", "important");
   }
 };
 
@@ -250,8 +250,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-        const activeItem = document.querySelector(".nav-item.active");
-        if (activeItem) updateNavIndicator(activeItem);
+      const activeItem = document.querySelector(".nav-item.active");
+      if (activeItem) updateNavIndicator(activeItem);
     }, 100);
   });
 });
@@ -650,16 +650,16 @@ async function checkSession() {
     }
 
     try {
-        await syncUserData(currentUser);
+      await syncUserData(currentUser);
     } catch (syncErr) {
-        console.warn("Gagal sinkronisasi data user, abaikan jika offline.", syncErr);
+      console.warn("Gagal sinkronisasi data user, abaikan jika offline.", syncErr);
     }
 
     // AKTIFKAN REALTIME DISINI JUGA
     try {
-        initRealtimeSync();
+      initRealtimeSync();
     } catch (rtErr) {
-        console.warn("Gagal init realtime, mungkin offline.");
+      console.warn("Gagal init realtime, mungkin offline.");
     }
 
     folderHistory = [{ id: "root", name: "Drive" }];
@@ -669,13 +669,13 @@ async function checkSession() {
     loadFiles("root");
   } catch (e) {
     if (e.message === "Failed to fetch" || (e.code && e.code !== 401)) {
-       console.warn("Gagal fetch pada startup, kemungkinan offline.");
-       if (currentUser) {
-           window.nav("dashboardPage");
-       }
+      console.warn("Gagal fetch pada startup, kemungkinan offline.");
+      if (currentUser) {
+        window.nav("dashboardPage");
+      }
     } else {
-       sessionStorage.clear();
-       window.nav("loginPage");
+      sessionStorage.clear();
+      window.nav("loginPage");
     }
   } finally {
     toggleLoading(false);
@@ -900,7 +900,7 @@ window.toggleMobileSearch = () => {
 document.addEventListener("click", (e) => {
   const searchRow = document.querySelector(".search-row");
   const searchBtn = document.getElementById("mobileSearchToggleBtn");
-  
+
   // Jika search row aktif, dan yang di-klik bukan search-row atau search button, maka tutup
   if (
     searchRow &&
@@ -1944,7 +1944,7 @@ function resetUploadUI() {
 
 function handleFileSelect(files) {
   if (!files || files.length === 0) return;
-  
+
   let tempFiles = Array.from(files);
 
   if (uploadMode === "folder") {
@@ -1952,21 +1952,21 @@ function handleFileSelect(files) {
     tempFiles.forEach(f => {
       const path = f.customPath || f.webkitRelativePath;
       if (path) {
-         topLevelFolders.add(path.split('/')[0]);
+        topLevelFolders.add(path.split('/')[0]);
       }
     });
     if (topLevelFolders.size > 10) {
-       alert("Peringatan: Maksimal 10 folder utama dapat diunggah sekaligus. Silakan kurangi jumlah folder yang dipilih.");
-       resetUploadUI();
-       return;
+      alert("Peringatan: Maksimal 10 folder utama dapat diunggah sekaligus. Silakan kurangi jumlah folder yang dipilih.");
+      resetUploadUI();
+      return;
     }
   }
 
   // Akumulasi file yang dipilih (bisa drag & drop berkali-kali)
   if (selectedUploadFiles && selectedUploadFiles.length > 0) {
-      selectedUploadFiles = [...selectedUploadFiles, ...tempFiles];
+    selectedUploadFiles = [...selectedUploadFiles, ...tempFiles];
   } else {
-      selectedUploadFiles = tempFiles;
+    selectedUploadFiles = tempFiles;
   }
 
   const realFiles = selectedUploadFiles.filter(
@@ -1979,21 +1979,21 @@ function handleFileSelect(files) {
   const infoText = document.getElementById("fileInfoText");
   let msg = `Terpilih: ${realFiles.length} file `;
   if (folderCount > 0) msg += `(dan ${folderCount} folder kosong)`;
-  
+
   let fileListHTML = `<div style="text-align: left; padding: 0 10px;">`;
   fileListHTML += `<strong style="display: block; margin-bottom: 5px; text-align: center;">${msg}</strong>`;
   fileListHTML += `<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.9em;">`;
-  
+
   realFiles.forEach(f => {
-      fileListHTML += `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.name}">
+    fileListHTML += `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.name}">
         <i class="fa-solid fa-file" style="margin-right: 5px; opacity: 0.7;"></i> ${f.name}
       </li>`;
   });
-  
+
   fileListHTML += `</ul></div>`;
   infoText.innerHTML = fileListHTML;
   document.getElementById("fileInfoContainer").classList.remove("hidden");
-  
+
   // Kosongkan value input agar event 'change' bisa dipicu kembali meskipun memilih file yang sama
   const fInput = document.getElementById("fileInputHidden");
   const folderInputHidden = document.getElementById("folderInputHidden");
@@ -2044,7 +2044,7 @@ function initDragAndDrop() {
   const folderInput = document.getElementById("folderInputHidden");
 
   if (!modal || !zone) return;
-  
+
   // Pasang event di seluruh modal agar area drop lebih luas
   modal.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -2053,7 +2053,7 @@ function initDragAndDrop() {
   modal.addEventListener("dragleave", (e) => {
     // Hanya hilangkan class active jika keluar dari modal sepenuhnya
     if (e.target === modal) {
-        zone.classList.remove("active");
+      zone.classList.remove("active");
     }
   });
 
@@ -2066,7 +2066,7 @@ function initDragAndDrop() {
 
     if (items) {
       toggleLoading(true, "Membaca struktur file/folder...");
-      
+
       // Kumpulkan entry secara sinkronik untuk mencegah hilangnya referensi items karena await (bug di beberapa browser)
       let entries = [];
       for (let i = 0; i < items.length; i++) {
@@ -2077,7 +2077,7 @@ function initDragAndDrop() {
       for (let entry of entries) {
         await traverseFileTree(entry, "", allFiles);
       }
-      
+
       toggleLoading(false);
     }
 
@@ -2172,7 +2172,7 @@ window.submitUploadFile = async () => {
 
     const CONCURRENCY_LIMIT = 20;
     const pool = new Set();
-    
+
     toggleLoading(true, `Sedang mengunggah ${uploadQueue.length} file secara bersamaan...`);
 
     for (const item of uploadQueue) {
@@ -2393,30 +2393,30 @@ function getDisplayedDocuments() {
 window.loadedScripts = window.loadedScripts || {};
 window.loadScriptPromises = window.loadScriptPromises || {};
 
-window.loadScript = function(src) {
-    if (window.loadedScripts[src]) {
-        return Promise.resolve();
-    }
-    if (window.loadScriptPromises[src]) {
-        return window.loadScriptPromises[src];
-    }
-    
-    const p = new Promise(function(resolve, reject) {
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload = function() {
-            window.loadedScripts[src] = true;
-            resolve();
-        };
-        s.onerror = function() {
-            delete window.loadScriptPromises[src];
-            reject(new Error("Gagal memuat script: " + src));
-        };
-        document.head.appendChild(s);
-    });
-    
-    window.loadScriptPromises[src] = p;
-    return p;
+window.loadScript = function (src) {
+  if (window.loadedScripts[src]) {
+    return Promise.resolve();
+  }
+  if (window.loadScriptPromises[src]) {
+    return window.loadScriptPromises[src];
+  }
+
+  const p = new Promise(function (resolve, reject) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = function () {
+      window.loadedScripts[src] = true;
+      resolve();
+    };
+    s.onerror = function () {
+      delete window.loadScriptPromises[src];
+      reject(new Error("Gagal memuat script: " + src));
+    };
+    document.head.appendChild(s);
+  });
+
+  window.loadScriptPromises[src] = p;
+  return p;
 };
 
 window.openPreview = (doc) => {
@@ -2639,123 +2639,123 @@ window.openPreview = (doc) => {
       const container = document.getElementById("native-doc-container");
 
       const renderNative = async () => {
-          try {
-              if (pdfExt.includes(ext)) {
-                  // 1. PDF Renderer Native (PDF.js)
-                  await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js");
-                  window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
-                  
-                  const loadingTask = pdfjsLib.getDocument(fileViewUrl);
-                  const pdf = await loadingTask.promise;
-                  container.innerHTML = ""; // Hapus loading
-                  
-                  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                      const page = await pdf.getPage(pageNum);
-                      const scale = window.innerWidth < 600 ? 1.0 : 1.5;
-                      const viewport = page.getViewport({ scale });
-                      
-                      const canvas = document.createElement("canvas");
-                      const ctx = canvas.getContext("2d");
-                      canvas.height = viewport.height;
-                      canvas.width = viewport.width;
-                      canvas.style.maxWidth = "100%";
-                      canvas.style.height = "auto";
-                      canvas.style.marginBottom = "15px";
-                      canvas.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
-                      canvas.style.borderRadius = "4px";
-                      
-                      container.appendChild(canvas);
-                      await page.render({ canvasContext: ctx, viewport }).promise;
-                  }
-              } else if (ext === "docx") {
-                  // 2. DOCX Renderer Native (docx-preview)
-                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-                  await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
-                  
-                  // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
-                  const res = await fetch(fileViewUrl);
-                  if(!res.ok) throw new Error("CORS DOCX");
-                  const blob = await res.blob();
-                  container.innerHTML = "";
-                  
-                  await docx.renderAsync(blob, container, null, {
-                      className: "docx", 
-                      inWrapper: true, 
-                      ignoreWidth: false, 
-                      ignoreHeight: false
-                  });
-              } else if (ext === "xlsx" || ext === "xls" || ext === "csv") {
-                  // 3. Excel/CSV Renderer Native (SheetJS)
-                  await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
-                  
-                  // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
-                  const res = await fetch(fileViewUrl);
-                  if(!res.ok) throw new Error("CORS XLSX");
-                  const arrayBuffer = await res.arrayBuffer();
-                  
-                  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                  const firstSheetName = workbook.SheetNames[0];
-                  const worksheet = workbook.Sheets[firstSheetName];
-                  
-                  // FIX: Manual HTML generation for robust rendering
-                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                  let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
-                  for(let i=0; i<jsonData.length; i++) {
-                      html += "<tr>";
-                      for(let j=0; j<jsonData[i].length; j++) {
-                          let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
-                          if(i === 0) html += "<th>" + cellData + "</th>";
-                          else html += "<td>" + cellData + "</td>";
-                      }
-                      html += "</tr>";
-                  }
-                  html += "</table></div>";
-                  
-                  if (jsonData.length === 0) {
-                      html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong atau tidak terbaca.</p>";
-                  }
-                  
-                  container.innerHTML = html;
-                  container.style.alignItems = "flex-start"; // Align kiri
-                  
-                  const style = document.createElement("style");
-                  style.innerHTML = `
+        try {
+          if (pdfExt.includes(ext)) {
+            // 1. PDF Renderer Native (PDF.js)
+            await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js");
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+            const loadingTask = pdfjsLib.getDocument(fileViewUrl);
+            const pdf = await loadingTask.promise;
+            container.innerHTML = ""; // Hapus loading
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              const page = await pdf.getPage(pageNum);
+              const scale = window.innerWidth < 600 ? 1.0 : 1.5;
+              const viewport = page.getViewport({ scale });
+
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+              canvas.style.maxWidth = "100%";
+              canvas.style.height = "auto";
+              canvas.style.marginBottom = "15px";
+              canvas.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+              canvas.style.borderRadius = "4px";
+
+              container.appendChild(canvas);
+              await page.render({ canvasContext: ctx, viewport }).promise;
+            }
+          } else if (ext === "docx") {
+            // 2. DOCX Renderer Native (docx-preview)
+            await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+            await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
+
+            // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
+            const res = await fetch(fileViewUrl);
+            if (!res.ok) throw new Error("CORS DOCX");
+            const blob = await res.blob();
+            container.innerHTML = "";
+
+            await docx.renderAsync(blob, container, null, {
+              className: "docx",
+              inWrapper: true,
+              ignoreWidth: false,
+              ignoreHeight: false
+            });
+          } else if (ext === "xlsx" || ext === "xls" || ext === "csv") {
+            // 3. Excel/CSV Renderer Native (SheetJS)
+            await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
+
+            // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
+            const res = await fetch(fileViewUrl);
+            if (!res.ok) throw new Error("CORS XLSX");
+            const arrayBuffer = await res.arrayBuffer();
+
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            // FIX: Manual HTML generation for robust rendering
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
+            for (let i = 0; i < jsonData.length; i++) {
+              html += "<tr>";
+              for (let j = 0; j < jsonData[i].length; j++) {
+                let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
+                if (i === 0) html += "<th>" + cellData + "</th>";
+                else html += "<td>" + cellData + "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</table></div>";
+
+            if (jsonData.length === 0) {
+              html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong atau tidak terbaca.</p>";
+            }
+
+            container.innerHTML = html;
+            container.style.alignItems = "flex-start"; // Align kiri
+
+            const style = document.createElement("style");
+            style.innerHTML = `
                       #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
                       #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
                       #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
                       #excel-table tr:nth-child(even) { background-color: #f8fafc; }
                       #excel-table tr:hover { background-color: #f1f5f9; }
                   `;
-                  container.appendChild(style);
-              } else if (ext === "pptx") {
-                  // 4. PPTX Renderer Native (pptxjs)
-                  await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
-                  
-                  container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
-                  
-                  const css = document.createElement("link");
-                  css.rel = "stylesheet";
-                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
-                  document.head.appendChild(css);
+            container.appendChild(style);
+          } else if (ext === "pptx") {
+            // 4. PPTX Renderer Native (pptxjs)
+            await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
+            await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+            await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
 
-                  $("#pptx-render-area").pptxToHtml({
-                      pptxFileUrl: fileViewUrl, // Gunakan fileViewUrl agar Mobile tidak memutus fetch
-                      slideMode: false,
-                      keyBoardShortCut: false
-                  });
-              } else {
-                  throw new Error("Format ini tidak didukung oleh Native Renderer");
-              }
-          } catch(e) {
-              console.error("Native Render Error:", e);
-              // FALLBACK: Tampilkan pesan error informatif (Bukan Iframe karena pasti diblokir X-Frame-Options)
-              const externalUrl = msOfficeExts.includes(ext) 
-                   ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`
-                   : fileViewUrl;
-              
-              contentArea.innerHTML = `
+            container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
+
+            const css = document.createElement("link");
+            css.rel = "stylesheet";
+            css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
+            document.head.appendChild(css);
+
+            $("#pptx-render-area").pptxToHtml({
+              pptxFileUrl: fileViewUrl, // Gunakan fileViewUrl agar Mobile tidak memutus fetch
+              slideMode: false,
+              keyBoardShortCut: false
+            });
+          } else {
+            throw new Error("Format ini tidak didukung oleh Native Renderer");
+          }
+        } catch (e) {
+          console.error("Native Render Error:", e);
+          // FALLBACK: Tampilkan pesan error informatif (Bukan Iframe karena pasti diblokir X-Frame-Options)
+          const externalUrl = msOfficeExts.includes(ext)
+            ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`
+            : fileViewUrl;
+
+          contentArea.innerHTML = `
                 <div class="doc-glass-wrapper" style="position:relative; height:100%; display:flex; flex-direction:column; background:#f8f9fa; border-radius:12px; overflow:hidden; justify-content:center; align-items:center; text-align:center; padding:30px;">
                     <i class="fa-solid fa-file-circle-exclamation" style="font-size:4.5rem; color:#ef4444; margin-bottom:25px;"></i>
                     <h3 style="color:#1e293b; font-size:1.6rem; margin-bottom:12px; font-weight:600;">Gagal Memuat Dokumen</h3>
@@ -2770,9 +2770,9 @@ window.openPreview = (doc) => {
                     </div>
                 </div>
               `;
-          }
+        }
       };
-      
+
       renderNative();
     } else {
       contentArea.innerHTML = `
@@ -3423,3 +3423,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
