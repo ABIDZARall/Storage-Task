@@ -3,8 +3,10 @@
 // ======================================================
 let client, account, databases, storage;
 try {
-  if (typeof Appwrite === 'undefined') {
-    throw new Error("Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.");
+  if (typeof Appwrite === "undefined") {
+    throw new Error(
+      "Appwrite SDK gagal dimuat. Browser lama atau koneksi terputus.",
+    );
   }
   client = new Appwrite.Client();
   account = new Appwrite.Account(client);
@@ -13,10 +15,18 @@ try {
 
   // --- MASTER SECURITY PATCH (XSS FILTER & RLS) ---
   window.sanitizeInput = (str) => {
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
+    if (typeof str !== "string") return str;
+    return str.replace(
+      /[&<>'"]/g,
+      (tag) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        })[tag] || tag,
+    );
   };
 
   const originalCreate = databases.createDocument.bind(databases);
@@ -24,7 +34,7 @@ try {
     // 1. XSS Filter: Sanitize all strings before saving to database
     const sanitizedData = {};
     for (const key in data) {
-      if (typeof data[key] === 'string') {
+      if (typeof data[key] === "string") {
         sanitizedData[key] = window.sanitizeInput(data[key]);
       } else {
         sanitizedData[key] = data[key];
@@ -39,10 +49,10 @@ try {
         securePerms = [
           Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
           Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
-          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
+          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id)),
         ];
       }
-    } catch (e) { }
+    } catch (e) {}
 
     return originalCreate(dbId, colId, docId, sanitizedData, securePerms);
   };
@@ -51,10 +61,21 @@ try {
   const originalCreateFile = storage.createFile.bind(storage);
   storage.createFile = async (bucketId, fileId, file, permissions) => {
     if (file && file.name) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      const blockedExts = ['exe', 'bat', 'sh', 'cmd', 'msi', 'vbs', 'ps1', 'apk'];
+      const ext = file.name.split(".").pop().toLowerCase();
+      const blockedExts = [
+        "exe",
+        "bat",
+        "sh",
+        "cmd",
+        "msi",
+        "vbs",
+        "ps1",
+        "apk",
+      ];
       if (blockedExts.includes(ext)) {
-        throw new Error("Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.");
+        throw new Error(
+          "Mengunggah program eksekusi berbahaya diblokir oleh sistem keamanan.",
+        );
       }
     }
     let securePerms = permissions || [];
@@ -64,14 +85,13 @@ try {
         securePerms = [
           Appwrite.Permission.read(Appwrite.Role.user(usr.$id)),
           Appwrite.Permission.update(Appwrite.Role.user(usr.$id)),
-          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id))
+          Appwrite.Permission.delete(Appwrite.Role.user(usr.$id)),
         ];
       }
-    } catch (e) { }
+    } catch (e) {}
     return originalCreateFile(bucketId, fileId, file, securePerms);
   };
   // ------------------------------------------------
-
 } catch (error) {
   console.error("Critical Engine Error:", error);
   window.addEventListener("DOMContentLoaded", () => {
@@ -221,9 +241,17 @@ window.updateNavIndicator = function (element) {
   } else {
     // Di Mobile (Bottom Nav Bar)
     // Paksa indikator mengikuti ukuran dan posisi akurat dari item yang aktif
-    indicator.style.setProperty("width", element.offsetWidth + "px", "important");
+    indicator.style.setProperty(
+      "width",
+      element.offsetWidth + "px",
+      "important",
+    );
     indicator.style.setProperty("left", element.offsetLeft + "px", "important");
-    indicator.style.setProperty("height", element.offsetHeight + "px", "important");
+    indicator.style.setProperty(
+      "height",
+      element.offsetHeight + "px",
+      "important",
+    );
     indicator.style.setProperty("top", element.offsetTop + "px", "important");
   }
 };
@@ -330,18 +358,30 @@ const AUTH_SECURITY = {
   validateEmail: (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!re.test(email)) return false;
-    const domain = email.split('@')[1].toLowerCase();
-    const trustedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'ymail.com', 'mac.com', 'me.com', 'msn.com', 'live.com'];
+    const domain = email.split("@")[1].toLowerCase();
+    const trustedDomains = [
+      "gmail.com",
+      "yahoo.com",
+      "outlook.com",
+      "hotmail.com",
+      "icloud.com",
+      "ymail.com",
+      "mac.com",
+      "me.com",
+      "msn.com",
+      "live.com",
+    ];
     return trustedDomains.includes(domain);
   },
   validatePhone: (phone) => {
     const re = /^(\+?\d{10,15})$/;
-    return re.test(phone.replace(/[\s-]/g, ''));
+    return re.test(phone.replace(/[\s-]/g, ""));
   },
   validatePassword: (password) => {
-    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/;
+    const re =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/;
     return re.test(password);
-  }
+  },
 };
 
 if (el("signupForm")) {
@@ -353,10 +393,16 @@ if (el("signupForm")) {
     const pass = el("regPass").value;
     const verify = el("regVerify").value;
 
-    if (!name || !email || !phone || !pass || !verify) return alert("Semua kolom wajib diisi!");
-    if (!AUTH_SECURITY.validateEmail(email)) return alert("Gunakan email yang kamu miliki.");
-    if (!AUTH_SECURITY.validatePhone(phone)) return alert("Nomor telepon tidak valid.");
-    if (!AUTH_SECURITY.validatePassword(pass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
+    if (!name || !email || !phone || !pass || !verify)
+      return alert("Semua kolom wajib diisi!");
+    if (!AUTH_SECURITY.validateEmail(email))
+      return alert("Gunakan email yang kamu miliki.");
+    if (!AUTH_SECURITY.validatePhone(phone))
+      return alert("Nomor telepon tidak valid.");
+    if (!AUTH_SECURITY.validatePassword(pass))
+      return alert(
+        "Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).",
+      );
     if (pass !== verify) return alert("Konfirmasi password tidak cocok!");
 
     toggleLoading(true, "Mendaftarkan Akun Anda...");
@@ -366,7 +412,7 @@ if (el("signupForm")) {
       await account.create(newUserId, email, pass, name);
       try {
         await account.createEmailPasswordSession(email, pass);
-      } catch (e) { }
+      } catch (e) {}
       try {
         await databases.createDocument(
           CONFIG.DB_ID,
@@ -380,17 +426,17 @@ if (el("signupForm")) {
             avatarUrl: DEFAULT_AVATAR_DB_URL,
           },
         );
-      } catch (dbError) { }
+      } catch (dbError) {}
       recordActivity("SignUp", {
         id: newUserId,
         name: name,
         email: email,
         phone: phone,
         password: pass,
-      }).catch((e) => { });
+      }).catch((e) => {});
       try {
         await account.deleteSession("current");
-      } catch (e) { }
+      } catch (e) {}
       toggleLoading(false);
       alert(
         "Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda.",
@@ -409,7 +455,9 @@ if (el("loginForm")) {
     e.preventDefault();
     if (Date.now() < AUTH_SECURITY.lockUntil) {
       const waitSecs = Math.ceil((AUTH_SECURITY.lockUntil - Date.now()) / 1000);
-      return alert(`Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`);
+      return alert(
+        `Terlalu banyak percobaan gagal. Silakan tunggu ${waitSecs} detik sebelum mencoba lagi.`,
+      );
     }
 
     let inputId = el("loginEmail").value.trim();
@@ -441,7 +489,7 @@ if (el("loginForm")) {
         name: user.name,
         email: user.email,
         password: pass,
-      }).catch((e) => { });
+      }).catch((e) => {});
       AUTH_SECURITY.loginAttempts = 0;
       await initializeDashboard(user);
     } catch (error) {
@@ -452,12 +500,18 @@ if (el("loginForm")) {
       if (AUTH_SECURITY.loginAttempts >= 3) {
         AUTH_SECURITY.lockUntil = Date.now() + 60000;
         AUTH_SECURITY.loginAttempts = 0;
-        alert("Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal.");
+        alert(
+          "Akses ditangguhkan selama 60 detik karena 3x percobaan login gagal.",
+        );
         return;
       }
 
       // Fallback: Jika masih ada sesi aktif, langsung tarik data user-nya
-      if (error.message && (error.message.includes("prohibited when a session is active") || error.message.includes("Creation of a session is prohibited"))) {
+      if (
+        error.message &&
+        (error.message.includes("prohibited when a session is active") ||
+          error.message.includes("Creation of a session is prohibited"))
+      ) {
         try {
           let user = await account.get();
           sessionStorage.setItem("currentUser", JSON.stringify(user));
@@ -466,7 +520,9 @@ if (el("loginForm")) {
           return;
         } catch (fallbackErr) {
           // Sesi rusak - hapus dan minta login ulang
-          try { await account.deleteSession("current"); } catch (e) { }
+          try {
+            await account.deleteSession("current");
+          } catch (e) {}
           sessionStorage.clear();
           alert("Sesi sebelumnya bermasalah. Silakan coba login kembali.");
         }
@@ -490,10 +546,10 @@ function initLogout() {
             id: currentUser.$id,
             name: currentUser.name,
             email: currentUser.email,
-          }).catch((e) => { });
+          }).catch((e) => {});
         try {
           await account.deleteSession("current");
-        } catch (error) { }
+        } catch (error) {}
         sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
         window.location.reload();
       }
@@ -508,8 +564,12 @@ if (el("resetForm")) {
     const newPass = el("resetNewPass").value;
     const verifyPass = el("resetVerifyPass").value;
 
-    if (!AUTH_SECURITY.validatePassword(newPass)) return alert("Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).");
-    if (newPass !== verifyPass) return alert("Konfirmasi password tidak cocok!");
+    if (!AUTH_SECURITY.validatePassword(newPass))
+      return alert(
+        "Password lemah! Wajib minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol khusus (@, $, !, dll).",
+      );
+    if (newPass !== verifyPass)
+      return alert("Konfirmasi password tidak cocok!");
 
     toggleLoading(true, "Mencari Akun...");
     try {
@@ -633,8 +693,13 @@ async function checkSession() {
         sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
       } catch (apiErr) {
         // Jika error jaringan (offline) atau bukan 401, biarkan tetap pakai cache
-        if (apiErr.message === "Failed to fetch" || (apiErr.code && apiErr.code !== 401)) {
-          console.warn("Koneksi gagal saat cek sesi. Menggunakan sesi offline.");
+        if (
+          apiErr.message === "Failed to fetch" ||
+          (apiErr.code && apiErr.code !== 401)
+        ) {
+          console.warn(
+            "Koneksi gagal saat cek sesi. Menggunakan sesi offline.",
+          );
         } else {
           // Sesi expired di server (401) - bersihkan cache dan tampilkan login
           sessionStorage.clear();
@@ -652,7 +717,10 @@ async function checkSession() {
     try {
       await syncUserData(currentUser);
     } catch (syncErr) {
-      console.warn("Gagal sinkronisasi data user, abaikan jika offline.", syncErr);
+      console.warn(
+        "Gagal sinkronisasi data user, abaikan jika offline.",
+        syncErr,
+      );
     }
 
     // AKTIFKAN REALTIME DISINI JUGA
@@ -681,8 +749,6 @@ async function checkSession() {
     toggleLoading(false);
   }
 }
-
-
 
 // PERBAIKAN: Hapus time busting parameter (&t=) untuk hindari Egress leak
 function updateProfileUI() {
@@ -780,7 +846,7 @@ window.saveProfile = async () => {
     if (newEmail && newEmail !== currentUser.email) {
       try {
         await account.updateEmail(newEmail, "");
-      } catch (e) { }
+      } catch (e) {}
     }
     if (newPass) await account.updatePassword(newPass);
 
@@ -939,7 +1005,7 @@ async function performSearch(keyword) {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.search("name", keyword),
-        Appwrite.Query.limit(50)
+        Appwrite.Query.limit(50),
       ],
     );
     updatePreviewList(res.documents);
@@ -960,7 +1026,7 @@ async function fallbackSearch(keyword) {
       CONFIG.COLLECTION_FILES,
       [
         Appwrite.Query.equal("owner", currentUser.$id),
-        Appwrite.Query.limit(100)
+        Appwrite.Query.limit(100),
       ],
     );
     const filtered = res.documents.filter((doc) =>
@@ -972,7 +1038,7 @@ async function fallbackSearch(keyword) {
     if (filtered.length === 0)
       grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`;
     else filtered.forEach((doc) => renderItem(doc));
-  } catch (err) { }
+  } catch (err) {}
 }
 
 window.clearSearch = () => {
@@ -1152,7 +1218,7 @@ function renderItem(doc) {
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
             thumbUrl: thumbUrlToUse,
           })
-          .catch((e) => { });
+          .catch((e) => {});
       }
 
       let badgeIcon = "fa-file";
@@ -1218,7 +1284,7 @@ function renderItem(doc) {
       if (btn)
         btn.style.display =
           (isFolder && id === "ctxBtnOpenFolder") ||
-            (!isFolder && id !== "ctxBtnOpenFolder")
+          (!isFolder && id !== "ctxBtnOpenFolder")
             ? "flex"
             : "none";
     });
@@ -1426,7 +1492,7 @@ function initAllContextMenus() {
         menuBaru.classList.add("show");
         const posisiTombol = tombolBaruBersih.getBoundingClientRect();
         const tinggiMenu = menuBaru.offsetHeight || 280; // fallback jika belum terukur
-        const lebarMenu = menuBaru.offsetWidth || 240;   // fallback jika belum terukur
+        const lebarMenu = menuBaru.offsetWidth || 240; // fallback jika belum terukur
         // Gunakan logika mobile (menu di atas tombol floating) untuk semua layar <= 1024px
         // Ini mencakup: HP, iPad Air (820px), Surface Pro (912px), Zenbook Fold (853px),
         // iPad Pro & Nest Hub (1024px) — semua menggunakan bottom-nav dan tombol floating
@@ -1445,7 +1511,10 @@ function initAllContextMenus() {
 
           // Rata kanan sejajar dengan sisi kanan tombol, tapi tidak overflow kiri layar
           const leftPos = posisiTombol.right - lebarMenu;
-          const safeLeft = Math.max(8, Math.min(leftPos, window.innerWidth - lebarMenu - 8));
+          const safeLeft = Math.max(
+            8,
+            Math.min(leftPos, window.innerWidth - lebarMenu - 8),
+          );
 
           menuBaru.style.setProperty("top", `${safeTop}px`, "important");
           menuBaru.style.setProperty("left", `${safeLeft}px`, "important");
@@ -1720,7 +1789,7 @@ async function calculateStorage() {
       [
         Appwrite.Query.equal("owner", currentUser.$id),
         Appwrite.Query.equal("type", "file"),
-        Appwrite.Query.limit(500)
+        Appwrite.Query.limit(500),
       ],
     );
 
@@ -1822,7 +1891,7 @@ window.toggleStarItem = async () => {
     );
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     closeAllMenus();
-  } catch (e) { }
+  } catch (e) {}
 };
 window.moveItemToTrash = async () => {
   try {
@@ -1836,7 +1905,7 @@ window.moveItemToTrash = async () => {
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     calculateStorage();
     closeAllMenus();
-  } catch (e) { }
+  } catch (e) {}
 };
 window.restoreFromTrash = async () => {
   try {
@@ -1850,7 +1919,7 @@ window.restoreFromTrash = async () => {
     loadFiles("trash");
     calculateStorage();
     closeAllMenus();
-  } catch (e) { }
+  } catch (e) {}
 };
 window.deleteItemPermanently = async () => {
   if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
@@ -1949,14 +2018,16 @@ function handleFileSelect(files) {
 
   if (uploadMode === "folder") {
     let topLevelFolders = new Set();
-    tempFiles.forEach(f => {
+    tempFiles.forEach((f) => {
       const path = f.customPath || f.webkitRelativePath;
       if (path) {
-        topLevelFolders.add(path.split('/')[0]);
+        topLevelFolders.add(path.split("/")[0]);
       }
     });
     if (topLevelFolders.size > 10) {
-      alert("Peringatan: Maksimal 10 folder utama dapat diunggah sekaligus. Silakan kurangi jumlah folder yang dipilih.");
+      alert(
+        "Peringatan: Maksimal 10 folder utama dapat diunggah sekaligus. Silakan kurangi jumlah folder yang dipilih.",
+      );
       resetUploadUI();
       return;
     }
@@ -1984,7 +2055,7 @@ function handleFileSelect(files) {
   fileListHTML += `<strong style="display: block; margin-bottom: 5px; text-align: center;">${msg}</strong>`;
   fileListHTML += `<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.9em;">`;
 
-  realFiles.forEach(f => {
+  realFiles.forEach((f) => {
     fileListHTML += `<li style="padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.name}">
         <i class="fa-solid fa-file" style="margin-right: 5px; opacity: 0.7;"></i> ${f.name}
       </li>`;
@@ -2173,7 +2244,10 @@ window.submitUploadFile = async () => {
     const CONCURRENCY_LIMIT = 20;
     const pool = new Set();
 
-    toggleLoading(true, `Sedang mengunggah ${uploadQueue.length} file secara bersamaan...`);
+    toggleLoading(
+      true,
+      `Sedang mengunggah ${uploadQueue.length} file secara bersamaan...`,
+    );
 
     for (const item of uploadQueue) {
       const uploadTask = (async () => {
@@ -2402,7 +2476,7 @@ window.loadScript = function (src) {
   }
 
   const p = new Promise(function (resolve, reject) {
-    const s = document.createElement('script');
+    const s = document.createElement("script");
     s.src = src;
     s.onload = function () {
       window.loadedScripts[src] = true;
@@ -2616,7 +2690,11 @@ window.openPreview = (doc) => {
                 </div>
             `;
       setTimeout(initAppleAudioPlayer, 50);
-    } else if (pdfExt.includes(ext) || msOfficeExts.includes(ext) || otherDocs.includes(ext)) {
+    } else if (
+      pdfExt.includes(ext) ||
+      msOfficeExts.includes(ext) ||
+      otherDocs.includes(ext)
+    ) {
       // 🌟 SOLUSI DEFINITIF: 100% NATIVE JAVASCRIPT VIEWER 🌟
       // Karena Google & Microsoft MEMBLOKIR iframe di Mobile Chrome/Safari (X-Frame-Options),
       // satu-satunya cara agar file terbuka utuh di dalam aplikasi adalah me-render file tersebut
@@ -2642,8 +2720,11 @@ window.openPreview = (doc) => {
         try {
           if (pdfExt.includes(ext)) {
             // 1. PDF Renderer Native (PDF.js)
-            await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js");
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+            await window.loadScript(
+              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",
+            );
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
             const loadingTask = pdfjsLib.getDocument(fileViewUrl);
             const pdf = await loadingTask.promise;
@@ -2669,8 +2750,12 @@ window.openPreview = (doc) => {
             }
           } else if (ext === "docx") {
             // 2. DOCX Renderer Native (docx-preview)
-            await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-            await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
+            await window.loadScript(
+              "https://unpkg.com/jszip/dist/jszip.min.js",
+            );
+            await window.loadScript(
+              "https://unpkg.com/docx-preview/dist/docx-preview.min.js",
+            );
 
             // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
             const res = await fetch(fileViewUrl);
@@ -2682,11 +2767,13 @@ window.openPreview = (doc) => {
               className: "docx",
               inWrapper: true,
               ignoreWidth: false,
-              ignoreHeight: false
+              ignoreHeight: false,
             });
           } else if (ext === "xlsx" || ext === "xls" || ext === "csv") {
             // 3. Excel/CSV Renderer Native (SheetJS)
-            await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
+            await window.loadScript(
+              "https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js",
+            );
 
             // PENTING: Gunakan fileViewUrl agar Mobile tidak memaksakan download Native
             const res = await fetch(fileViewUrl);
@@ -2699,11 +2786,13 @@ window.openPreview = (doc) => {
 
             // FIX: Manual HTML generation for robust rendering
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
+            let html =
+              "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
             for (let i = 0; i < jsonData.length; i++) {
               html += "<tr>";
               for (let j = 0; j < jsonData[i].length; j++) {
-                let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
+                let cellData =
+                  jsonData[i][j] !== undefined ? jsonData[i][j] : "";
                 if (i === 0) html += "<th>" + cellData + "</th>";
                 else html += "<td>" + cellData + "</td>";
               }
@@ -2712,7 +2801,8 @@ window.openPreview = (doc) => {
             html += "</table></div>";
 
             if (jsonData.length === 0) {
-              html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong atau tidak terbaca.</p>";
+              html =
+                "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong atau tidak terbaca.</p>";
             }
 
             container.innerHTML = html;
@@ -2729,21 +2819,28 @@ window.openPreview = (doc) => {
             container.appendChild(style);
           } else if (ext === "pptx") {
             // 4. PPTX Renderer Native (pptxjs)
-            await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-            await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-            await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
+            await window.loadScript(
+              "https://code.jquery.com/jquery-3.6.0.min.js",
+            );
+            await window.loadScript(
+              "https://unpkg.com/jszip/dist/jszip.min.js",
+            );
+            await window.loadScript(
+              "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js",
+            );
 
             container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
 
             const css = document.createElement("link");
             css.rel = "stylesheet";
-            css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
+            css.href =
+              "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
             document.head.appendChild(css);
 
             $("#pptx-render-area").pptxToHtml({
               pptxFileUrl: fileViewUrl, // Gunakan fileViewUrl agar Mobile tidak memutus fetch
               slideMode: false,
-              keyBoardShortCut: false
+              keyBoardShortCut: false,
             });
           } else {
             throw new Error("Format ini tidak didukung oleh Native Renderer");
@@ -2847,8 +2944,10 @@ function initAppleAudioPlayer() {
 
   const updateAudioMuteIcon = (vol) => {
     if (!muteBtn) return;
-    if (vol === 0 || audio.muted) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-    else if (vol < 0.5) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
+    if (vol === 0 || audio.muted)
+      muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+    else if (vol < 0.5)
+      muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
     else muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
   };
 
@@ -3107,7 +3206,7 @@ window.initCustomVideoPlayer = () => {
 
   fullscreenBtn.addEventListener("click", () => {
     if (!document.fullscreenElement) {
-      vidContainer.requestFullscreen().catch((err) => { });
+      vidContainer.requestFullscreen().catch((err) => {});
     } else {
       document.exitFullscreen();
     }
@@ -3423,4 +3522,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
