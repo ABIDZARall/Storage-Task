@@ -122,7 +122,7 @@ const CONFIG = {
   BUCKET_ID: "6a5a6943000f133e6a35",
   // Konfigurasi Adobe Acrobat Reader PDF Embed API (View SDK)
   // Anda dapat mendaftar untuk mendapatkan Client ID gratis di: https://developer.adobe.com/document-services/apis/pdf-embed/
-  ADOBE_CLIENT_ID: "c2bb0d2932ca47e0a11fc7496221c972", // Default demo/localhost Client ID
+  ADOBE_CLIENT_ID: "e4bb30fc6e6443c7be93845ff6008cc5", // Default demo/localhost Client ID
 };
 
 // API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
