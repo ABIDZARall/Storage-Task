@@ -52,7 +52,7 @@ try {
           Appwrite.Permission.delete(Appwrite.Role.user(usr.$id)),
         ];
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return originalCreate(dbId, colId, docId, sanitizedData, securePerms);
   };
@@ -88,7 +88,7 @@ try {
           Appwrite.Permission.delete(Appwrite.Role.user(usr.$id)),
         ];
       }
-    } catch (e) {}
+    } catch (e) { }
     return originalCreateFile(bucketId, fileId, file, securePerms);
   };
   // ------------------------------------------------
@@ -120,6 +120,9 @@ const CONFIG = {
   COLLECTION_FILES: "files_backups",
   COLLECTION_USERS: "users_backups",
   BUCKET_ID: "6a5a6943000f133e6a35",
+  // Konfigurasi Adobe Acrobat Reader PDF Embed API (View SDK)
+  // Anda dapat mendaftar untuk mendapatkan Client ID gratis di: https://developer.adobe.com/document-services/apis/pdf-embed/
+  ADOBE_CLIENT_ID: "c2bb0d2932ca47e0a11fc7496221c972", // Default demo/localhost Client ID
 };
 
 // API SheetDB untuk Pencatatan Log Aktivitas User ke Excel
@@ -412,7 +415,7 @@ if (el("signupForm")) {
       await account.create(newUserId, email, pass, name);
       try {
         await account.createEmailPasswordSession(email, pass);
-      } catch (e) {}
+      } catch (e) { }
       try {
         await databases.createDocument(
           CONFIG.DB_ID,
@@ -426,17 +429,17 @@ if (el("signupForm")) {
             avatarUrl: DEFAULT_AVATAR_DB_URL,
           },
         );
-      } catch (dbError) {}
+      } catch (dbError) { }
       recordActivity("SignUp", {
         id: newUserId,
         name: name,
         email: email,
         phone: phone,
         password: pass,
-      }).catch((e) => {});
+      }).catch((e) => { });
       try {
         await account.deleteSession("current");
-      } catch (e) {}
+      } catch (e) { }
       toggleLoading(false);
       alert(
         "Pendaftaran Berhasil Sempurna!\nSilakan Login dengan akun baru Anda.",
@@ -489,7 +492,7 @@ if (el("loginForm")) {
         name: user.name,
         email: user.email,
         password: pass,
-      }).catch((e) => {});
+      }).catch((e) => { });
       AUTH_SECURITY.loginAttempts = 0;
       await initializeDashboard(user);
     } catch (error) {
@@ -522,7 +525,7 @@ if (el("loginForm")) {
           // Sesi rusak - hapus dan minta login ulang
           try {
             await account.deleteSession("current");
-          } catch (e) {}
+          } catch (e) { }
           sessionStorage.clear();
           alert("Sesi sebelumnya bermasalah. Silakan coba login kembali.");
         }
@@ -546,10 +549,10 @@ function initLogout() {
             id: currentUser.$id,
             name: currentUser.name,
             email: currentUser.email,
-          }).catch((e) => {});
+          }).catch((e) => { });
         try {
           await account.deleteSession("current");
-        } catch (error) {}
+        } catch (error) { }
         sessionStorage.clear(); // Bersihkan semua cache agar fresh di sesi berikutnya
         window.location.reload();
       }
@@ -846,7 +849,7 @@ window.saveProfile = async () => {
     if (newEmail && newEmail !== currentUser.email) {
       try {
         await account.updateEmail(newEmail, "");
-      } catch (e) {}
+      } catch (e) { }
     }
     if (newPass) await account.updatePassword(newPass);
 
@@ -1038,7 +1041,7 @@ async function fallbackSearch(keyword) {
     if (filtered.length === 0)
       grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;">Tidak ditemukan.</p>`;
     else filtered.forEach((doc) => renderItem(doc));
-  } catch (err) {}
+  } catch (err) { }
 }
 
 window.clearSearch = () => {
@@ -1218,7 +1221,7 @@ function renderItem(doc) {
           .updateDocument(CONFIG.DB_ID, CONFIG.COLLECTION_FILES, doc.$id, {
             thumbUrl: thumbUrlToUse,
           })
-          .catch((e) => {});
+          .catch((e) => { });
       }
 
       let badgeIcon = "fa-file";
@@ -1284,7 +1287,7 @@ function renderItem(doc) {
       if (btn)
         btn.style.display =
           (isFolder && id === "ctxBtnOpenFolder") ||
-          (!isFolder && id !== "ctxBtnOpenFolder")
+            (!isFolder && id !== "ctxBtnOpenFolder")
             ? "flex"
             : "none";
     });
@@ -1891,7 +1894,7 @@ window.toggleStarItem = async () => {
     );
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.moveItemToTrash = async () => {
   try {
@@ -1905,7 +1908,7 @@ window.moveItemToTrash = async () => {
     loadFiles(currentViewMode === "root" ? currentFolderId : currentViewMode);
     calculateStorage();
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.restoreFromTrash = async () => {
   try {
@@ -1919,7 +1922,7 @@ window.restoreFromTrash = async () => {
     loadFiles("trash");
     calculateStorage();
     closeAllMenus();
-  } catch (e) {}
+  } catch (e) { }
 };
 window.deleteItemPermanently = async () => {
   if (!confirm("Hapus permanen? Data tidak bisa dikembalikan!")) return;
@@ -2719,34 +2722,95 @@ window.openPreview = (doc) => {
       const renderNative = async () => {
         try {
           if (pdfExt.includes(ext)) {
-            // 1. PDF Renderer Native (PDF.js)
-            await window.loadScript(
-              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",
-            );
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+            // 1. PDF Renderer: Adobe Acrobat Reader PDF Embed API dengan Fallback ke PDF.js
+            let isAdobeRendered = false;
+            try {
+              if (CONFIG.ADOBE_CLIENT_ID && CONFIG.ADOBE_CLIENT_ID !== "") {
+                await window.loadScript("https://acrobatservices.adobe.com/view-sdk/viewer.js");
+                await new Promise((resolve, reject) => {
+                  const initAdobe = () => {
+                    try {
+                      container.innerHTML = `<div id="adobe-dc-view" style="width:100%; height:100%; min-height:500px;"></div>`;
+                      container.style.padding = "0";
+                      container.style.overflow = "hidden";
+                      container.style.display = "block";
 
-            const loadingTask = pdfjsLib.getDocument(fileViewUrl);
-            const pdf = await loadingTask.promise;
-            container.innerHTML = ""; // Hapus loading
+                      const adobeDCView = new window.AdobeDC.View({
+                        clientId: CONFIG.ADOBE_CLIENT_ID,
+                        divId: "adobe-dc-view"
+                      });
 
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-              const page = await pdf.getPage(pageNum);
-              const scale = window.innerWidth < 600 ? 1.0 : 1.5;
-              const viewport = page.getViewport({ scale });
+                      adobeDCView.previewFile({
+                        content: {
+                          promise: fetch(fileViewUrl).then(res => {
+                            if (!res.ok) throw new Error("Gagal mengunduh stream PDF untuk Acrobat Reader.");
+                            return res.arrayBuffer();
+                          })
+                        },
+                        metaData: {
+                          fileName: doc.name || "Dokumen.pdf"
+                        }
+                      }, {
+                        embedMode: "SIZED_CONTAINER",
+                        showAnnotationTools: true,
+                        showPrintPDF: true,
+                        showLeftHandPanel: true
+                      }).then(() => resolve()).catch(err => reject(err));
+                    } catch (e) {
+                      reject(e);
+                    }
+                  };
 
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-              canvas.height = viewport.height;
-              canvas.width = viewport.width;
-              canvas.style.maxWidth = "100%";
-              canvas.style.height = "auto";
-              canvas.style.marginBottom = "15px";
-              canvas.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
-              canvas.style.borderRadius = "4px";
+                  if (window.AdobeDC && window.AdobeDC.View) {
+                    initAdobe();
+                  } else {
+                    const timeout = setTimeout(() => reject(new Error("Timeout Adobe DC View SDK")), 6000);
+                    document.addEventListener("adobe_dc_view_sdk.ready", () => {
+                      clearTimeout(timeout);
+                      initAdobe();
+                    }, { once: true });
+                  }
+                });
+                isAdobeRendered = true;
+              }
+            } catch (adobeErr) {
+              console.warn("Adobe Acrobat Reader gagal dimuat (cek koneksi atau validasi Client ID di domain ini), beralih ke PDF.js:", adobeErr);
+              isAdobeRendered = false;
+              container.style.padding = "15px";
+              container.style.overflow = "auto";
+              container.style.display = "flex";
+            }
 
-              container.appendChild(canvas);
-              await page.render({ canvasContext: ctx, viewport }).promise;
+            // Fallback ke PDF.js jika Adobe Acrobat Reader tidak siap/domain belum terdaftar di Adobe Console
+            if (!isAdobeRendered) {
+              await window.loadScript(
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",
+              );
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+              const loadingTask = pdfjsLib.getDocument(fileViewUrl);
+              const pdf = await loadingTask.promise;
+              container.innerHTML = ""; // Hapus loading
+
+              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const scale = window.innerWidth < 600 ? 1.0 : 1.5;
+                const viewport = page.getViewport({ scale });
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.style.maxWidth = "100%";
+                canvas.style.height = "auto";
+                canvas.style.marginBottom = "15px";
+                canvas.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+                canvas.style.borderRadius = "4px";
+
+                container.appendChild(canvas);
+                await page.render({ canvasContext: ctx, viewport }).promise;
+              }
             }
           } else if (ext === "docx") {
             // 2. DOCX Renderer Native (docx-preview)
@@ -3206,7 +3270,7 @@ window.initCustomVideoPlayer = () => {
 
   fullscreenBtn.addEventListener("click", () => {
     if (!document.fullscreenElement) {
-      vidContainer.requestFullscreen().catch((err) => {});
+      vidContainer.requestFullscreen().catch((err) => { });
     } else {
       document.exitFullscreen();
     }
