@@ -2712,6 +2712,7 @@ window.openPreview = (doc) => {
             </div>
             <!-- Tombol pelampung premium -->
             <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
+                <a href="${fileViewUrl}" target="_blank" class="btn-pill" style="background:#0284c7; color:white; box-shadow:0 10px 25px rgba(2,132,199,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-arrow-up-right-from-square" style="margin-right:6px;"></i> Buka di Tab Baru</a>
                 <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-download" style="margin-right:6px;"></i> Unduh Asli</a>
             </div>
         </div>
@@ -2742,19 +2743,24 @@ window.openPreview = (doc) => {
 
                       adobeDCView.previewFile({
                         content: {
+                          location: {
+                            url: fileViewUrl
+                          },
                           promise: fetch(fileViewUrl).then(res => {
                             if (!res.ok) throw new Error("Gagal mengunduh stream PDF untuk Acrobat Reader.");
                             return res.arrayBuffer();
                           })
                         },
                         metaData: {
-                          fileName: doc.name || "Dokumen.pdf"
+                          fileName: doc.name || "Dokumen.pdf",
+                          id: doc.$id || "document-" + Date.now()
                         }
                       }, {
                         embedMode: "SIZED_CONTAINER",
                         showAnnotationTools: true,
                         showPrintPDF: true,
-                        showLeftHandPanel: true
+                        showLeftHandPanel: true,
+                        showDownloadPDF: true
                       }).then(() => resolve()).catch(err => reject(err));
                     } catch (e) {
                       reject(e);
