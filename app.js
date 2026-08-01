@@ -2712,7 +2712,6 @@ window.openPreview = (doc) => {
             </div>
             <!-- Tombol pelampung premium -->
             <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
-                <a href="${fileViewUrl}" target="_blank" class="btn-pill" style="background:#0284c7; color:white; box-shadow:0 10px 25px rgba(2,132,199,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-arrow-up-right-from-square" style="margin-right:6px;"></i> Buka di Tab Baru</a>
                 <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-download" style="margin-right:6px;"></i> Unduh Asli</a>
             </div>
         </div>
@@ -2731,7 +2730,13 @@ window.openPreview = (doc) => {
                 await new Promise((resolve, reject) => {
                   const initAdobe = () => {
                     try {
-                      container.innerHTML = `<div id="adobe-dc-view" style="width:100%; height:100%; min-height:500px;"></div>`;
+                      // Gunakan overlay transparan di atas logo Adobe untuk mengarahkan klik langsung ke fileViewUrl (tampilan detail/luas)
+                      container.innerHTML = `
+                        <div style="position:relative; width:100%; height:100%; min-height:500px;">
+                          <div id="adobe-dc-view" style="width:100%; height:100%;"></div>
+                          <a href="${fileViewUrl}" target="_blank" title="Buka Dokumen secara Detail / Layar Penuh" style="position:absolute; bottom:0; left:0; width:55px; height:48px; z-index:9999; cursor:pointer; background:transparent; display:block;"></a>
+                        </div>
+                      `;
                       container.style.padding = "0";
                       container.style.overflow = "hidden";
                       container.style.display = "block";
