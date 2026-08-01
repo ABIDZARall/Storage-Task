@@ -2520,6 +2520,8 @@ window.openPreview = (doc) => {
     headerDlBtn.href = fileDownloadUrl;
     headerDlBtn.setAttribute("download", doc.name || "download");
   }
+  const officeActions = document.getElementById("officeHeaderActions");
+  if (officeActions) officeActions.style.display = "none";
 
   let iconClass = "fa-file";
   let iconColor = "#ffffff";
@@ -2841,31 +2843,25 @@ window.openPreview = (doc) => {
             container.style.overflow = "hidden";
             container.style.display = "block";
             container.innerHTML = `
-              <div style="position:relative; width:100%; height:100%; min-height:500px; display:flex; flex-direction:column;">
-                <div style="flex:1; width:100%; height:100%; position:relative;">
-                  <iframe 
-                    src="${officeEmbedUrl}" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    title="Microsoft Office Preview" 
-                    style="width:100%; height:100%; border:none; min-height:550px; display:block;"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-                <!-- Baris kontrol bawah untuk Office Online & Fallback Mode Lokal -->
-                <div style="position:absolute; bottom:15px; left:15px; display:flex; gap:10px; z-index:20;">
-                  <a href="${officeViewUrl}" target="_blank" class="btn-pill" style="background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); border:1px solid rgba(0,0,0,0.1); color:#1e293b; padding:8px 16px; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.15); font-weight:600; display:flex; align-items:center; gap:8px; border-radius:25px; transition:all 0.2s;" title="Buka di tab baru Microsoft Office 365">
-                    <i class="fa-solid fa-up-right-from-square" style="color:#2563eb;"></i> Buka di Office Online
-                  </a>
-                  <button id="btnSwitchToLocal" class="btn-pill" style="background:rgba(30,41,59,0.9); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.2); color:#ffffff; padding:8px 16px; font-size:0.85rem; box-shadow:0 4px 15px rgba(0,0,0,0.2); font-weight:500; display:flex; align-items:center; gap:8px; border-radius:25px; cursor:pointer; transition:all 0.2s;" title="Beralih ke pembaca lokal/offline (Jika jaringan lambat atau file di localhost)">
-                    <i class="fa-solid fa-code" style="color:#38bdf8;"></i> Mode Lokal / Offline
-                  </button>
-                </div>
+              <div style="position:relative; width:100%; height:100%; min-height:500px;">
+                <iframe 
+                  src="${officeEmbedUrl}" 
+                  width="100%" 
+                  height="100%" 
+                  frameborder="0" 
+                  title="Microsoft Office Preview" 
+                  style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                  allowfullscreen
+                ></iframe>
               </div>
             `;
 
-            const btnSwitch = document.getElementById("btnSwitchToLocal");
+            const officeActions = document.getElementById("officeHeaderActions");
+            const btnOnline = document.getElementById("headerBtnOfficeOnline");
+            const btnSwitch = document.getElementById("headerBtnSwitchToLocal");
+
+            if (officeActions) officeActions.style.display = "flex";
+            if (btnOnline) btnOnline.href = officeViewUrl;
             if (btnSwitch) {
               btnSwitch.onclick = async () => {
                 container.style.padding = "15px";
@@ -3362,6 +3358,8 @@ window.initCustomVideoPlayer = () => {
 
 window.closePreview = () => {
   const overlay = el("previewModal");
+  const officeActions = document.getElementById("officeHeaderActions");
+  if (officeActions) officeActions.style.display = "none";
 
   const video = el("customVideo");
   if (video) {
