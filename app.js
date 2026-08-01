@@ -1952,11 +1952,19 @@ window.openCurrentItem = () => {
   closeAllMenus();
 };
 window.downloadCurrentItem = () => {
-  if (selectedItem && selectedItem.type !== "folder")
-    window.open(
-      storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId),
-      "_blank",
-    );
+  if (selectedItem && selectedItem.type !== "folder") {
+    const downloadUrl =
+      storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId).href ||
+      storage.getFileDownload(CONFIG.BUCKET_ID, selectedItem.fileId);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.target = "_blank";
+    a.download = selectedItem.name || "download";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
   closeAllMenus();
 };
 window.renameCurrentItem = async () => {
@@ -2507,6 +2515,11 @@ window.openPreview = (doc) => {
     storage.getFileDownload(CONFIG.BUCKET_ID, doc.fileId);
 
   el("previewFileName").innerText = doc.name;
+  const headerDlBtn = el("previewHeaderDownloadBtn");
+  if (headerDlBtn) {
+    headerDlBtn.href = fileDownloadUrl;
+    headerDlBtn.setAttribute("download", doc.name || "download");
+  }
 
   let iconClass = "fa-file";
   let iconColor = "#ffffff";
@@ -3334,7 +3347,14 @@ window.downloadPreviewItem = () => {
     const downloadUrl =
       storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId).href ||
       storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId);
-    window.open(downloadUrl, "_blank");
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.target = "_blank";
+    a.download = currentPreviewDoc.name || "download";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 };
 

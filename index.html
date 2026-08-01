@@ -1018,13 +1018,17 @@
           </div>
         </div>
         <div class="preview-header-right">
-          <button
+          <a
+            id="previewHeaderDownloadBtn"
+            href="#"
+            target="_blank"
             class="icon-btn"
-            onclick="downloadPreviewItem()"
             title="Download File"
+            style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;"
+            onclick="if(!this.getAttribute('href') || this.getAttribute('href') === '#') { downloadPreviewItem(); return false; }"
           >
             <i class="fa-solid fa-download"></i>
-          </button>
+          </a>
           <button
             class="icon-btn"
             onclick="showPreviewFileInfo()"
