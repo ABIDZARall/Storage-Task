@@ -2916,13 +2916,23 @@ window.openPreview = (doc) => {
                     container.appendChild(style);
                   } else if (ext === "pptx") {
                     await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-                    await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js");
+                    await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
+                    try {
+                      await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/filereader.js");
+                      await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js");
+                      await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js");
+                    } catch(e) { /* Abaikan jika opsional gagal dimuat */ }
                     await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
-                    container.innerHTML = `<div id="pptx-render-area" style="width:100%;"></div>`;
+                    container.innerHTML = `<div id="pptx-render-area" style="width:100%; margin:auto;"></div>`;
                     const css = document.createElement("link");
                     css.rel = "stylesheet";
                     css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
                     document.head.appendChild(css);
+                    const cssNv = document.createElement("link");
+                    cssNv.rel = "stylesheet";
+                    cssNv.href = "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css";
+                    document.head.appendChild(cssNv);
                     $("#pptx-render-area").pptxToHtml({ pptxFileUrl: fileViewUrl, slideMode: false, keyBoardShortCut: false });
                   } else {
                     container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Office Online.</p>`;
