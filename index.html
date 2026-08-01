@@ -1021,29 +1021,17 @@
           <button
             class="icon-btn"
             onclick="downloadPreviewItem()"
-            title="Download"
+            title="Download File"
           >
             <i class="fa-solid fa-download"></i>
           </button>
-          <div style="position: relative">
-            <button
-              class="icon-btn"
-              onclick="togglePreviewMenu()"
-              title="Tindakan lainnya"
-            >
-              <i class="fa-solid fa-ellipsis-vertical"></i>
-            </button>
-            <div
-              id="previewContextMenu"
-              class="dropdown-content hidden"
-              style="top: 50px; right: 0; left: auto; min-width: 200px"
-            >
-              <a href="javascript:void(0)" onclick="openPreviewInNewTab()"
-                ><i class="fa-solid fa-up-right-from-square"></i> Buka di
-                jendela baru</a
-              >
-            </div>
-          </div>
+          <button
+            class="icon-btn"
+            onclick="showPreviewFileInfo()"
+            title="Detail Informasi File"
+          >
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
         </div>
       </div>
 
@@ -1069,6 +1057,60 @@
             title="File Selanjutnya"
           >
             <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DETAIL INFORMASI FILE PRATINJAU -->
+    <div
+      id="previewInfoModal"
+      class="modal-overlay hidden"
+      style="z-index: 40000 !important; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px);"
+      onclick="if (event.target === this) closeModal('previewInfoModal');"
+    >
+      <div class="glass-card modal-box" style="max-width: 440px; width: 92%; padding: 28px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 16px; margin-bottom: 20px;">
+          <h3 style="margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-circle-info" style="color: #3b82f6;"></i> Detail Informasi File
+          </h3>
+          <i
+            class="fa-solid fa-xmark close-icon"
+            onclick="closeModal('previewInfoModal')"
+            style="cursor: pointer;"
+          ></i>
+        </div>
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px; font-size: 0.95rem; text-align: left;">
+          <div>
+            <span style="font-size: 0.78rem; opacity: 0.65; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Nama File</span>
+            <div id="infoDetailName" style="font-weight: 600; margin-top: 5px; word-break: break-all; background: rgba(128, 128, 128, 0.12); padding: 10px 14px; border-radius: 8px;"></div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div>
+              <span style="font-size: 0.78rem; opacity: 0.65; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Tipe File</span>
+              <div id="infoDetailType" style="font-weight: 600; margin-top: 5px; background: rgba(128, 128, 128, 0.12); padding: 10px 14px; border-radius: 8px;"></div>
+            </div>
+            <div>
+              <span style="font-size: 0.78rem; opacity: 0.65; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Ukuran File</span>
+              <div id="infoDetailSize" style="font-weight: 600; margin-top: 5px; background: rgba(128, 128, 128, 0.12); padding: 10px 14px; border-radius: 8px;"></div>
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.78rem; opacity: 0.65; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Tanggal Diunggah</span>
+            <div id="infoDetailDate" style="font-weight: 600; margin-top: 5px; background: rgba(128, 128, 128, 0.12); padding: 10px 14px; border-radius: 8px;"></div>
+          </div>
+          <div>
+            <span style="font-size: 0.78rem; opacity: 0.65; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">File ID / Token</span>
+            <div id="infoDetailId" style="font-family: monospace; font-size: 0.85rem; opacity: 0.9; margin-top: 5px; word-break: break-all; background: rgba(128, 128, 128, 0.12); padding: 10px 14px; border-radius: 8px;"></div>
+          </div>
+        </div>
+        <div style="margin-top: 28px; display: flex; justify-content: flex-end;">
+          <button
+            class="btn-pill primary"
+            style="width: 100%; justify-content: center; padding: 12px; font-weight: 600;"
+            onclick="closeModal('previewInfoModal')"
+          >
+            Tutup
           </button>
         </div>
       </div>

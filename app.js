@@ -2710,10 +2710,6 @@ window.openPreview = (doc) => {
                     <p style="color:#334155; font-weight:500;">Memproses Dokumen Native...</p>
                 </div>
             </div>
-            <!-- Tombol pelampung premium -->
-            <div style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px; z-index:10;">
-                <a href="${fileDownloadUrl}" target="_blank" class="btn-pill primary" style="box-shadow:0 10px 25px rgba(59,130,246,0.4); text-decoration:none; padding:10px 20px; font-weight:500;"><i class="fa-solid fa-download" style="margin-right:6px;"></i> Unduh Asli</a>
-            </div>
         </div>
       `;
 
@@ -3335,16 +3331,48 @@ window.closePreview = () => {
 
 window.downloadPreviewItem = () => {
   if (currentPreviewDoc) {
-    window.open(
-      storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId),
-      "_blank",
-    );
+    const downloadUrl =
+      storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId).href ||
+      storage.getFileDownload(CONFIG.BUCKET_ID, currentPreviewDoc.fileId);
+    window.open(downloadUrl, "_blank");
+  }
+};
+
+window.showPreviewFileInfo = () => {
+  if (!currentPreviewDoc) return;
+
+  const ext = currentPreviewDoc.name.split(".").pop().toUpperCase();
+  const sizeFormatted = typeof formatSize === "function" ? formatSize(currentPreviewDoc.size || 0) : `${currentPreviewDoc.size || 0} B`;
+  
+  let dateFormatted = "Tidak tersedia";
+  if (currentPreviewDoc.$createdAt) {
+    try {
+      const d = new Date(currentPreviewDoc.$createdAt);
+      dateFormatted = d.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }) + " - " + d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      dateFormatted = currentPreviewDoc.$createdAt;
+    }
+  }
+
+  if (el("infoDetailName")) el("infoDetailName").innerText = currentPreviewDoc.name || "-";
+  if (el("infoDetailType")) el("infoDetailType").innerText = `${ext} Document`;
+  if (el("infoDetailSize")) el("infoDetailSize").innerText = sizeFormatted;
+  if (el("infoDetailDate")) el("infoDetailDate").innerText = dateFormatted;
+  if (el("infoDetailId")) el("infoDetailId").innerText = currentPreviewDoc.fileId || currentPreviewDoc.$id || "-";
+
+  const modal = el("previewInfoModal");
+  if (modal) {
+    modal.classList.remove("hidden");
   }
 };
 
 window.togglePreviewMenu = () => {
-  const menu = el("previewContextMenu");
-  menu.classList.toggle("hidden");
+  window.showPreviewFileInfo();
 };
 
 window.openPreviewInNewTab = () => {
@@ -3353,7 +3381,6 @@ window.openPreviewInNewTab = () => {
       storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId).href ||
       storage.getFileView(CONFIG.BUCKET_ID, currentPreviewDoc.fileId);
     window.open(fileViewUrl, "_blank");
-    el("previewContextMenu").classList.add("hidden");
     closePreview();
   }
 };
