@@ -3019,20 +3019,21 @@ window.openPreview = (doc) => {
 
                   function renderDeckUI() {
                     deckDiv.innerHTML = "";
+                    deckDiv.style.cssText = "width:100%; height:100%; min-height:calc(80vh - 80px); display:flex; flex-direction:column; max-width:960px; margin:0 auto; font-family:'Segoe UI', Inter, -apple-system, sans-serif;";
 
-                    // Wadah Utama Presentasi (Clean Sheet & Toolbar Bawah)
+                    // Wadah Utama Presentasi (Memenuhi tinggi kontainer dan memposisikan toolbar di paling bawah)
                     const mainWrapper = document.createElement("div");
-                    mainWrapper.style.cssText = "width:100%; max-width:920px; margin:0 auto; display:flex; flex-direction:column; gap:12px;";
+                    mainWrapper.style.cssText = "width:100%; height:100%; min-height:calc(80vh - 90px); display:flex; flex-direction:column; justify-content:space-between; flex-grow:1; gap:20px; position:relative;";
 
                     const slidesContainer = document.createElement("div");
-                    slidesContainer.style.cssText = "display:flex; flex-direction:column; gap:25px; width:100%;";
+                    slidesContainer.style.cssText = "display:flex; flex-direction:column; gap:25px; width:100%; flex-grow:1; justify-content:center; padding-top:10px;";
 
                     const displayList = viewMode === "single" ? [slidesData[currentSlideIdx]] : slidesData;
 
                     for (const s of displayList) {
                       // Canvas Slide Putih Bersih Ala Kertas / Layar Office
                       const slideCard = document.createElement("div");
-                      slideCard.style.cssText = "background:#ffffff; border-radius:6px; box-shadow:0 4px 22px rgba(0,0,0,0.14); padding:40px 32px; min-height:450px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden;";
+                      slideCard.style.cssText = "background:#ffffff; border-radius:6px; box-shadow:0 4px 22px rgba(0,0,0,0.14); padding:40px 32px; min-height:420px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; position:relative; overflow:hidden;";
 
                       // KUSTOMISASI DESAIN TAMPILAN: Jika slide hanya punya 1 kalimat pendek (seperti di Gambar 2 & 3), posisikan tepat di tengah secara profesional
                       const isSingleShortText = s.rawParagraphs.length === 1 && s.images.length === 0;
@@ -3045,14 +3046,14 @@ window.openPreview = (doc) => {
                       } else if (isSingleShortText) {
                         // Gaya Presentasi Judul Tengah (Persis Gambar 2 Microsoft Office Online)
                         const centerBox = document.createElement("div");
-                        centerBox.style.cssText = "margin:auto; text-align:center; width:100%; padding:20px 0; display:flex; align-items:center; justify-content:center; min-height:350px;";
+                        centerBox.style.cssText = "margin:auto; text-align:center; width:100%; padding:20px 0; display:flex; align-items:center; justify-content:center; min-height:320px;";
                         const textEl = document.createElement("h2");
                         textEl.style.cssText = "color:#202124; font-size:clamp(22px, 4vw, 32px); font-weight:500; font-family:'Segoe UI', Inter, -apple-system, sans-serif; line-height:1.4; word-break:break-word; margin:0; letter-spacing:-0.3px;";
                         textEl.innerText = s.rawParagraphs[0];
                         centerBox.appendChild(textEl);
                         slideCard.appendChild(centerBox);
                       } else {
-                        // Gaya Presentasi Teks & Daftar Poin yang Rapib & Bersih (Tanpa Badge & Label Menggangu)
+                        // Gaya Presentasi Teks & Daftar Poin yang Rapi & Bersih (Tanpa Badge & Label Mengganggu)
                         if (s.title) {
                           const titleEl = document.createElement("h2");
                           titleEl.style.cssText = "color:#111827; font-size:clamp(20px, 3.5vw, 26px); font-weight:700; margin-top:0; margin-bottom:24px; font-family:'Segoe UI', Inter, sans-serif; line-height:1.35;";
@@ -3095,36 +3096,39 @@ window.openPreview = (doc) => {
 
                     mainWrapper.appendChild(slidesContainer);
 
-                    // Toolbar Navigasi Bawah Ala Microsoft Office Online (Persis Gambar 2)
+                    // Toolbar Navigasi Bawah Ala Microsoft Office Online - Diposisikan di Paling Bawah (Kebawahan)
                     const officeToolbar = document.createElement("div");
-                    officeToolbar.style.cssText = "width:100%; height:48px; background:#383838; border-radius:6px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; box-sizing:border-box; color:#f3f4f6; font-family:'Segoe UI', Inter, sans-serif; box-shadow:0 4px 15px rgba(0,0,0,0.25); user-select:none; margin-top:4px;";
+                    officeToolbar.style.cssText = "width:100%; min-height:48px; background:#383838; border-radius:6px; display:flex; align-items:center; justify-content:space-between; padding:8px 16px; box-sizing:border-box; color:#f3f4f6; font-family:'Segoe UI', Inter, sans-serif; box-shadow:0 -2px 15px rgba(0,0,0,0.22); user-select:none; margin-top:auto; position:sticky; bottom:0; z-index:25;";
 
                     // Sisi Kiri Toolbar: Logo PowerPoint
                     const logoGroup = document.createElement("div");
-                    logoGroup.style.cssText = "display:flex; align-items:center; gap:10px;";
+                    logoGroup.style.cssText = "display:flex; align-items:center; gap:8px;";
                     logoGroup.innerHTML = `<i class="fa-solid fa-file-powerpoint" style="color:#f97316; font-size:20px;"></i>`;
                     
-                    const logoText = document.createElement("span");
-                    logoText.style.cssText = "font-weight:600; font-size:13px; color:#e5e7eb; letter-spacing:0.3px;";
-                    logoText.innerText = window.innerWidth > 600 ? "PowerPoint Presentation" : "PPTX";
-                    logoGroup.appendChild(logoText);
+                    const isMobileScreen = window.innerWidth <= 640;
+                    if (!isMobileScreen) {
+                      const logoText = document.createElement("span");
+                      logoText.style.cssText = "font-weight:600; font-size:13px; color:#e5e7eb; letter-spacing:0.3px;";
+                      logoText.innerText = "PowerPoint Presentation";
+                      logoGroup.appendChild(logoText);
+                    }
 
-                    // Sisi Tengah Toolbar: Navigasi Slide (< SLIDE 1 OF 1 >)
+                    // Sisi Tengah Toolbar: Navigasi Slide (< SLIDE 1 OF 1 >) dengan white-space nowrap agar tidak terpotong 2 baris di HP
                     const navGroup = document.createElement("div");
-                    navGroup.style.cssText = "display:flex; align-items:center; gap:14px;";
+                    navGroup.style.cssText = "display:flex; align-items:center; justify-content:center; gap:8px; flex-grow:1;";
 
                     const btnPrev = document.createElement("span");
                     btnPrev.innerHTML = `<i class="fa-solid fa-caret-left"></i>`;
-                    btnPrev.style.cssText = "cursor:pointer; font-size:18px; color:#fff; opacity:" + (currentSlideIdx === 0 || viewMode === 'list' ? "0.35" : "0.9") + "; padding:4px 8px; transition:0.2s;";
+                    btnPrev.style.cssText = "cursor:pointer; font-size:18px; color:#fff; opacity:" + (currentSlideIdx === 0 || viewMode === 'list' ? "0.35" : "0.9") + "; padding:4px 10px; transition:0.2s;";
                     btnPrev.onclick = () => { if (currentSlideIdx > 0 && viewMode === "single") { currentSlideIdx--; renderDeckUI(); } };
 
                     const indicator = document.createElement("span");
-                    indicator.style.cssText = "font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#f3f4f6;";
+                    indicator.style.cssText = "font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:#f3f4f6; white-space:nowrap; text-align:center;";
                     indicator.innerText = viewMode === "single" ? `SLIDE ${currentSlideIdx + 1} OF ${slidesData.length}` : `SEMUA SLIDE (${slidesData.length})`;
 
                     const btnNext = document.createElement("span");
                     btnNext.innerHTML = `<i class="fa-solid fa-caret-right"></i>`;
-                    btnNext.style.cssText = "cursor:pointer; font-size:18px; color:#fff; opacity:" + (currentSlideIdx === slidesData.length - 1 || viewMode === 'list' ? "0.35" : "0.9") + "; padding:4px 8px; transition:0.2s;";
+                    btnNext.style.cssText = "cursor:pointer; font-size:18px; color:#fff; opacity:" + (currentSlideIdx === slidesData.length - 1 || viewMode === 'list' ? "0.35" : "0.9") + "; padding:4px 10px; transition:0.2s;";
                     btnNext.onclick = () => { if (currentSlideIdx < slidesData.length - 1 && viewMode === "single") { currentSlideIdx++; renderDeckUI(); } };
 
                     navGroup.appendChild(btnPrev);
@@ -3133,7 +3137,7 @@ window.openPreview = (doc) => {
 
                     // Sisi Kanan Toolbar: Toggle Mode Daftar & Fullscreen
                     const rightGroup = document.createElement("div");
-                    rightGroup.style.cssText = "display:flex; align-items:center; gap:12px;";
+                    rightGroup.style.cssText = "display:flex; align-items:center; gap:10px;";
 
                     const btnGridToggle = document.createElement("span");
                     btnGridToggle.title = viewMode === "single" ? "Tampilkan Semua Slide" : "Tampilkan Satu Slide";
