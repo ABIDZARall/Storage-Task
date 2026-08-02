@@ -2924,15 +2924,31 @@ window.openPreview = (doc) => {
 
               } else if (ext === "pptx" || ext === "ppt") {
                 // Client-Side Rendering untuk PowerPoint (PPTX / PPT)
-                // KUNCI PERBAIKAN: PPTXjs WAJIB menggunakan JSZip versi 2.6.1. Penggunaan JSZip v3 memicu TypeError & layar blank putih!
+                // KUNCI PERBAIKAN: PPTXjs berasal dari GitHub repositori (meshesha/PPTXjs) dan WAJIB menggunakan JSZip v2.6.1!
                 await window.loadScript("https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js");
                 await window.loadScript("https://cdn.jsdelivr.net/npm/jszip@2.6.1/dist/jszip.min.js");
-                await window.loadScript("https://cdn.jsdelivr.net/npm/pptxjs@1.21.1/dist/pptxjs.min.js");
+                await window.loadScript("https://cdn.jsdelivr.net/npm/filereader@0.10.3/FileReader.min.js").catch(() => {});
+                await window.loadScript("https://cdn.jsdelivr.net/npm/d3@3.5.17/d3.min.js").catch(() => {});
+                await window.loadScript("https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.js").catch(() => {});
+
+                // Muat skrip utama PPTXjs dari repositori GitHub secara resmi melalui jsDelivr (menggunakan rute /gh/ bukan /npm/)
+                try {
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/pptxjs.min.js");
+                } catch (errPptx1) {
+                  try {
+                    await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/pptxjs@master/dist/pptxjs.min.js");
+                  } catch (errPptx2) {
+                    await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/pptxjs/dist/pptxjs.min.js");
+                  }
+                }
                 
-                const styleLink = document.createElement("link");
-                styleLink.rel = "stylesheet";
-                styleLink.href = "https://cdn.jsdelivr.net/npm/pptxjs@1.21.1/dist/pptxjs.css";
-                document.head.appendChild(styleLink);
+                // Load stylesheet dari repositori GitHub & nvd3
+                ["https://cdn.jsdelivr.net/gh/meshesha/pptxjs@1.21.1/dist/css/pptxjs.css", "https://cdn.jsdelivr.net/gh/meshesha/pptxjs@master/dist/css/pptxjs.css", "https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.css"].forEach(cssUrl => {
+                  const styleLink = document.createElement("link");
+                  styleLink.rel = "stylesheet";
+                  styleLink.href = cssUrl;
+                  document.head.appendChild(styleLink);
+                });
 
                 container.innerHTML = `<div id="pptx-container-result" style="width:100%; min-height:500px; overflow-x:auto; padding:5px; box-sizing:border-box;"></div>`;
 
