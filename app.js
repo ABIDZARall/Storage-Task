@@ -2835,7 +2835,7 @@ window.openPreview = (doc) => {
               }
             }
           } else if (msOfficeExts.includes(ext)) {
-            // 2. Microsoft Office / Google Docs Preview (Word, Excel, PowerPoint)
+            // 2. Microsoft Office Preview (Word, Excel, PowerPoint) - Terintegrasi Penuh untuk Desktop, Tablet, dan Mobile!
             const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
             const officeActions = document.getElementById("officeHeaderActions");
             const btnOnline = document.getElementById("headerBtnOfficeOnline");
@@ -2848,85 +2848,88 @@ window.openPreview = (doc) => {
               btnOnline.title = "Buka di tab baru Microsoft Office 365";
             }
 
+            // PERAMBAKAN TOTAL: Baik di Desktop, Tablet, maupun Mobile/HP, KEMBALIKAN KE MICROSOFT OFFICE PREVIEW sebagai mesin utama!
+            // Menggunakan pembungkus yang adaptif terhadap layar sentuh agar tampilan Office di HP/Tablet sama suksesnya dengan Desktop.
+            const minHeightStyle = isMobileOrTablet ? "82vh" : "550px";
+            const microsoftEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+            const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+
             if (ext === "ppt" || ext === "pptx") {
-              // 🌟 SOLUSI DEFINITIF UNTUK POWERPOINT: DUAL CLOUD ENGINE (ANTI-BLANK PUTIH) 🌟
-              // Karena library Javascript offline (seperti PPTXjs) gagal memproses struktur XML presentasi modern dan menyebabkan layar blank putih,
-              // khusus PowerPoint dihubungkan dengan Dual Cloud Engine (Google Docs & Microsoft Office Viewer) agar slide selalu tampil 100% utuh dan presisi.
-              const googlePptxUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
-              const microsoftPptxUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-
-              const renderGoogleViewer = () => {
-                container.style.padding = "0";
-                container.style.overflow = "hidden";
-                container.style.display = "block";
-                container.innerHTML = `
-                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
-                    <iframe 
-                      src="${googlePptxUrl}" 
-                      width="100%" 
-                      height="100%" 
-                      frameborder="0" 
-                      title="Google Docs PowerPoint Viewer" 
-                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
-                      allowfullscreen
-                    ></iframe>
-                  </div>
-                `;
-                if (btnSwitch) {
-                  btnSwitch.innerHTML = `<i class="fa-brands fa-microsoft" style="color:#00a4ef;"></i> <span class="office-btn-text">Office Viewer</span>`;
-                  btnSwitch.title = "Beralih ke pembaca Microsoft Office Online Viewer";
-                  btnSwitch.onclick = renderMicrosoftViewer;
-                }
-              };
-
+              // Khusus PowerPoint: Gunakan Microsoft Office Viewer di SEMUA device (termasuk Mobile/HP).
+              // Opsi beralih (toggle) disediakan ke Google Docs Viewer sebagai cadangan jika dibutuhkan.
               const renderMicrosoftViewer = () => {
                 container.style.padding = "0";
                 container.style.overflow = "hidden";
                 container.style.display = "block";
+                container.style.width = "100%";
+                container.style.height = "100%";
                 container.innerHTML = `
-                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
+                  <div style="position:relative; width:100%; height:100%; min-height:${minHeightStyle}; background:#fff; -webkit-overflow-scrolling: touch; overflow: auto;">
                     <iframe 
-                      src="${microsoftPptxUrl}" 
+                      src="${microsoftEmbedUrl}" 
                       width="100%" 
                       height="100%" 
                       frameborder="0" 
-                      title="Microsoft Office PowerPoint Viewer" 
-                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                      title="Microsoft Office PowerPoint Preview" 
+                      style="width:100%; height:100%; border:none; min-height:${minHeightStyle}; display:block; position:absolute; top:0; left:0; right:0; bottom:0;"
                       allowfullscreen
                     ></iframe>
                   </div>
                 `;
                 if (btnSwitch) {
                   btnSwitch.innerHTML = `<i class="fa-brands fa-google" style="color:#34a853;"></i> <span class="office-btn-text">Google Viewer</span>`;
-                  btnSwitch.title = "Beralih ke pembaca Google Docs Viewer";
+                  btnSwitch.title = "Beralih ke pembaca Google Docs Viewer (Cadangan)";
                   btnSwitch.onclick = renderGoogleViewer;
                 }
               };
 
-              if (isMobileOrTablet) {
-                renderGoogleViewer();
-              } else {
-                renderMicrosoftViewer();
-              }
-            } else {
-              // Untuk Word (.doc, .docx) dan Excel (.xls, .xlsx), gunakan pilihan Mode Online & Mode Lokal (Native JS)
-              const officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-              const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
-              const embedUrlToUse = isMobileOrTablet ? googleEmbedUrl : officeEmbedUrl;
+              const renderGoogleViewer = () => {
+                container.style.padding = "0";
+                container.style.overflow = "hidden";
+                container.style.display = "block";
+                container.style.width = "100%";
+                container.style.height = "100%";
+                container.innerHTML = `
+                  <div style="position:relative; width:100%; height:100%; min-height:${minHeightStyle}; background:#fff; -webkit-overflow-scrolling: touch; overflow: auto;">
+                    <iframe 
+                      src="${googleEmbedUrl}" 
+                      width="100%" 
+                      height="100%" 
+                      frameborder="0" 
+                      title="Google Docs PowerPoint Viewer" 
+                      style="width:100%; height:100%; border:none; min-height:${minHeightStyle}; display:block; position:absolute; top:0; left:0; right:0; bottom:0;"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-brands fa-microsoft" style="color:#00a4ef;"></i> <span class="office-btn-text">Office Viewer</span>`;
+                  btnSwitch.title = "Beralih kembali ke Microsoft Office Preview";
+                  btnSwitch.onclick = renderMicrosoftViewer;
+                }
+              };
 
+              // JALANKAN MICROSOFT OFFICE PREVIEW secara langsung baik untuk Desktop maupun Mobile/Tablet!
+              renderMicrosoftViewer();
+
+            } else {
+              // Untuk Word (.doc, .docx) dan Excel (.xls, .xlsx):
+              // JALANKAN MICROSOFT OFFICE PREVIEW untuk SEMUA device (Mobile, Tablet, Desktop) dengan struktur responsif yang rapi.
               const renderOfficeOnline = () => {
                 container.style.padding = "0";
                 container.style.overflow = "hidden";
                 container.style.display = "block";
+                container.style.width = "100%";
+                container.style.height = "100%";
                 container.innerHTML = `
-                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
+                  <div style="position:relative; width:100%; height:100%; min-height:${minHeightStyle}; background:#fff; -webkit-overflow-scrolling: touch; overflow: auto;">
                     <iframe 
-                      src="${embedUrlToUse}" 
+                      src="${microsoftEmbedUrl}" 
                       width="100%" 
                       height="100%" 
                       frameborder="0" 
-                      title="Document Preview Online" 
-                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                      title="Microsoft Office Document Preview" 
+                      style="width:100%; height:100%; border:none; min-height:${minHeightStyle}; display:block; position:absolute; top:0; left:0; right:0; bottom:0;"
                       allowfullscreen
                     ></iframe>
                   </div>
@@ -2941,7 +2944,7 @@ window.openPreview = (doc) => {
               const renderOfficeLocal = async () => {
                 if (btnSwitch) {
                   btnSwitch.innerHTML = `<i class="fa-solid fa-globe" style="color:#34d399;"></i> <span class="office-btn-text">Mode Online</span>`;
-                  btnSwitch.title = "Beralih ke Mode Online (Iframe)";
+                  btnSwitch.title = "Beralih kembali ke Microsoft Office Preview (Online)";
                   btnSwitch.onclick = renderOfficeOnline;
                 }
                 // PERBAIKAN KRUSIAL: Gunakan flex-start agar konten yang lebar TIDAK terpotong di kiri
@@ -3019,6 +3022,7 @@ window.openPreview = (doc) => {
                 }
               };
 
+              // JALANKAN MICROSOFT OFFICE PREVIEW secara langsung untuk Word dan Excel di SEMUA device (Mobile/Desktop)!
               renderOfficeOnline();
             }
           } else if (ext === "csv") {
