@@ -2890,37 +2890,172 @@ window.openPreview = (doc) => {
                 container.appendChild(styleDocx);
 
               } else if (ext === "xlsx" || ext === "xls") {
-                // Client-Side Rendering untuk Excel (XLSX / XLS)
+                // Client-Side Rendering untuk Excel (XLSX / XLS) - Replika Profesional Ala Microsoft Excel Online
                 await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
                 const arrayBuffer = await blob.arrayBuffer();
                 const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 
-                let html = "<div style='overflow-x:auto; width:100%; height:100%; -webkit-overflow-scrolling: touch;'><table id='excel-table'>";
-                for (let i = 0; i < jsonData.length; i++) {
-                  html += "<tr>";
-                  for (let j = 0; j < jsonData[i].length; j++) {
-                    let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
-                    if (i === 0) html += "<th>" + cellData + "</th>";
-                    else html += "<td>" + cellData + "</td>";
+                let currentSheetIdx = 0;
+                container.innerHTML = "";
+                
+                // Wadah utama ruang kerja spreadsheet Excel
+                const excelWrapper = document.createElement("div");
+                excelWrapper.style.cssText = "width:100%; height:100%; min-height:calc(80vh - 80px); display:flex; flex-direction:column; justify-content:space-between; background:#ffffff; border-radius:6px; box-shadow:0 4px 22px rgba(0,0,0,0.14); overflow:hidden; font-family:'Segoe UI', Inter, -apple-system, sans-serif; position:relative;";
+                container.appendChild(excelWrapper);
+
+                // Fungsi konversi indeks ke abjad kolom Excel (0->A, 1->B, dst)
+                function getColLetter(colIdx) {
+                  let temp = colIdx;
+                  let letter = "";
+                  while (temp >= 0) {
+                    letter = String.fromCharCode((temp % 26) + 65) + letter;
+                    temp = Math.floor(temp / 26) - 1;
                   }
-                  html += "</tr>";
+                  return letter;
                 }
-                html += "</table></div>";
-                if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
-                container.innerHTML = html;
-                
-                const style = document.createElement("style");
-                style.innerHTML = `
-                  #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; border-radius: 6px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-                  #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
-                  #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; color:#0f172a; }
-                  #excel-table tr:nth-child(even) { background-color: #f8fafc; }
-                  #excel-table tr:hover { background-color: #f1f5f9; transition: background 0.15s ease; }
-                `;
-                container.appendChild(style);
+
+                function renderExcelSheet(sheetIndex) {
+                  excelWrapper.innerHTML = "";
+                  const sheetName = workbook.SheetNames[sheetIndex];
+                  const worksheet = workbook.Sheets[sheetName];
+                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) || [];
+
+                  // Tentukan jumlah minimal kolom dan baris agar tampak seperti Sheet Excel asli yang luas (Persis Gambar 2)
+                  let maxDataCols = 0;
+                  for (const row of jsonData) {
+                    if (row && row.length > maxDataCols) maxDataCols = row.length;
+                  }
+                  const totalCols = Math.max(20, maxDataCols); // Minimal 20 kolom (A hingga T)
+                  const totalRows = Math.max(35, jsonData.length + 10); // Minimal 35 baris ke bawah
+
+                  // 1. Wadah Grid Spreadsheet Bergeser (Scrollable Grid)
+                  const gridContainer = document.createElement("div");
+                  gridContainer.style.cssText = "flex-grow:1; overflow:auto; width:100%; height:calc(80vh - 180px); background:#ffffff; position:relative; -webkit-overflow-scrolling:touch;";
+                  
+                  const table = document.createElement("table");
+                  table.style.cssText = "border-collapse:collapse; background:#ffffff; font-family:'Segoe UI', Inter, sans-serif; font-size:13px; table-layout:fixed; min-width:100%;";
+
+                  // Baris Header Kolom (A, B, C, ...)
+                  const thead = document.createElement("thead");
+                  const headerRow = document.createElement("tr");
+
+                  // Sel sudut kiri atas (kombinasi baris & kolom)
+                  const cornerTh = document.createElement("th");
+                  cornerTh.style.cssText = "background:#f3f2f1; border:1px solid #d4d4d4; width:44px; min-width:44px; height:26px; position:sticky; top:0; left:0; z-index:10; user-select:none;";
+                  headerRow.appendChild(cornerTh);
+
+                  for (let j = 0; j < totalCols; j++) {
+                    const colTh = document.createElement("th");
+                    colTh.style.cssText = "background:#f3f2f1; color:#444444; font-weight:500; font-size:12px; text-align:center; border:1px solid #d4d4d4; padding:4px 10px; height:26px; min-width:80px; position:sticky; top:0; z-index:5; user-select:none; letter-spacing:0.5px;";
+                    colTh.innerText = getColLetter(j);
+                    headerRow.appendChild(colTh);
+                  }
+                  thead.appendChild(headerRow);
+                  table.appendChild(thead);
+
+                  // Baris Data (Angka Baris 1, 2, 3... & Sel Isi)
+                  const tbody = document.createElement("tbody");
+                  for (let i = 0; i < totalRows; i++) {
+                    const tr = document.createElement("tr");
+                    tr.style.height = "26px";
+
+                    // Header Angka Baris Kiri
+                    const rowNumTh = document.createElement("th");
+                    rowNumTh.style.cssText = "background:#f3f2f1; color:#444444; font-weight:500; font-size:12px; text-align:center; border:1px solid #d4d4d4; width:44px; min-width:44px; position:sticky; left:0; z-index:4; user-select:none;";
+                    rowNumTh.innerText = (i + 1).toString();
+                    tr.appendChild(rowNumTh);
+
+                    const rowData = jsonData[i] || [];
+                    for (let j = 0; j < totalCols; j++) {
+                      const td = document.createElement("td");
+                      const val = rowData[j] !== undefined && rowData[j] !== null ? rowData[j] : "";
+                      td.innerText = val;
+                      
+                      // Gaya sel standar Excel Online dengan garis grid halus
+                      td.style.cssText = "background:#ffffff; color:#202124; font-size:13px; padding:4px 8px; border:1px solid #e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-sizing:border-box; height:26px;";
+                      if (val !== "") {
+                        td.style.fontWeight = "500";
+                        td.style.color = "#0f172a";
+                      }
+                      tr.appendChild(td);
+                    }
+                    tbody.appendChild(tr);
+                  }
+                  table.appendChild(tbody);
+                  gridContainer.appendChild(table);
+                  excelWrapper.appendChild(gridContainer);
+
+                  // 2. Bar Tab Lembaran Kerja Ala Excel (Sheet Tabs) - Tepat Di Bawah Grid
+                  const tabsStrip = document.createElement("div");
+                  tabsStrip.style.cssText = "width:100%; height:38px; background:#f3f2f1; border-top:1px solid #cccccc; border-bottom:1px solid #cccccc; display:flex; align-items:center; padding:0 8px; gap:4px; flex-shrink:0; overflow-x:auto; user-select:none; box-sizing:border-box;";
+
+                  const tabNavs = document.createElement("div");
+                  tabNavs.style.cssText = "display:flex; align-items:center; gap:12px; color:#666666; font-size:12px; padding:0 8px; border-right:1px solid #dadada; margin-right:4px;";
+                  tabNavs.innerHTML = `<i class="fa-solid fa-angle-left" style="cursor:pointer;"></i><i class="fa-solid fa-angle-right" style="cursor:pointer;"></i><i class="fa-solid fa-bars" style="cursor:pointer;"></i>`;
+                  tabsStrip.appendChild(tabNavs);
+
+                  workbook.SheetNames.forEach((name, sIdx) => {
+                    const tabBtn = document.createElement("div");
+                    const isActive = (sIdx === currentSheetIdx);
+                    tabBtn.innerText = name;
+                    tabBtn.style.cssText = `padding:8px 18px; font-size:13px; font-weight:${isActive ? '700' : '400'}; color:${isActive ? '#107c41' : '#444444'}; background:${isActive ? '#ffffff' : 'transparent'}; border-top:${isActive ? '1px solid #cccccc' : 'none'}; border-left:${isActive ? '1px solid #cccccc' : 'none'}; border-right:${isActive ? '1px solid #cccccc' : 'none'}; border-bottom:${isActive ? '3px solid #107c41' : '1px solid transparent'}; cursor:pointer; white-space:nowrap; height:38px; box-sizing:border-box; display:flex; align-items:center; transition:0.15s; letter-spacing:0.3px;`;
+                    
+                    tabBtn.onclick = () => {
+                      currentSheetIdx = sIdx;
+                      renderExcelSheet(sIdx);
+                    };
+                    tabsStrip.appendChild(tabBtn);
+                  });
+
+                  const addTab = document.createElement("div");
+                  addTab.innerHTML = `<i class="fa-solid fa-plus" style="font-size:12px; color:#666666;"></i>`;
+                  addTab.style.cssText = "padding:6px 12px; cursor:pointer;";
+                  tabsStrip.appendChild(addTab);
+
+                  excelWrapper.appendChild(tabsStrip);
+
+                  // 3. Toolbar Gelap Bawah Ala Microsoft Excel Online - Diposisikan di Paling Bawah (Kebawahan)
+                  const excelToolbar = document.createElement("div");
+                  excelToolbar.style.cssText = "width:100%; min-height:46px; background:#383838; border-radius:0 0 6px 6px; display:flex; align-items:center; justify-content:space-between; padding:8px 16px; box-sizing:border-box; color:#f3f4f6; font-family:'Segoe UI', Inter, sans-serif; box-shadow:0 -2px 15px rgba(0,0,0,0.22); user-select:none; margin-top:auto; position:sticky; bottom:0; z-index:25;";
+
+                  const leftGroup = document.createElement("div");
+                  leftGroup.style.cssText = "display:flex; align-items:center; gap:8px;";
+                  leftGroup.innerHTML = `<i class="fa-solid fa-file-excel" style="color:#107c41; font-size:20px;"></i>`;
+                  
+                  if (window.innerWidth > 640) {
+                    const leftText = document.createElement("span");
+                    leftText.style.cssText = "font-weight:600; font-size:13px; color:#e5e7eb; letter-spacing:0.3px;";
+                    leftText.innerText = "Microsoft Excel Online";
+                    leftGroup.appendChild(leftText);
+                  }
+
+                  const rightGroup = document.createElement("div");
+                  rightGroup.style.cssText = "display:flex; align-items:center; gap:14px; color:#e5e7eb; opacity:0.85; font-size:15px;";
+                  rightGroup.innerHTML = `
+                    <span title="Mode Buku Kerja" style="cursor:pointer;"><i class="fa-solid fa-book-open"></i></span>
+                    <span title="Tampilan Tabel" style="cursor:pointer;"><i class="fa-solid fa-table"></i></span>
+                    <span title="Kalkulasi SIAP" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; background:#107c41; color:#fff; padding:2px 8px; border-radius:3px;">SIAP</span>
+                  `;
+
+                  const btnFullScreen = document.createElement("span");
+                  btnFullScreen.title = "Layar Penuh / Fullscreen";
+                  btnFullScreen.innerHTML = `<i class="fa-solid fa-expand"></i>`;
+                  btnFullScreen.style.cssText = "cursor:pointer; font-size:15px; color:#e5e7eb; opacity:0.85; padding:6px; transition:0.2s; margin-left:4px;";
+                  btnFullScreen.onclick = () => {
+                    if (!document.fullscreenElement) {
+                      excelWrapper.requestFullscreen().catch(() => {});
+                    } else {
+                      document.exitFullscreen().catch(() => {});
+                    }
+                  };
+                  rightGroup.appendChild(btnFullScreen);
+
+                  excelToolbar.appendChild(leftGroup);
+                  excelToolbar.appendChild(rightGroup);
+                  excelWrapper.appendChild(excelToolbar);
+                }
+
+                renderExcelSheet(0);
 
               } else if (ext === "pptx" || ext === "ppt") {
                 // RENCANA CADANGAN (ULTIMATE PLAN B): Native Custom Lightweight Slide Deck Reader!
