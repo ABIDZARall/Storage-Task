@@ -2301,6 +2301,59 @@ form {
     color: white;
 }
 
+.preview-header-right {
+    flex-shrink: 0;
+}
+
+.office-header-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 34px;
+    line-height: 1;
+}
+
+.office-header-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .preview-header {
+        padding: 0 10px !important;
+    }
+    .preview-file-info {
+        max-width: 35vw !important;
+        font-size: 0.88rem !important;
+    }
+    .office-header-btn {
+        padding: 0 !important;
+        width: 34px !important;
+        height: 34px !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .office-btn-text {
+        display: none !important;
+    }
+}
+
 /* PURE GLASS STYLE GLOBAL */
 .pure-glass {
     background: rgba(255, 255, 255, 0.15) !important;

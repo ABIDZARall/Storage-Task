@@ -2835,26 +2835,9 @@ window.openPreview = (doc) => {
               }
             }
           } else if (msOfficeExts.includes(ext)) {
-            // 2. Microsoft Office Online Preview (Word, Excel, PowerPoint)
+            // 2. Microsoft Office Preview (Word, Excel, PowerPoint) dengan Auto-Detect Mobile/Tablet
             const officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
             const officeViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-
-            container.style.padding = "0";
-            container.style.overflow = "hidden";
-            container.style.display = "block";
-            container.innerHTML = `
-              <div style="position:relative; width:100%; height:100%; min-height:500px;">
-                <iframe 
-                  src="${officeEmbedUrl}" 
-                  width="100%" 
-                  height="100%" 
-                  frameborder="0" 
-                  title="Microsoft Office Preview" 
-                  style="width:100%; height:100%; border:none; min-height:550px; display:block;"
-                  allowfullscreen
-                ></iframe>
-              </div>
-            `;
 
             const officeActions = document.getElementById("officeHeaderActions");
             const btnOnline = document.getElementById("headerBtnOfficeOnline");
@@ -2862,85 +2845,121 @@ window.openPreview = (doc) => {
 
             if (officeActions) officeActions.style.display = "flex";
             if (btnOnline) btnOnline.href = officeViewUrl;
-            if (btnSwitch) {
-              btnSwitch.onclick = async () => {
-                container.style.padding = "15px";
-                container.style.overflow = "auto";
-                container.style.display = "flex";
-                container.innerHTML = `
-                  <div style="margin:auto; display:flex; flex-direction:column; align-items:center;">
-                      <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
-                      <p style="color:#334155; font-weight:500;">Beralih ke Mode Lokal...</p>
-                  </div>
-                `;
-                try {
-                  if (ext === "docx") {
-                    await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-                    await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
-                    const res = await fetch(fileViewUrl);
-                    if (!res.ok) throw new Error("CORS DOCX");
-                    const blob = await res.blob();
-                    container.innerHTML = "";
-                    await docx.renderAsync(blob, container, null, { className: "docx", inWrapper: true, ignoreWidth: false, ignoreHeight: false });
-                  } else if (ext === "xlsx" || ext === "xls") {
-                    await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
-                    const res = await fetch(fileViewUrl);
-                    if (!res.ok) throw new Error("CORS XLSX");
-                    const arrayBuffer = await res.arrayBuffer();
-                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
-                    for (let i = 0; i < jsonData.length; i++) {
-                      html += "<tr>";
-                      for (let j = 0; j < jsonData[i].length; j++) {
-                        let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
-                        if (i === 0) html += "<th>" + cellData + "</th>";
-                        else html += "<td>" + cellData + "</td>";
-                      }
-                      html += "</tr>";
+
+            const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
+
+            const renderOfficeOnline = () => {
+              container.style.padding = "0";
+              container.style.overflow = "hidden";
+              container.style.display = "block";
+              container.innerHTML = `
+                <div style="position:relative; width:100%; height:100%; min-height:500px;">
+                  <iframe 
+                    src="${officeEmbedUrl}" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    title="Microsoft Office Preview" 
+                    style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              `;
+              if (btnSwitch) {
+                btnSwitch.innerHTML = `<i class="fa-solid fa-code" style="color:#38bdf8;"></i> <span class="office-btn-text">Mode Lokal</span>`;
+                btnSwitch.title = "Beralih ke pembaca Lokal / Offline";
+                btnSwitch.onclick = renderOfficeLocal;
+              }
+            };
+
+            const renderOfficeLocal = async () => {
+              if (btnSwitch) {
+                btnSwitch.innerHTML = `<i class="fa-solid fa-globe" style="color:#34d399;"></i> <span class="office-btn-text">Mode Online</span>`;
+                btnSwitch.title = "Beralih ke Mode Online (Iframe)";
+                btnSwitch.onclick = renderOfficeOnline;
+              }
+              container.style.padding = "15px";
+              container.style.overflow = "auto";
+              container.style.display = "flex";
+              container.innerHTML = `
+                <div style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
+                    <p style="color:#334155; font-weight:500;">Memuat Dokumen (Mode Lokal/Native)...</p>
+                </div>
+              `;
+              try {
+                if (ext === "docx") {
+                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+                  await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
+                  const res = await fetch(fileViewUrl);
+                  if (!res.ok) throw new Error("CORS DOCX");
+                  const blob = await res.blob();
+                  container.innerHTML = "";
+                  await docx.renderAsync(blob, container, null, { className: "docx", inWrapper: true, ignoreWidth: false, ignoreHeight: false });
+                } else if (ext === "xlsx" || ext === "xls") {
+                  await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
+                  const res = await fetch(fileViewUrl);
+                  if (!res.ok) throw new Error("CORS XLSX");
+                  const arrayBuffer = await res.arrayBuffer();
+                  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                  const firstSheetName = workbook.SheetNames[0];
+                  const worksheet = workbook.Sheets[firstSheetName];
+                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                  let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
+                  for (let i = 0; i < jsonData.length; i++) {
+                    html += "<tr>";
+                    for (let j = 0; j < jsonData[i].length; j++) {
+                      let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
+                      if (i === 0) html += "<th>" + cellData + "</th>";
+                      else html += "<td>" + cellData + "</td>";
                     }
-                    html += "</table></div>";
-                    if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
-                    container.innerHTML = html;
-                    container.style.alignItems = "flex-start";
-                    const style = document.createElement("style");
-                    style.innerHTML = `
-                      #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
-                      #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
-                      #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
-                      #excel-table tr:nth-child(even) { background-color: #f8fafc; }
-                      #excel-table tr:hover { background-color: #f1f5f9; }
-                    `;
-                    container.appendChild(style);
-                  } else if (ext === "pptx") {
-                    await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js");
-                    await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
-                    try {
-                      await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/filereader.js");
-                      await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js");
-                      await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js");
-                    } catch(e) { /* Abaikan jika opsional gagal dimuat */ }
-                    await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
-                    container.innerHTML = `<div id="pptx-render-area" style="width:100%; margin:auto;"></div>`;
-                    const css = document.createElement("link");
-                    css.rel = "stylesheet";
-                    css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
-                    document.head.appendChild(css);
-                    const cssNv = document.createElement("link");
-                    cssNv.rel = "stylesheet";
-                    cssNv.href = "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css";
-                    document.head.appendChild(cssNv);
-                    $("#pptx-render-area").pptxToHtml({ pptxFileUrl: fileViewUrl, slideMode: false, keyBoardShortCut: false });
-                  } else {
-                    container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Office Online.</p>`;
+                    html += "</tr>";
                   }
-                } catch (errLocal) {
-                  container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Gagal memuat mode lokal: ${errLocal.message}</p>`;
+                  html += "</table></div>";
+                  if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
+                  container.innerHTML = html;
+                  container.style.alignItems = "flex-start";
+                  const style = document.createElement("style");
+                  style.innerHTML = `
+                    #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
+                    #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
+                    #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
+                    #excel-table tr:nth-child(even) { background-color: #f8fafc; }
+                    #excel-table tr:hover { background-color: #f1f5f9; }
+                  `;
+                  container.appendChild(style);
+                } else if (ext === "pptx") {
+                  await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
+                  await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js");
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
+                  try {
+                    await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/filereader.js");
+                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js");
+                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js");
+                  } catch(e) { /* Abaikan jika opsional gagal dimuat */ }
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
+                  container.innerHTML = `<div id="pptx-render-area" style="width:100%; margin:auto;"></div>`;
+                  const css = document.createElement("link");
+                  css.rel = "stylesheet";
+                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
+                  document.head.appendChild(css);
+                  const cssNv = document.createElement("link");
+                  cssNv.rel = "stylesheet";
+                  cssNv.href = "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css";
+                  document.head.appendChild(cssNv);
+                  $("#pptx-render-area").pptxToHtml({ pptxFileUrl: fileViewUrl, slideMode: false, keyBoardShortCut: false });
+                } else {
+                  container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Office Online.</p>`;
                 }
-              };
+              } catch (errLocal) {
+                container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Gagal memuat mode lokal: ${errLocal.message}</p>`;
+              }
+            };
+
+            if (isMobileOrTablet) {
+              renderOfficeLocal();
+            } else {
+              renderOfficeOnline();
             }
           } else if (ext === "csv") {
             // 3. CSV Renderer Native (SheetJS)
