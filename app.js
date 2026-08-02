@@ -2923,89 +2923,206 @@ window.openPreview = (doc) => {
                 container.appendChild(style);
 
               } else if (ext === "pptx" || ext === "ppt") {
-                // Client-Side Rendering untuk PowerPoint (PPTX / PPT)
-                // KUNCI PERBAIKAN: Di GitHub (meshesha/PPTXjs), lokasi file ada di folder "js/" dan membutuhkan FileReaderJS asli dari bgrins/meshesha!
-                await window.loadScript("https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js");
-                await window.loadScript("https://cdn.jsdelivr.net/npm/jszip@2.6.1/dist/jszip.min.js");
+                // RENCANA CADANGAN (ULTIMATE PLAN B): Native Custom Lightweight Slide Deck Reader!
+                // Menerjemahkan struktur file OOXML PowerPoint secara mandiri menggunakan JSZip dan DOMParser
+                // 100% Anti-Blank Putih, Anti-Error, dan bekerja sangat mulus serta cepat di perangkat Mobile & Tablet.
+                await window.loadScript("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js");
                 
-                // Muat filereader.js dari repositori asli agar variabel FileReaderJS berhasil didefinisikan
+                container.innerHTML = `<div id="native-pptx-deck" style="width:100%; max-width:900px; margin:0 auto; font-family:'Inter', sans-serif;"></div>`;
+                const deckDiv = document.getElementById("native-pptx-deck");
+                
                 try {
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/filereader.js");
-                } catch (errFr1) {
-                  try {
-                    await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
-                  } catch (errFr2) {
-                    await window.loadScript("https://raw.githack.com/meshesha/PPTXjs/master/js/filereader.js");
-                  }
-                }
-
-                // Muat D3 & NVD3 dari CDN atau repositori PPTXjs
-                try {
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/d3.min.js");
-                } catch (errD3) {
-                  await window.loadScript("https://cdn.jsdelivr.net/npm/d3@3.5.17/d3.min.js").catch(() => {});
-                }
-                try {
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/nv.d3.min.js");
-                } catch (errNv) {
-                  await window.loadScript("https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.js").catch(() => {});
-                }
-
-                // Muat skrip utama PPTXjs & Divs2Slides dari folder js/ repositori GitHub resmi melalui jsDelivr
-                try {
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/pptxjs.js");
-                } catch (errPptx1) {
-                  await window.loadScript("https://raw.githack.com/meshesha/PPTXjs/master/js/pptxjs.js");
-                }
-
-                try {
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/divs2slides.js");
-                } catch (errSlides1) {
-                  await window.loadScript("https://raw.githack.com/meshesha/PPTXjs/master/js/divs2slides.js").catch(() => {});
-                }
-
-                // Load stylesheet dari folder css/ repositori GitHub & nvd3
-                ["https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/css/pptxjs.css", "https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.css"].forEach(cssUrl => {
-                  const styleLink = document.createElement("link");
-                  styleLink.rel = "stylesheet";
-                  styleLink.href = cssUrl;
-                  document.head.appendChild(styleLink);
-                });
-
-                container.innerHTML = `<div id="pptx-container-result" style="width:100%; min-height:500px; overflow-x:auto; padding:5px; box-sizing:border-box;"></div>`;
-
-                if (window.$ && window.$.fn.pptxToHtml) {
-                  window.$("#pptx-container-result").pptxToHtml({
-                    pptxFileUrl: blobUrl, // Menggunakan Teknik Blob URL asli dari memory browser
-                    slideMode: false,
-                    keyBoardShortCut: false,
-                    slideModeConfig: {
-                      first: 1,
-                      nav: false,
-                      navTxtColor: "black",
-                      showPlayPauseBtn: false,
-                      showSlideNum: false,
-                      showTotalSlideNum: false,
-                      autoSlide: false,
-                      randomAutoSlide: false,
-                      loop: false,
-                      background: "transparent",
-                      transition: "default",
-                      transitionTime: 1
-                    }
+                  const zip = await new window.JSZip().loadAsync(blob);
+                  
+                  // 1. Ambil semua file slide XML dan urutkan sesuai nomor slide (slide1.xml, slide2.xml, dst.)
+                  const slideFiles = Object.keys(zip.files).filter(name => /^ppt\/slides\/slide[0-9]+\.xml$/i.test(name));
+                  slideFiles.sort((a, b) => {
+                    const numA = parseInt((a.match(/slide([0-9]+)\.xml/i) || [0, 0])[1], 10);
+                    const numB = parseInt((b.match(/slide([0-9]+)\.xml/i) || [0, 0])[1], 10);
+                    return numA - numB;
                   });
-                  // Styling tambahan agar presentasi utuh dan responsif di device Mobile & Tablet
-                  const stylePptx = document.createElement("style");
-                  stylePptx.innerHTML = `
-                    #pptx-container-result { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
-                    #pptx-container-result .slide { margin: 0 auto 25px auto !important; max-width: 100% !important; height: auto !important; box-shadow: 0 4px 18px rgba(0,0,0,0.12) !important; border-radius: 8px; background: white; }
-                    @media (max-width: 768px) {
-                      #pptx-container-result .slide { width: 100% !important; max-width: 100% !important; overflow: hidden !important; }
+
+                  if (slideFiles.length === 0) {
+                    throw new Error("File PowerPoint ini bertipe format legacy (.ppt kuno) yang bukan arsip OOXML ZIP. Harap simpan dalam format .pptx modern.");
+                  }
+
+                  // 2. Ekstrak aset media/gambar dalam repositori ZIP ke dalam Blob URL lokal
+                  const mediaFiles = Object.keys(zip.files).filter(name => /^ppt\/media\//i.test(name) && !zip.files[name].dir);
+                  const mediaMap = {};
+                  for (const mPath of mediaFiles) {
+                    try {
+                      const mBlob = await zip.files[mPath].async("blob");
+                      const mUrl = URL.createObjectURL(mBlob);
+                      const basename = mPath.split("/").pop();
+                      mediaMap[basename] = mUrl;
+                    } catch (eImg) { /* abaikan jika ada gambar rusak */ }
+                  }
+
+                  // 3. Parsing isi teks dan gambar untuk setiap slide
+                  const parser = new DOMParser();
+                  const slidesData = [];
+
+                  for (let i = 0; i < slideFiles.length; i++) {
+                    const slidePath = slideFiles[i];
+                    const slideNum = i + 1;
+                    const xmlStr = await zip.files[slidePath].async("string");
+                    const xmlDoc = parser.parseFromString(xmlStr, "application/xml");
+
+                    // Ambil paragraf (a:p) dan rangkai teks dari setiap run (a:t)
+                    const paragraphs = [];
+                    const pNodes = xmlDoc.getElementsByTagName("a:p");
+                    for (let p = 0; p < pNodes.length; p++) {
+                      let textLine = "";
+                      const tNodes = pNodes[p].getElementsByTagName("a:t");
+                      for (let t = 0; t < tNodes.length; t++) {
+                        textLine += tNodes[t].textContent;
+                      }
+                      textLine = textLine.trim();
+                      if (textLine && !paragraphs.includes(textLine)) {
+                        paragraphs.push(textLine);
+                      }
                     }
-                  `;
-                  container.appendChild(stylePptx);
-                } else {
-                  throw new Error("Library mesin render PowerPoint (PPTXjs) gagal diinisialisasi.");
+
+                    // Hubungkan gambar ke slide via relasi (_rels/slideX.xml.rels)
+                    const relsPath = slidePath.replace("ppt/slides/", "ppt/slides/_rels/").replace(".xml", ".xml.rels");
+                    const slideImages = [];
+                    if (zip.files[relsPath]) {
+                      const relsStr = await zip.files[relsPath].async("string");
+                      const relsDoc = parser.parseFromString(relsStr, "application/xml");
+                      const rels = relsDoc.getElementsByTagName("Relationship");
+                      for (let r = 0; r < rels.length; r++) {
+                        const target = rels[r].getAttribute("Target");
+                        if (target && target.includes("media/")) {
+                          const imgName = target.split("/").pop();
+                          if (mediaMap[imgName] && !slideImages.includes(mediaMap[imgName])) {
+                            slideImages.push(mediaMap[imgName]);
+                          }
+                        }
+                      }
+                    }
+
+                    let titleText = paragraphs[0] || `Slide ${slideNum} (Tanpa Teks / Judul)`;
+                    let contentList = paragraphs.slice(1);
+
+                    slidesData.push({
+                      slideNum,
+                      title: titleText,
+                      content: contentList,
+                      images: slideImages
+                    });
+                  }
+
+                  // 4. Bangun Antarmuka Presentasi Interaktif (Carousel & Grid List)
+                  let currentSlideIdx = 0;
+                  let viewMode = "single"; // 'single' atau 'list'
+
+                  function renderDeckUI() {
+                    deckDiv.innerHTML = "";
+
+                    // Header Kontrol Navigasi
+                    const controlsDiv = document.createElement("div");
+                    controlsDiv.style.cssText = "display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:15px; background:#f8fafc; padding:10px 15px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 2px 5px rgba(0,0,0,0.02);";
+                    
+                    const navGroup = document.createElement("div");
+                    navGroup.style.cssText = "display:flex; align-items:center; gap:8px;";
+                    
+                    const btnPrev = document.createElement("button");
+                    btnPrev.innerHTML = `<i class="fa-solid fa-chevron-left"></i> Sebelum`;
+                    btnPrev.style.cssText = "padding:7px 14px; border-radius:6px; background:#3b82f6; color:#fff; border:none; cursor:pointer; font-weight:600; font-size:13px; opacity:" + (currentSlideIdx === 0 || viewMode === 'list' ? "0.4" : "1") + "; transition:0.2s;";
+                    btnPrev.disabled = currentSlideIdx === 0 || viewMode === "list";
+                    btnPrev.onclick = () => { if (currentSlideIdx > 0) { currentSlideIdx--; renderDeckUI(); } };
+
+                    const slideIndicator = document.createElement("span");
+                    slideIndicator.style.cssText = "font-weight:700; color:#1e293b; font-size:14px; min-width:100px; text-align:center;";
+                    slideIndicator.innerText = viewMode === "single" ? `Slide ${currentSlideIdx + 1} / ${slidesData.length}` : `Semua Slide (${slidesData.length})`;
+
+                    const btnNext = document.createElement("button");
+                    btnNext.innerHTML = `Lanjut <i class="fa-solid fa-chevron-right"></i>`;
+                    btnNext.style.cssText = "padding:7px 14px; border-radius:6px; background:#3b82f6; color:#fff; border:none; cursor:pointer; font-weight:600; font-size:13px; opacity:" + (currentSlideIdx === slidesData.length - 1 || viewMode === 'list' ? "0.4" : "1") + "; transition:0.2s;";
+                    btnNext.disabled = currentSlideIdx === slidesData.length - 1 || viewMode === "list";
+                    btnNext.onclick = () => { if (currentSlideIdx < slidesData.length - 1) { currentSlideIdx++; renderDeckUI(); } };
+
+                    navGroup.appendChild(btnPrev);
+                    navGroup.appendChild(slideIndicator);
+                    navGroup.appendChild(btnNext);
+
+                    const btnToggleMode = document.createElement("button");
+                    btnToggleMode.innerHTML = viewMode === "single" ? `<i class="fa-solid fa-list-ul"></i> Mode Semua Slide` : `<i class="fa-solid fa-image"></i> Mode Satu Slide`;
+                    btnToggleMode.style.cssText = "padding:7px 14px; border-radius:6px; background:#10b981; color:#fff; border:none; cursor:pointer; font-weight:600; font-size:13px; margin-left:auto; transition:0.2s;";
+                    btnToggleMode.onclick = () => { viewMode = viewMode === "single" ? "list" : "single"; renderDeckUI(); };
+
+                    controlsDiv.appendChild(navGroup);
+                    controlsDiv.appendChild(btnToggleMode);
+                    deckDiv.appendChild(controlsDiv);
+
+                    // Wadah Kartu Slide
+                    const slidesContainer = document.createElement("div");
+                    slidesContainer.style.cssText = "display:flex; flex-direction:column; gap:20px;";
+
+                    const displayList = viewMode === "single" ? [slidesData[currentSlideIdx]] : slidesData;
+
+                    for (const s of displayList) {
+                      const slideCard = document.createElement("div");
+                      slideCard.style.cssText = "background:#fff; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 8px 30px rgba(0,0,0,0.08); padding:24px; min-height:360px; display:flex; flex-direction:column; position:relative; overflow:hidden;";
+
+                      // Slide Number Badge
+                      const badge = document.createElement("div");
+                      badge.style.cssText = "align-self:flex-start; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; font-size:11px; font-weight:700; padding:4px 12px; border-radius:99px; margin-bottom:14px; letter-spacing:0.6px;";
+                      badge.innerText = `SLIDE ${s.slideNum}`;
+                      slideCard.appendChild(badge);
+
+                      // Slide Title
+                      const titleEl = document.createElement("h3");
+                      titleEl.style.cssText = "color:#0f172a; font-size:20px; font-weight:700; margin-top:0; margin-bottom:14px; border-bottom:2px solid #f1f5f9; padding-bottom:10px; line-height:1.4;";
+                      titleEl.innerText = s.title;
+                      slideCard.appendChild(titleEl);
+
+                      // Content Bullets
+                      if (s.content && s.content.length > 0) {
+                        const ul = document.createElement("ul");
+                        ul.style.cssText = "color:#334155; font-size:15px; line-height:1.6; padding-left:20px; margin-top:0; margin-bottom:20px; flex-grow:1;";
+                        for (const line of s.content) {
+                          const li = document.createElement("li");
+                          li.style.cssText = "margin-bottom:8px;";
+                          li.innerText = line;
+                          ul.appendChild(li);
+                        }
+                        slideCard.appendChild(ul);
+                      } else {
+                        const emptyP = document.createElement("p");
+                        emptyP.style.cssText = "color:#94a3b8; font-style:italic; font-size:14px; flex-grow:1; margin-top:0;";
+                        emptyP.innerText = "(Tidak ada poin teks tambahan pada slide ini)";
+                        slideCard.appendChild(emptyP);
+                      }
+
+                      // Images Section
+                      if (s.images && s.images.length > 0) {
+                        const imgTitle = document.createElement("div");
+                        imgTitle.style.cssText = "font-size:12px; font-weight:600; color:#64748b; margin-bottom:10px; margin-top:15px; border-top:1px dashed #e2e8f0; padding-top:12px;";
+                        imgTitle.innerHTML = `<i class="fa-solid fa-images" style="color:#3b82f6; margin-right:6px;"></i> Gambar / Visual di Slide Ini:`;
+                        slideCard.appendChild(imgTitle);
+
+                        const imgGrid = document.createElement("div");
+                        imgGrid.style.cssText = "display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; align-items:center;";
+                        for (const imgUrl of s.images) {
+                          const imgEl = document.createElement("img");
+                          imgEl.src = imgUrl;
+                          imgEl.style.cssText = "width:100%; max-height:240px; object-fit:contain; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; padding:4px;";
+                          imgGrid.appendChild(imgEl);
+                        }
+                        slideCard.appendChild(imgGrid);
+                      }
+
+                      slidesContainer.appendChild(slideCard);
+                    }
+
+                    deckDiv.appendChild(slidesContainer);
+                  }
+
+                  renderDeckUI();
+
+                } catch (errZip) {
+                  throw new Error("Gagal mengekstrak struktur slide PowerPoint: " + errZip.message);
                 }
               }
             } catch (errRender) {
