@@ -2835,8 +2835,13 @@ window.openPreview = (doc) => {
               }
             }
           } else if (msOfficeExts.includes(ext)) {
-            // 2. Microsoft Office Preview (Word, Excel, PowerPoint) dengan Auto-Detect Mobile/Tablet
+            // 2. Microsoft Office / Google Docs Preview (Word, Excel, PowerPoint) & Mode Lokal Responsif
+            const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
+
+            // Untuk Desktop gunakan Microsoft Office Viewer, di Mobile/Tablet gunakan Google Docs Viewer agar iframe tidak diblokir & tampilan langsung berskala penuh (utuh)
             const officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+            const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+            const embedUrlToUse = isMobileOrTablet ? googleEmbedUrl : officeEmbedUrl;
             const officeViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
 
             const officeActions = document.getElementById("officeHeaderActions");
@@ -2846,20 +2851,18 @@ window.openPreview = (doc) => {
             if (officeActions) officeActions.style.display = "flex";
             if (btnOnline) btnOnline.href = officeViewUrl;
 
-            const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
-
             const renderOfficeOnline = () => {
               container.style.padding = "0";
               container.style.overflow = "hidden";
               container.style.display = "block";
               container.innerHTML = `
-                <div style="position:relative; width:100%; height:100%; min-height:500px;">
+                <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
                   <iframe 
-                    src="${officeEmbedUrl}" 
+                    src="${embedUrlToUse}" 
                     width="100%" 
                     height="100%" 
                     frameborder="0" 
-                    title="Microsoft Office Preview" 
+                    title="Document Preview Online" 
                     style="width:100%; height:100%; border:none; min-height:550px; display:block;"
                     allowfullscreen
                   ></iframe>
@@ -2878,11 +2881,15 @@ window.openPreview = (doc) => {
                 btnSwitch.title = "Beralih ke Mode Online (Iframe)";
                 btnSwitch.onclick = renderOfficeOnline;
               }
-              container.style.padding = "15px";
+              // PERBAIKAN KRUSIAL: Gunakan flex-start agar konten yang lebar TIDAK terpotong di kiri akibat align-items: center
+              container.style.padding = isMobileOrTablet ? "8px" : "15px";
               container.style.overflow = "auto";
               container.style.display = "flex";
+              container.style.flexDirection = "column";
+              container.style.alignItems = "flex-start";
+              container.style.justifyContent = "flex-start";
               container.innerHTML = `
-                <div style="margin:auto; display:flex; flex-direction:column; align-items:center;">
+                <div style="margin:auto; display:flex; flex-direction:column; align-items:center; padding: 40px 0;">
                     <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
                     <p style="color:#334155; font-weight:500;">Memuat Dokumen (Mode Lokal/Native)...</p>
                 </div>
@@ -2895,7 +2902,22 @@ window.openPreview = (doc) => {
                   if (!res.ok) throw new Error("CORS DOCX");
                   const blob = await res.blob();
                   container.innerHTML = "";
-                  await docx.renderAsync(blob, container, null, { className: "docx", inWrapper: true, ignoreWidth: false, ignoreHeight: false });
+                  // ignoreWidth=true di HP agar halaman Word beradaptasi pas dengan lebar layar HP tanpa terpotong
+                  await docx.renderAsync(blob, container, null, { 
+                    className: "docx", 
+                    inWrapper: true, 
+                    ignoreWidth: isMobileOrTablet, 
+                    ignoreHeight: isMobileOrTablet 
+                  });
+                  const styleDocx = document.createElement("style");
+                  styleDocx.innerHTML = `
+                    .docx-wrapper { background: #f8fafc !important; padding: 10px !important; width: 100% !important; box-sizing: border-box !important; }
+                    .docx-wrapper > section.docx { margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important; box-sizing: border-box !important; overflow-x: auto !important; }
+                    @media (max-width: 768px) {
+                      .docx-wrapper > section.docx { padding: 20px 15px !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
+                    }
+                  `;
+                  container.appendChild(styleDocx);
                 } else if (ext === "xlsx" || ext === "xls") {
                   await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
                   const res = await fetch(fileViewUrl);
@@ -2918,7 +2940,6 @@ window.openPreview = (doc) => {
                   html += "</table></div>";
                   if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
                   container.innerHTML = html;
-                  container.style.alignItems = "flex-start";
                   const style = document.createElement("style");
                   style.innerHTML = `
                     #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
@@ -2938,7 +2959,7 @@ window.openPreview = (doc) => {
                     await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js");
                   } catch(e) { /* Abaikan jika opsional gagal dimuat */ }
                   await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
-                  container.innerHTML = `<div id="pptx-render-area" style="width:100%; margin:auto;"></div>`;
+                  container.innerHTML = `<div style="width:100%; overflow-x:auto; overflow-y:auto; padding:10px 0;"><div id="pptx-render-area" style="width:100%; margin:0 auto; min-width:300px;"></div></div>`;
                   const css = document.createElement("link");
                   css.rel = "stylesheet";
                   css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
@@ -2947,6 +2968,15 @@ window.openPreview = (doc) => {
                   cssNv.rel = "stylesheet";
                   cssNv.href = "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css";
                   document.head.appendChild(cssNv);
+                  const stylePptx = document.createElement("style");
+                  stylePptx.innerHTML = `
+                    #pptx-render-area .slide { margin: 0 auto 25px auto !important; box-shadow: 0 5px 20px rgba(0,0,0,0.15) !important; border-radius: 8px !important; overflow: hidden !important; position: relative !important; }
+                    @media (max-width: 768px) {
+                      #pptx-render-area { display: flex; flex-direction: column; align-items: flex-start; }
+                      #pptx-render-area .slide { margin: 0 0 20px 0 !important; left: 0 !important; }
+                    }
+                  `;
+                  container.appendChild(stylePptx);
                   $("#pptx-render-area").pptxToHtml({ pptxFileUrl: fileViewUrl, slideMode: false, keyBoardShortCut: false });
                 } else {
                   container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Office Online.</p>`;
@@ -2956,11 +2986,7 @@ window.openPreview = (doc) => {
               }
             };
 
-            if (isMobileOrTablet) {
-              renderOfficeLocal();
-            } else {
-              renderOfficeOnline();
-            }
+            renderOfficeOnline();
           } else if (ext === "csv") {
             // 3. CSV Renderer Native (SheetJS)
             await window.loadScript(
