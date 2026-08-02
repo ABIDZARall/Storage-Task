@@ -2835,158 +2835,192 @@ window.openPreview = (doc) => {
               }
             }
           } else if (msOfficeExts.includes(ext)) {
-            // 2. Microsoft Office / Google Docs Preview (Word, Excel, PowerPoint) & Mode Lokal Responsif
+            // 2. Microsoft Office / Google Docs Preview (Word, Excel, PowerPoint)
             const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
-
-            // Untuk Desktop gunakan Microsoft Office Viewer, di Mobile/Tablet gunakan Google Docs Viewer agar iframe tidak diblokir & tampilan langsung berskala penuh (utuh)
-            const officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-            const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
-            const embedUrlToUse = isMobileOrTablet ? googleEmbedUrl : officeEmbedUrl;
-            const officeViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-
             const officeActions = document.getElementById("officeHeaderActions");
             const btnOnline = document.getElementById("headerBtnOfficeOnline");
             const btnSwitch = document.getElementById("headerBtnSwitchToLocal");
+            const officeViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
 
             if (officeActions) officeActions.style.display = "flex";
-            if (btnOnline) btnOnline.href = officeViewUrl;
+            if (btnOnline) {
+              btnOnline.href = officeViewUrl;
+              btnOnline.title = "Buka di tab baru Microsoft Office 365";
+            }
 
-            const renderOfficeOnline = () => {
-              container.style.padding = "0";
-              container.style.overflow = "hidden";
-              container.style.display = "block";
-              container.innerHTML = `
-                <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
-                  <iframe 
-                    src="${embedUrlToUse}" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    title="Document Preview Online" 
-                    style="width:100%; height:100%; border:none; min-height:550px; display:block;"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-              `;
-              if (btnSwitch) {
-                btnSwitch.innerHTML = `<i class="fa-solid fa-code" style="color:#38bdf8;"></i> <span class="office-btn-text">Mode Lokal</span>`;
-                btnSwitch.title = "Beralih ke pembaca Lokal / Offline";
-                btnSwitch.onclick = renderOfficeLocal;
-              }
-            };
+            if (ext === "ppt" || ext === "pptx") {
+              // 🌟 SOLUSI DEFINITIF UNTUK POWERPOINT: DUAL CLOUD ENGINE (ANTI-BLANK PUTIH) 🌟
+              // Karena library Javascript offline (seperti PPTXjs) gagal memproses struktur XML presentasi modern dan menyebabkan layar blank putih,
+              // khusus PowerPoint dihubungkan dengan Dual Cloud Engine (Google Docs & Microsoft Office Viewer) agar slide selalu tampil 100% utuh dan presisi.
+              const googlePptxUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+              const microsoftPptxUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
 
-            const renderOfficeLocal = async () => {
-              if (btnSwitch) {
-                btnSwitch.innerHTML = `<i class="fa-solid fa-globe" style="color:#34d399;"></i> <span class="office-btn-text">Mode Online</span>`;
-                btnSwitch.title = "Beralih ke Mode Online (Iframe)";
-                btnSwitch.onclick = renderOfficeOnline;
-              }
-              // PERBAIKAN KRUSIAL: Gunakan flex-start agar konten yang lebar TIDAK terpotong di kiri akibat align-items: center
-              container.style.padding = isMobileOrTablet ? "8px" : "15px";
-              container.style.overflow = "auto";
-              container.style.display = "flex";
-              container.style.flexDirection = "column";
-              container.style.alignItems = "flex-start";
-              container.style.justifyContent = "flex-start";
-              container.innerHTML = `
-                <div style="margin:auto; display:flex; flex-direction:column; align-items:center; padding: 40px 0;">
-                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
-                    <p style="color:#334155; font-weight:500;">Memuat Dokumen (Mode Lokal/Native)...</p>
-                </div>
-              `;
-              try {
-                if (ext === "docx") {
-                  await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
-                  await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
-                  const res = await fetch(fileViewUrl);
-                  if (!res.ok) throw new Error("CORS DOCX");
-                  const blob = await res.blob();
-                  container.innerHTML = "";
-                  // ignoreWidth=true di HP agar halaman Word beradaptasi pas dengan lebar layar HP tanpa terpotong
-                  await docx.renderAsync(blob, container, null, { 
-                    className: "docx", 
-                    inWrapper: true, 
-                    ignoreWidth: isMobileOrTablet, 
-                    ignoreHeight: isMobileOrTablet 
-                  });
-                  const styleDocx = document.createElement("style");
-                  styleDocx.innerHTML = `
-                    .docx-wrapper { background: #f8fafc !important; padding: 10px !important; width: 100% !important; box-sizing: border-box !important; }
-                    .docx-wrapper > section.docx { margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important; box-sizing: border-box !important; overflow-x: auto !important; }
-                    @media (max-width: 768px) {
-                      .docx-wrapper > section.docx { padding: 20px 15px !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
-                    }
-                  `;
-                  container.appendChild(styleDocx);
-                } else if (ext === "xlsx" || ext === "xls") {
-                  await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
-                  const res = await fetch(fileViewUrl);
-                  if (!res.ok) throw new Error("CORS XLSX");
-                  const arrayBuffer = await res.arrayBuffer();
-                  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                  const firstSheetName = workbook.SheetNames[0];
-                  const worksheet = workbook.Sheets[firstSheetName];
-                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                  let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
-                  for (let i = 0; i < jsonData.length; i++) {
-                    html += "<tr>";
-                    for (let j = 0; j < jsonData[i].length; j++) {
-                      let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
-                      if (i === 0) html += "<th>" + cellData + "</th>";
-                      else html += "<td>" + cellData + "</td>";
-                    }
-                    html += "</tr>";
-                  }
-                  html += "</table></div>";
-                  if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
-                  container.innerHTML = html;
-                  const style = document.createElement("style");
-                  style.innerHTML = `
-                    #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
-                    #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
-                    #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
-                    #excel-table tr:nth-child(even) { background-color: #f8fafc; }
-                    #excel-table tr:hover { background-color: #f1f5f9; }
-                  `;
-                  container.appendChild(style);
-                } else if (ext === "pptx") {
-                  await window.loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-                  await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js");
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
-                  try {
-                    await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/filereader.js");
-                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js");
-                    await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js");
-                  } catch(e) { /* Abaikan jika opsional gagal dimuat */ }
-                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/js/pptxjs.js");
-                  container.innerHTML = `<div style="width:100%; overflow-x:auto; overflow-y:auto; padding:10px 0;"><div id="pptx-render-area" style="width:100%; margin:0 auto; min-width:300px;"></div></div>`;
-                  const css = document.createElement("link");
-                  css.rel = "stylesheet";
-                  css.href = "https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@1.21.1/css/pptxjs.css";
-                  document.head.appendChild(css);
-                  const cssNv = document.createElement("link");
-                  cssNv.rel = "stylesheet";
-                  cssNv.href = "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css";
-                  document.head.appendChild(cssNv);
-                  const stylePptx = document.createElement("style");
-                  stylePptx.innerHTML = `
-                    #pptx-render-area .slide { margin: 0 auto 25px auto !important; box-shadow: 0 5px 20px rgba(0,0,0,0.15) !important; border-radius: 8px !important; overflow: hidden !important; position: relative !important; }
-                    @media (max-width: 768px) {
-                      #pptx-render-area { display: flex; flex-direction: column; align-items: flex-start; }
-                      #pptx-render-area .slide { margin: 0 0 20px 0 !important; left: 0 !important; }
-                    }
-                  `;
-                  container.appendChild(stylePptx);
-                  $("#pptx-render-area").pptxToHtml({ pptxFileUrl: fileViewUrl, slideMode: false, keyBoardShortCut: false });
-                } else {
-                  container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Office Online.</p>`;
+              const renderGoogleViewer = () => {
+                container.style.padding = "0";
+                container.style.overflow = "hidden";
+                container.style.display = "block";
+                container.innerHTML = `
+                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
+                    <iframe 
+                      src="${googlePptxUrl}" 
+                      width="100%" 
+                      height="100%" 
+                      frameborder="0" 
+                      title="Google Docs PowerPoint Viewer" 
+                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-brands fa-microsoft" style="color:#00a4ef;"></i> <span class="office-btn-text">Office Viewer</span>`;
+                  btnSwitch.title = "Beralih ke pembaca Microsoft Office Online Viewer";
+                  btnSwitch.onclick = renderMicrosoftViewer;
                 }
-              } catch (errLocal) {
-                container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Gagal memuat mode lokal: ${errLocal.message}</p>`;
-              }
-            };
+              };
 
-            renderOfficeOnline();
+              const renderMicrosoftViewer = () => {
+                container.style.padding = "0";
+                container.style.overflow = "hidden";
+                container.style.display = "block";
+                container.innerHTML = `
+                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
+                    <iframe 
+                      src="${microsoftPptxUrl}" 
+                      width="100%" 
+                      height="100%" 
+                      frameborder="0" 
+                      title="Microsoft Office PowerPoint Viewer" 
+                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-brands fa-google" style="color:#34a853;"></i> <span class="office-btn-text">Google Viewer</span>`;
+                  btnSwitch.title = "Beralih ke pembaca Google Docs Viewer";
+                  btnSwitch.onclick = renderGoogleViewer;
+                }
+              };
+
+              if (isMobileOrTablet) {
+                renderGoogleViewer();
+              } else {
+                renderMicrosoftViewer();
+              }
+            } else {
+              // Untuk Word (.doc, .docx) dan Excel (.xls, .xlsx), gunakan pilihan Mode Online & Mode Lokal (Native JS)
+              const officeEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+              const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+              const embedUrlToUse = isMobileOrTablet ? googleEmbedUrl : officeEmbedUrl;
+
+              const renderOfficeOnline = () => {
+                container.style.padding = "0";
+                container.style.overflow = "hidden";
+                container.style.display = "block";
+                container.innerHTML = `
+                  <div style="position:relative; width:100%; height:100%; min-height:500px; background:#fff;">
+                    <iframe 
+                      src="${embedUrlToUse}" 
+                      width="100%" 
+                      height="100%" 
+                      frameborder="0" 
+                      title="Document Preview Online" 
+                      style="width:100%; height:100%; border:none; min-height:550px; display:block;"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-solid fa-code" style="color:#38bdf8;"></i> <span class="office-btn-text">Mode Lokal</span>`;
+                  btnSwitch.title = "Beralih ke pembaca Lokal / Offline";
+                  btnSwitch.onclick = renderOfficeLocal;
+                }
+              };
+
+              const renderOfficeLocal = async () => {
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-solid fa-globe" style="color:#34d399;"></i> <span class="office-btn-text">Mode Online</span>`;
+                  btnSwitch.title = "Beralih ke Mode Online (Iframe)";
+                  btnSwitch.onclick = renderOfficeOnline;
+                }
+                // PERBAIKAN KRUSIAL: Gunakan flex-start agar konten yang lebar TIDAK terpotong di kiri
+                container.style.padding = isMobileOrTablet ? "8px" : "15px";
+                container.style.overflow = "auto";
+                container.style.display = "flex";
+                container.style.flexDirection = "column";
+                container.style.alignItems = "flex-start";
+                container.style.justifyContent = "flex-start";
+                container.innerHTML = `
+                  <div style="margin:auto; display:flex; flex-direction:column; align-items:center; padding: 40px 0;">
+                      <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
+                      <p style="color:#334155; font-weight:500;">Memuat Dokumen (Mode Lokal/Native)...</p>
+                  </div>
+                `;
+                try {
+                  if (ext === "docx" || ext === "doc") {
+                    await window.loadScript("https://unpkg.com/jszip/dist/jszip.min.js");
+                    await window.loadScript("https://unpkg.com/docx-preview/dist/docx-preview.min.js");
+                    const res = await fetch(fileViewUrl);
+                    if (!res.ok) throw new Error("CORS DOCX");
+                    const blob = await res.blob();
+                    container.innerHTML = "";
+                    await docx.renderAsync(blob, container, null, { 
+                      className: "docx", 
+                      inWrapper: true, 
+                      ignoreWidth: isMobileOrTablet, 
+                      ignoreHeight: isMobileOrTablet 
+                    });
+                    const styleDocx = document.createElement("style");
+                    styleDocx.innerHTML = `
+                      .docx-wrapper { background: #f8fafc !important; padding: 10px !important; width: 100% !important; box-sizing: border-box !important; }
+                      .docx-wrapper > section.docx { margin: 0 auto 20px auto !important; box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important; box-sizing: border-box !important; overflow-x: auto !important; }
+                      @media (max-width: 768px) {
+                        .docx-wrapper > section.docx { padding: 20px 15px !important; width: 100% !important; max-width: 100% !important; font-size: 14px !important; }
+                      }
+                    `;
+                    container.appendChild(styleDocx);
+                  } else if (ext === "xlsx" || ext === "xls") {
+                    await window.loadScript("https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js");
+                    const res = await fetch(fileViewUrl);
+                    if (!res.ok) throw new Error("CORS XLSX");
+                    const arrayBuffer = await res.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    let html = "<div style='overflow-x:auto; width:100%; height:100%;'><table id='excel-table'>";
+                    for (let i = 0; i < jsonData.length; i++) {
+                      html += "<tr>";
+                      for (let j = 0; j < jsonData[i].length; j++) {
+                        let cellData = jsonData[i][j] !== undefined ? jsonData[i][j] : "";
+                        if (i === 0) html += "<th>" + cellData + "</th>";
+                        else html += "<td>" + cellData + "</td>";
+                      }
+                      html += "</tr>";
+                    }
+                    html += "</table></div>";
+                    if (jsonData.length === 0) html = "<p style='color:#64748b; margin:auto;'>Dokumen Excel kosong.</p>";
+                    container.innerHTML = html;
+                    const style = document.createElement("style");
+                    style.innerHTML = `
+                      #excel-table { border-collapse: collapse; width: 100%; min-width: 600px; font-family: sans-serif; font-size:14px; background:white; }
+                      #excel-table td, #excel-table th { border: 1px solid #cbd5e1; padding: 10px 12px; text-align:left; color:#334155; }
+                      #excel-table th { background-color: #f1f5f9; font-weight:600; border-bottom: 2px solid #cbd5e1; }
+                      #excel-table tr:nth-child(even) { background-color: #f8fafc; }
+                      #excel-table tr:hover { background-color: #f1f5f9; }
+                    `;
+                    container.appendChild(style);
+                  } else {
+                    container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Format .${ext} hanya didukung di Mode Online.</p>`;
+                  }
+                } catch (errLocal) {
+                  container.innerHTML = `<p style='color:#ef4444; margin:auto;'>Gagal memuat mode lokal: ${errLocal.message}</p>`;
+                }
+              };
+
+              renderOfficeOnline();
+            }
           } else if (ext === "csv") {
             // 3. CSV Renderer Native (SheetJS)
             await window.loadScript(
