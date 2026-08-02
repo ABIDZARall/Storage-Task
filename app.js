@@ -2924,12 +2924,32 @@ window.openPreview = (doc) => {
 
               } else if (ext === "pptx" || ext === "ppt") {
                 // Client-Side Rendering untuk PowerPoint (PPTX / PPT)
-                // KUNCI PERBAIKAN: Di GitHub (meshesha/PPTXjs), lokasi file ada di folder "js/pptxjs.js" dan "js/divs2slides.js" (bukan dist/pptxjs.min.js)!
+                // KUNCI PERBAIKAN: Di GitHub (meshesha/PPTXjs), lokasi file ada di folder "js/" dan membutuhkan FileReaderJS asli dari bgrins/meshesha!
                 await window.loadScript("https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js");
                 await window.loadScript("https://cdn.jsdelivr.net/npm/jszip@2.6.1/dist/jszip.min.js");
-                await window.loadScript("https://cdn.jsdelivr.net/npm/filereader@0.10.3/FileReader.min.js").catch(() => {});
-                await window.loadScript("https://cdn.jsdelivr.net/npm/d3@3.5.17/d3.min.js").catch(() => {});
-                await window.loadScript("https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.js").catch(() => {});
+                
+                // Muat filereader.js dari repositori asli agar variabel FileReaderJS berhasil didefinisikan
+                try {
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/filereader.js");
+                } catch (errFr1) {
+                  try {
+                    await window.loadScript("https://cdn.jsdelivr.net/gh/bgrins/filereader.js@master/filereader.js");
+                  } catch (errFr2) {
+                    await window.loadScript("https://raw.githack.com/meshesha/PPTXjs/master/js/filereader.js");
+                  }
+                }
+
+                // Muat D3 & NVD3 dari CDN atau repositori PPTXjs
+                try {
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/d3.min.js");
+                } catch (errD3) {
+                  await window.loadScript("https://cdn.jsdelivr.net/npm/d3@3.5.17/d3.min.js").catch(() => {});
+                }
+                try {
+                  await window.loadScript("https://cdn.jsdelivr.net/gh/meshesha/PPTXjs@master/js/nv.d3.min.js");
+                } catch (errNv) {
+                  await window.loadScript("https://cdn.jsdelivr.net/npm/nvd3@1.8.6/build/nv.d3.min.js").catch(() => {});
+                }
 
                 // Muat skrip utama PPTXjs & Divs2Slides dari folder js/ repositori GitHub resmi melalui jsDelivr
                 try {
