@@ -2835,28 +2835,35 @@ window.openPreview = (doc) => {
               }
             }
           } else if (msOfficeExts.includes(ext)) {
-            // 2. Microsoft Office Preview (Word, Excel, PowerPoint) - Terintegrasi Penuh untuk Desktop, Tablet, dan Mobile!
+            // 2. Preview Dokumen Office (Word, Excel, PowerPoint)
+            // Desktop: Menggunakan Microsoft Office Preview (Sempurna di layar besar/Desktop)
+            // Mobile/Tablet: Sepenuhnya diganti menggunakan Google Docs Preview (Sempurna & stabil di device HP/Tablet)
             const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
             const officeActions = document.getElementById("officeHeaderActions");
             const btnOnline = document.getElementById("headerBtnOfficeOnline");
             const btnSwitch = document.getElementById("headerBtnSwitchToLocal");
-            const officeViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+            
+            const microsoftEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+            const microsoftViewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileViewUrl)}`;
+            const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
+            const googleViewUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}`;
+            const minHeightStyle = isMobileOrTablet ? "82vh" : "550px";
 
             if (officeActions) officeActions.style.display = "flex";
             if (btnOnline) {
-              btnOnline.href = officeViewUrl;
-              btnOnline.title = "Buka di tab baru Microsoft Office 365";
+              if (isMobileOrTablet) {
+                btnOnline.href = googleViewUrl;
+                btnOnline.title = "Buka di tab baru Google Docs Viewer";
+                btnOnline.innerHTML = `<i class="fa-brands fa-google" style="color:#34a853;"></i> <span class="office-btn-text">Google Online</span>`;
+              } else {
+                btnOnline.href = microsoftViewUrl;
+                btnOnline.title = "Buka di tab baru Microsoft Office 365";
+                btnOnline.innerHTML = `<i class="fa-solid fa-up-right-from-square" style="color:#60a5fa;"></i> <span class="office-btn-text">Office Online</span>`;
+              }
             }
 
-            // PERAMBAKAN TOTAL: Baik di Desktop, Tablet, maupun Mobile/HP, KEMBALIKAN KE MICROSOFT OFFICE PREVIEW sebagai mesin utama!
-            // Menggunakan pembungkus yang adaptif terhadap layar sentuh agar tampilan Office di HP/Tablet sama suksesnya dengan Desktop.
-            const minHeightStyle = isMobileOrTablet ? "82vh" : "550px";
-            const microsoftEmbedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileViewUrl)}`;
-            const googleEmbedUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fileViewUrl)}&embedded=true`;
-
             if (ext === "ppt" || ext === "pptx") {
-              // Khusus PowerPoint: Gunakan Microsoft Office Viewer di SEMUA device (termasuk Mobile/HP).
-              // Opsi beralih (toggle) disediakan ke Google Docs Viewer sebagai cadangan jika dibutuhkan.
+              // Khusus PowerPoint
               const renderMicrosoftViewer = () => {
                 container.style.padding = "0";
                 container.style.overflow = "hidden";
@@ -2878,7 +2885,7 @@ window.openPreview = (doc) => {
                 `;
                 if (btnSwitch) {
                   btnSwitch.innerHTML = `<i class="fa-brands fa-google" style="color:#34a853;"></i> <span class="office-btn-text">Google Viewer</span>`;
-                  btnSwitch.title = "Beralih ke pembaca Google Docs Viewer (Cadangan)";
+                  btnSwitch.title = "Beralih ke pembaca Google Docs Viewer";
                   btnSwitch.onclick = renderGoogleViewer;
                 }
               };
@@ -2904,17 +2911,21 @@ window.openPreview = (doc) => {
                 `;
                 if (btnSwitch) {
                   btnSwitch.innerHTML = `<i class="fa-brands fa-microsoft" style="color:#00a4ef;"></i> <span class="office-btn-text">Office Viewer</span>`;
-                  btnSwitch.title = "Beralih kembali ke Microsoft Office Preview";
+                  btnSwitch.title = "Beralih ke Microsoft Office Preview";
                   btnSwitch.onclick = renderMicrosoftViewer;
                 }
               };
 
-              // JALANKAN MICROSOFT OFFICE PREVIEW secara langsung baik untuk Desktop maupun Mobile/Tablet!
-              renderMicrosoftViewer();
+              if (isMobileOrTablet) {
+                // SEPENUHNYA gunakan Google Preview untuk versi Mobile/Tablet
+                renderGoogleViewer();
+              } else {
+                // Versi Desktop menggunakan Microsoft Office Viewer
+                renderMicrosoftViewer();
+              }
 
             } else {
               // Untuk Word (.doc, .docx) dan Excel (.xls, .xlsx):
-              // JALANKAN MICROSOFT OFFICE PREVIEW untuk SEMUA device (Mobile, Tablet, Desktop) dengan struktur responsif yang rapi.
               const renderOfficeOnline = () => {
                 container.style.padding = "0";
                 container.style.overflow = "hidden";
@@ -2941,11 +2952,38 @@ window.openPreview = (doc) => {
                 }
               };
 
+              const renderGoogleViewer = () => {
+                container.style.padding = "0";
+                container.style.overflow = "hidden";
+                container.style.display = "block";
+                container.style.width = "100%";
+                container.style.height = "100%";
+                container.innerHTML = `
+                  <div style="position:relative; width:100%; height:100%; min-height:${minHeightStyle}; background:#fff; -webkit-overflow-scrolling: touch; overflow: auto;">
+                    <iframe 
+                      src="${googleEmbedUrl}" 
+                      width="100%" 
+                      height="100%" 
+                      frameborder="0" 
+                      title="Google Docs Document Preview" 
+                      style="width:100%; height:100%; border:none; min-height:${minHeightStyle}; display:block; position:absolute; top:0; left:0; right:0; bottom:0;"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                if (btnSwitch) {
+                  btnSwitch.innerHTML = `<i class="fa-brands fa-microsoft" style="color:#00a4ef;"></i> <span class="office-btn-text">Office Viewer</span>`;
+                  btnSwitch.title = "Beralih ke Microsoft Office Preview";
+                  btnSwitch.onclick = renderOfficeOnline;
+                }
+              };
+
               const renderOfficeLocal = async () => {
                 if (btnSwitch) {
+                  const targetFunc = isMobileOrTablet ? renderGoogleViewer : renderOfficeOnline;
                   btnSwitch.innerHTML = `<i class="fa-solid fa-globe" style="color:#34d399;"></i> <span class="office-btn-text">Mode Online</span>`;
-                  btnSwitch.title = "Beralih kembali ke Microsoft Office Preview (Online)";
-                  btnSwitch.onclick = renderOfficeOnline;
+                  btnSwitch.title = "Beralih kembali ke Mode Online (Iframe)";
+                  btnSwitch.onclick = targetFunc;
                 }
                 // PERBAIKAN KRUSIAL: Gunakan flex-start agar konten yang lebar TIDAK terpotong di kiri
                 container.style.padding = isMobileOrTablet ? "8px" : "15px";
@@ -3022,8 +3060,13 @@ window.openPreview = (doc) => {
                 }
               };
 
-              // JALANKAN MICROSOFT OFFICE PREVIEW secara langsung untuk Word dan Excel di SEMUA device (Mobile/Desktop)!
-              renderOfficeOnline();
+              if (isMobileOrTablet) {
+                // SEPENUHNYA gunakan Google Preview untuk Word & Excel versi Mobile/Tablet
+                renderGoogleViewer();
+              } else {
+                // Versi Desktop menggunakan Microsoft Office Viewer
+                renderOfficeOnline();
+              }
             }
           } else if (ext === "csv") {
             // 3. CSV Renderer Native (SheetJS)
