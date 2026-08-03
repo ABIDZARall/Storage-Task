@@ -2836,13 +2836,38 @@ window.openPreview = (doc) => {
             }
           } else if (msOfficeExts.includes(ext)) {
             // 2. Preview Dokumen Office (Word, Excel, PowerPoint)
-            // Metode "Bypass" Legal: Teknik Blob URL & Client-Side Rendering (CSR)
-            // Mengatasi masalah CORS & nihil 0% di versi mobile tanpa menggunakan iframe cloud dari Microsoft/Google.
             const isMobileOrTablet = /Mobi|Android|Tablet|iPad|iPhone/i.test(navigator.userAgent) || window.innerWidth <= 1024;
             const officeActions = document.getElementById("officeHeaderActions");
             if (officeActions) officeActions.style.display = "none"; // Sesuai permintaan: Hapus icon microsoft & google di atas pada preview
 
-            container.style.padding = isMobileOrTablet ? "10px" : "20px";
+            // 🌟 VERSI DESKTOP: Gunakan Preview Resmi Microsoft Office Online 🌟
+            // Di perangkat Desktop (PC / Laptop), Microsoft Office Online beroperasi 100% mulus dengan fidelitas visual sempurna!
+            if (!isMobileOrTablet) {
+              container.style.padding = "0";
+              container.style.overflow = "hidden";
+              container.style.display = "flex";
+              container.style.flexDirection = "column";
+              container.style.alignItems = "stretch";
+              container.style.justifyContent = "center";
+
+              const encodedUrl = encodeURIComponent(fileViewUrl);
+              const msOfficeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
+
+              container.innerHTML = `
+                <div style="width: 100%; height: 100%; min-height: calc(85vh - 20px); display: flex; flex-direction: column; background: #ffffff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.15); position: relative;">
+                  <iframe src="${msOfficeViewerUrl}" 
+                    style="width: 100%; flex-grow: 1; height: 85vh; border: none; background: #ffffff;" 
+                    allowfullscreen="true"
+                    title="Microsoft Office Online Preview">
+                  </iframe>
+                </div>
+              `;
+              return; // Langsung selesai, versi Desktop eksklusif memakai Microsoft Office Online!
+            }
+
+            // 🌟 VERSI MOBILE / TABLET: Metode Bypass Legal (Teknik Blob URL & Client-Side Rendering) 🌟
+            // Khusus di perangkat Mobile/Tablet untuk mengatasi masalah CORS & nihil 0% di browser mobile.
+            container.style.padding = "10px";
             container.style.overflow = "auto";
             container.style.display = "flex";
             container.style.flexDirection = "column";
@@ -2852,7 +2877,7 @@ window.openPreview = (doc) => {
               <div style="margin:auto; display:flex; flex-direction:column; align-items:center; padding: 50px 0;">
                 <i class="fa-solid fa-circle-notch fa-spin" style="font-size:3rem; color:#3b82f6; margin-bottom:15px;"></i>
                 <p style="color:#334155; font-weight:600; font-size:1rem; text-align:center;">Memuat Dokumen (Client-Side Rendering & Teknik Blob URL)...</p>
-                <span style="font-size:0.8rem; color:#64748b; margin-top:5px;">Membuka file secara native tanpa server eksternal...</span>
+                <span style="font-size:0.8rem; color:#64748b; margin-top:5px;">Membuka file secara native di perangkat mobile...</span>
               </div>
             `;
 
